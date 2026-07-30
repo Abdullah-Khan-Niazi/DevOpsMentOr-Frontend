@@ -1,9 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { LoginForm } from '../components';
+import { SignupForm } from '../components/SignupForm';
 import { useAuthStore } from '../stores/authStore';
 
-export default function LoginPage() {
+export default function SignupPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
   if (isAuthenticated) {
@@ -14,10 +14,10 @@ export default function LoginPage() {
     <div className="flex h-full">
       <div className="flex w-full flex-col justify-center bg-chalk-white px-6 md:w-1/2 lg:px-12">
         <div className="mx-auto w-full max-w-sm">
-          <h1 className="text-xl font-semibold text-deep-onyx">Welcome back</h1>
-          <p className="mt-1 text-sm text-deep-onyx-600">Sign in to your account</p>
+          <h1 className="text-xl font-semibold text-deep-onyx">Create your account</h1>
+          <p className="mt-1 text-sm text-deep-onyx-600">Begin your journey in security mastery</p>
           <div className="mt-8">
-            <LoginForm />
+            <SignupForm />
           </div>
         </div>
       </div>

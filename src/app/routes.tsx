@@ -5,6 +5,7 @@ import { AppShell, LoadingState } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
+const SignupPage = lazy(() => import('@/features/auth/pages/SignupPage'));
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
 const UsersPage = lazy(() => import('@/features/users/pages/UsersPage'));
 const RolesPage = lazy(() => import('@/features/roles/pages/RolesPage'));
@@ -23,6 +24,15 @@ export function AppRoutes() {
         element={
           <LazyPage>
             <LoginPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.SIGNUP}
+        element={
+          <LazyPage>
+            <SignupPage />
           </LazyPage>
         }
       />
