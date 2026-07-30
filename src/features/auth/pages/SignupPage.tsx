@@ -11,17 +11,7 @@ export default function SignupPage() {
   }
 
   return (
-    <div className="flex h-full">
-      <div className="flex w-full flex-col justify-center bg-chalk-white px-6 md:w-1/2 lg:px-12">
-        <div className="mx-auto w-full max-w-sm">
-          <h1 className="text-xl font-semibold text-deep-onyx">Create your account</h1>
-          <p className="mt-1 text-sm text-deep-onyx-600">Begin your journey in security mastery</p>
-          <div className="mt-8">
-            <SignupForm />
-          </div>
-        </div>
-      </div>
-
+    <div className="flex h-full overflow-hidden">
       <div className="hidden md:flex md:w-1/2 flex-col justify-center bg-deep-onyx px-12 lg:px-16">
         <div className="mx-auto max-w-md">
           <div className="flex items-center gap-3">
@@ -44,6 +34,16 @@ export default function SignupPage() {
             <div className="h-1.5 w-1.5 rounded-full bg-spring-green" />
             <div className="h-1.5 w-1.5 rounded-full bg-deep-onyx-600" />
             <div className="h-1.5 w-1.5 rounded-full bg-deep-onyx-600" />
+          </div>
+        </div>
+      </div>
+
+      <div className="flex w-full flex-col justify-center overflow-y-auto bg-chalk-white px-6 md:w-1/2 lg:px-12">
+        <div className="mx-auto w-full max-w-sm py-8">
+          <h1 className="text-xl font-semibold text-deep-onyx">Create your account</h1>
+          <p className="mt-1 text-sm text-deep-onyx-600">Begin your journey in security mastery</p>
+          <div className="mt-8">
+            <SignupForm />
           </div>
         </div>
       </div>
