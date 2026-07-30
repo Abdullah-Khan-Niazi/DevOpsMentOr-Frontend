@@ -1,7 +1,7 @@
 export interface AuthUser {
-  id: string;
+  id: number;
   email: string;
-  name: string;
+  name: string | null;
   roles: string[];
 }
 
@@ -10,9 +10,36 @@ export interface LoginCredentials {
   password: string;
 }
 
-export interface LoginResponse {
+export interface SignupCredentials {
+  username: string;
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface OAuthCredentials {
+  provider: 'google' | 'github' | 'linkedin';
+  code: string;
+  redirectUri: string;
+}
+
+export interface OAuthSignupCredentials extends OAuthCredentials {
+  username: string;
+  fullName: string;
+}
+
+export interface AuthTokens {
   accessToken: string;
-  user: AuthUser;
+  refreshToken: string;
+}
+
+export interface LoginResponse {
+  success: boolean;
+  message: string;
+  data: {
+    user: AuthUser;
+    tokens: AuthTokens;
+  };
 }
 
 export interface AuthState {
