@@ -17,15 +17,17 @@ export interface SignupCredentials {
   fullName: string;
 }
 
+export type OAuthProvider = 'google' | 'github' | 'linkedin';
+
 export interface OAuthCredentials {
-  provider: 'google' | 'github' | 'linkedin';
+  provider: OAuthProvider;
   code: string;
   redirectUri: string;
 }
 
 export interface OAuthSignupCredentials extends OAuthCredentials {
-  username: string;
-  fullName: string;
+  username?: string;
+  fullName?: string;
 }
 
 export interface AuthTokens {

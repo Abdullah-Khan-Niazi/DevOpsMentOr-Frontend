@@ -1,4 +1,4 @@
-import { useCallback } from 'react';
+import { useCallback, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
@@ -6,8 +6,6 @@ import type { ApiError } from '@/shared/types';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 import type { LoginResponse, OAuthCredentials, OAuthSignupCredentials } from '../types';
-
-const OAUTH_REDIRECT_URI = `${window.location.origin}/api/auth/callback`;
 
 const PROVIDER_CONFIG: Record<
   string,
@@ -36,7 +34,12 @@ function generateState(): string {
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+function redirectUri(provider: string): string {
+  return `${window.location.origin}/api/auth/callback/${provider}`;
+}
+
 export function useOAuthLogin() {
+  const [feedback, setFeedback] = useState<string | null>(null);
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
 
@@ -50,17 +53,26 @@ export function useOAuthLogin() {
 
   const initiateOAuth = useCallback(
     (provider: 'google' | 'github' | 'linkedin') => {
+      setFeedback(null);
+
+      if (provider === 'linkedin') {
+        setFeedback('LinkedIn OAuth is coming soon');
+        return;
+      }
+
       const config = PROVIDER_CONFIG[provider];
       if (!config.clientId) {
+        setFeedback(`${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`);
         return;
       }
 
       const state = generateState();
       sessionStorage.setItem(`oauth_state_${provider}`, state);
+      sessionStorage.setItem('oauth_mode', 'login');
 
       const params = new URLSearchParams({
         client_id: config.clientId,
-        redirect_uri: OAUTH_REDIRECT_URI,
+        redirect_uri: redirectUri(provider),
         response_type: 'code',
         scope: config.scope,
         state,
@@ -71,10 +83,11 @@ export function useOAuthLogin() {
     [],
   );
 
-  return { mutation, initiateOAuth };
+  return { mutation, initiateOAuth, feedback };
 }
 
 export function useOAuthSignup() {
+  const [feedback, setFeedback] = useState<string | null>(null);
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
 
@@ -88,17 +101,26 @@ export function useOAuthSignup() {
 
   const initiateOAuth = useCallback(
     (provider: 'google' | 'github' | 'linkedin') => {
+      setFeedback(null);
+
+      if (provider === 'linkedin') {
+        setFeedback('LinkedIn OAuth is coming soon');
+        return;
+      }
+
       const config = PROVIDER_CONFIG[provider];
       if (!config.clientId) {
+        setFeedback(`${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`);
         return;
       }
 
       const state = generateState();
       sessionStorage.setItem(`oauth_state_${provider}`, state);
+      sessionStorage.setItem('oauth_mode', 'signup');
 
       const params = new URLSearchParams({
         client_id: config.clientId,
-        redirect_uri: OAUTH_REDIRECT_URI,
+        redirect_uri: redirectUri(provider),
         response_type: 'code',
         scope: config.scope,
         state,
@@ -109,5 +131,5 @@ export function useOAuthSignup() {
     [],
   );
 
-  return { mutation, initiateOAuth };
+  return { mutation, initiateOAuth, feedback };
 }
