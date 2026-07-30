@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -26,7 +27,16 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
   const { mutate: doSignup, isPending, error, isError } = useSignup();
-  const { initiateOAuth } = useOAuthSignup();
+  const { mutation: oauthMutation, initiateOAuth, feedback } = useOAuthSignup();
+
+  const [oauthProvider, setOAuthProvider] = useState<string | null>(null);
+
+  useEffect(() => {
+    const provider = sessionStorage.getItem('oauth_signup_provider');
+    if (provider) {
+      setOAuthProvider(provider);
+    }
+  }, []);
 
   const {
     register,
@@ -38,12 +48,32 @@ export function SignupForm() {
   });
 
   const onSubmit = (values: SignupFormValues) => {
+    const provider = sessionStorage.getItem('oauth_signup_provider');
+    const code = sessionStorage.getItem('oauth_signup_code');
+    const redirectUri = sessionStorage.getItem('oauth_signup_redirect');
+
+    if (provider && code && redirectUri) {
+      sessionStorage.removeItem('oauth_signup_provider');
+      sessionStorage.removeItem('oauth_signup_code');
+      sessionStorage.removeItem('oauth_signup_redirect');
+      oauthMutation.mutate({ provider: provider as 'google' | 'github' | 'linkedin', code, redirectUri, username: values.username, fullName: values.fullName });
+      return;
+    }
+
     const { confirmPassword: _, ...payload } = values;
     doSignup(payload);
   };
 
+  const isSubmitting = isPending || oauthMutation.isPending;
+
   return (
     <div className="flex flex-col gap-6">
+      {oauthProvider ? (
+        <p className="rounded-md bg-spring-green/10 px-3 py-2 text-sm text-deep-onyx text-center" role="status">
+          Complete sign up with {oauthProvider}
+        </p>
+      ) : null}
+
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <Input
@@ -100,12 +130,18 @@ export function SignupForm() {
 
         <button
           type="submit"
-          disabled={isPending}
+          disabled={isSubmitting}
           className="w-full rounded-md bg-spring-green px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-spring-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spring-green focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {isPending ? 'Creating account...' : 'Create account'}
+          {isSubmitting ? 'Creating account...' : 'Create account'}
         </button>
       </form>
+
+      {feedback ? (
+        <p className="rounded-md bg-spring-green/10 px-3 py-2 text-sm text-deep-onyx text-center" role="status">
+          {feedback}
+        </p>
+      ) : null}
 
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
@@ -122,7 +158,6 @@ export function SignupForm() {
         <OAuthButton
           provider="linkedin"
           onClick={() => initiateOAuth('linkedin')}
-          disabled
         />
       </div>
 

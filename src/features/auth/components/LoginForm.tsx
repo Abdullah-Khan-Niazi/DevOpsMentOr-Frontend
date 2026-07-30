@@ -14,7 +14,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 
 export function LoginForm() {
   const { mutate: doLogin, isPending, error, isError } = useLogin();
-  const { initiateOAuth } = useOAuthLogin();
+  const { initiateOAuth, feedback } = useOAuthLogin();
 
   const {
     register,
@@ -73,6 +73,12 @@ export function LoginForm() {
         </button>
       </form>
 
+      {feedback ? (
+        <p className="rounded-md bg-spring-green/10 px-3 py-2 text-sm text-deep-onyx text-center" role="status">
+          {feedback}
+        </p>
+      ) : null}
+
       <div className="relative">
         <div className="absolute inset-0 flex items-center">
           <div className="w-full border-t border-chalk-white-400" />
@@ -88,7 +94,6 @@ export function LoginForm() {
         <OAuthButton
           provider="linkedin"
           onClick={() => initiateOAuth('linkedin')}
-          disabled
         />
       </div>
 
