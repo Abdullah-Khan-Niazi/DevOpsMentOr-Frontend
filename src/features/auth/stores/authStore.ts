@@ -10,10 +10,10 @@ export const useAuthStore = create<AuthState>()(
       accessToken: null,
       isAuthenticated: false,
       setSession: (payload: LoginResponse) => {
-        localStorage.setItem(AUTH_TOKEN_KEY, payload.accessToken);
+        localStorage.setItem(AUTH_TOKEN_KEY, payload.data.tokens.accessToken);
         set({
-          user: payload.user,
-          accessToken: payload.accessToken,
+          user: payload.data.user,
+          accessToken: payload.data.tokens.accessToken,
           isAuthenticated: true,
         });
       },
