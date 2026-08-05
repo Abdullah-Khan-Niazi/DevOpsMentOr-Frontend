@@ -22,23 +22,20 @@
 }
 
 .site-footer__logo {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: var(--space-2);
+  text-decoration: none;
+  transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
-.site-footer__logo-mark {
-  font-size: 1.125rem;
-  color: var(--color-accent-500);
-  line-height: 1;
+.site-footer__logo:hover {
+  opacity: 0.8;
 }
 
-.site-footer__logo-text {
-  font-family: var(--font-body);
-  font-size: var(--text-body-m);
-  font-weight: 600;
-  color: var(--color-text-primary);
-  letter-spacing: var(--tracking-tight);
+.site-footer__logo:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
 }
 
 .site-footer__tagline {

@@ -1,0 +1,348 @@
+/* ═══ Auth pages — login/signup ═══
+   Reconstructed per contract UI/UX rules: design tokens only (§1), both
+   themes, honest copy (§2.4), depth planes + atmosphere gradient (§6),
+   §3.3 button spec, §5.6 input surfaces (bg-sunken in both themes),
+   focus-visible on every interactive element (§8). */
+
+.auth-page {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ─── Left context panel — void plane + atmosphere gradient ─────────────── */
+.auth-context {
+  display: none;
+  width: 50%;
+  flex-direction: column;
+  justify-content: center;
+  background-color: var(--color-bg-void);
+  background-image: var(--gradient-atmosphere);
+  padding: var(--space-16);
+}
+
+@media (min-width: 768px) {
+  .auth-context {
+    display: flex;
+  }
+}
+
+.auth-context__inner {
+  width: 100%;
+  max-width: 460px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.auth-context__statement {
+  margin-top: var(--space-16);
+}
+
+.auth-context__headline {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.auth-context__body {
+  margin: var(--space-6) 0 0;
+  font-size: var(--text-body-l);
+  color: var(--color-text-secondary);
+  max-width: 40ch;
+}
+
+/* Honest platform facts — real mechanisms, no fabricated numbers (§2.4) */
+.auth-facts {
+  list-style: none;
+  margin: var(--space-12) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.auth-facts__item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.auth-facts__tick {
+  color: var(--color-accent-500);
+  flex-shrink: 0;
+}
+
+/* ─── Right form panel — base plane, raised card ────────────────────────── */
+.auth-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  overflow-y: auto;
+  padding: var(--space-8) var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .auth-panel {
+    width: 50%;
+    padding: var(--space-12) var(--space-12);
+  }
+}
+
+.auth-panel__inner {
+  width: 100%;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.auth-title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.auth-sub {
+  margin: var(--space-3) 0 0;
+  font-size: var(--text-body-m);
+  color: var(--color-text-secondary);
+}
+
+/* §3.4 card: raised bg, 1px border-default, radius-md */
+.auth-card {
+  margin-top: var(--space-8);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-8) var(--space-6);
+}
+
+/* ─── Alerts ──────────────────────────────────────────────────────────────── */
+.auth-alert {
+  border: 1px solid var(--color-border-default);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 55%, transparent);
+  border-radius: var(--radius-xs);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-body-s);
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.auth-alert--error {
+  border-color: color-mix(in srgb, var(--color-error) 45%, var(--color-border-default));
+  background-color: color-mix(in srgb, var(--color-error) 8%, transparent);
+  color: var(--color-error);
+}
+
+/* ─── §3.3 Primary button (submit) ───────────────────────────────────────── */
+.auth-submit {
+  width: 100%;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-accent-500);
+  color: var(--color-text-on-accent);
+  border: none;
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 500;
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-instant) var(--ease-standard);
+}
+
+.auth-submit:hover:not(:disabled) {
+  background-color: var(--color-accent-400);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+.auth-submit:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.auth-submit:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.auth-submit:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* ─── §3.3 Secondary button (OAuth) ──────────────────────────────────────── */
+.auth-oauth {
+  width: 100%;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 500;
+  cursor: pointer;
+  outline: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-instant) var(--ease-standard);
+}
+
+.auth-oauth:hover:not(:disabled) {
+  border-color: var(--color-accent-500);
+  color: var(--color-accent-300);
+}
+
+.auth-oauth:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.auth-oauth:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.auth-oauth:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Plain glyph mark — not a badge/pill component (§2.2/§8) */
+.auth-oauth__mark {
+  font-family: var(--font-mono);
+  font-weight: 500;
+  line-height: 1;
+}
+
+/* ─── Divider ("or continue with") ───────────────────────────────────────── */
+.auth-divider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-divider::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background-color: var(--color-border-subtle);
+}
+
+.auth-divider__label {
+  position: relative;
+  padding: 0 var(--space-4);
+  background-color: var(--color-bg-raised);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Text links & tertiary actions ──────────────────────────────────────── */
+.auth-link-row {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-body-s);
+  color: var(--color-text-secondary);
+}
+
+.auth-link {
+  color: var(--color-accent-500);
+  font-weight: 500;
+  text-decoration: none;
+  text-underline-offset: 2px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.auth-link:hover {
+  text-decoration: underline;
+}
+
+.auth-link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.auth-forgot {
+  align-self: flex-end;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  color: var(--color-text-secondary);
+  text-underline-offset: 2px;
+  border-radius: 2px;
+  outline: none;
+}
+
+.auth-forgot:hover {
+  color: var(--color-text-primary);
+  text-decoration: underline;
+}
+
+.auth-forgot:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* ─── Centered status (OAuth callback) ───────────────────────────────────── */
+.auth-page--center {
+  align-items: center;
+  justify-content: center;
+}
+
+.auth-status {
+  margin: 0;
+  font-size: var(--text-body-m);
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Reduced motion ─────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .auth-submit,
+  .auth-oauth {
+    transition: none;
+  }
+
+  .auth-submit:active,
+  .auth-oauth:active {
+    transform: none;
+  }
+}

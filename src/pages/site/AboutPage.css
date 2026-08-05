@@ -1,0 +1,274 @@
+/* ═══════════════ About page (§5.4) ═══════════════ */
+
+.abt-page {
+  padding-top: var(--space-16);
+}
+
+/* ─── §5.4.1 Opening — editorial pull-quote ───────────────────────────────── */
+.abt-opening {
+  padding: var(--space-12) 0 var(--space-24);
+}
+
+.abt-opening__quote {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+  max-width: 65ch;
+}
+
+.abt-opening__body {
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+  margin: var(--space-6) 0 0;
+  max-width: 65ch;
+}
+
+/* ─── §5.4.2 Team — 3 full-width zig-zag rows ─────────────────────────────── */
+.abt-team {
+  padding: var(--space-16) 0;
+}
+
+.abt-team__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-12);
+}
+
+.abt-team__rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-16);
+}
+
+.abt-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-12);
+  align-items: center;
+}
+
+/* Zig-zag: flipped rows put the visual on the left, text on the right */
+.abt-row--flip .abt-row__visual {
+  order: -1;
+}
+
+/* ─── Zig-zag entrance (§6.4) ───────────────────────────────────────────────
+   Text slides in from its origin side (translateX ±24px), visual scales
+   0.9 → 1, both fade in, text leads visual by 100ms, --duration-slow,
+   --ease-decelerate. Driven by .is-visible from useScrollReveal. */
+.abt-row__text,
+.abt-row__visual {
+  opacity: 0;
+  animation: none;
+}
+
+.abt-row.is-visible .abt-row__text {
+  animation: abt-text-in-left var(--duration-slow) var(--ease-decelerate) forwards;
+}
+
+.abt-row.is-visible.abt-row--flip .abt-row__text {
+  animation-name: abt-text-in-right;
+}
+
+.abt-row.is-visible .abt-row__visual {
+  animation: abt-visual-in var(--duration-slow) var(--ease-decelerate) 100ms forwards;
+}
+
+@keyframes abt-text-in-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes abt-text-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes abt-visual-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─── Row text content ─────────────────────────────────────────────────────── */
+.abt-row__role {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-accent-500);
+  margin: 0;
+}
+
+.abt-row__name {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: var(--space-3) 0 0;
+}
+
+.abt-row__contribution {
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+  margin: var(--space-3) 0 0;
+  max-width: 52ch;
+}
+
+/* ─── §5.4 real photography, no Product Frame chrome ──────────────────────── */
+.abt-row__visual {
+  display: flex;
+  justify-content: center;
+  min-width: 0;
+}
+
+.abt-row__photo {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+  /* Desaturated 10–15% at rest → full color on hover (--duration-base) */
+  filter: saturate(0.87);
+  transition: filter var(--duration-base) var(--ease-decelerate);
+}
+
+.abt-row__visual:hover .abt-row__photo {
+  filter: saturate(1);
+}
+
+/* Monogram fallback tile — only when the LinkedIn photo cannot be fetched */
+.abt-row__monogram {
+  width: 100%;
+  max-width: 340px;
+  aspect-ratio: 1 / 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  color: var(--color-accent-500);
+  background-color: var(--color-bg-raised);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-default);
+}
+
+/* ─── §5.4.3 Institutional context strip — plain centered text, no card ──── */
+.abt-context {
+  padding: var(--space-16) 0;
+}
+
+.abt-context__text {
+  text-align: center;
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+  margin: 0;
+  max-width: 52ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* ─── §5.4.4 Closing — soft CTA ───────────────────────────────────────────── */
+.abt-cta {
+  padding-bottom: var(--space-24);
+}
+
+.abt-cta-inner {
+  display: flex;
+  justify-content: center;
+}
+
+.abt-cta-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ═══════════════ Responsive ═══════════════ */
+
+/* §7: zig-zag rows collapse to stacked (text above visual) below 768px */
+@media (max-width: 768px) {
+  .abt-page {
+    padding-top: var(--space-8);
+  }
+
+  .abt-opening {
+    padding: var(--space-8) 0 var(--space-16);
+  }
+
+  .abt-row {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .abt-row--flip .abt-row__visual {
+    order: 0;
+  }
+
+  /* Stacked: no sideways slide — rise in place instead */
+  .abt-row.is-visible .abt-row__text {
+    animation-name: abt-text-in-up;
+  }
+
+  .abt-row__photo,
+  .abt-row__monogram {
+    max-width: 280px;
+  }
+}
+
+@keyframes abt-text-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* §6.4: prefers-reduced-motion — disable all About entrance animations */
+@media (prefers-reduced-motion: reduce) {
+  .abt-row__text,
+  .abt-row__visual,
+  .abt-row.is-visible .abt-row__text,
+  .abt-row.is-visible .abt-row__visual {
+    opacity: 1;
+    animation: none;
+    transform: none;
+  }
+
+  .abt-row__photo {
+    transition: none;
+  }
+}

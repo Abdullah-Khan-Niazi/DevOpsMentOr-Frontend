@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { Navigate, Route, Routes } from 'react-router-dom';
+import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '@/features/auth';
 import { AppShell, LoadingState } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
@@ -13,10 +13,15 @@ const RolesPage = lazy(() => import('@/features/roles/pages/RolesPage'));
 const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
+const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
-const ContactPage = lazy(() => import('@/pages/site/ContactPage'));
-const ForInstitutionsPage = lazy(() => import('@/pages/site/ForInstitutionsPage'));
-const SecurityTrustPage = lazy(() => import('@/pages/site/SecurityTrustPage'));
+const CurriculumPage = lazy(() => import('@/pages/site/scaffolds/CurriculumPage'));
+const PricingPage = lazy(() => import('@/pages/site/scaffolds/PricingPage'));
+const AboutPage = lazy(() => import('@/pages/site/AboutPage'));
+const ContactPage = lazy(() => import('@/pages/site/scaffolds/ContactPage'));
+const ForInstitutionsPage = lazy(() => import('@/pages/site/scaffolds/ForInstitutionsPage'));
+const SecurityTrustPage = lazy(() => import('@/pages/site/scaffolds/SecurityTrustPage'));
+const NotFoundPage = lazy(() => import('@/pages/site/scaffolds/NotFoundPage'));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<LoadingState />}>{children}</Suspense>;
@@ -97,13 +102,44 @@ export function AppRoutes() {
         </Route>
       </Route>
 
-      <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+      <Route
+        path={ROUTES.HOME}
+        element={
+          <LazyPage>
+            <HomePage />
+          </LazyPage>
+        }
+      />
       {/* ─── Public site routes — one added per session ──────────────── */}
       <Route
         path={ROUTES.HOW_IT_WORKS}
         element={
           <LazyPage>
             <HowItWorksPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.CURRICULUM}
+        element={
+          <LazyPage>
+            <CurriculumPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.PRICING}
+        element={
+          <LazyPage>
+            <PricingPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.ABOUT}
+        element={
+          <LazyPage>
+            <AboutPage />
           </LazyPage>
         }
       />
@@ -131,7 +167,14 @@ export function AppRoutes() {
           </LazyPage>
         }
       />
-      <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+      <Route
+        path="*"
+        element={
+          <LazyPage>
+            <NotFoundPage />
+          </LazyPage>
+        }
+      />
     </Routes>
   );
 }

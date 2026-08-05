@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -29,14 +29,12 @@ export function SignupForm() {
   const { mutate: doSignup, isPending, error, isError } = useSignup();
   const { mutation: oauthMutation, initiateOAuth, feedback } = useOAuthSignup();
 
-  const [oauthProvider, setOAuthProvider] = useState<string | null>(null);
-
-  useEffect(() => {
-    const provider = sessionStorage.getItem('oauth_signup_provider');
-    if (provider) {
-      setOAuthProvider(provider);
-    }
-  }, []);
+  // Lazy initializer — reads the OAuth handoff marker once on mount (no
+  // setState-in-effect, avoids the cascading-render lint rule).
+  const [oauthProvider] = useState<string | null>(() => {
+    if (typeof window === 'undefined') return null;
+    return sessionStorage.getItem('oauth_signup_provider');
+  });
 
   const {
     register,
@@ -56,7 +54,13 @@ export function SignupForm() {
       sessionStorage.removeItem('oauth_signup_provider');
       sessionStorage.removeItem('oauth_signup_code');
       sessionStorage.removeItem('oauth_signup_redirect');
-      oauthMutation.mutate({ provider: provider as 'google' | 'github' | 'linkedin', code, redirectUri, username: values.username, fullName: values.fullName });
+      oauthMutation.mutate({
+        provider: provider as 'google' | 'github' | 'linkedin',
+        code,
+        redirectUri,
+        username: values.username,
+        fullName: values.fullName,
+      });
       return;
     }
 
@@ -69,7 +73,7 @@ export function SignupForm() {
   return (
     <div className="flex flex-col gap-6">
       {oauthProvider ? (
-        <p className="rounded-md bg-spring-green/10 px-3 py-2 text-sm text-deep-onyx text-center" role="status">
+        <p className="auth-alert" role="status">
           Complete sign up with {oauthProvider}
         </p>
       ) : null}
@@ -123,47 +127,35 @@ export function SignupForm() {
         </div>
 
         {isError ? (
-          <p className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+          <p className="auth-alert auth-alert--error" role="alert">
             {error.message}
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="w-full rounded-md bg-spring-green px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-spring-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spring-green focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isSubmitting ? 'Creating account...' : 'Create account'}
+        <button type="submit" disabled={isSubmitting} className="auth-submit">
+          {isSubmitting ? 'Creating account…' : 'Create account'}
         </button>
       </form>
 
       {feedback ? (
-        <p className="rounded-md bg-spring-green/10 px-3 py-2 text-sm text-deep-onyx text-center" role="status">
+        <p className="auth-alert" role="status">
           {feedback}
         </p>
       ) : null}
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-chalk-white-400" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-chalk-white px-2 text-deep-onyx-600">or sign up with</span>
-        </div>
+      <div className="auth-divider" aria-hidden="true">
+        <span className="auth-divider__label">or sign up with</span>
       </div>
 
       <div className="flex flex-col gap-3">
         <OAuthButton provider="google" onClick={() => initiateOAuth('google')} />
         <OAuthButton provider="github" onClick={() => initiateOAuth('github')} />
-        <OAuthButton
-          provider="linkedin"
-          onClick={() => initiateOAuth('linkedin')}
-        />
+        <OAuthButton provider="linkedin" onClick={() => initiateOAuth('linkedin')} />
       </div>
 
-      <p className="text-center text-xs text-deep-onyx-600">
+      <p className="auth-link-row">
         Already have an account?{' '}
-        <a href="/login" className="font-semibold text-spring-green-600 underline-offset-2 hover:underline">
+        <a href="/login" className="auth-link">
           Sign in
         </a>
       </p>

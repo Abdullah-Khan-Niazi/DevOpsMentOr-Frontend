@@ -4,7 +4,10 @@
 
 .site-root {
   min-height: 100vh;
-  overflow-x: hidden;
+  /* overflow-x: clip — prevents horizontal overflow without creating a
+     scroll container (overflow-x: hidden computes overflow-y to auto and
+     silently breaks position: sticky on pages like How It Works). */
+  overflow-x: clip;
   /* Hard rule §1.1: every surface uses --color-bg-* tokens — no light bg ever */
   background-color: var(--color-bg-void);
   color: var(--color-text-primary);
@@ -21,7 +24,40 @@
   inset: 0;
   pointer-events: none;
   z-index: var(--z-base);
+  overflow: hidden;
   background: var(--gradient-atmosphere);
+}
+
+/* Gentle wave — barely-there crests lap outward from the center to both
+   edges (right-to-left and left-to-right). Overlays the static base
+   gradient with the sober tint at low opacity; noticed only on close look. */
+.site-atmosphere::before,
+.site-atmosphere::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--gradient-atmosphere-sober);
+  transform-origin: 50% -10%;
+  animation: atmosphere-wave 13s ease-in-out infinite;
+}
+
+.site-atmosphere::after {
+  animation-delay: -6.5s;
+}
+
+@keyframes atmosphere-wave {
+  0% {
+    transform: scaleX(0.85) scaleY(1);
+    opacity: 0.3;
+  }
+  50% {
+    transform: scaleX(1.15) scaleY(1.04);
+    opacity: 0.55;
+  }
+  100% {
+    transform: scaleX(0.85) scaleY(1);
+    opacity: 0.3;
+  }
 }
 
 /* ─── Scroll Reveal Animation ─────────────────────────────────────────────── */
@@ -75,10 +111,11 @@
     stroke-dashoffset: 0 !important;
   }
 
-  /* Flow-line draw: skip to fully drawn state */
-  .flow-line-path {
-    transition: none !important;
-    stroke-dashoffset: 0 !important;
+  /* Freeze atmosphere wave — static base gradient remains */
+  .site-atmosphere::before,
+  .site-atmosphere::after {
+    animation: none !important;
+    opacity: 0 !important;
   }
 }
 

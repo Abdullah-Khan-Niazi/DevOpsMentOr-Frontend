@@ -20,8 +20,8 @@ export function SiteLayout({ children }: SiteLayoutProps) {
 
       <SiteHeader />
 
-      {/* Main content — padded below the 88px fixed header */}
-      <main style={{ paddingTop: '88px', position: 'relative', zIndex: 1 }}>{children}</main>
+      {/* Main content — padded below the 64px fixed header */}
+      <main style={{ paddingTop: '64px', position: 'relative', zIndex: 1 }}>{children}</main>
 
       <SiteFooter />
     </div>

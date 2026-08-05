@@ -3,6 +3,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { authService } from '@/features/auth/services';
+import '../styles/auth.css';
 
 function OAuthCallbackPage() {
   const { provider } = useParams<{ provider: string }>();
@@ -48,8 +49,8 @@ function OAuthCallbackPage() {
   }, [provider, searchParams, navigate, setSession]);
 
   return (
-    <div className="flex h-screen items-center justify-center bg-deep-onyx">
-      <p className="text-sm text-chalk-white/60">Completing sign in…</p>
+    <div className="auth-page auth-page--center">
+      <p className="auth-status">Completing sign in…</p>
     </div>
   );
 }

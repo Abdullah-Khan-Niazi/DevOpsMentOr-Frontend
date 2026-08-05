@@ -50,56 +50,41 @@ export function LoginForm() {
             error={errors.password?.message}
             {...register('password')}
           />
-          <button
-            type="button"
-            className="self-end text-xs text-deep-onyx-600 underline-offset-2 hover:underline"
-          >
+          <button type="button" className="auth-forgot">
             Forgot password?
           </button>
         </div>
 
         {isError ? (
-          <p className="rounded-md bg-danger/10 px-3 py-2 text-sm text-danger" role="alert">
+          <p className="auth-alert auth-alert--error" role="alert">
             {error.message}
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={isPending}
-          className="w-full rounded-md bg-spring-green px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-spring-green-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-spring-green focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {isPending ? 'Signing in...' : 'Sign in'}
+        <button type="submit" disabled={isPending} className="auth-submit">
+          {isPending ? 'Signing in…' : 'Sign in'}
         </button>
       </form>
 
       {feedback ? (
-        <p className="rounded-md bg-spring-green/10 px-3 py-2 text-sm text-deep-onyx text-center" role="status">
+        <p className="auth-alert" role="status">
           {feedback}
         </p>
       ) : null}
 
-      <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-chalk-white-400" />
-        </div>
-        <div className="relative flex justify-center text-xs">
-          <span className="bg-chalk-white px-2 text-deep-onyx-600">or continue with</span>
-        </div>
+      <div className="auth-divider" aria-hidden="true">
+        <span className="auth-divider__label">or continue with</span>
       </div>
 
       <div className="flex flex-col gap-3">
         <OAuthButton provider="google" onClick={() => initiateOAuth('google')} />
         <OAuthButton provider="github" onClick={() => initiateOAuth('github')} />
-        <OAuthButton
-          provider="linkedin"
-          onClick={() => initiateOAuth('linkedin')}
-        />
+        <OAuthButton provider="linkedin" onClick={() => initiateOAuth('linkedin')} />
       </div>
 
-      <p className="text-center text-xs text-deep-onyx-600">
+      <p className="auth-link-row">
         Do not have an account?{' '}
-        <a href="/signup" className="font-semibold text-spring-green-600 underline-offset-2 hover:underline">
+        <a href="/signup" className="auth-link">
           Sign up
         </a>
       </p>

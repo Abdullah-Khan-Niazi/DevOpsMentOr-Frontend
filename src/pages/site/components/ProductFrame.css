@@ -36,12 +36,29 @@
   background-color: var(--color-border-strong);
 }
 
-/* Label: right-aligned, mono, caption size, tertiary color */
+/* Label: right-aligned, mono, caption size, tertiary color (app-window style) */
 .pf-label {
   font-family: var(--font-mono);
   font-size: var(--text-caption);
   color: var(--color-text-tertiary);
   letter-spacing: var(--tracking-normal);
+  user-select: none;
+}
+
+/* URL bar: centered pill — the ONE sanctioned pill shape sitewide (§3.6) */
+.pf-urlbar {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  letter-spacing: var(--tracking-normal);
+  background-color: var(--color-bg-sunken);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-4);
+  max-width: 60%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
   user-select: none;
 }
 
@@ -55,4 +72,12 @@
   background-color: var(--color-bg-sunken);
   flex: 1;
   overflow: auto;
+}
+
+/* Browser-style frame: body reads as "the page being shown" — real webpage
+   typography (sans), not terminal mono. App-window frames stay mono (terminal). */
+.pf-frame--browser .pf-body {
+  background-color: var(--color-bg-void);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
 }
