@@ -1,0 +1,58 @@
+/* §3.6 ProductFrame — unified window chrome for all product mockups */
+
+.pf-frame {
+  background-color: var(--color-bg-sunken);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-default);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ─── Dot bar ─────────────────────────────────────────────────────────────── */
+.pf-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--color-border-subtle);
+  background-color: var(--color-bg-raised);
+  flex-shrink: 0;
+}
+
+.pf-dots {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.pf-dot {
+  display: block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  /* Desaturated 60% per §3.6 — not cartoonish */
+  background-color: var(--color-border-strong);
+}
+
+/* Label: right-aligned, mono, caption size, tertiary color */
+.pf-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  letter-spacing: var(--tracking-normal);
+  user-select: none;
+}
+
+/* ─── Frame body ──────────────────────────────────────────────────────────── */
+.pf-body {
+  padding: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-m);
+  color: var(--color-text-primary);
+  line-height: var(--leading-normal);
+  background-color: var(--color-bg-sunken);
+  flex: 1;
+  overflow: auto;
+}
