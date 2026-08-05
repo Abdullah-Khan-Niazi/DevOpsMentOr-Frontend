@@ -8,6 +8,12 @@ export const ROUTES = {
   ROLES: '/roles',
   REPORTS: '/reports',
   SETTINGS: '/settings',
+  // ─── Public site routes (public, no auth) ───────────────────────────────────
+  HOW_IT_WORKS: '/how-it-works',
+  // NOTE: Routes below are Dev C scope but not yet added to routes.tsx — added per session.
+  SECURITY_TRUST: '/security',
+  CONTACT: '/contact',
+  FOR_INSTITUTIONS: '/for-institutions',
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];

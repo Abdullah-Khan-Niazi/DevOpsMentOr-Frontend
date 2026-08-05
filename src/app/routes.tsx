@@ -12,6 +12,8 @@ const UsersPage = lazy(() => import('@/features/users/pages/UsersPage'));
 const RolesPage = lazy(() => import('@/features/roles/pages/RolesPage'));
 const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
+// ─── Public site pages (public, no auth) — add one per session ─────────────────
+const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<LoadingState />}>{children}</Suspense>;
@@ -93,6 +95,15 @@ export function AppRoutes() {
       </Route>
 
       <Route path={ROUTES.HOME} element={<Navigate to={ROUTES.DASHBOARD} replace />} />
+      {/* ─── Public site routes — one added per session ──────────────── */}
+      <Route
+        path={ROUTES.HOW_IT_WORKS}
+        element={
+          <LazyPage>
+            <HowItWorksPage />
+          </LazyPage>
+        }
+      />
       <Route path="*" element={<Navigate to={ROUTES.DASHBOARD} replace />} />
     </Routes>
   );

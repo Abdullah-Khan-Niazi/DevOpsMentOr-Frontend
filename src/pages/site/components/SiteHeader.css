@@ -1,0 +1,264 @@
+/* §3.1 SiteHeader — floating, compact, shrinking */
+
+/* ─── Base state (top of page) ───────────────────────────────────────────── */
+.site-header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: var(--z-sticky);
+  height: 88px;
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border-bottom: 1px solid transparent;
+  /* §3.1 transition spec */
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard),
+    height var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+/* ─── Scrolled state (>80px) ─────────────────────────────────────────────── */
+/* §2.2: Glassmorphism permitted ONLY here — the one sanctioned instance.      */
+.site-header--scrolled {
+  height: 64px;
+  background: rgba(16, 18, 21, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-bottom-color: var(--color-border-subtle);
+}
+
+/* ─── Hidden state (scroll-down past 600px) ──────────────────────────────── */
+.site-header--hidden {
+  transform: translateY(-100%);
+}
+
+/* ─── Inner layout ────────────────────────────────────────────────────────── */
+.site-header__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+  height: 100%;
+}
+
+/* ─── Logo ────────────────────────────────────────────────────────────────── */
+.site-header__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  text-decoration: none;
+  flex-shrink: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.site-header__logo:hover {
+  opacity: 0.8;
+}
+
+.site-header__logo-mark {
+  font-size: 1.25rem;
+  color: var(--color-accent-500);
+  line-height: 1;
+}
+
+.site-header__logo-text {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+/* Logo scales -15% when scrolled, per §3.1 */
+.site-header--scrolled .site-header__logo-text {
+  font-size: calc(var(--text-body-m) * 0.85);
+}
+
+/* ─── Desktop nav ─────────────────────────────────────────────────────────── */
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  gap: var(--space-6);
+  flex: 1;
+  justify-content: center;
+}
+
+.site-header__nav-item {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  transition: color var(--duration-fast) var(--ease-standard);
+  white-space: nowrap;
+}
+
+.site-header__nav-item:hover,
+.site-header__nav-item:focus-visible {
+  color: var(--color-text-primary);
+}
+
+.site-header__nav-item:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 4px;
+  border-radius: var(--radius-xs);
+}
+
+.site-header__caret {
+  font-size: 0.625rem;
+  opacity: 0.6;
+}
+
+/* ─── Platform Dropdown ───────────────────────────────────────────────────── */
+.site-header__dropdown-wrapper {
+  position: relative;
+}
+
+.site-header__dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-3));
+  left: 50%;
+  transform: translateX(-50%);
+  min-width: 280px;
+  background: var(--color-bg-overlay);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  padding: var(--space-2);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  z-index: var(--z-overlay);
+  animation: dropdown-appear var(--duration-fast) var(--ease-decelerate) forwards;
+}
+
+@keyframes dropdown-appear {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.site-header__dropdown-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.site-header__dropdown-item:hover,
+.site-header__dropdown-item:focus-visible {
+  background-color: var(--color-bg-raised);
+}
+
+.site-header__dropdown-item:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: -2px;
+}
+
+.site-header__dropdown-label {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+.site-header__dropdown-desc {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  /* Max 6 words per §3.1 */
+}
+
+/* ─── Auth actions ────────────────────────────────────────────────────────── */
+.site-header__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-shrink: 0;
+}
+
+.site-header__login {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.site-header__login:hover {
+  color: var(--color-text-primary);
+}
+
+.site-header__login:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 4px;
+  border-radius: var(--radius-xs);
+}
+
+.site-header__signup {
+  display: inline-flex;
+  align-items: center;
+  height: 36px;
+  padding: 0 var(--space-4);
+  background-color: var(--color-accent-500);
+  color: var(--color-text-on-accent);
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 600;
+  text-decoration: none;
+  border-radius: var(--radius-sm);
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.site-header__signup:hover {
+  background-color: var(--color-accent-400);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+.site-header__signup:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .site-header,
+  .site-header__logo,
+  .site-header__nav-item,
+  .site-header__login,
+  .site-header__signup {
+    transition: none;
+  }
+  .site-header__dropdown {
+    animation: none;
+  }
+}
+
+/* ─── Mobile (<768px) ─────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .site-header__nav,
+  .site-header__actions {
+    display: none;
+  }
+}

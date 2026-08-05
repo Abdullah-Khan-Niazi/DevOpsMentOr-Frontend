@@ -1,0 +1,185 @@
+/* §3.2 SiteFooter — Grounded Footer */
+
+.site-footer {
+  background-color: var(--color-bg-sunken);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+/* ─── Main grid ───────────────────────────────────────────────────────────── */
+.site-footer__inner {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: var(--space-16);
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-12);
+}
+
+/* ─── Brand block ─────────────────────────────────────────────────────────── */
+.site-footer__brand {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.site-footer__logo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.site-footer__logo-mark {
+  font-size: 1.125rem;
+  color: var(--color-accent-500);
+  line-height: 1;
+}
+
+.site-footer__logo-text {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+.site-footer__tagline {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+  line-height: var(--leading-normal);
+  margin: 0;
+  max-width: 24ch;
+}
+
+/* ─── Columns ─────────────────────────────────────────────────────────────── */
+.site-footer__columns {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-8);
+}
+
+.site-footer__col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.site-footer__col-heading {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 600;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.site-footer__col-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.site-footer__col-link {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.site-footer__col-link:hover {
+  color: var(--color-text-secondary);
+}
+
+.site-footer__col-link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ─── Bottom bar ──────────────────────────────────────────────────────────── */
+.site-footer__bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-8);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.site-footer__legal {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+.site-footer__legal-links {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.site-footer__legal-link {
+  font-family: var(--font-body);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.site-footer__legal-link:hover {
+  color: var(--color-text-secondary);
+}
+
+.site-footer__social {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.site-footer__social-link {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  letter-spacing: var(--tracking-wide);
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.site-footer__social-link:hover {
+  color: var(--color-accent-500);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .site-footer__inner {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+  .site-footer__columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .site-footer__columns {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .site-footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-footer__col-link,
+  .site-footer__legal-link,
+  .site-footer__social-link {
+    transition: none;
+  }
+}

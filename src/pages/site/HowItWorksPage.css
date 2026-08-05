@@ -1,0 +1,353 @@
+/* §5.3 HowItWorksPage styles — all values via design tokens */
+
+/* ─── §5.3.1 Header Section ──────────────────────────────────────────────── */
+.hiw-header-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.hiw-headline {
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+  max-width: 18ch;
+}
+
+/* ─── §5.3.2 Scrollytelling Section ──────────────────────────────────────── */
+.hiw-scrollytelling-section {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-24);
+}
+
+/* Default: single column (mobile) */
+.hiw-scrollytelling-wrapper {
+  display: block;
+}
+
+/* Desktop: two-column grid */
+.hiw-scrollytelling-wrapper--desktop {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-16);
+  align-items: start; /* lets left column scroll past sticky right */
+}
+
+/* ─── Step List (left column) ─────────────────────────────────────────────── */
+.hiw-step-list {
+  position: relative;
+}
+
+/* ─── Flow Line SVG ──────────────────────────────────────────────────────── */
+/* §6.4 "flow line" — self-drawing stroke-dashoffset line                     */
+.hiw-flow-line {
+  position: absolute;
+  left: -20px;
+  top: 0;
+  width: 2px;
+  height: 100%;
+  overflow: visible;
+}
+
+.hiw-flow-line-track {
+  stroke: var(--color-border-subtle);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.hiw-flow-line-fill {
+  stroke: var(--color-accent-500);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 100%;
+  transition: stroke-dashoffset var(--duration-scroll) var(--ease-standard);
+}
+
+/* ─── Individual Step ─────────────────────────────────────────────────────── */
+.hiw-step {
+  padding: var(--space-12) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+  transition: padding-left var(--duration-base) var(--ease-standard);
+}
+
+.hiw-step:last-child {
+  border-bottom: none;
+}
+
+/* Active state — desktop only (class applied conditionally in JSX) */
+.hiw-step--active {
+  padding-left: var(--space-4);
+  border-left: 2px solid var(--color-accent-500);
+}
+
+.hiw-step--active .hiw-step__heading {
+  color: var(--color-text-primary);
+}
+
+.hiw-step__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  margin: 0 0 var(--space-3);
+}
+
+.hiw-step__num {
+  font-variant-numeric: tabular-nums;
+}
+
+.hiw-step__heading {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-3);
+  transition: color var(--duration-base) var(--ease-standard);
+  max-width: 48ch;
+}
+
+.hiw-step__body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 52ch;
+}
+
+/* Mobile inline visual */
+.hiw-step__inline-visual {
+  margin-top: var(--space-6);
+}
+
+/* ─── Sticky Visual Panel (right column, desktop only) ────────────────────── */
+.hiw-visual-panel {
+  position: sticky;
+  /* top set inline in JSX — see KNOWN POLISH ITEM comment */
+  height: calc(100vh - 88px - var(--space-16));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hiw-visual-panel__inner {
+  position: relative;
+  width: 100%;
+  min-height: 200px;
+}
+
+/* Cross-fade layers */
+.hiw-visual-crossfade {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.hiw-visual-crossfade--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ─── Step SVG shared styles ──────────────────────────────────────────────── */
+.hiw-step-svg {
+  width: 100%;
+  max-width: 360px;
+  height: auto;
+}
+
+/* Dashed pulse animation — freezes with .node-pulse-anim in reduced-motion */
+@keyframes dashpulse {
+  from {
+    stroke-dashoffset: 0;
+  }
+  to {
+    stroke-dashoffset: -28;
+  } /* dasharray total = 14 units */
+}
+
+.node-pulse-anim {
+  animation: dashpulse 1.2s linear infinite;
+}
+
+/* ─── §5.3.3 Guardrails Section ──────────────────────────────────────────── */
+.hiw-guardrails-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-24);
+}
+
+.hiw-guardrails-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  color: var(--color-accent-500);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  margin: 0 0 var(--space-4);
+}
+
+.hiw-guardrails-headline {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-6);
+}
+
+.hiw-guardrails-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+  margin: 0 0 var(--space-12);
+}
+
+/* ProductFrame cross-fade container */
+.hiw-guardrails-frame-wrapper {
+  position: relative;
+  min-height: 220px;
+  max-width: 640px;
+  cursor: default;
+}
+
+/* Individual state layers — §6.4 cross-fade reveal */
+.hiw-guardrails-frame-state {
+  transition: opacity var(--duration-base) var(--ease-standard);
+  opacity: 1;
+}
+
+.hiw-guardrails-frame-state--hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.hiw-guardrails-hover-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  letter-spacing: var(--tracking-wide);
+  margin-top: var(--space-4);
+}
+
+/* ─── Terminal content styles ─────────────────────────────────────────────── */
+.hiw-terminal-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.hiw-terminal-line {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+.hiw-terminal-prompt {
+  color: var(--color-accent-500);
+  user-select: none;
+  margin-right: var(--space-2);
+}
+
+.hiw-terminal-error {
+  color: var(--color-error);
+}
+
+.hiw-terminal-spacer {
+  height: var(--space-2);
+}
+
+/* AI hint lines — the one earned accent-colored text in the terminal */
+.hiw-terminal-hint {
+  color: var(--color-accent-300);
+}
+
+.hiw-terminal-hint-code {
+  color: var(--color-accent-500);
+  font-weight: 500;
+}
+
+/* ─── §5.3.4 Closing CTA Section ─────────────────────────────────────────── */
+.hiw-cta-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-32);
+}
+
+.hiw-cta-inner {
+  display: flex;
+  justify-content: center;
+}
+
+.hiw-cta-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  /* Scrollytelling collapses to single column — sticky panel hidden */
+  .hiw-visual-panel {
+    display: none;
+  }
+
+  .hiw-step--active {
+    padding-left: 0;
+    border-left: none;
+  }
+
+  .hiw-step {
+    transition: none;
+  }
+}
+
+@media (max-width: 767px) {
+  .hiw-header-section {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .hiw-guardrails-frame-wrapper {
+    min-height: 280px;
+  }
+}
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .hiw-step,
+  .hiw-step__heading,
+  .hiw-visual-crossfade,
+  .hiw-guardrails-frame-state,
+  .hiw-flow-line-fill {
+    transition: none;
+  }
+
+  /* Freeze all visual crossfades — show first step's visual always */
+  .hiw-visual-crossfade {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .hiw-visual-crossfade:first-child {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  /* node-pulse-anim freeze handled by site.css .node-pulse-anim rule */
+}
