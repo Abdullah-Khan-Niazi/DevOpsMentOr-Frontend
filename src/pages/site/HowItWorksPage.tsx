@@ -251,8 +251,7 @@ function ConnectPlaceholderVisual() {
       role="img"
       aria-label="Browser terminal connection diagram — placeholder pending contract ruling"
     >
-      {/* NOTE: PLACEHOLDER — pending resolution of terminal-location contradiction.
-          See §5.3.2 vs §5.1.5/§8 in plan and comment in STEPS array above. */}
+      {/* NOTE: PLACEHOLDER — pending resolution of terminal-location contradiction. */}
       {/* Browser node */}
       <circle
         cx="56"

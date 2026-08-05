@@ -1,0 +1,81 @@
+/* §5.7.3 & §5.8.2 SiteSpineList styles — token-referenced exclusively */
+
+.site-spine-list {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-left: var(--space-8);
+}
+
+/* Continuous 2px vertical accent rule running the full height of the list */
+.site-spine-line {
+  position: absolute;
+  top: var(--space-4);
+  bottom: var(--space-4);
+  left: 0;
+  width: 2px;
+  background-color: rgba(23, 201, 100, 0.3); /* --color-accent-500 at 30% opacity per §5.8.2 */
+}
+
+/* Individual row with hairline separator */
+.site-spine-row {
+  position: relative;
+  padding-top: var(--space-6);
+  padding-bottom: var(--space-6);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.site-spine-row:last-child {
+  border-bottom: none;
+}
+
+/* Tick marker rendered directly on the 2px accent rule */
+.site-spine-tick {
+  position: absolute;
+  left: calc(var(--space-8) * -1 - 3px); /* Centered over 2px line at left:0 */
+  top: calc(var(--space-6) + 6px);
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-accent-500);
+}
+
+/* 2-Column Desktop Content: label left, description right */
+.site-spine-content {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  gap: var(--space-8);
+  align-items: baseline;
+}
+
+.site-spine-label {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+}
+
+.site-spine-description {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .site-spine-list {
+    padding-left: var(--space-6);
+  }
+
+  .site-spine-tick {
+    left: calc(var(--space-6) * -1 - 3px);
+  }
+
+  .site-spine-content {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+}
