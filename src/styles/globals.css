@@ -156,8 +156,8 @@ body {
   /* §1.7 Gradients */
   --gradient-atmosphere: radial-gradient(
     ellipse 1200px 600px at 50% -10%,
-    rgba(23, 201, 100, 0.26) 0%,
-    rgba(23, 201, 100, 0.1) 35%,
+    rgba(23, 201, 100, 0.42) 0%,
+    rgba(23, 201, 100, 0.18) 35%,
     transparent 70%
   );
   --gradient-atmosphere-sober: radial-gradient(
@@ -214,8 +214,8 @@ body {
 
   --gradient-atmosphere: radial-gradient(
     ellipse 1200px 600px at 50% -10%,
-    rgba(15, 156, 78, 0.2) 0%,
-    rgba(15, 156, 78, 0.09) 35%,
+    rgba(15, 156, 78, 0.36) 0%,
+    rgba(15, 156, 78, 0.16) 35%,
     transparent 70%
   );
   --gradient-atmosphere-sober: radial-gradient(
