@@ -28,6 +28,13 @@
   background: var(--gradient-atmosphere);
 }
 
+/* §5.8 Security & Trust — sober atmosphere variant (base + wave layers) */
+.site-atmosphere--sober,
+.site-atmosphere--sober::before,
+.site-atmosphere--sober::after {
+  background: var(--gradient-atmosphere-sober);
+}
+
 /* Gentle wave — barely-there crests lap outward from the center to both
    edges (right-to-left and left-to-right). Overlays the static base
    gradient with the sober tint at low opacity; noticed only on close look. */

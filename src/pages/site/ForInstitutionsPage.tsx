@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
+import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteButton } from './components/SiteButton';
 import { SiteSpineList, type SiteSpineItem } from './components/SiteSpineList';
@@ -21,29 +21,6 @@ const OPERATIONAL_PILLARS: SiteSpineItem[] = [
     description: 'Shared module repository with institution-specific assignment tracking',
   },
 ];
-
-// ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add('is-visible');
-          observer.unobserve(el);
-        }
-      },
-      { threshold, rootMargin: '-8% 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return ref;
-}
 
 // ─── Bespoke Multi-Tenancy Connected SVG Visual (§5.7.2) ─────────────────────
 // Shows 3 top namespace boxes converging via thin stroke lines into 1 shared cluster box.
@@ -226,7 +203,7 @@ export default function ForInstitutionsPage() {
                 className="inst-cta-link"
                 aria-label="Discuss institutional access — opens contact form pre-filled for institutions"
               >
-                <SiteButton variant="primary" withArrow size="lg">
+                <SiteButton variant="primary" withArrow size="md">
                   Discuss institutional access
                 </SiteButton>
               </Link>

@@ -14,7 +14,7 @@
   bottom: var(--space-4);
   left: 0;
   width: 2px;
-  background-color: rgba(23, 201, 100, 0.3); /* --color-accent-500 at 30% opacity per §5.8.2 */
+  background-color: color-mix(in srgb, var(--color-accent-500) 30%, transparent); /* §5.8.2 spine at 30% accent, themes via token */
 }
 
 /* Individual row with hairline separator */

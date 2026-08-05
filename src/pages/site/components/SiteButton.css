@@ -6,7 +6,7 @@
   justify-content: center;
   gap: var(--space-2);
   border: none;
-  border-radius: var(--radius-xs); /* §1.4: boxy button corners (4px) */
+  border-radius: var(--radius-sm); /* §3.3: 6px, never pill */
   font-family: var(--font-body);
   font-weight: 500;
   letter-spacing: var(--tracking-normal);
@@ -32,21 +32,21 @@
   transform: scale(0.98);
 }
 
-/* Sizes: sm=32px / md=40px / lg=48px */
+/* Sizes: sm=36px / md=44px (default) / lg=52px (hero only) per §3.3 */
 .site-btn--sm {
-  height: 32px;
+  height: 36px;
   padding: 0 var(--space-4);
   font-size: var(--text-body-s);
 }
 
 .site-btn--md {
-  height: 40px;
+  height: 44px;
   padding: 0 var(--space-6);
   font-size: var(--text-body-m);
 }
 
 .site-btn--lg {
-  height: 48px;
+  height: 52px;
   padding: 0 var(--space-8);
   font-size: var(--text-body-l);
 }
@@ -72,9 +72,11 @@
   border: 1px solid var(--color-border-strong);
 }
 
+/* §3.3: border brightens to --color-text-secondary, background fills to
+   --color-bg-raised at 60% opacity */
 .site-btn--secondary:hover:not(:disabled) {
-  border-color: var(--color-accent-500);
-  color: var(--color-accent-300);
+  border-color: var(--color-text-secondary);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
 }
 
 /* Ghost */
@@ -88,20 +90,20 @@
   color: var(--color-text-primary);
 }
 
-/* Disabled state */
+/* Disabled state — §3.3: opacity 0.4, no hover transform */
 .site-btn:disabled {
-  opacity: 0.45;
+  opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Arrow glyph */
+/* Arrow glyph — §3.3: shifts translateX(2px) on hover */
 .site-btn__arrow {
   display: inline-block;
   transition: transform var(--duration-fast) var(--ease-standard);
 }
 
 .site-btn:hover:not(:disabled) .site-btn__arrow {
-  transform: translateX(3px);
+  transform: translateX(2px);
 }
 
 @media (prefers-reduced-motion: reduce) {

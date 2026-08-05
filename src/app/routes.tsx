@@ -18,9 +18,9 @@ const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
 const CurriculumPage = lazy(() => import('@/pages/site/scaffolds/CurriculumPage'));
 const PricingPage = lazy(() => import('@/pages/site/scaffolds/PricingPage'));
 const AboutPage = lazy(() => import('@/pages/site/AboutPage'));
-const ContactPage = lazy(() => import('@/pages/site/scaffolds/ContactPage'));
-const ForInstitutionsPage = lazy(() => import('@/pages/site/scaffolds/ForInstitutionsPage'));
-const SecurityTrustPage = lazy(() => import('@/pages/site/scaffolds/SecurityTrustPage'));
+const ContactPage = lazy(() => import('@/pages/site/ContactPage'));
+const ForInstitutionsPage = lazy(() => import('@/pages/site/ForInstitutionsPage'));
+const SecurityTrustPage = lazy(() => import('@/pages/site/SecurityTrustPage'));
 const NotFoundPage = lazy(() => import('@/pages/site/scaffolds/NotFoundPage'));
 
 function LazyPage({ children }: { children: ReactNode }) {

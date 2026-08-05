@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMediaQuery, useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteButton } from './components/SiteButton';
 import { ProductFrame } from './components/ProductFrame';
@@ -43,48 +44,6 @@ function useScrollSpy(stepRefs: React.RefObject<HTMLElement | null>[]): number {
   }, []);
 
   return activeIndex;
-}
-
-// ─── useMediaQuery ────────────────────────────────────────────────────────────
-// Desktop-first default (true) — SSR-safe.
-function useMediaQuery(query: string): boolean {
-  const [matches, setMatches] = useState(() => {
-    if (typeof window === 'undefined') return true;
-    return window.matchMedia(query).matches;
-  });
-
-  useEffect(() => {
-    const mql = window.matchMedia(query);
-    const handler = (e: MediaQueryListEvent) => setMatches(e.matches);
-    mql.addEventListener('change', handler);
-    return () => mql.removeEventListener('change', handler);
-  }, [query]);
-
-  return matches;
-}
-
-// ─── useScrollReveal ─────────────────────────────────────────────────────────
-// §6.2: IntersectionObserver reveal — fires once, does not replay.
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add('is-visible');
-          observer.unobserve(el);
-        }
-      },
-      { threshold, rootMargin: '-8% 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return ref;
 }
 
 // ─── Step data ────────────────────────────────────────────────────────────────
