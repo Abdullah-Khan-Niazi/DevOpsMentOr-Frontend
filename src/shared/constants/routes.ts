@@ -10,7 +10,9 @@ export const ROUTES = {
   SETTINGS: '/settings',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
-  // NOTE: Routes below are Dev C scope but not yet added to routes.tsx — added per session.
+  CURRICULUM: '/curriculum',
+  PRICING: '/pricing',
+  ABOUT: '/about',
   SECURITY_TRUST: '/security',
   CONTACT: '/contact',
   FOR_INSTITUTIONS: '/for-institutions',

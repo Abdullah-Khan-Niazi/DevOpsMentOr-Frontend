@@ -1,0 +1,1356 @@
+/* §5.1 HomePage styles — all values via design tokens.                    */
+/* Layout dimensions not covered by the spacing scale are contract-literal  */
+/* (marked with § refs); every color/font/motion value is a token.          */
+
+/* ═══════════════ Section 2: Hero — Dominant Product Canvas ═══════════════ */
+
+.hp-hero {
+  position: relative;
+  overflow: clip;
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-24);
+}
+
+/* Atmosphere — themed gradient, parallax target (0.4×). Entrance fade first
+   (720ms), then a slow 12s breathing pulse (opacity only — the parallax hook
+   owns transform on this element). */
+.hp-hero__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--gradient-atmosphere);
+  animation:
+    hp-atmo-in var(--duration-slower) var(--ease-decelerate) both,
+    hp-breathe 12s ease-in-out var(--duration-slower) infinite;
+}
+
+.hp-hero__text {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.hp-hero__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent-500);
+  margin: 0 0 var(--space-6);
+  animation: hp-rise var(--duration-base) var(--ease-decelerate) 100ms both;
+}
+
+.hp-hero__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-hero);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+  animation: hp-rise var(--duration-base) var(--ease-decelerate) 180ms both;
+}
+
+.hp-hero__sub {
+  font-size: var(--text-body-l);
+  color: var(--color-text-secondary);
+  margin: var(--space-6) auto 0;
+  max-width: 56ch;
+  animation: hp-rise var(--duration-base) var(--ease-decelerate) 260ms both;
+}
+
+.hp-hero__ctas {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+  animation: hp-rise var(--duration-base) var(--ease-decelerate) 340ms both;
+}
+
+.hp-hero__cta-link {
+  text-decoration: none;
+}
+
+/* Frame canvas — breaks --container-content per §5.1.1/§3.6: 92% of
+   --container-max, wider than the text above it. */
+.hp-hero__frame-wrap {
+  position: relative;
+  width: 100%;
+  max-width: calc(var(--container-max) * 0.92);
+  margin: var(--space-16) auto 0;
+  padding-inline: var(--gutter);
+}
+
+/* Entrance: scale + fade + translateY (420ms, §5.1.1). Loop begins after. */
+.hp-hero__frame-enter {
+  position: relative;
+  z-index: 1;
+  animation: hp-frame-in var(--duration-slow) var(--ease-decelerate) 420ms both;
+}
+
+.hp-hero__frame-enter .pf-frame {
+  position: relative;
+  z-index: 1;
+}
+
+/* Depth stack §5.1.1: --shadow-accent-glow at 50% frame width, centered,
+   offset down 24px beneath the frame. */
+.hp-hero__glow {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: calc(-1 * var(--space-6));
+  width: 50%;
+  height: 128px;
+  background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* Floating context capsule — overlaps the frame's bottom-right ~20px (§5.1.1).
+   Card, not pill: --radius-md, bordered, single live-updating line. */
+.hp-hero__capsule {
+  position: absolute;
+  right: -20px; /* §5.1.1 ~20px overlap */
+  bottom: -20px;
+  z-index: var(--z-raised);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: var(--space-3) var(--space-4);
+  font-size: var(--text-body-s);
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.hp-hero__capsule-label {
+  color: var(--color-text-tertiary);
+}
+
+/* ═══════════════ Section 3: Trust Bar ═══════════════ */
+
+/* Quietest section on the page (§6.6) — no motion, no decoration. */
+.hp-trust {
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: var(--space-12) 0; /* §5.1.2: --space-12, never enlarged */
+}
+
+.hp-trust__line {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+}
+
+.hp-trust__tech {
+  color: var(--color-text-secondary);
+}
+
+/* ═══════════════ Dashboard building blocks (hero + showcase) ═══════════════ */
+/* Rendered inside browser-style frames: reads as a real product dashboard,
+   not a terminal — body typography, structured panels, button-like links. */
+
+.hp-dash {
+  display: flex;
+  align-items: stretch;
+  gap: var(--space-6);
+  min-width: 0;
+}
+
+.hp-dash__main {
+  flex: 1;
+  min-width: 0;
+}
+
+.hp-dash__header {
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.hp-dash__title-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.hp-dash__module {
+  font-family: var(--font-body);
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.hp-dash__pct {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Progress bar: fill transitions via width, never an instant jump (§6.5) */
+.hp-dash__bar {
+  height: 6px;
+  margin-top: var(--space-3);
+  background-color: var(--color-bg-sunken);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+
+.hp-dash__bar-fill {
+  display: block;
+  height: 100%;
+  width: 73%; /* module 09 progress — contract mock value */
+  background-color: var(--color-accent-500);
+  border-radius: var(--radius-xs);
+  transition: width var(--duration-slow) var(--ease-decelerate);
+}
+
+.hp-dash__rows {
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-dash-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  column-gap: var(--space-4);
+  align-items: baseline;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.hp-dash-row:last-child {
+  border-bottom: none;
+}
+
+.hp-dash-row__name {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.hp-dash-row--queued .hp-dash-row__name {
+  color: var(--color-text-tertiary);
+  font-weight: 400;
+}
+
+.hp-dash-row__status {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  text-transform: lowercase;
+  font-variant-numeric: tabular-nums;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.hp-dash-row--running .hp-dash-row__status {
+  color: var(--color-accent-500);
+}
+
+.hp-dash-row--complete .hp-dash-row__status {
+  color: var(--color-text-secondary);
+}
+
+.hp-dash-row--queued .hp-dash-row__status {
+  color: var(--color-text-tertiary);
+}
+
+.hp-dash-row__sub {
+  grid-column: 1 / -1;
+  margin-top: var(--space-1);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+}
+
+/* Accent underline sweep — 600ms, fires on the completed row only */
+.hp-dash-row__sweep {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 2px;
+  background-color: var(--color-accent-500);
+  transform-origin: left;
+  animation: hp-sweep 600ms var(--ease-decelerate) forwards; /* §5.1.1: 600ms */
+}
+
+/* Cross-fade of the next queued lab becoming running — never a hard cut */
+.hp-dash-row--entering {
+  animation: hp-crossfade 400ms var(--ease-standard) both; /* §5.1.1: 400ms */
+}
+
+.hp-dash__footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  margin-top: var(--space-4);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.hp-dash__rate {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+}
+
+/* "Continue Module 09" — button-like link, the dashboard's primary action */
+.hp-dash__continue {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+}
+
+.hp-dash__continue:hover {
+  border-color: var(--color-accent-500);
+  color: var(--color-accent-300);
+}
+
+.hp-dash__continue:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* Module-progress rail — a sidebar panel: module numbers 01–15, current one
+   highlighted */
+.hp-rail {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+}
+
+.hp-rail__item {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.4;
+}
+
+.hp-rail__item--current {
+  color: var(--color-accent-500);
+  font-weight: 500;
+}
+
+/* ═══════════════ Section 4: Product Showcase ═══════════════ */
+
+.hp-showcase {
+  padding: var(--space-24) 0 var(--space-32);
+}
+
+.hp-showcase__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.hp-showcase__sub {
+  font-size: var(--text-body-l);
+  color: var(--color-text-secondary);
+  margin: var(--space-3) 0 0;
+  max-width: 60ch;
+}
+
+/* ─── Tabs — mono, tracked; active underline SLIDES between positions ─────── */
+.hp-tabs {
+  position: relative;
+  display: flex;
+  margin-top: var(--space-8);
+  border-bottom: 1px solid var(--color-border-subtle);
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.hp-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.hp-tabs__item {
+  flex: 1 0 auto;
+  background: none;
+  border: none;
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.hp-tabs__item:hover {
+  color: var(--color-text-secondary);
+}
+
+.hp-tabs__item--active {
+  color: var(--color-text-primary);
+}
+
+.hp-tabs__item:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: -2px;
+}
+
+.hp-tabs__underline {
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 33.3334%;
+  height: 2px;
+  background-color: var(--color-accent-500);
+  transition: transform var(--duration-base) var(--ease-standard);
+}
+
+/* ─── Panes — grid-stacked cross-fade; container height = tallest pane,
+       so switching never jumps layout (§5.1.3 fixed-height requirement) ──── */
+.hp-showcase__panes {
+  display: grid;
+}
+
+.hp-showcase__pane {
+  grid-area: 1 / 1;
+  min-width: 0;
+  overflow: auto;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.hp-showcase__pane--active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.hp-showcase__frame-wrap {
+  width: 100%;
+  max-width: var(--container-max);
+  margin: var(--space-12) auto 0;
+  padding-inline: var(--gutter);
+}
+
+/* ─── Terminal pane (canonical location: showcase + FM1 + HIW callout) ────── */
+.hp-terminal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.hp-terminal__line {
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.hp-terminal__prompt {
+  color: var(--color-accent-500);
+}
+
+.hp-terminal__output {
+  color: var(--color-text-tertiary);
+}
+
+.hp-terminal__pass {
+  color: var(--color-success);
+}
+
+.hp-terminal__hint-line {
+  margin-top: var(--space-2);
+}
+
+.hp-terminal__hint {
+  color: var(--color-warning);
+  max-width: 72ch;
+}
+
+/* ─── Instructor Analytics pane — dashboard widget card with real SVG bars,
+       bars ease into position once on tab-activate, then hold (§5.1.3) ────── */
+.hp-analytics {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  height: 100%;
+  justify-content: center;
+  background-color: var(--color-bg-base);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-8) var(--space-6);
+}
+
+.hp-analytics__chart {
+  display: block;
+  width: 100%;
+  max-width: 440px;
+  height: auto;
+  margin-inline: auto;
+}
+
+.hp-analytics__baseline {
+  stroke: var(--color-border-strong);
+  stroke-width: 1;
+}
+
+/* Bars: ease into position once on tab-activate, then hold still (§5.1.3) */
+.hp-analytics__bar {
+  fill: var(--color-accent-500);
+  opacity: 0.9;
+  transform-box: fill-box;
+  transform-origin: bottom;
+  transform: scaleY(0);
+  transition: transform var(--duration-slow) var(--ease-decelerate);
+}
+
+.hp-analytics__bar--active {
+  transform: scaleY(1);
+}
+
+.hp-analytics__label {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  fill: var(--color-text-tertiary);
+  text-anchor: middle;
+}
+
+.hp-analytics__pct {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  fill: var(--color-text-secondary);
+  text-anchor: middle;
+}
+
+.hp-analytics__error {
+  margin: 0;
+  text-align: center;
+  font-size: var(--text-body-s);
+  color: var(--color-text-secondary);
+}
+
+.hp-analytics__error-code {
+  font-family: var(--font-mono);
+  color: var(--color-text-primary);
+}
+
+/* ═══════════════ Sections 5–6: Feature Modules (zig-zag) ═══════════════ */
+
+.hp-fm {
+  padding: var(--space-24) 0;
+}
+
+.hp-fm__grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-16);
+  align-items: center;
+}
+
+.hp-fm__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.hp-fm__body {
+  font-size: var(--text-body-l);
+  color: var(--color-text-secondary);
+  margin: var(--space-4) 0 0;
+  max-width: 52ch;
+}
+
+.hp-fm__visual {
+  min-width: 0;
+}
+
+/* ─── Module cards (Curriculum styling — reused in FM2 + teaser) ──────────── */
+.hp-module-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+/* FM2 visual: cards + nav arrow side by side, arrow vertically centered */
+.hp-fm__grid-wrap {
+  display: flex;
+  align-items: center;
+  gap: var(--space-8);
+}
+
+.hp-fm__grid-wrap .hp-module-grid {
+  flex: 1;
+  min-width: 0;
+}
+
+/* Curriculum nav arrow — boxy square, accent-bordered, points right */
+.hp-fm__nav-arrow {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--color-accent-500);
+  border-radius: var(--radius-xs);
+  color: var(--color-accent-500);
+  font-size: var(--text-heading-l);
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    background-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.hp-fm__nav-arrow:hover {
+  background-color: var(--color-accent-950);
+  transform: translateX(3px);
+}
+
+.hp-fm__nav-arrow:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* Curriculum/Product cards: crosshair cursor — the one custom-cursor
+   exception sitewide (§6.5). Interactive-card hover: border brightens +
+   translateY(-2px). */
+.hp-module-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  cursor: crosshair;
+  transition:
+    border-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.hp-module-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.hp-module-card__num {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-module-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.hp-module-card__focus {
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* ═══════════════ Section 7: Stat Strip ═══════════════ */
+
+/* Quiet numeric band — reveals once, never counts up (§5.1.6) */
+.hp-stats {
+  border-top: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--color-border-subtle);
+  padding: var(--space-16) 0;
+}
+
+.hp-stats__row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.hp-stats__item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: var(--space-6);
+}
+
+.hp-stats__item--divided {
+  border-left: 1px solid var(--color-border-subtle);
+}
+
+.hp-stats__value {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.hp-stats__label {
+  margin-top: var(--space-2);
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+}
+
+/* ═══════════════ Section 8: Services Bento Grid ═══════════════ */
+
+.hp-bento {
+  padding: var(--space-24) 0 var(--space-32);
+}
+
+.hp-bento__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-12);
+}
+
+/* 12-col mosaic, v3 §5.1.4 structure: Container Labs is the large 2×1 tile
+   (2/3 width, two rows deep — the Dockerfile fragment needs the depth),
+   AI Mentor + Automated Assessment stack beside it, and the last three tiles
+   (Multi-Tenancy / Instructor Analytics / Institution & Admin) fill the row
+   beneath. Every cell filled, equal 1/3 steps for the small tiles. */
+.hp-bento__grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: var(--space-4);
+}
+
+.hp-bento__tile {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  grid-column: span 4;
+  padding: var(--space-6);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.hp-bento__tile:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.hp-bento__tile--large {
+  grid-column: span 8;
+  grid-row: span 2;
+  padding: var(--space-8);
+}
+
+.hp-bento__tile-title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.hp-bento__tile-body {
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 40ch;
+}
+
+/* Dockerfile fragment — bleeding off the large tile's edge (v3 §5.1.4) */
+.hp-bento__code {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  margin-top: auto;
+  padding-top: var(--space-6);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  line-height: var(--leading-normal);
+}
+
+.hp-bento__code-kw {
+  color: var(--color-accent-400);
+}
+
+.hp-bento__code-line {
+  color: var(--color-text-secondary);
+}
+
+/* ═══════════════ Section 9: Curriculum Teaser ═══════════════ */
+
+.hp-teaser {
+  padding: var(--space-24) 0;
+}
+
+.hp-teaser__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.hp-teaser__sub {
+  font-size: var(--text-body-l);
+  color: var(--color-text-secondary);
+  margin: var(--space-3) 0 0;
+  max-width: 60ch;
+}
+
+/* Responsive grid — never scrolls: as many module cards as fit per screen,
+   the accent "View all 15 modules" card closes the row (§5.1.8). */
+.hp-teaser__row {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-4);
+  margin-top: var(--space-12);
+}
+
+/* Accent-bordered "View all 15 modules" card — closes the row */
+.hp-teaser__all {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-6);
+  border: 1px solid var(--color-accent-500);
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  background-color: transparent;
+  transition:
+    background-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.hp-teaser__all:hover {
+  background-color: var(--color-accent-950);
+  transform: translateY(-2px);
+}
+
+.hp-teaser__all:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.hp-teaser__all-label {
+  font-size: var(--text-body-s);
+  color: var(--color-text-primary);
+  text-align: center;
+}
+
+.hp-teaser__all-arrow {
+  display: block;
+  margin-top: var(--space-2);
+  font-size: var(--text-body-l);
+  color: var(--color-accent-500);
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.hp-teaser__all:hover .hp-teaser__all-arrow {
+  transform: translateX(6px);
+}
+
+/* ═══════════════ Section 10: How It Works (compressed) ═══════════════ */
+
+.hp-hiw {
+  padding: var(--space-24) 0 var(--space-32);
+}
+
+/* Flow line — draws left-to-right on scroll-into-view (§5.1.9) */
+.hp-hiw__flow-wrap {
+  margin-bottom: var(--space-12);
+}
+
+.hp-hiw__flow {
+  display: block;
+  width: 100%;
+  height: 2px;
+}
+
+.hp-hiw__flow-track {
+  stroke: var(--color-border-subtle);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.hp-hiw__flow-line {
+  stroke: var(--color-accent-500);
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  transition: stroke-dashoffset var(--duration-scroll) var(--ease-standard);
+}
+
+.site-reveal.is-visible .hp-hiw__flow-line {
+  stroke-dashoffset: 0;
+}
+
+.hp-hiw__steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-8);
+}
+
+.hp-hiw__num {
+  display: block;
+  margin-bottom: var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.hp-hiw__title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-3);
+}
+
+.hp-hiw__body {
+  font-size: var(--text-body-m);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 36ch;
+}
+
+.hp-hiw__link {
+  margin-top: var(--space-12);
+}
+
+.hp-hiw__ghost-link {
+  position: relative;
+  font-size: var(--text-body-m);
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+.hp-hiw__ghost-link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background-color: var(--color-text-link);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.hp-hiw__ghost-link:hover::after {
+  transform: scaleX(1);
+}
+
+.hp-hiw__ghost-link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* ═══════════════ Section 11: Mechanism block ═══════════════ */
+
+.hp-mech {
+  padding: var(--space-24) 0;
+}
+
+.hp-mech__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-12);
+}
+
+.hp-mech__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-12);
+}
+
+.hp-mech__item-title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-3);
+}
+
+.hp-mech__item-body {
+  font-size: var(--text-body-m);
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 40ch;
+}
+
+/* ═══════════════ Section 12: For Institutions teaser ═══════════════ */
+
+.hp-inst {
+  padding: var(--space-24) 0 var(--space-32);
+}
+
+.hp-inst__inner {
+  max-width: 60ch;
+}
+
+.hp-inst__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.hp-inst__body {
+  font-size: var(--text-body-l);
+  color: var(--color-text-secondary);
+  margin: var(--space-4) 0 0;
+}
+
+.hp-inst__link {
+  position: relative;
+  display: inline-block;
+  margin-top: var(--space-6);
+  font-size: var(--text-body-m);
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+
+.hp-inst__link::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background-color: var(--color-text-link);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.hp-inst__link:hover::after {
+  transform: scaleX(1);
+}
+
+.hp-inst__link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* ═══════════════ Section 13: Final CTA band ═══════════════ */
+
+/* Atmosphere reintroduced at full opacity — the page's last depth moment (§5.1.12) */
+.hp-final {
+  position: relative;
+  overflow: clip;
+  padding: var(--space-32) 0 var(--space-48);
+}
+
+.hp-final__atmosphere {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: var(--gradient-atmosphere);
+}
+
+.hp-final__inner {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+}
+
+.hp-final__title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0 auto var(--space-8);
+  max-width: 24ch;
+}
+
+.hp-final__cta-link {
+  display: inline-flex;
+  text-decoration: none;
+}
+
+/* ═══════════════ Keyframes ═══════════════ */
+
+/* §5.1.1 page-load reveal sequence — delays are contract-literal */
+@keyframes hp-rise {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hp-frame-in {
+  from {
+    opacity: 0;
+    transform: translateY(24px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes hp-atmo-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Slow breathing pulse — homepage atmosphere only, opacity-only so it never
+   fights the parallax hook's inline transform. */
+@keyframes hp-breathe {
+  0%,
+  100% {
+    opacity: 0.85;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes hp-sweep {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes hp-crossfade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ═══════════════ Responsive ═══════════════ */
+
+/* §7: zig-zag rows stack (text above visual) below 768px — flip modifiers
+   only apply on desktop */
+@media (max-width: 1024px) {
+  .hp-hero__frame-wrap {
+    max-width: var(--container-max);
+  }
+}
+
+@media (max-width: 768px) {
+  .hp-hero {
+    padding-top: var(--space-12);
+  }
+
+  .hp-hero__capsule {
+    right: 0;
+    bottom: calc(-1 * var(--space-3));
+    font-size: var(--text-caption);
+  }
+
+  .hp-hero__frame-wrap {
+    margin-top: var(--space-12);
+  }
+
+  /* Rail becomes a quiet horizontal strip under the header on small screens */
+  .hp-rail {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: var(--space-2) var(--space-3);
+    padding: 0;
+    background: none;
+    border: none;
+  }
+
+  .hp-fm__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+
+  .hp-fm__grid--flip .hp-fm__text,
+  .hp-fm__grid--flip .hp-fm__visual {
+    order: 0;
+  }
+
+  .hp-hiw__steps,
+  .hp-mech__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  /* Teaser: 2 modules per row + nav card */
+  .hp-teaser__row {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* §7: bento single-column, large tile keeps weight via height */
+  .hp-bento__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hp-bento__tile,
+  .hp-bento__tile--large {
+    grid-column: span 1;
+    grid-row: auto;
+  }
+
+  .hp-bento__tile--large {
+    padding: var(--space-6);
+  }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+  /* Teaser: 3 modules per row + nav card closes the second row */
+  .hp-teaser__row {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .hp-hero__ctas {
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .hp-hero__cta-link {
+    width: 100%;
+  }
+
+  .hp-hero__cta-link .site-btn {
+    width: 100%;
+  }
+
+  .hp-tabs__item {
+    font-size: var(--text-caption);
+    letter-spacing: var(--tracking-normal);
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .hp-stats__item {
+    padding-inline: var(--space-3);
+  }
+
+  .hp-module-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hp-fm__grid-wrap {
+    gap: var(--space-4);
+  }
+
+  .hp-teaser__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ═══════════════ Reduced Motion (§6.4) ═══════════════ */
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-hero__atmosphere {
+    animation: none;
+  }
+
+  .hp-hero__eyebrow,
+  .hp-hero__title,
+  .hp-hero__sub,
+  .hp-hero__ctas,
+  .hp-hero__frame-enter {
+    animation: none;
+    opacity: 1;
+  }
+
+  .hp-dash-row__sweep,
+  .hp-dash-row--entering {
+    animation: none;
+  }
+
+  .hp-dash__bar-fill {
+    transition: none;
+  }
+
+  .hp-analytics__bar {
+    transform: none;
+    transition: none;
+  }
+
+  .hp-hiw__flow-line {
+    transition: none;
+    stroke-dashoffset: 0;
+  }
+
+  .hp-module-card,
+  .hp-bento__tile,
+  .hp-teaser__all,
+  .hp-fm__nav-arrow {
+    transition: none;
+    transform: none;
+  }
+}

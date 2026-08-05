@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
+import { SiteLogo } from './Logo';
 import './SiteFooter.css';
 
 // §3.2 — Grounded Footer
@@ -18,15 +19,15 @@ const footerColumns = [
   {
     heading: 'Curriculum',
     links: [
-      { label: '15 Modules', to: '/curriculum' },
-      { label: 'Module Catalog', to: '/curriculum' },
-      { label: 'Learning Path', to: '/curriculum' },
+      { label: '15 Modules', to: ROUTES.CURRICULUM },
+      { label: 'Module Catalog', to: ROUTES.CURRICULUM },
+      { label: 'Learning Path', to: ROUTES.CURRICULUM },
     ],
   },
   {
     heading: 'Company',
     links: [
-      { label: 'About', to: '/about' },
+      { label: 'About', to: ROUTES.ABOUT },
       { label: 'Contact', to: ROUTES.CONTACT },
       { label: 'Careers', to: ROUTES.CONTACT },
     ],
@@ -47,12 +48,9 @@ export function SiteFooter() {
       <div className="site-footer__inner site-container site-container--wide">
         {/* Brand block */}
         <div className="site-footer__brand">
-          <div className="site-footer__logo">
-            <span className="site-footer__logo-mark" aria-hidden="true">
-              ⬡
-            </span>
-            <span className="site-footer__logo-text">DevOpsMentOr</span>
-          </div>
+          <Link to={ROUTES.HOME} className="site-footer__logo" aria-label="DevOpsMentOr home">
+            <SiteLogo />
+          </Link>
           <p className="site-footer__tagline">
             Cloud-native DevOps laboratories for university programs.
           </p>

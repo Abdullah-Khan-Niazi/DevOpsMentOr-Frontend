@@ -32,8 +32,8 @@ body,
 body {
   margin: 0;
   font-family: var(--font-sans);
-  background-color: #0A0B0D;
-  color: #F3F5F4;
+  background-color: var(--color-bg-void);
+  color: var(--color-text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
@@ -81,6 +81,7 @@ body {
   /* NOTE: DM Sans is the open-source substitute for Söhne/Neue Haas Grotesk (both paid). */
   --font-mono:    'JetBrains Mono', 'Berkeley Mono', ui-monospace, monospace;
 
+  --text-display-hero: clamp(4rem, 8vw, 7.5rem); /* Homepage hero H1 only, sitewide */
   --text-display-xl: clamp(3.5rem, 6vw, 6rem);
   --text-display-l:  clamp(2.5rem, 4.2vw, 4rem);
   --text-display-m:  clamp(1.875rem, 3vw, 2.75rem);
@@ -155,14 +156,14 @@ body {
   /* §1.7 Gradients */
   --gradient-atmosphere: radial-gradient(
     ellipse 1200px 600px at 50% -10%,
-    rgba(23, 201, 100, 0.16) 0%,
-    rgba(23, 201, 100, 0.06) 35%,
+    rgba(23, 201, 100, 0.26) 0%,
+    rgba(23, 201, 100, 0.1) 35%,
     transparent 70%
   );
   --gradient-atmosphere-sober: radial-gradient(
     ellipse 1200px 600px at 50% -10%,
-    rgba(23, 201, 100, 0.08) 0%,
-    rgba(23, 201, 100, 0.03) 35%,
+    rgba(23, 201, 100, 0.14) 0%,
+    rgba(23, 201, 100, 0.05) 35%,
     transparent 70%
   );
 
@@ -171,4 +172,56 @@ body {
   --node-stroke-dim: rgba(23, 201, 100, 0.35);
   --node-fill-dot:   var(--color-accent-500);
   --node-canvas-bg:  var(--color-bg-raised);
+}
+
+/* ─── §1.2 Light Theme — Chalk ──────────────────────────────────────────── */
+/* Same token names, resolved differently per theme. Applied via [data-theme]
+   on :root by theme.ts (prefers-color-scheme, live-updating). */
+[data-theme="light"] {
+  --color-bg-void:        #FAFAF8;
+  --color-bg-base:        #F4F3F0;
+  --color-bg-raised:      #FFFFFF;
+  --color-bg-overlay:     #FFFFFF;
+  --color-bg-sunken:      #EDECE8;
+
+  --color-border-subtle:  #E8E7E2;
+  --color-border-default: #DBDAD3;
+  --color-border-strong:  #C4C2B8;
+
+  --color-accent-950:     #E8F7EE;
+  --color-accent-800:     #A8E6C1;
+  --color-accent-600:     #22A85A;
+  --color-accent-500:     #0F9C4E;
+  --color-accent-400:     #12A150;
+  --color-accent-300:     #17C964;
+  --color-accent-glow:    rgba(15, 156, 78, 0.14);
+
+  --color-text-primary:   #16191D;
+  --color-text-secondary: #4A5057;
+  --color-text-tertiary:  #7A8088;
+  --color-text-on-accent: #FAFAF8;
+  --color-text-link:      #0F9C4E;
+
+  --color-success: #0F9C4E;
+  --color-error:   #C43D42;
+  --color-warning: #B5791F;
+  --color-info:    #2E7FB8;
+
+  --node-stroke:      var(--color-accent-500);
+  --node-stroke-dim:  rgba(15, 156, 78, 0.30);
+  --node-fill-dot:    var(--color-accent-500);
+  --node-canvas-bg:   var(--color-bg-raised);
+
+  --gradient-atmosphere: radial-gradient(
+    ellipse 1200px 600px at 50% -10%,
+    rgba(15, 156, 78, 0.2) 0%,
+    rgba(15, 156, 78, 0.09) 35%,
+    transparent 70%
+  );
+  --gradient-atmosphere-sober: radial-gradient(
+    ellipse 1200px 600px at 50% -10%,
+    rgba(15, 156, 78, 0.1) 0%,
+    rgba(15, 156, 78, 0.05) 35%,
+    transparent 70%
+  );
 }
