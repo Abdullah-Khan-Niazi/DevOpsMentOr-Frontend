@@ -14,6 +14,9 @@ const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
+const ContactPage = lazy(() => import('@/pages/site/ContactPage'));
+const ForInstitutionsPage = lazy(() => import('@/pages/site/ForInstitutionsPage'));
+const SecurityTrustPage = lazy(() => import('@/pages/site/SecurityTrustPage'));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<LoadingState />}>{children}</Suspense>;
@@ -101,6 +104,30 @@ export function AppRoutes() {
         element={
           <LazyPage>
             <HowItWorksPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.CONTACT}
+        element={
+          <LazyPage>
+            <ContactPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.FOR_INSTITUTIONS}
+        element={
+          <LazyPage>
+            <ForInstitutionsPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.SECURITY_TRUST}
+        element={
+          <LazyPage>
+            <SecurityTrustPage />
           </LazyPage>
         }
       />
