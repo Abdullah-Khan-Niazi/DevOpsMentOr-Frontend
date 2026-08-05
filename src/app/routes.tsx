@@ -17,7 +17,7 @@ const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
 const CurriculumPage = lazy(() => import('@/pages/site/scaffolds/CurriculumPage'));
 const PricingPage = lazy(() => import('@/pages/site/scaffolds/PricingPage'));
-const AboutPage = lazy(() => import('@/pages/site/scaffolds/AboutPage'));
+const AboutPage = lazy(() => import('@/pages/site/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/site/scaffolds/ContactPage'));
 const ForInstitutionsPage = lazy(() => import('@/pages/site/scaffolds/ForInstitutionsPage'));
 const SecurityTrustPage = lazy(() => import('@/pages/site/scaffolds/SecurityTrustPage'));
