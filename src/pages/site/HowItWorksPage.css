@@ -170,6 +170,11 @@
   height: auto;
 }
 
+.hiw-step-terminal-wrapper {
+  width: 100%;
+  max-width: 440px;
+}
+
 /* Dashed pulse animation — freezes with .node-pulse-anim in reduced-motion */
 @keyframes dashpulse {
   from {

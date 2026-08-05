@@ -1,0 +1,266 @@
+/* §5.6 ContactPage styles — design tokens exclusively */
+
+/* ─── §5.6.1 Header Section ──────────────────────────────────────────────── */
+.contact-header-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.contact-headline {
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* ─── §5.6.2 Main Section & Layout ───────────────────────────────────────── */
+.contact-main-section {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-32);
+}
+
+.contact-main-container {
+  position: relative;
+}
+
+/* Background NodeGraph visual (§3.5 / §5.6.2) */
+.contact-nodegraph-bg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 100%;
+  max-width: 800px;
+  opacity: 0.35;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Wrapper for forms & success state */
+.contact-forms-wrapper {
+  position: relative;
+  min-height: 520px;
+  z-index: 1;
+}
+
+/* 2-Column Desktop Grid */
+.contact-forms-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  opacity: 1;
+  transition: opacity var(--duration-base) var(--ease-standard);
+}
+
+.contact-forms-grid--hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* Individual Form Card */
+.contact-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.contact-card__header {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.contact-card__eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.contact-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m);
+  font-weight: 400;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* Form Fields */
+.contact-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+.contact-field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+/* Compliance Addition #4: Labels render in --text-body-s, --color-text-secondary */
+.contact-label {
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+}
+
+/* Compliance: Dark token inputs (--color-bg-sunken bg, --color-text-primary text, --color-border-default border, --radius-xs) */
+.contact-input,
+.contact-textarea {
+  width: 100%;
+  background-color: var(--color-bg-sunken);
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-xs);
+  padding: var(--space-3) var(--space-4);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  transition: border-color var(--duration-fast) var(--ease-standard);
+
+  /* Compliance Addition #4: Focus state — NO glow on inputs, border → --color-accent-500 */
+  outline: none;
+}
+
+.contact-input:focus,
+.contact-textarea:focus {
+  border-color: var(--color-accent-500);
+}
+
+.contact-input--error {
+  border-color: var(--color-error);
+}
+
+.contact-textarea {
+  resize: vertical;
+  min-height: 110px;
+}
+
+.contact-error {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-error);
+  margin: var(--space-1) 0 0;
+}
+
+.contact-submit-btn {
+  margin-top: var(--space-3);
+  width: 100%;
+}
+
+/* ─── §5.6.3 Success State Cross-Fade ────────────────────────────────────── */
+.contact-success-container {
+  opacity: 1;
+  transition: opacity var(--duration-base) var(--ease-standard);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 480px;
+}
+
+.contact-success-container--hidden {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.contact-success-card {
+  max-width: 580px;
+  width: 100%;
+  text-align: center;
+  padding: var(--space-12) var(--space-8);
+}
+
+.contact-success-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.contact-success-eyebrow {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.contact-success-title {
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.contact-success-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--space-4);
+  max-width: 44ch;
+}
+
+/* Soft reset link (acknowledged addition) */
+.contact-reset-btn {
+  background: none;
+  border: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+  color: var(--color-text-link);
+  cursor: pointer;
+  padding: var(--space-2) var(--space-4);
+  text-decoration: underline;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.contact-reset-btn:hover {
+  color: var(--color-accent-400);
+}
+
+.contact-reset-btn:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .contact-header-section {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .contact-forms-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .contact-nodegraph-bg {
+    display: none; /* Hide background graph on mobile for legibility */
+  }
+}
+
+/* ─── Reduced Motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .contact-forms-grid,
+  .contact-success-container,
+  .contact-input,
+  .contact-textarea,
+  .contact-reset-btn {
+    transition: none;
+  }
+}
