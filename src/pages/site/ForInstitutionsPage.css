@@ -32,15 +32,16 @@
 }
 
 /* ─── §5.7.2 Multi-Tenancy Visual ────────────────────────────────────────── */
+/* Visual left-aligned to the container so its edge matches the headline and
+   pillar list above/below — a centered element between left-aligned blocks
+   reads as misaligned. */
 .inst-visual-section {
   display: flex;
-  justify-content: center;
 }
 
 .inst-visual-wrapper {
   width: 100%;
   max-width: 760px;
-  margin: 0 auto;
 }
 
 .inst-visual-svg {
@@ -56,7 +57,7 @@
 
 /* ─── §5.7.4 Closing CTA Section (--color-bg-void) ───────────────────────── */
 .inst-cta-section {
-  padding-top: var(--space-28);
+  padding-top: var(--space-32);
   padding-bottom: var(--space-32);
   border-top: 1px solid var(--color-border-subtle);
 }

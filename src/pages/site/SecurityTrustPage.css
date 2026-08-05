@@ -1,10 +1,8 @@
 /* §5.8 SecurityTrustPage styles — design tokens exclusively */
 
 /* ─── §5.8.3 Sober Atmosphere Integration ────────────────────────────────── */
-/* Enforces --gradient-atmosphere-sober (§1.7) as a fixed background canvas */
-.sec-page .site-atmosphere {
-  background: var(--gradient-atmosphere-sober);
-}
+/* Sober gradient applied via <SiteLayout atmosphere="sober"> — the variant
+   class .site-atmosphere--sober in site.css themes base + wave layers. */
 
 /* ─── §5.8.1 Header Section ──────────────────────────────────────────────── */
 .sec-header-section {
@@ -39,7 +37,7 @@
 
 /* ─── §5.8.4 Closing Section (Plain Text Only — NO CTA Button) ────────────── */
 .sec-closing-section {
-  padding-top: var(--space-28);
+  padding-top: var(--space-32);
   padding-bottom: var(--space-32);
   border-top: 1px solid var(--color-border-subtle);
 }
