@@ -40,12 +40,9 @@ export default function SecurityTrustPage() {
       <div className="sec-page">
         {/* ── §5.8.1 Header Section ───────────────────────────────────────── */}
         <section
-          className="sec-header-section site-section--void atm-section"
+          className="sec-header-section site-section--void"
           aria-labelledby="sec-headline"
         >
-          {/* Sober atmosphere layer per §5.8/§8 — gradient visible in both themes */}
-          <div className="site-atmosphere-layer site-atmosphere-layer--sober" aria-hidden="true" />
-
           <div className="site-container">
             <div className="site-reveal" ref={headerRevealRef}>
               <h1 id="sec-headline" className="sec-headline">
@@ -75,12 +72,9 @@ export default function SecurityTrustPage() {
 
         {/* ── §5.8.4 Closing Section (Plain Text Link Only — NO CTA Button) ── */}
         <section
-          className="sec-closing-section site-section--void atm-section"
+          className="sec-closing-section site-section--void"
           aria-label="Security questions"
         >
-          {/* Sober atmosphere layer — mirrors homepage final band treatment */}
-          <div className="site-atmosphere-layer site-atmosphere-layer--sober" aria-hidden="true" />
-
           <div className="site-container sec-closing-inner">
             <div className="site-reveal" ref={closingRevealRef}>
               <p className="sec-closing-text">

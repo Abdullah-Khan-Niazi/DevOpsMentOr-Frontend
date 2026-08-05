@@ -80,12 +80,9 @@ export default function ContactPage() {
       <div className="contact-page">
         {/* ── §5.6.1 Header ─────────────────────────────────────────────── */}
         <section
-          className="contact-header-section site-section--void atm-section"
+          className="contact-header-section site-section--void"
           aria-labelledby="contact-headline"
         >
-          {/* Atmosphere layer — themed gradient behind the header */}
-          <div className="site-atmosphere-layer" aria-hidden="true" />
-
           <div className="site-container">
             <div className="site-reveal" ref={headerRevealRef}>
               <h1 id="contact-headline" className="contact-headline">

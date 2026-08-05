@@ -155,10 +155,7 @@ export default function ForInstitutionsPage() {
     <SiteLayout>
       <div className="inst-page">
         {/* ── Block 1: Intro Conceptual Block (--color-bg-void) ───────────── */}
-        <div className="inst-intro-block site-section--void atm-section">
-          {/* Atmosphere layer — themed gradient behind the intro content */}
-          <div className="site-atmosphere-layer" aria-hidden="true" />
-
+        <div className="inst-intro-block site-section--void">
           {/* §5.7.1 Header */}
           <section className="inst-header-section" aria-labelledby="inst-headline">
             <div className="site-container">
@@ -195,12 +192,9 @@ export default function ForInstitutionsPage() {
 
         {/* ── §5.7.4 Closing CTA Section (--color-bg-void) ────────────────── */}
         <section
-          className="inst-cta-section site-section--void atm-section"
+          className="inst-cta-section site-section--void"
           aria-label="Discuss institutional access"
         >
-          {/* Atmosphere layer — mirrors the homepage final CTA band */}
-          <div className="site-atmosphere-layer" aria-hidden="true" />
-
           <div className="site-container inst-cta-inner">
             <div className="site-reveal" ref={ctaRevealRef}>
               {/* Standalone CTA per correction #1 — restraint suits the decision-maker audience */}
@@ -209,7 +203,7 @@ export default function ForInstitutionsPage() {
                 className="inst-cta-link"
                 aria-label="Discuss institutional access — opens contact form pre-filled for institutions"
               >
-                <SiteButton variant="primary" withArrow size="lg">
+                <SiteButton variant="primary" withArrow size="md">
                   Discuss institutional access
                 </SiteButton>
               </Link>

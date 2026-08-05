@@ -31,8 +31,8 @@
 
 /* ─── §5.8.2 Definition List With Visual Spine ───────────────────────────── */
 .sec-spine-section {
-  padding-top: var(--space-20);
-  padding-bottom: var(--space-20);
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-16);
 }
 
 /* ─── §5.8.4 Closing Section (Plain Text Only — NO CTA Button) ────────────── */

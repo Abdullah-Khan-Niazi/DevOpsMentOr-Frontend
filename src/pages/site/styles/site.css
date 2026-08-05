@@ -35,32 +35,6 @@
   background: var(--gradient-atmosphere-sober);
 }
 
-/* Per-section atmosphere layer — paints the gradient above a section's
-   opaque plane and below its content (homepage hero/final pattern).
-   Usage: section gets .atm-section (position: relative), the layer div is
-   the first child, content follows inside .site-container (z 1). */
-.atm-section {
-  position: relative;
-}
-
-.atm-section > .site-container,
-.atm-section > .site-atmosphere-layer + section {
-  position: relative;
-  z-index: 1;
-}
-
-.site-atmosphere-layer {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: var(--gradient-atmosphere);
-}
-
-.site-atmosphere-layer--sober {
-  background: var(--gradient-atmosphere-sober);
-}
-
 /* Gentle wave — barely-there crests lap outward from the center to both
    edges (right-to-left and left-to-right). Overlays the static base
    gradient with the sober tint at low opacity; noticed only on close look. */
