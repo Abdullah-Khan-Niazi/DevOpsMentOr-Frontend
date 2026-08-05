@@ -4,7 +4,10 @@
 
 .site-root {
   min-height: 100vh;
-  overflow-x: hidden;
+  /* overflow-x: clip — prevents horizontal overflow without creating a
+     scroll container (overflow-x: hidden computes overflow-y to auto and
+     silently breaks position: sticky on pages like How It Works). */
+  overflow-x: clip;
   /* Hard rule §1.1: every surface uses --color-bg-* tokens — no light bg ever */
   background-color: var(--color-bg-void);
   color: var(--color-text-primary);
@@ -72,12 +75,6 @@
   /* Freeze dashed-stroke pulse animations (steps 1-2 node diagrams) */
   .node-pulse-anim {
     animation: none !important;
-    stroke-dashoffset: 0 !important;
-  }
-
-  /* Flow-line draw: skip to fully drawn state */
-  .flow-line-path {
-    transition: none !important;
     stroke-dashoffset: 0 !important;
   }
 }

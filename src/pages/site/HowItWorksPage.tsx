@@ -88,9 +88,8 @@ function useScrollReveal(threshold = 0.15) {
 }
 
 // ─── Step data ────────────────────────────────────────────────────────────────
-// PLACEHOLDER — pending Flow 1–7 copy from team lead (see plan §5 open question).
-// Mechanism-focused placeholders written to match §2.3 copy rules.
-// Each headline states a mechanism; each body adds one fact. No filler.
+// Mechanism-focused copy per §2.3 — each headline states a mechanism; each body
+// adds one fact. No filler.
 const STEPS = [
   {
     id: 'step-01',
@@ -112,13 +111,6 @@ const STEPS = [
     eyebrow: 'CONNECT',
     heading: 'A terminal session is opened directly in your browser.',
     body: 'WebSocket tunnels your input to the running container — no local Docker installation, no port forwarding, no dependency conflicts.',
-    // PLACEHOLDER — pending resolution of terminal-location contradiction.
-    // §5.3.2 calls step 3 "its second canonical location" for ProductFrame,
-    // but §5.1.5 and §8 restrict ProductFrame to exactly 3 sitewide locations
-    // (Hero, Product Showcase, AI Mentor callout) — step 3 is not in that list.
-    // Rendering a placeholder SVG node diagram until team lead rules on this.
-    // See plan §4 §5.3.2 table row for step 03.
-    isTerminalPlaceholder: true,
   },
   {
     id: 'step-04',
@@ -237,11 +229,14 @@ function AuthApiVisual() {
   );
 }
 
-// Step 3: PLACEHOLDER abstract node/connector diagram.
-// PLACEHOLDER — pending resolution of terminal-location contradiction §5.3.2 vs §5.1.5/§8.
-// This is NOT a ProductFrame terminal. It is a simple node diagram consistent with
-// steps 1-2/4/5 visual language, clearly NOT a hexagon cluster (step 5) or AI flow (steps 6-7).
-function ConnectPlaceholderVisual() {
+// Step 3: Browser → WebSocket relay → Container node diagram.
+// RULING (v6 §8 checklist): the app-window Product Frame (terminal) is
+// restricted to exactly two canonical locations sitewide — the Product
+// Showcase Lab Terminal tab (§5.1.3) and the AI Mentor callout (§5.3.3).
+// Step 3 therefore renders in the §3.5 node-graph language, NOT Product
+// Frame chrome. Mirrors the auth visual (source accent, dimmed destinations,
+// animated dashed request pulses + dimmed return lines) with a WS relay.
+function ConnectVisual() {
   return (
     <svg
       viewBox="0 0 320 160"
@@ -249,20 +244,18 @@ function ConnectPlaceholderVisual() {
       xmlns="http://www.w3.org/2000/svg"
       className="hiw-step-svg"
       role="img"
-      aria-label="Browser terminal connection diagram — placeholder pending contract ruling"
+      aria-label="Browser to container WebSocket connection diagram"
     >
-      {/* NOTE: PLACEHOLDER — pending resolution of terminal-location contradiction.
-          See §5.3.2 vs §5.1.5/§8 in plan and comment in STEPS array above. */}
-      {/* Browser node */}
+      {/* Browser node — source, accent */}
       <circle
         cx="56"
         cy="80"
         r="20"
         fill="var(--node-canvas-bg)"
-        stroke="var(--node-stroke-dim)"
+        stroke="var(--node-stroke)"
         strokeWidth="1.5"
       />
-      <circle cx="56" cy="80" r="4" fill="var(--node-stroke-dim)" />
+      <circle cx="56" cy="80" r="4" fill="var(--node-fill-dot)" />
       <text
         x="56"
         y="114"
@@ -274,16 +267,16 @@ function ConnectPlaceholderVisual() {
         Browser
       </text>
 
-      {/* Relay node — centre */}
+      {/* WS relay node — centre, dimmed */}
       <circle
         cx="160"
         cy="80"
         r="16"
         fill="var(--node-canvas-bg)"
-        stroke="var(--node-stroke)"
+        stroke="var(--node-stroke-dim)"
         strokeWidth="1.5"
       />
-      <circle cx="160" cy="80" r="4" fill="var(--node-fill-dot)" />
+      <circle cx="160" cy="80" r="4" fill="var(--node-stroke-dim)" />
       <text
         x="160"
         y="110"
@@ -295,7 +288,7 @@ function ConnectPlaceholderVisual() {
         WS
       </text>
 
-      {/* Container node */}
+      {/* Container node — destination, dimmed */}
       <circle
         cx="264"
         cy="80"
@@ -316,9 +309,58 @@ function ConnectPlaceholderVisual() {
         Container
       </text>
 
-      {/* Connectors */}
-      <line x1="76" y1="80" x2="144" y2="80" stroke="var(--node-stroke-dim)" strokeWidth="1" />
-      <line x1="176" y1="80" x2="244" y2="80" stroke="var(--node-stroke-dim)" strokeWidth="1" />
+      {/* Browser → WS forward pulse + dimmed return */}
+      <line
+        x1="76"
+        y1="76"
+        x2="144"
+        y2="76"
+        stroke="var(--node-stroke)"
+        strokeWidth="1.5"
+        strokeDasharray="8 6"
+        className="node-pulse-anim"
+      />
+      <line
+        x1="144"
+        y1="84"
+        x2="76"
+        y2="84"
+        stroke="var(--node-stroke-dim)"
+        strokeWidth="1"
+        strokeDasharray="6 8"
+        className="node-pulse-anim"
+        style={{ animationDelay: '-0.4s' }}
+      />
+
+      {/* WS → Container forward pulse + dimmed return */}
+      <line
+        x1="176"
+        y1="76"
+        x2="244"
+        y2="76"
+        stroke="var(--node-stroke)"
+        strokeWidth="1.5"
+        strokeDasharray="8 6"
+        className="node-pulse-anim"
+        style={{ animationDelay: '-0.2s' }}
+      />
+      <line
+        x1="244"
+        y1="84"
+        x2="176"
+        y2="84"
+        stroke="var(--node-stroke-dim)"
+        strokeWidth="1"
+        strokeDasharray="6 8"
+        className="node-pulse-anim"
+        style={{ animationDelay: '-0.6s' }}
+      />
+
+      {/* Arrow tips */}
+      <polygon points="138,71 148,76 138,81" fill="var(--node-stroke)" />
+      <polygon points="238,71 248,76 238,81" fill="var(--node-stroke)" />
+      <polygon points="82,79 72,84 82,89" fill="var(--node-stroke-dim)" />
+      <polygon points="182,79 172,84 182,89" fill="var(--node-stroke-dim)" />
     </svg>
   );
 }
@@ -534,7 +576,7 @@ function StepVisual({ stepIndex }: { stepIndex: number }) {
     case 1:
       return <AuthApiVisual />;
     case 2:
-      return <ConnectPlaceholderVisual />;
+      return <ConnectVisual />;
     case 3:
       return <DbCacheVisual />;
     case 4:
@@ -649,21 +691,13 @@ export default function HowItWorksPage() {
             <div className="hiw-step-list" role="list">
               {/* Vertical flow line — drawn progressively per activeStep */}
               {isDesktop && (
-                <svg className="hiw-flow-line" aria-hidden="true" preserveAspectRatio="none">
-                  {/* Background track */}
-                  <line className="hiw-flow-line-track" x1="1" y1="0" x2="1" y2="100%" />
-                  {/* Filled portion — height driven by activeStep */}
-                  <line
-                    className="hiw-flow-line-fill flow-line-path"
-                    x1="1"
-                    y1="0"
-                    x2="1"
-                    y2="100%"
-                    style={{
-                      strokeDashoffset: `${(1 - flowLineProgress) * 100}%`,
-                    }}
+                <div className="hiw-flow-line" aria-hidden="true">
+                  <div className="hiw-flow-line__track" />
+                  <div
+                    className="hiw-flow-line__fill"
+                    style={{ height: `${flowLineProgress * 100}%` }}
                   />
-                </svg>
+                </div>
               )}
 
               {STEPS.map((step, i) => (
