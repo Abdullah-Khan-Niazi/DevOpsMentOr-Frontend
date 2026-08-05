@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
+import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteButton } from './components/SiteButton';
 import { SiteSpineList, type SiteSpineItem } from './components/SiteSpineList';
@@ -21,29 +21,6 @@ const OPERATIONAL_PILLARS: SiteSpineItem[] = [
     description: 'Shared module repository with institution-specific assignment tracking',
   },
 ];
-
-// ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add('is-visible');
-          observer.unobserve(el);
-        }
-      },
-      { threshold, rootMargin: '-8% 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return ref;
-}
 
 // ─── Bespoke Multi-Tenancy Connected SVG Visual (§5.7.2) ─────────────────────
 // Shows 3 top namespace boxes converging via thin stroke lines into 1 shared cluster box.
@@ -178,7 +155,10 @@ export default function ForInstitutionsPage() {
     <SiteLayout>
       <div className="inst-page">
         {/* ── Block 1: Intro Conceptual Block (--color-bg-void) ───────────── */}
-        <div className="inst-intro-block site-section--void">
+        <div className="inst-intro-block site-section--void atm-section">
+          {/* Atmosphere layer — themed gradient behind the intro content */}
+          <div className="site-atmosphere-layer" aria-hidden="true" />
+
           {/* §5.7.1 Header */}
           <section className="inst-header-section" aria-labelledby="inst-headline">
             <div className="site-container">
@@ -215,9 +195,12 @@ export default function ForInstitutionsPage() {
 
         {/* ── §5.7.4 Closing CTA Section (--color-bg-void) ────────────────── */}
         <section
-          className="inst-cta-section site-section--void"
+          className="inst-cta-section site-section--void atm-section"
           aria-label="Discuss institutional access"
         >
+          {/* Atmosphere layer — mirrors the homepage final CTA band */}
+          <div className="site-atmosphere-layer" aria-hidden="true" />
+
           <div className="site-container inst-cta-inner">
             <div className="site-reveal" ref={ctaRevealRef}>
               {/* Standalone CTA per correction #1 — restraint suits the decision-maker audience */}

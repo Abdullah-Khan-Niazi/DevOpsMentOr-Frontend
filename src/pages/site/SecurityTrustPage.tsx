@@ -1,6 +1,6 @@
-import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
+import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteSpineList, type SiteSpineItem } from './components/SiteSpineList';
 import './SecurityTrustPage.css';
@@ -30,39 +30,22 @@ const SECURITY_NFR_ITEMS: SiteSpineItem[] = [
   },
 ];
 
-// ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add('is-visible');
-          observer.unobserve(el);
-        }
-      },
-      { threshold, rootMargin: '-8% 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return ref;
-}
-
 export default function SecurityTrustPage() {
   const headerRevealRef = useScrollReveal();
   const spineRevealRef = useScrollReveal();
   const closingRevealRef = useScrollReveal();
 
   return (
-    <SiteLayout>
+    <SiteLayout atmosphere="sober">
       <div className="sec-page">
         {/* ── §5.8.1 Header Section ───────────────────────────────────────── */}
-        <section className="sec-header-section site-section--void" aria-labelledby="sec-headline">
+        <section
+          className="sec-header-section site-section--void atm-section"
+          aria-labelledby="sec-headline"
+        >
+          {/* Sober atmosphere layer per §5.8/§8 — gradient visible in both themes */}
+          <div className="site-atmosphere-layer site-atmosphere-layer--sober" aria-hidden="true" />
+
           <div className="site-container">
             <div className="site-reveal" ref={headerRevealRef}>
               <h1 id="sec-headline" className="sec-headline">
@@ -91,7 +74,13 @@ export default function SecurityTrustPage() {
         </section>
 
         {/* ── §5.8.4 Closing Section (Plain Text Link Only — NO CTA Button) ── */}
-        <section className="sec-closing-section site-section--void" aria-label="Security questions">
+        <section
+          className="sec-closing-section site-section--void atm-section"
+          aria-label="Security questions"
+        >
+          {/* Sober atmosphere layer — mirrors homepage final band treatment */}
+          <div className="site-atmosphere-layer site-atmosphere-layer--sober" aria-hidden="true" />
+
           <div className="site-container sec-closing-inner">
             <div className="site-reveal" ref={closingRevealRef}>
               <p className="sec-closing-text">

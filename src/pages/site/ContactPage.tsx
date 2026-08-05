@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useState } from 'react';
+import { Link, useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { ROUTES } from '@/shared/constants';
+import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteCard } from './components/SiteCard';
 import { SiteButton } from './components/SiteButton';
@@ -26,29 +28,6 @@ const individualSchema = z.object({
 
 type InstitutionalFormData = z.infer<typeof institutionalSchema>;
 type IndividualFormData = z.infer<typeof individualSchema>;
-
-// ─── Scroll Reveal Hook ───────────────────────────────────────────────────────
-function useScrollReveal(threshold = 0.15) {
-  const ref = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (entry.isIntersecting) {
-          el.classList.add('is-visible');
-          observer.unobserve(el);
-        }
-      },
-      { threshold, rootMargin: '-8% 0px' },
-    );
-    observer.observe(el);
-    return () => observer.disconnect();
-  }, [threshold]);
-
-  return ref;
-}
 
 export default function ContactPage() {
   const [searchParams] = useSearchParams();
@@ -101,14 +80,24 @@ export default function ContactPage() {
       <div className="contact-page">
         {/* ── §5.6.1 Header ─────────────────────────────────────────────── */}
         <section
-          className="contact-header-section site-section--void"
+          className="contact-header-section site-section--void atm-section"
           aria-labelledby="contact-headline"
         >
+          {/* Atmosphere layer — themed gradient behind the header */}
+          <div className="site-atmosphere-layer" aria-hidden="true" />
+
           <div className="site-container">
             <div className="site-reveal" ref={headerRevealRef}>
               <h1 id="contact-headline" className="contact-headline">
                 Contact
               </h1>
+              <p className="contact-subhead">
+                For universities and programs,{' '}
+                <Link to={ROUTES.FOR_INSTITUTIONS} className="contact-subhead-link">
+                  see For Institutions
+                </Link>
+                .
+              </p>
             </div>
           </div>
         </section>
