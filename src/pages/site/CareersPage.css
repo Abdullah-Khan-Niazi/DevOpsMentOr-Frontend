@@ -1,0 +1,108 @@
+/* Careers page — page-specific styles only; shared primitives live in
+   styles/SiteSubPage.css. */
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+.cr-header {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+/* ─── Culture — numbered card grid ─────────────────────────────────────────── */
+.cr-culture {
+  padding: var(--space-24) 0;
+}
+
+/* Plain mono numerals — no circle, no container (§2.3) */
+.cr-card__num {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─── Open roles — 3-up role card grid (§3.4) ──────────────────────────────── */
+.cr-roles {
+  padding: var(--space-24) 0;
+}
+
+.cr-roles__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-6);
+}
+
+.cr-role {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.cr-role:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.cr-role__meta {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-tertiary);
+}
+
+.cr-role__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.cr-role__body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.cr-role__apply {
+  margin-top: auto;
+  padding-top: var(--space-4);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .cr-roles__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .cr-header {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .cr-culture,
+  .cr-roles {
+    padding: var(--space-16) 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cr-role {
+    transition: none;
+  }
+}
