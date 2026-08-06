@@ -1,0 +1,131 @@
+/* FAQ page styles — design tokens exclusively. Mirrors the Pricing page's
+   accordion layout (§5.5.3) so both surfaces read as siblings. */
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+.faq-header-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.faq-headline {
+  margin: 0 0 var(--space-4) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.faq-subhead {
+  margin: 0;
+  max-width: 60ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* Body-text link per §6.5 — underline draws in from left on hover */
+.faq-crosslink {
+  color: var(--color-text-link);
+  text-decoration: none;
+  font-weight: 500;
+  background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-size var(--duration-fast) var(--ease-standard);
+}
+
+.faq-crosslink:hover {
+  color: var(--color-accent-400);
+  background-size: 100% 1px;
+}
+
+.faq-crosslink:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ─── Accordion ────────────────────────────────────────────────────────────── */
+.faq-main-section {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-32);
+}
+
+.faq-container {
+  max-width: 840px;
+}
+
+.faq-categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.faq-category-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+/* §2.5 eyebrow format — mono caption, quiet tertiary */
+.faq-category-label {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+/* ─── Footer ───────────────────────────────────────────────────────────────── */
+.faq-footer {
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.faq-footer-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  color: var(--color-text-secondary);
+}
+
+.faq-contact-link {
+  color: var(--color-text-link);
+  text-decoration: none;
+  font-weight: 500;
+  background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-size var(--duration-fast) var(--ease-standard);
+}
+
+.faq-contact-link:hover {
+  color: var(--color-accent-400);
+  background-size: 100% 1px;
+}
+
+.faq-contact-link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .faq-header-section {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+}

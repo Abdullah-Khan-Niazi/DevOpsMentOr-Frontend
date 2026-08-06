@@ -1,0 +1,113 @@
+/* Instructor Tools page — console mock + spine list (tokens only). */
+
+.it-header {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.it-mock-wrap {
+  margin-top: var(--space-12);
+}
+
+.it-frame {
+  max-width: 860px;
+}
+
+/* ─── Console mock (browser frame body) ──────────────────────────────────── */
+.it-console {
+  font-family: var(--font-mono);
+}
+
+.it-console__title {
+  margin: 0 0 var(--space-4);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-tertiary);
+}
+
+.it-console__row {
+  display: grid;
+  grid-template-columns: 1fr 56px 140px 1fr;
+  gap: var(--space-4);
+  align-items: center;
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.it-console__row:last-child {
+  border-bottom: none;
+}
+
+.it-console__row--head {
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-tertiary);
+  padding-bottom: var(--space-2);
+}
+
+.it-console__name {
+  font-size: var(--text-mono-m);
+  color: var(--color-text-primary);
+}
+
+.it-console__module {
+  font-size: var(--text-mono-m);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.it-console__bar-cell {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.it-console__bar {
+  flex: 1;
+  height: 6px;
+  background-color: var(--color-bg-void);
+  border-radius: var(--radius-xs);
+  overflow: hidden;
+}
+
+.it-console__bar-fill {
+  display: block;
+  height: 100%;
+  background-color: var(--color-accent-500);
+  border-radius: var(--radius-xs);
+  transition: width var(--duration-slow) var(--ease-decelerate);
+}
+
+.it-console__pct {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.it-console__status {
+  font-size: var(--text-mono-m);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Capabilities section ───────────────────────────────────────────────── */
+.it-caps {
+  padding: var(--space-24) 0;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .it-header {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .it-console__row {
+    grid-template-columns: 1fr auto;
+    gap: var(--space-2) var(--space-4);
+  }
+
+  .it-console__bar-cell,
+  .it-console__status {
+    grid-column: 2;
+  }
+}

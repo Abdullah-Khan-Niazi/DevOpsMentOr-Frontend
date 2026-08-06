@@ -1,0 +1,31 @@
+/* Privacy Policy page — the sudoers lecture in a §3.6 terminal frame. */
+
+.pr-main {
+  padding: var(--space-8) 0 var(--space-32);
+}
+
+.pr-frame {
+  max-width: 640px;
+}
+
+.pr-line {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-mono-m);
+  line-height: var(--leading-snug);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.pr-line + .pr-line {
+  margin-top: var(--space-3);
+}
+
+.pr-line--rule {
+  margin-top: var(--space-6);
+}
+
+.pr-line--rule + .pr-line--rule {
+  margin-top: var(--space-2);
+}

@@ -1,0 +1,80 @@
+/* Shared styles for the legal pages (Privacy Policy, Terms of Service).
+   Prose sections follow the site rhythm (§3.7) with §2.5 eyebrows. */
+
+.lg-header {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+/* Last-updated line — mono caption, quiet tertiary */
+.lg-updated {
+  margin: var(--space-3) 0 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.lg-main {
+  padding: var(--space-16) 0 var(--space-24);
+}
+
+.lg-sections {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.lg-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.lg-section__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-heading-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.lg-section__body {
+  margin: 0;
+  max-width: 72ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.lg-section__body + .lg-section__body {
+  margin-top: var(--space-4);
+}
+
+.lg-cta {
+  padding: var(--space-16) 0 var(--space-32);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.lg-cta__text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+@media (max-width: 767px) {
+  .lg-header {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .lg-main {
+    padding: var(--space-12) 0 var(--space-16);
+  }
+}

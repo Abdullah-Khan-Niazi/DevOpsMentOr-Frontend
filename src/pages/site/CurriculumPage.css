@@ -1,0 +1,232 @@
+/* §5.2 CurriculumPage styles — design tokens exclusively */
+
+/* ─── §5.2 Header ──────────────────────────────────────────────────────────── */
+.cur-header-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.cur-headline {
+  margin: 0 0 var(--space-4) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.cur-subhead {
+  margin: 0;
+  max-width: 60ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── §5.2 Phase groups ────────────────────────────────────────────────────── */
+.cur-phase {
+  position: relative;
+  overflow: hidden;
+  padding: var(--space-24) 0;
+}
+
+.cur-phase > .site-container {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hex-node texture — behind the phase content, theme-aware via node tokens */
+.cur-hex {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.45;
+}
+
+.cur-hex__svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* Phase header — eyebrow + title, description as subtitle beneath */
+.cur-phase__head {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+  margin-bottom: var(--space-12);
+}
+
+.cur-phase__head-left {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.cur-phase__range {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-accent-500);
+}
+
+.cur-phase__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.cur-phase__desc {
+  margin: 0;
+  max-width: 65ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* 4-column grid per phase (§5.2) */
+.cur-phase__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+/* Scheduled entrance — each phase group is its own trigger; cards enter in
+   sequence with a stagger, never scroll-revealed as one blob (§5.2, §6.2). */
+.cur-phase__grid .cur-module-card {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: none;
+}
+
+.cur-phase__grid--visible .cur-module-card {
+  animation: cur-card-enter var(--duration-slow) var(--ease-decelerate) forwards;
+  animation-delay: calc(var(--i, 0) * 90ms);
+}
+
+@keyframes cur-card-enter {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Module card — mirrors the homepage teaser card (§5.1.5) */
+.cur-module-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  cursor: crosshair; /* §6.5 — the curriculum cards' crosshair exception */
+  transition:
+    border-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.cur-module-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.cur-module-card__num {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.cur-module-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.cur-module-card__focus {
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* ─── §5.2 Closing CTA ─────────────────────────────────────────────────────── */
+.cur-cta-section {
+  padding: var(--space-24) 0 var(--space-32);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.cur-cta-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.cur-cta-headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.cur-cta-body {
+  margin: 0 0 var(--space-4);
+  max-width: 52ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Responsive ───────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .cur-phase__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .cur-header-section {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .cur-phase {
+    padding: var(--space-16) 0;
+  }
+
+  .cur-phase__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ─── Reduced Motion ───────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .cur-phase__grid .cur-module-card,
+  .cur-phase__grid--visible .cur-module-card {
+    opacity: 1;
+    transform: none;
+    animation: none;
+  }
+}

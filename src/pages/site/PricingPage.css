@@ -62,11 +62,14 @@
   margin-bottom: var(--space-6);
 }
 
+/* Tier label — §2.5 eyebrow format: plain mono, --text-caption, tracking-wide,
+   uppercase, quiet tertiary color (the tier name labels the card, and the
+   audience line beneath carries the descriptive weight). */
 .prc-tier-eyebrow {
   margin: 0 0 var(--space-2) 0;
-  font-family: var(--font-body);
-  font-size: var(--text-body-s);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--color-text-tertiary);
@@ -87,32 +90,35 @@
   color: var(--color-text-secondary);
 }
 
-/* Flat Feature List — Contract Rule §2.2: NO card-in-card nesting */
+/* Flat Feature List — Contract §2.2: NO card-in-card nesting. §2.3: no
+   icon-before-every-list-item — features render as plain hairline rows. */
 .prc-feature-list {
   list-style: none;
   margin: 0 0 var(--space-8) 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: var(--space-3);
   flex-grow: 1;
 }
 
 .prc-feature-item {
   display: flex;
   align-items: flex-start;
-  gap: var(--space-3);
+  padding: var(--space-3) 0;
+  border-bottom: 1px solid var(--color-border-subtle);
   font-family: var(--font-body);
   font-size: var(--text-body-m);
   color: var(--color-text-primary);
   line-height: var(--leading-normal);
 }
 
-.prc-feature-check {
-  color: var(--color-accent-500);
-  font-weight: 700;
-  line-height: 1;
-  margin-top: 2px;
+.prc-feature-item:first-child {
+  padding-top: 0;
+}
+
+.prc-feature-item:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .prc-tier-cta {
@@ -159,11 +165,12 @@
   gap: var(--space-4);
 }
 
+/* FAQ category label — §2.5 eyebrow format (mono caption, quiet tertiary) */
 .prc-faq-category-label {
   margin: 0;
-  font-family: var(--font-body);
-  font-size: var(--text-body-s);
-  font-weight: 600;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
   letter-spacing: var(--tracking-wide);
   text-transform: uppercase;
   color: var(--color-text-tertiary);
@@ -182,16 +189,23 @@
   color: var(--color-text-secondary);
 }
 
+/* Body-text link per §6.5 — underline draws in from left on hover */
 .prc-faq-contact-link {
   color: var(--color-text-link);
   text-decoration: none;
   font-weight: 500;
-  transition: opacity var(--duration-fast) var(--ease-standard);
+  background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-size var(--duration-fast) var(--ease-standard);
 }
 
 .prc-faq-contact-link:hover {
-  opacity: 0.85;
-  text-decoration: underline;
+  color: var(--color-accent-400);
+  background-size: 100% 1px;
 }
 
 .prc-faq-contact-link:focus-visible {
