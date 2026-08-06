@@ -1,0 +1,115 @@
+/* ─── §5.5.3 SiteAccordion Primitive ────────────────────────────────────────── */
+
+.site-accordion {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.site-accordion__item {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-raised);
+  transition: border-color var(--duration-fast) var(--ease-standard);
+  overflow: hidden;
+}
+
+.site-accordion__item:hover {
+  border-color: var(--color-border-default);
+}
+
+.site-accordion__item--expanded {
+  border-color: var(--color-border-default);
+}
+
+/* Question Trigger Row — Preserved generous padding & comfortable height */
+.site-accordion__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  background: transparent;
+  border: none;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 500;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.site-accordion__trigger:hover {
+  color: var(--color-text-primary);
+}
+
+.site-accordion__trigger:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: -2px;
+  border-radius: var(--radius-md);
+}
+
+.site-accordion__question {
+  color: var(--color-text-primary);
+  font-weight: 500;
+}
+
+.site-accordion__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-tertiary);
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-standard),
+              color var(--duration-fast) var(--ease-standard);
+}
+
+.site-accordion__item--expanded .site-accordion__icon {
+  transform: rotate(180deg);
+  color: var(--color-accent-500);
+}
+
+/* Expanded Answer Panel — Hairline divider + dedicated answer spacing tokens */
+.site-accordion__panel {
+  border-top: 1px solid var(--color-border-subtle);
+  padding: var(--space-6);
+  animation: site-accordion-expand var(--duration-fast) var(--ease-decelerate);
+}
+
+.site-accordion__content {
+  display: block;
+}
+
+/* Secondary text hierarchy for expanded answer */
+.site-accordion__answer {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+}
+
+/* Smooth deliberate animation token */
+@keyframes site-accordion-expand {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .site-accordion__icon {
+    transition: none !important;
+  }
+  .site-accordion__panel {
+    animation: none !important;
+  }
+}
