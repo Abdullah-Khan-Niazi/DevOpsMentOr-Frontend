@@ -4,78 +4,9 @@ import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteCard } from './components/SiteCard';
 import { SiteButton } from './components/SiteButton';
-import { SiteAccordion, type AccordionItemData } from './components/SiteAccordion';
+import { SiteAccordion } from './components/SiteAccordion';
+import { FAQ_CATEGORIES } from './siteData';
 import './PricingPage.css';
-
-// ─── §5.5.3 FAQ Accordion Data Grouped by Category ───────────────────────────
-
-interface FaqCategory {
-  id: string;
-  label: string;
-  items: AccordionItemData[];
-}
-
-const FAQ_CATEGORIES: FaqCategory[] = [
-  {
-    id: 'access',
-    label: 'ACCESS',
-    items: [
-      {
-        id: 'access-1',
-        question: 'How are lab environments provisioned?',
-        answer:
-          'Lab environments are provisioned automatically as ephemeral containers when you initiate a module session.',
-      },
-      {
-        id: 'access-2',
-        question: 'Do I need a credit card to get started with individual access?',
-        answer:
-          'No. Individual access during the platform’s initial release is completely free and requires no credit card.',
-      },
-    ],
-  },
-  {
-    id: 'technical',
-    label: 'TECHNICAL',
-    items: [
-      {
-        id: 'tech-1',
-        question: 'Are environments persistent across sessions?',
-        answer:
-          'No. Lab environments are ephemeral by design to ensure consistent starting states and resource safety. Progress and assertions are saved to your account.',
-      },
-      {
-        id: 'tech-2',
-        question: 'What are the session limits for lab environments?',
-        answer:
-          'Active lab container sessions have a 2-hour continuous runtime limit before automatic teardown to preserve shared cluster resources. Assertion progress is automatically saved to your account.',
-      },
-      {
-        id: 'tech-3',
-        question: 'What prerequisites or tools do I need to install locally?',
-        answer:
-          'All lab tools, terminal sessions, and automated assertions run directly in your browser. No local tool installation is required.',
-      },
-    ],
-  },
-  {
-    id: 'institutions',
-    label: 'INSTITUTIONS',
-    items: [
-      {
-        id: 'inst-1',
-        question: 'How is institutional deployment arranged?',
-        answer: 'Institutional onboarding is currently manual — contact us to arrange access.',
-      },
-      {
-        id: 'inst-2',
-        question: 'Can custom curriculum modules be integrated for university cohorts?',
-        answer:
-          'Custom module configuration and cohort dashboard integration are evaluated during institutional onboarding.',
-      },
-    ],
-  },
-];
 
 export default function PricingPage() {
   const headerRevealRef = useScrollReveal();
@@ -122,21 +53,12 @@ export default function PricingPage() {
 
                   <ul className="prc-feature-list" aria-label="Individual features">
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>All 15 modules</span>
                     </li>
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>Personal lab sessions</span>
                     </li>
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>AI Mentor hints</span>
                     </li>
                   </ul>
@@ -160,27 +82,15 @@ export default function PricingPage() {
 
                   <ul className="prc-feature-list" aria-label="Institution features">
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>Everything in Individual</span>
                     </li>
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>Multi-tenant namespace</span>
                     </li>
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>Instructor dashboards</span>
                     </li>
                     <li className="prc-feature-item">
-                      <span className="prc-feature-check" aria-hidden="true">
-                        ✓
-                      </span>
                       <span>Cohort analytics</span>
                     </li>
                   </ul>
@@ -230,7 +140,7 @@ export default function PricingPage() {
                     className="prc-faq-contact-link"
                     aria-label="Contact us for further questions"
                   >
-                    Contact us →
+                    Contact us
                   </Link>
                 </p>
               </div>

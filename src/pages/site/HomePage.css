@@ -1092,7 +1092,70 @@
   outline-offset: 2px;
 }
 
-/* ═══════════════ Section 13: Final CTA band ═══════════════ */
+/* ═══════════════ Section 13: FAQ ═══════════════ */
+
+/* Title/subhead stay on the --container-content left edge like every other
+   homepage section; only the accordion column narrows for reading width. */
+.hp-faq {
+  padding: var(--space-24) 0 var(--space-32);
+}
+
+.hp-faq__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.hp-faq__sub {
+  margin: var(--space-3) 0 0;
+  max-width: 56ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.hp-faq__accordion {
+  margin-top: var(--space-12);
+}
+
+.hp-faq__more {
+  margin-top: var(--space-8);
+}
+
+/* Ghost-style link to the full FAQ page (§6.5 underline draw-in) */
+.hp-faq__link {
+  display: inline-block;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  font-weight: 500;
+  color: var(--color-text-link);
+  text-decoration: none;
+  background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-size var(--duration-fast) var(--ease-standard);
+}
+
+.hp-faq__link:hover {
+  color: var(--color-accent-400);
+  background-size: 100% 1px;
+}
+
+.hp-faq__link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ═══════════════ Section 14: Final CTA band ═══════════════ */
 
 /* Atmosphere reintroduced at full opacity — the page's last depth moment (§5.1.12) */
 .hp-final {

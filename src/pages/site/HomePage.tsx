@@ -4,6 +4,8 @@ import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
 import { SiteButton } from './components/SiteButton';
 import { ProductFrame } from './components/ProductFrame';
+import { SiteAccordion } from './components/SiteAccordion';
+import { FAQ_CATEGORIES, MODULES } from './siteData';
 import {
   useInView,
   useMediaQuery,
@@ -14,37 +16,7 @@ import {
 import './HomePage.css';
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
-// Canonical 15-module curriculum (phase-grouped: Foundations 01–04 / Build & Ship
-// 05–08 / Orchestrate 09–11 / Automate & Observe 12–15).
-const MODULES = [
-  {
-    num: '01',
-    title: 'Operating Systems & Linux Fundamentals',
-    focus: 'Processes, filesystems, shell',
-  },
-  { num: '02', title: 'Version Control & Git', focus: 'Branching, remotes, workflows' },
-  { num: '03', title: 'Build Tools & Package Managers', focus: 'npm, pip, Makefiles' },
-  {
-    num: '04',
-    title: 'Artifact Repository Management',
-    focus: 'Storage, tagging, security scanning',
-  },
-  {
-    num: '05',
-    title: 'Cloud Computing & IaaS',
-    focus: 'Instances, virtual networking, cloud storage',
-  },
-  { num: '06', title: 'Docker', focus: 'Images, containers, registries' },
-  { num: '07', title: 'Jenkins Pipelines', focus: 'Declarative CI/CD pipelines' },
-  { num: '08', title: 'AWS Services', focus: 'Core managed services' },
-  { num: '09', title: 'Kubernetes', focus: 'Pods, services, scheduling' },
-  { num: '10', title: 'Kubernetes on Amazon EKS', focus: 'Managed control planes' },
-  { num: '11', title: 'Terraform', focus: 'Infrastructure as code' },
-  { num: '12', title: 'Python Programming', focus: 'Language fundamentals' },
-  { num: '13', title: 'Python Automation', focus: 'Scripting operations' },
-  { num: '14', title: 'Ansible', focus: 'Configuration management' },
-  { num: '15', title: 'Prometheus & Grafana', focus: 'Metrics, alerts, dashboards' },
-] as const;
+// Canonical 15-module curriculum lives in ./siteData (shared with Curriculum).
 
 const HERO_LABS = ['Pod Affinity Rules', 'ConfigMap Injection', 'Ingress Rules'] as const;
 
@@ -870,6 +842,35 @@ function FinalCtaSection() {
   );
 }
 
+// ─── Section 13: FAQ — quick answers + link to the full FAQ page ───────────────
+const HOME_FAQ_ITEMS = FAQ_CATEGORIES.flatMap((cat) => cat.items).slice(0, 5);
+
+function FaqSection() {
+  const revealRef = useScrollReveal<HTMLDivElement>();
+  return (
+    <section className="hp-faq site-section--void" aria-labelledby="hp-faq-title">
+      <div className="site-container hp-faq__container">
+        <div className="site-reveal" ref={revealRef}>
+          <h2 id="hp-faq-title" className="hp-faq__title">
+            Frequently asked questions
+          </h2>
+          <p className="hp-faq__sub">
+            Quick answers on access, lab sessions, and institutional deployment.
+          </p>
+          <div className="hp-faq__accordion">
+            <SiteAccordion items={HOME_FAQ_ITEMS} allowMultiple={false} />
+          </div>
+          <div className="hp-faq__more">
+            <Link to={ROUTES.FAQ} className="hp-faq__link">
+              See all FAQs
+            </Link>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── Module card (Curriculum styling — reused in FM2 + teaser) ────────────────
 function ModuleCard({ num, title, focus }: { num: string; title: string; focus: string }) {
   return (
@@ -896,6 +897,7 @@ export default function HomePage() {
       <HowItWorksSection />
       <MechanismSection />
       <InstitutionsTeaserSection />
+      <FaqSection />
       <FinalCtaSection />
     </SiteLayout>
   );
