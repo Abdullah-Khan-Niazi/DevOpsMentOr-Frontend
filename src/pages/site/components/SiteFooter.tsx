@@ -12,7 +12,7 @@ const footerColumns = [
     heading: 'Platform',
     links: [
       { label: 'Student Labs', to: ROUTES.HOW_IT_WORKS },
-      { label: 'Instructor Tools', to: ROUTES.FOR_INSTITUTIONS },
+      { label: 'Instructor Tools', to: ROUTES.INSTRUCTOR_TOOLS },
       { label: 'Institutions', to: ROUTES.FOR_INSTITUTIONS },
     ],
   },
@@ -20,8 +20,8 @@ const footerColumns = [
     heading: 'Curriculum',
     links: [
       { label: '15 Modules', to: ROUTES.CURRICULUM },
-      { label: 'Module Catalog', to: ROUTES.CURRICULUM },
-      { label: 'Learning Path', to: ROUTES.CURRICULUM },
+      { label: 'Module Catalog', to: ROUTES.MODULE_CATALOG },
+      { label: 'Learning Path', to: ROUTES.LEARNING_PATH },
     ],
   },
   {
@@ -29,15 +29,14 @@ const footerColumns = [
     links: [
       { label: 'About', to: ROUTES.ABOUT },
       { label: 'Contact', to: ROUTES.CONTACT },
-      { label: 'Careers', to: ROUTES.CONTACT },
+      { label: 'Careers', to: ROUTES.CAREERS },
     ],
   },
   {
     heading: 'Resources',
     links: [
-      { label: 'Documentation', to: ROUTES.HOW_IT_WORKS },
-      { label: 'API Reference', to: ROUTES.HOW_IT_WORKS },
-      { label: 'Status', to: ROUTES.SECURITY_TRUST },
+      { label: 'Documentation', to: ROUTES.DOCUMENTATION },
+      { label: 'FAQ', to: ROUTES.FAQ },
     ],
   },
 ];
@@ -79,10 +78,10 @@ export function SiteFooter() {
       <div className="site-footer__bottom site-container site-container--wide">
         <p className="site-footer__legal">© 2026 DevOpsMentOr · FAST-NUCES CFD</p>
         <div className="site-footer__legal-links">
-          <Link to={ROUTES.SECURITY_TRUST} className="site-footer__legal-link">
+          <Link to={ROUTES.PRIVACY} className="site-footer__legal-link">
             Privacy
           </Link>
-          <Link to={ROUTES.SECURITY_TRUST} className="site-footer__legal-link">
+          <Link to={ROUTES.TERMS} className="site-footer__legal-link">
             Terms
           </Link>
           <Link to={ROUTES.SECURITY_TRUST} className="site-footer__legal-link">

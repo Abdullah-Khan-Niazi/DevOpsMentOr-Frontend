@@ -15,13 +15,22 @@ const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage')
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
-const CurriculumPage = lazy(() => import('@/pages/site/scaffolds/CurriculumPage'));
+const CurriculumPage = lazy(() => import('@/pages/site/CurriculumPage'));
 const PricingPage = lazy(() => import('@/pages/site/PricingPage'));
 const AboutPage = lazy(() => import('@/pages/site/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/site/ContactPage'));
 const ForInstitutionsPage = lazy(() => import('@/pages/site/ForInstitutionsPage'));
 const SecurityTrustPage = lazy(() => import('@/pages/site/SecurityTrustPage'));
-const NotFoundPage = lazy(() => import('@/pages/site/scaffolds/NotFoundPage'));
+const FaqPage = lazy(() => import('@/pages/site/FaqPage'));
+const NotFoundPage = lazy(() => import('@/pages/site/NotFoundPage'));
+// ─── Secondary site pages (footer destinations) ──────────────────────────────
+const CareersPage = lazy(() => import('@/pages/site/CareersPage'));
+const DocumentationPage = lazy(() => import('@/pages/site/DocumentationPage'));
+const ModuleCatalogPage = lazy(() => import('@/pages/site/ModuleCatalogPage'));
+const LearningPathPage = lazy(() => import('@/pages/site/LearningPathPage'));
+const InstructorToolsPage = lazy(() => import('@/pages/site/InstructorToolsPage'));
+const PrivacyPage = lazy(() => import('@/pages/site/PrivacyPage'));
+const TermsPage = lazy(() => import('@/pages/site/TermsPage'));
 
 function LazyPage({ children }: { children: ReactNode }) {
   return <Suspense fallback={<LoadingState />}>{children}</Suspense>;
@@ -164,6 +173,70 @@ export function AppRoutes() {
         element={
           <LazyPage>
             <SecurityTrustPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.FAQ}
+        element={
+          <LazyPage>
+            <FaqPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.CAREERS}
+        element={
+          <LazyPage>
+            <CareersPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.DOCUMENTATION}
+        element={
+          <LazyPage>
+            <DocumentationPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.MODULE_CATALOG}
+        element={
+          <LazyPage>
+            <ModuleCatalogPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.LEARNING_PATH}
+        element={
+          <LazyPage>
+            <LearningPathPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.INSTRUCTOR_TOOLS}
+        element={
+          <LazyPage>
+            <InstructorToolsPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.PRIVACY}
+        element={
+          <LazyPage>
+            <PrivacyPage />
+          </LazyPage>
+        }
+      />
+      <Route
+        path={ROUTES.TERMS}
+        element={
+          <LazyPage>
+            <TermsPage />
           </LazyPage>
         }
       />
