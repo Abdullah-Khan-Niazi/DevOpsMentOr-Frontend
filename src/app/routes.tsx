@@ -16,7 +16,7 @@ const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage')
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
 const CurriculumPage = lazy(() => import('@/pages/site/scaffolds/CurriculumPage'));
-const PricingPage = lazy(() => import('@/pages/site/scaffolds/PricingPage'));
+const PricingPage = lazy(() => import('@/pages/site/PricingPage'));
 const AboutPage = lazy(() => import('@/pages/site/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/site/ContactPage'));
 const ForInstitutionsPage = lazy(() => import('@/pages/site/ForInstitutionsPage'));

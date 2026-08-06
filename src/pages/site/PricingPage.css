@@ -1,0 +1,201 @@
+/* ─── §5.5 Pricing Page Styles ─────────────────────────────────────────────── */
+
+.prc-page {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/* ── §5.5.1 Header Section ────────────────────────────────────────────────── */
+.prc-header-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.prc-headline {
+  margin: 0 0 var(--space-4) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+.prc-subhead {
+  margin: 0;
+  max-width: 640px;
+  font-family: var(--font-body);
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ── §5.5.2 Two-Column Comparison ────────────────────────────────────────── */
+.prc-comparison-section {
+  padding-top: var(--space-16);
+  padding-bottom: var(--space-24);
+}
+
+.prc-comparison-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-8);
+  align-items: stretch;
+}
+
+@media (max-width: 768px) {
+  .prc-comparison-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+}
+
+.prc-tier-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  padding: var(--space-8);
+}
+
+.prc-tier-header {
+  margin-bottom: var(--space-6);
+}
+
+.prc-tier-eyebrow {
+  margin: 0 0 var(--space-2) 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.prc-tier-price {
+  margin: 0 0 var(--space-2) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  line-height: var(--leading-tight);
+  color: var(--color-text-primary);
+}
+
+.prc-tier-audience {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  color: var(--color-text-secondary);
+}
+
+/* Flat Feature List — Contract Rule §2.2: NO card-in-card nesting */
+.prc-feature-list {
+  list-style: none;
+  margin: 0 0 var(--space-8) 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  flex-grow: 1;
+}
+
+.prc-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  color: var(--color-text-primary);
+  line-height: var(--leading-normal);
+}
+
+.prc-feature-check {
+  color: var(--color-accent-500);
+  font-weight: 700;
+  line-height: 1;
+  margin-top: 2px;
+}
+
+.prc-tier-cta {
+  margin-top: auto;
+}
+
+.prc-btn-link {
+  text-decoration: none;
+  display: block;
+}
+
+.prc-btn-link button {
+  width: 100%;
+  justify-content: center;
+}
+
+/* ── §5.5.3 FAQ Full Accordion ────────────────────────────────────────────── */
+.prc-faq-section {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-32);
+}
+
+.prc-faq-container {
+  max-width: 840px;
+}
+
+.prc-faq-headline {
+  margin: 0 0 var(--space-12) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  color: var(--color-text-primary);
+  letter-spacing: var(--tracking-tight);
+}
+
+.prc-faq-categories {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-12);
+}
+
+.prc-faq-category-block {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.prc-faq-category-label {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 600;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.prc-faq-footer {
+  margin-top: var(--space-12);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.prc-faq-footer-text {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  color: var(--color-text-secondary);
+}
+
+.prc-faq-contact-link {
+  color: var(--color-text-link);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.prc-faq-contact-link:hover {
+  opacity: 0.85;
+  text-decoration: underline;
+}
+
+.prc-faq-contact-link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
