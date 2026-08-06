@@ -1,0 +1,131 @@
+/* Module Catalog page — mirrors the Curriculum page card pattern (§5.2). */
+
+.mc-header {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+.mc-catalog {
+  padding: var(--space-24) 0;
+}
+
+.mc-phase {
+  margin-bottom: var(--space-16);
+}
+
+.mc-phase:last-child {
+  margin-bottom: 0;
+}
+
+.mc-phase__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-8);
+}
+
+/* §2.5 format — mono caption, plain text, no container */
+.mc-phase__range {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.mc-phase__label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.mc-phase__desc {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* 4-column grid per phase — identical to the Curriculum page */
+.mc-phase__grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--space-4);
+}
+
+/* Module card — mirrors cur-module-card (§5.1.5/§5.2) */
+.mc-module-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-6);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  cursor: crosshair; /* §6.5 — curriculum cards' crosshair exception */
+  transition:
+    border-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.mc-module-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.mc-module-card__num {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.mc-module-card__title {
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.mc-module-card__focus {
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+  margin: 0;
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 1023px) {
+  .mc-phase__grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 767px) {
+  .mc-header {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .mc-catalog {
+    padding: var(--space-16) 0;
+  }
+
+  .mc-phase__grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mc-module-card {
+    transition: none;
+  }
+}

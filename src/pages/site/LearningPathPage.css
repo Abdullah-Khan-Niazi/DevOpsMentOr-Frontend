@@ -1,0 +1,158 @@
+/* Learning Path page — page-specific styles only. */
+
+/* ─── Header ───────────────────────────────────────────────────────────────── */
+.lp-header {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+/* ─── Path — vertical spine sequence (§5.8.2 visual language) ──────────────── */
+.lp-path {
+  padding: var(--space-24) 0;
+}
+
+.lp-track {
+  position: relative;
+}
+
+/* Continuous 2px accent rule running the full track height — same recipe as
+   the §5.8.2 spine (30% accent, token-driven in both themes) */
+.lp-track__line {
+  position: absolute;
+  top: var(--space-2);
+  bottom: var(--space-2);
+  left: 11px;
+  width: 2px;
+  background-color: color-mix(in srgb, var(--color-accent-500) 30%, transparent);
+}
+
+.lp-phase {
+  position: relative;
+  display: grid;
+  grid-template-columns: 24px 1fr;
+  gap: var(--space-6);
+  padding: var(--space-6) 0;
+}
+
+/* Tick marker rendered directly on the rule — no numbered circle (§2.3) */
+.lp-phase__tick {
+  width: 8px;
+  height: 8px;
+  margin-top: 10px;
+  border-radius: 50%;
+  background-color: var(--color-accent-500);
+}
+
+.lp-phase__content {
+  min-width: 0;
+}
+
+.lp-phase__head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin-bottom: var(--space-6);
+}
+
+.lp-phase__head-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.lp-phase__range {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-phase__label {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.lp-phase__desc {
+  margin: 0;
+  max-width: 65ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Module list — 2-column grid, no inline wrapping ─────────────────────── */
+.lp-modules {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3) var(--space-8);
+}
+
+.lp-module {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-4);
+}
+
+.lp-module__num {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-module__title {
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-snug);
+  color: var(--color-text-primary);
+}
+
+/* ─── Order note ──────────────────────────────────────────────────────────── */
+.lp-note {
+  padding: var(--space-12) 0 var(--space-16);
+}
+
+.lp-note__text {
+  margin: 0;
+  max-width: 68ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .lp-header {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .lp-path {
+    padding: var(--space-16) 0;
+  }
+
+  .lp-phase {
+    grid-template-columns: 20px 1fr;
+    gap: var(--space-4);
+  }
+
+  .lp-track__line {
+    left: 9px;
+  }
+
+  .lp-modules {
+    grid-template-columns: 1fr;
+  }
+}
