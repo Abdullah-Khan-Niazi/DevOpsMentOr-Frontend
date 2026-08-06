@@ -1,0 +1,188 @@
+/* Shared primitives for the secondary site pages (Careers, Documentation,
+   Module Catalog, Learning Path, Instructor Tools, Privacy, Terms).
+   Header follows the §5.x page-header pattern, links follow §6.5 (underline
+   draw-in), cards follow §3.4, section rhythm follows §3.7, and lists are
+   whitespace-separated with no dividers (§2.3). Design tokens exclusively. */
+
+/* ─── Page header ─────────────────────────────────────────────────────────── */
+.ssp-header {
+  padding-top: var(--space-24);
+  padding-bottom: var(--space-16);
+}
+
+/* §2.5 eyebrow — ONLY where it adds info the headline lacks (legal pages).
+   Plain mono text, no container (badge ban §2.2). */
+.ssp-eyebrow {
+  display: block;
+  margin: 0 0 var(--space-3) 0;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  font-weight: 400;
+  letter-spacing: var(--tracking-wide);
+  text-transform: uppercase;
+  color: var(--color-text-tertiary);
+}
+
+.ssp-headline {
+  margin: 0 0 var(--space-4) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-l);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.ssp-subhead {
+  margin: 0;
+  max-width: 60ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Body-text link — §6.5 underline draws in from left ──────────────────── */
+.ssp-text-link {
+  color: var(--color-text-link);
+  text-decoration: none;
+  font-weight: 500;
+  background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
+  background-position: 0 100%;
+  background-size: 0% 1px;
+  background-repeat: no-repeat;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-size var(--duration-fast) var(--ease-standard);
+}
+
+.ssp-text-link:hover {
+  color: var(--color-accent-400);
+  background-size: 100% 1px;
+}
+
+.ssp-text-link:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-xs);
+}
+
+/* ─── Sections ────────────────────────────────────────────────────────────── */
+.ssp-section {
+  padding: var(--space-24) 0;
+}
+
+.ssp-title {
+  margin: 0 0 var(--space-8) 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+/* ─── Plain cards (§3.4) — raised, 1px border, no icon treatment ────────── */
+.ssp-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-8);
+}
+
+.ssp-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-8);
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--duration-base) var(--ease-decelerate),
+    transform var(--duration-base) var(--ease-decelerate);
+}
+
+.ssp-card:hover {
+  border-color: var(--color-border-strong);
+  transform: translateY(-2px);
+}
+
+.ssp-card__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-heading-m);
+  font-weight: 400;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.ssp-card__body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+.ssp-card__link {
+  margin-top: auto;
+}
+
+/* ─── Closing CTA ────────────────────────────────────────────────────────── */
+.ssp-cta-section {
+  padding: var(--space-24) 0 var(--space-32);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.ssp-cta-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.ssp-cta-headline {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-display-m);
+  font-weight: 400;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+}
+
+.ssp-cta-body {
+  margin: 0 0 var(--space-4);
+  max-width: 52ch;
+  font-family: var(--font-body);
+  font-size: var(--text-body-m);
+  line-height: var(--leading-normal);
+  color: var(--color-text-secondary);
+}
+
+/* ─── Responsive ─────────────────────────────────────────────────────────── */
+@media (max-width: 767px) {
+  .ssp-header {
+    padding-top: var(--space-16);
+    padding-bottom: var(--space-12);
+  }
+
+  .ssp-section {
+    padding: var(--space-16) 0;
+  }
+
+  .ssp-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ssp-text-link {
+    transition: none;
+  }
+
+  .ssp-card {
+    transition: none;
+  }
+}
