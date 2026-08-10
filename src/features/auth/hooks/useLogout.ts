@@ -7,10 +7,15 @@ import { useAuthStore } from '../stores/authStore';
 
 export function useLogout() {
   const navigate = useNavigate();
+  const refreshToken = useAuthStore((state) => state.refreshToken);
   const clearSession = useAuthStore((state) => state.clearSession);
 
   return useMutation<void, ApiError, void>({
-    mutationFn: () => authService.logout(),
+    mutationFn: async () => {
+      if (refreshToken) {
+        await authService.logout(refreshToken);
+      }
+    },
     onSettled: () => {
       clearSession();
       void navigate(ROUTES.LOGIN, { replace: true });

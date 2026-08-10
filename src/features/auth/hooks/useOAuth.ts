@@ -7,10 +7,7 @@ import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 import type { LoginResponse, OAuthCredentials, OAuthSignupCredentials } from '../types';
 
-const PROVIDER_CONFIG: Record<
-  string,
-  { authUrl: string; clientId: string; scope: string }
-> = {
+const PROVIDER_CONFIG: Record<string, { authUrl: string; clientId: string; scope: string }> = {
   google: {
     authUrl: 'https://accounts.google.com/o/oauth2/v2/auth',
     clientId: import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '',
@@ -46,32 +43,31 @@ export function useOAuthLogin() {
     },
   });
 
-  const initiateOAuth = useCallback(
-    (provider: 'google' | 'github') => {
-      setFeedback(null);
+  const initiateOAuth = useCallback((provider: 'google' | 'github') => {
+    setFeedback(null);
 
-      const config = PROVIDER_CONFIG[provider];
-      if (!config.clientId) {
-        setFeedback(`${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`);
-        return;
-      }
+    const config = PROVIDER_CONFIG[provider];
+    if (!config.clientId) {
+      setFeedback(
+        `${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`,
+      );
+      return;
+    }
 
-      const state = generateState();
-      sessionStorage.setItem(`oauth_state_${provider}`, state);
-      sessionStorage.setItem('oauth_mode', 'login');
+    const state = generateState();
+    sessionStorage.setItem(`oauth_state_${provider}`, state);
+    sessionStorage.setItem('oauth_mode', 'login');
 
-      const params = new URLSearchParams({
-        client_id: config.clientId,
-        redirect_uri: redirectUri(provider),
-        response_type: 'code',
-        scope: config.scope,
-        state,
-      });
+    const params = new URLSearchParams({
+      client_id: config.clientId,
+      redirect_uri: redirectUri(provider),
+      response_type: 'code',
+      scope: config.scope,
+      state,
+    });
 
-      window.location.href = `${config.authUrl}?${params.toString()}`;
-    },
-    [],
-  );
+    window.location.href = `${config.authUrl}?${params.toString()}`;
+  }, []);
 
   return { mutation, initiateOAuth, feedback };
 }
@@ -89,32 +85,31 @@ export function useOAuthSignup() {
     },
   });
 
-  const initiateOAuth = useCallback(
-    (provider: 'google' | 'github') => {
-      setFeedback(null);
+  const initiateOAuth = useCallback((provider: 'google' | 'github') => {
+    setFeedback(null);
 
-      const config = PROVIDER_CONFIG[provider];
-      if (!config.clientId) {
-        setFeedback(`${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`);
-        return;
-      }
+    const config = PROVIDER_CONFIG[provider];
+    if (!config.clientId) {
+      setFeedback(
+        `${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`,
+      );
+      return;
+    }
 
-      const state = generateState();
-      sessionStorage.setItem(`oauth_state_${provider}`, state);
-      sessionStorage.setItem('oauth_mode', 'signup');
+    const state = generateState();
+    sessionStorage.setItem(`oauth_state_${provider}`, state);
+    sessionStorage.setItem('oauth_mode', 'signup');
 
-      const params = new URLSearchParams({
-        client_id: config.clientId,
-        redirect_uri: redirectUri(provider),
-        response_type: 'code',
-        scope: config.scope,
-        state,
-      });
+    const params = new URLSearchParams({
+      client_id: config.clientId,
+      redirect_uri: redirectUri(provider),
+      response_type: 'code',
+      scope: config.scope,
+      state,
+    });
 
-      window.location.href = `${config.authUrl}?${params.toString()}`;
-    },
-    [],
-  );
+    window.location.href = `${config.authUrl}?${params.toString()}`;
+  }, []);
 
   return { mutation, initiateOAuth, feedback };
 }
