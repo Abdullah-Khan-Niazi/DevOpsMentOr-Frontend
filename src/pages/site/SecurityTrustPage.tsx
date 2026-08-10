@@ -36,7 +36,7 @@ export default function SecurityTrustPage() {
   const closingRevealRef = useScrollReveal();
 
   return (
-    <SiteLayout atmosphere="sober">
+    <SiteLayout>
       <div className="sec-page">
         {/* ── §5.8.1 Header Section ───────────────────────────────────────── */}
         <section

@@ -825,7 +825,6 @@ function FinalCtaSection() {
   const revealRef = useScrollReveal<HTMLDivElement>();
   return (
     <section className="hp-final site-section--raised" aria-labelledby="hp-final-title">
-      <div className="hp-final__atmosphere" aria-hidden="true" />
       <div className="site-container">
         <div className="site-reveal hp-final__inner" ref={revealRef}>
           <h2 id="hp-final-title" className="hp-final__title">

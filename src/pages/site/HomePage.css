@@ -6,20 +6,34 @@
 
 .hp-hero {
   position: relative;
-  overflow: clip;
+  /* Solid canvas behind the atmosphere layer — keeps the gradient's fade-out
+     edges from showing seams against the header strip or the section below */
+  background-color: var(--color-bg-void);
   padding-top: var(--space-16);
   padding-bottom: var(--space-24);
 }
 
-/* Atmosphere — themed gradient, parallax target (0.4×). Entrance fade first
-   (720ms), then a slow 12s breathing pulse (opacity only — the parallax hook
-   owns transform on this element). */
+/* Atmosphere — starts at the very top of the page (behind the transparent
+   fixed header) and flows down to the page center, combined with the hero
+   text + frame above the strong first half of the glow. Parallax target
+   (0.4×). Entrance fade in (720ms), then a slow 12s breathing pulse
+   (opacity only — the parallax hook owns transform on this element). */
 .hp-hero__atmosphere {
   position: absolute;
-  inset: 0;
+  /* Bleed above the page edge (header is 64px §3.1; extra overhang absorbs
+     sub-pixel rounding so no hairline of page background shows at y=0) */
+  top: -96px;
+  right: 0;
+  bottom: 0;
+  left: 0;
   z-index: 0;
   pointer-events: none;
-  background: var(--gradient-atmosphere);
+  /* Two stacked glows: the keyed token atmosphere plus a viewport-sized
+     ellipse whose peak sits exactly at the top page edge (96px down the
+     bleeding element) and flows down to ~the page's vertical center */
+  background:
+    radial-gradient(ellipse 110vw 62vh at 50% 96px, var(--color-accent-glow), transparent 60%),
+    var(--gradient-atmosphere);
   animation:
     hp-atmo-in var(--duration-slower) var(--ease-decelerate) both,
     hp-breathe 12s ease-in-out var(--duration-slower) infinite;
@@ -1162,14 +1176,6 @@
   position: relative;
   overflow: clip;
   padding: var(--space-32) 0 var(--space-48);
-}
-
-.hp-final__atmosphere {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: var(--gradient-atmosphere);
 }
 
 .hp-final__inner {
