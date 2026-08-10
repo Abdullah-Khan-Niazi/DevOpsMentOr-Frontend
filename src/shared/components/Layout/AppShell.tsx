@@ -1,4 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom';
+import { LogoutButton } from '@/features/auth/components';
 import { ENV, ROUTES } from '@/shared/constants';
 import { useUiStore } from '@/shared/stores/uiStore';
 import { cn } from '@/shared/utils';
@@ -54,6 +55,7 @@ export function AppShell() {
           <Button variant="ghost" size="sm" onClick={toggleSidebar} aria-label="Toggle sidebar">
             Menu
           </Button>
+          <LogoutButton />
         </header>
         <main className="flex-1 p-6">
           <Outlet />

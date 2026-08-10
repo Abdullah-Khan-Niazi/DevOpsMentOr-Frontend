@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
 import { NavLink } from 'react-router-dom';
+import { LogoutButton } from '@/features/auth/components';
 import { ROUTES } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 
@@ -38,8 +39,9 @@ export function AdminShell({ children }: { children: ReactNode }) {
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="flex h-14 items-center border-b border-border bg-white px-4">
+        <header className="flex h-14 items-center justify-between border-b border-border bg-white px-4">
           <span className="text-sm font-medium text-slate-700">Platform administration</span>
+          <LogoutButton />
         </header>
         <main className="flex-1 p-6">{children}</main>
       </div>
