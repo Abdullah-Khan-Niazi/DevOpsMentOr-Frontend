@@ -2,8 +2,8 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteCard } from './components/SiteCard';
-import { SiteButton } from './components/SiteButton';
+import { Card } from '@/shared/components';
+import { Button } from '@/shared/components';
 import { SiteAccordion } from './components/SiteAccordion';
 import { FAQ_CATEGORIES } from './siteData';
 import './PricingPage.css';
@@ -17,10 +17,7 @@ export default function PricingPage() {
     <SiteLayout>
       <div className="prc-page">
         {/* ── §5.5.1 Header Section ───────────────────────────────────────── */}
-        <section
-          className="prc-header-section site-section--void"
-          aria-labelledby="prc-headline"
-        >
+        <section className="prc-header-section site-section--void" aria-labelledby="prc-headline">
           <div className="site-container">
             <div className="site-reveal" ref={headerRevealRef}>
               <h1 id="prc-headline" className="prc-headline">
@@ -44,7 +41,7 @@ export default function PricingPage() {
             <div className="site-reveal" ref={comparisonRevealRef}>
               <div className="prc-comparison-grid">
                 {/* Tier 1: Individual (Free) */}
-                <SiteCard className="prc-tier-card">
+                <Card className="prc-tier-card">
                   <div className="prc-tier-header">
                     <p className="prc-tier-eyebrow">INDIVIDUAL</p>
                     <h2 className="prc-tier-price">Free</h2>
@@ -65,15 +62,15 @@ export default function PricingPage() {
 
                   <div className="prc-tier-cta">
                     <Link to={ROUTES.SIGNUP} className="prc-btn-link">
-                      <SiteButton variant="primary" size="md">
+                      <Button variant="primary" size="md">
                         Start free
-                      </SiteButton>
+                      </Button>
                     </Link>
                   </div>
-                </SiteCard>
+                </Card>
 
                 {/* Tier 2: Institution (Contact) */}
-                <SiteCard className="prc-tier-card">
+                <Card className="prc-tier-card">
                   <div className="prc-tier-header">
                     <p className="prc-tier-eyebrow">INSTITUTION</p>
                     <h2 className="prc-tier-price">Contact</h2>
@@ -96,26 +93,20 @@ export default function PricingPage() {
                   </ul>
 
                   <div className="prc-tier-cta">
-                    <Link
-                      to={`${ROUTES.CONTACT}?inquiry=institution`}
-                      className="prc-btn-link"
-                    >
-                      <SiteButton variant="secondary" size="md">
+                    <Link to={`${ROUTES.CONTACT}?inquiry=institution`} className="prc-btn-link">
+                      <Button variant="secondary" size="md">
                         Contact us
-                      </SiteButton>
+                      </Button>
                     </Link>
                   </div>
-                </SiteCard>
+                </Card>
               </div>
             </div>
           </div>
         </section>
 
         {/* ── §5.5.3 FAQ Full Accordion ───────────────────────────────────── */}
-        <section
-          className="prc-faq-section site-section--void"
-          aria-labelledby="prc-faq-headline"
-        >
+        <section className="prc-faq-section site-section--void" aria-labelledby="prc-faq-headline">
           <div className="site-container prc-faq-container">
             <div className="site-reveal" ref={faqRevealRef}>
               <h2 id="prc-faq-headline" className="prc-faq-headline">

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { useScrollReveal } from './hooks';
 import './AboutPage.css';
 
@@ -156,9 +156,9 @@ export default function AboutPage() {
                 className="abt-cta-link"
                 aria-label="See what we built — opens how it works page"
               >
-                <SiteButton variant="primary" withArrow size="lg">
+                <Button variant="primary" withArrow size="lg">
                   See what we built
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

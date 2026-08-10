@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import './styles/SiteSubPage.css';
 import './CareersPage.css';
 
@@ -114,9 +114,9 @@ export default function CareersPage() {
                         to={ROUTES.CONTACT}
                         aria-label={`Apply for ${role.title} — opens contact form`}
                       >
-                        <SiteButton variant="secondary" size="sm">
+                        <Button variant="secondary" size="sm">
                           Apply
-                        </SiteButton>
+                        </Button>
                       </Link>
                     </div>
                   </article>
@@ -136,9 +136,9 @@ export default function CareersPage() {
                 would build first.
               </p>
               <Link to={ROUTES.CONTACT} aria-label="Get in touch about an open application">
-                <SiteButton variant="primary" withArrow size="md">
+                <Button variant="primary" withArrow size="md">
                   Get in touch
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

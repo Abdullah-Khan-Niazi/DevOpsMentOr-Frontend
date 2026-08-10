@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { ProductFrame } from './components/ProductFrame';
 import { SiteAccordion } from './components/SiteAccordion';
 import { FAQ_CATEGORIES, MODULES } from './siteData';
@@ -255,14 +255,14 @@ function HeroSection() {
           </p>
           <div className="hp-hero__ctas">
             <Link to={ROUTES.SIGNUP} className="hp-hero__cta-link">
-              <SiteButton variant="primary" size="lg" withArrow>
+              <Button variant="primary" size="lg" withArrow>
                 Start free
-              </SiteButton>
+              </Button>
             </Link>
             <Link to={ROUTES.HOW_IT_WORKS} className="hp-hero__cta-link">
-              <SiteButton variant="ghost" size="lg">
+              <Button variant="ghost" size="lg">
                 See how it works
-              </SiteButton>
+              </Button>
             </Link>
           </div>
         </div>
@@ -831,9 +831,9 @@ function FinalCtaSection() {
             Run your first container lab in the next 90 seconds.
           </h2>
           <Link to={ROUTES.SIGNUP} className="hp-final__cta-link">
-            <SiteButton variant="primary" size="lg">
+            <Button variant="primary" size="lg">
               Start free
-            </SiteButton>
+            </Button>
           </Link>
         </div>
       </div>

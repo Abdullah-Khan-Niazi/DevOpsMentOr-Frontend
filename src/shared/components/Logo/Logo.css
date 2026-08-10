@@ -1,47 +1,47 @@
-/* Brand logo lockup — colors via currentColor (white → var(--color-text-primary)) */
+/* Global brand logo lockup — colors via currentColor, design tokens only */
 
-.site-logo,
-.site-logo--full {
+.logo,
+.logo--full {
   display: inline-flex;
   align-items: center;
   color: var(--color-text-primary);
   line-height: 0;
 }
 
-.site-logo svg,
-.site-logo--full svg {
+.logo svg,
+.logo--full svg {
   display: block;
   height: 100%;
   width: auto;
 }
 
 /* Icon mark — 36px header scale */
-.site-logo--mark {
+.logo--mark {
   height: 36px;
 }
 
 /* Wordmark — optically aligned to the mark */
-.site-logo--wordmark {
+.logo--wordmark {
   height: 24px;
   margin-left: var(--space-3);
 }
 
 /* Stacked lockup (icon above wordmark) */
-.site-logo--icon-text {
+.logo--icon-text {
   height: 64px;
   align-items: flex-start;
 }
 
-/* Composed lockup — always the compact header scale (§3.1) */
-.site-logo--full {
+/* Composed lockup — always the compact header scale */
+.logo--full {
   height: 31px;
 }
 
-.site-logo--full .site-logo--mark {
+.logo--full .logo--mark {
   height: 31px;
 }
 
-.site-logo--full .site-logo--wordmark {
+.logo--full .logo--wordmark {
   height: 19px;
   margin-left: var(--space-3);
 }

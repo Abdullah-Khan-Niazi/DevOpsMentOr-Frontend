@@ -39,10 +39,7 @@ export default function SecurityTrustPage() {
     <SiteLayout>
       <div className="sec-page">
         {/* ── §5.8.1 Header Section ───────────────────────────────────────── */}
-        <section
-          className="sec-header-section site-section--void"
-          aria-labelledby="sec-headline"
-        >
+        <section className="sec-header-section site-section--void" aria-labelledby="sec-headline">
           <div className="site-container">
             <div className="site-reveal" ref={headerRevealRef}>
               <h1 id="sec-headline" className="sec-headline">
@@ -71,10 +68,7 @@ export default function SecurityTrustPage() {
         </section>
 
         {/* ── §5.8.4 Closing Section (Plain Text Link Only — NO CTA Button) ── */}
-        <section
-          className="sec-closing-section site-section--void"
-          aria-label="Security questions"
-        >
+        <section className="sec-closing-section site-section--void" aria-label="Security questions">
           <div className="site-container sec-closing-inner">
             <div className="site-reveal" ref={closingRevealRef}>
               <p className="sec-closing-text">

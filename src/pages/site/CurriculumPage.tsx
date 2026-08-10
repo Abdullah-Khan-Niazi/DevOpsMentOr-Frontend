@@ -3,12 +3,8 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useInViewOnce, useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
-import {
-  CURRICULUM_PHASES,
-  modulesForPhase,
-  type CurriculumModule,
-} from './siteData';
+import { Button } from '@/shared/components';
+import { CURRICULUM_PHASES, modulesForPhase, type CurriculumModule } from './siteData';
 import './CurriculumPage.css';
 
 // §5.2 — 15 modules, phase-grouped (Foundations 01–04 / Build & Ship 05–08 /
@@ -38,14 +34,19 @@ function HexTexture() {
     <div className="cur-hex" aria-hidden="true">
       <svg className="cur-hex__svg" focusable="false">
         <defs>
-          <pattern
-            id={patternId}
-            width="45.03"
-            height="78"
-            patternUnits="userSpaceOnUse"
-          >
-            <polygon points={hex(22.52, 26)} fill="none" stroke="var(--node-stroke-dim)" strokeWidth="1" />
-            <polygon points={hex(45.03, 65)} fill="none" stroke="var(--node-stroke-dim)" strokeWidth="1" />
+          <pattern id={patternId} width="45.03" height="78" patternUnits="userSpaceOnUse">
+            <polygon
+              points={hex(22.52, 26)}
+              fill="none"
+              stroke="var(--node-stroke-dim)"
+              strokeWidth="1"
+            />
+            <polygon
+              points={hex(45.03, 65)}
+              fill="none"
+              stroke="var(--node-stroke-dim)"
+              strokeWidth="1"
+            />
           </pattern>
         </defs>
         <rect width="100%" height="100%" fill={`url(#${patternId})`} />
@@ -70,13 +71,7 @@ function ModuleCard({ module, index }: { module: CurriculumModule; index: number
 }
 
 // ─── One phase group — own scheduled-entrance trigger (§5.2) ────────────────
-function PhaseGroup({
-  phaseId,
-  index,
-}: {
-  phaseId: string;
-  index: number;
-}) {
+function PhaseGroup({ phaseId, index }: { phaseId: string; index: number }) {
   const phase = CURRICULUM_PHASES.find((p) => p.id === phaseId)!;
   const { ref, inView } = useInViewOnce<HTMLDivElement>(0.15);
   const modules = modulesForPhase(phase.moduleNums);
@@ -101,10 +96,7 @@ function PhaseGroup({
           <p className="cur-phase__desc">{phase.description}</p>
         </div>
 
-        <div
-          ref={ref}
-          className={`cur-phase__grid ${inView ? 'cur-phase__grid--visible' : ''}`}
-        >
+        <div ref={ref} className={`cur-phase__grid ${inView ? 'cur-phase__grid--visible' : ''}`}>
           {modules.map((m, i) => (
             <ModuleCard key={m.num} module={m} index={i} />
           ))}
@@ -150,9 +142,9 @@ export default function CurriculumPage() {
                 Free during the initial release — your first lab provisions in under 90 seconds.
               </p>
               <Link to={ROUTES.SIGNUP} aria-label="Start with Module 01 — create a free account">
-                <SiteButton variant="primary" withArrow size="md">
+                <Button variant="primary" withArrow size="md">
                   Start with Module 01
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

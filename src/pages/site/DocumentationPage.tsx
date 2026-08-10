@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { ProductFrame } from './components/ProductFrame';
 import './styles/SiteSubPage.css';
 import './DocumentationPage.css';
@@ -38,8 +38,18 @@ const GUIDES = [
 ];
 
 const REFERENCE = [
-  { title: 'Module catalog', meta: 'All 15 modules, indexed', to: ROUTES.MODULE_CATALOG, label: 'Browse' },
-  { title: 'Learning path', meta: 'The recommended order', to: ROUTES.LEARNING_PATH, label: 'View path' },
+  {
+    title: 'Module catalog',
+    meta: 'All 15 modules, indexed',
+    to: ROUTES.MODULE_CATALOG,
+    label: 'Browse',
+  },
+  {
+    title: 'Learning path',
+    meta: 'The recommended order',
+    to: ROUTES.LEARNING_PATH,
+    label: 'View path',
+  },
   { title: 'Pricing', meta: 'Tiers and limits', to: ROUTES.PRICING, label: 'See pricing' },
   { title: 'FAQ', meta: 'Access, sessions, institutions', to: ROUTES.FAQ, label: 'Open FAQ' },
 ];
@@ -168,9 +178,9 @@ export default function DocumentationPage() {
                 Free during the initial release — your first lab provisions in under 90 seconds.
               </p>
               <Link to={ROUTES.SIGNUP} aria-label="Start with Module 01 — create a free account">
-                <SiteButton variant="primary" withArrow size="md">
+                <Button variant="primary" withArrow size="md">
                   Start with Module 01
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

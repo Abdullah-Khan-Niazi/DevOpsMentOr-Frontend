@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { SiteLogo } from './Logo';
+import { SiteLogo } from '@/shared/components/Logo';
 import './SiteFooter.css';
 
 // §3.2 — Grounded Footer
