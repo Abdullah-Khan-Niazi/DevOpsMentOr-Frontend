@@ -1,12 +1,11 @@
 import type { ButtonHTMLAttributes } from 'react';
 import { cn } from '@/shared/utils';
 
-type OAuthProvider = 'google' | 'github' | 'linkedin';
+type OAuthProvider = 'google' | 'github';
 
 const providerConfig: Record<OAuthProvider, { label: string; mark: string }> = {
   google: { label: 'Google', mark: 'G' },
   github: { label: 'GitHub', mark: 'GH' },
-  linkedin: { label: 'LinkedIn', mark: 'in' },
 };
 
 export interface OAuthButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

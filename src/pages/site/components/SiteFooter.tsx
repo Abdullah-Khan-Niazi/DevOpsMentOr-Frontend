@@ -98,15 +98,6 @@ export function SiteFooter() {
           >
             GH
           </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="site-footer__social-link"
-            aria-label="LinkedIn"
-          >
-            LI
-          </a>
         </div>
       </div>
     </footer>

@@ -21,11 +21,6 @@ const PROVIDER_CONFIG: Record<
     clientId: import.meta.env.VITE_GITHUB_CLIENT_ID ?? '',
     scope: 'user:email',
   },
-  linkedin: {
-    authUrl: 'https://www.linkedin.com/oauth/v2/authorization',
-    clientId: import.meta.env.VITE_LINKEDIN_CLIENT_ID ?? '',
-    scope: 'openid email profile',
-  },
 };
 
 function generateState(): string {
@@ -52,13 +47,8 @@ export function useOAuthLogin() {
   });
 
   const initiateOAuth = useCallback(
-    (provider: 'google' | 'github' | 'linkedin') => {
+    (provider: 'google' | 'github') => {
       setFeedback(null);
-
-      if (provider === 'linkedin') {
-        setFeedback('LinkedIn OAuth is coming soon');
-        return;
-      }
 
       const config = PROVIDER_CONFIG[provider];
       if (!config.clientId) {
@@ -100,13 +90,8 @@ export function useOAuthSignup() {
   });
 
   const initiateOAuth = useCallback(
-    (provider: 'google' | 'github' | 'linkedin') => {
+    (provider: 'google' | 'github') => {
       setFeedback(null);
-
-      if (provider === 'linkedin') {
-        setFeedback('LinkedIn OAuth is coming soon');
-        return;
-      }
 
       const config = PROVIDER_CONFIG[provider];
       if (!config.clientId) {

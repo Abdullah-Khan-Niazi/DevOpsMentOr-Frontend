@@ -79,7 +79,6 @@ export function LoginForm() {
       <div className="flex flex-col gap-3">
         <OAuthButton provider="google" onClick={() => initiateOAuth('google')} />
         <OAuthButton provider="github" onClick={() => initiateOAuth('github')} />
-        <OAuthButton provider="linkedin" onClick={() => initiateOAuth('linkedin')} />
       </div>
 
       <p className="auth-link-row">

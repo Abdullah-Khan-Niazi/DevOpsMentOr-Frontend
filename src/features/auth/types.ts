@@ -17,7 +17,7 @@ export interface SignupCredentials {
   fullName: string;
 }
 
-export type OAuthProvider = 'google' | 'github' | 'linkedin';
+export type OAuthProvider = 'google' | 'github';
 
 export interface OAuthCredentials {
   provider: OAuthProvider;

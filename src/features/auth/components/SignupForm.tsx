@@ -55,7 +55,7 @@ export function SignupForm() {
       sessionStorage.removeItem('oauth_signup_code');
       sessionStorage.removeItem('oauth_signup_redirect');
       oauthMutation.mutate({
-        provider: provider as 'google' | 'github' | 'linkedin',
+        provider: provider as 'google' | 'github',
         code,
         redirectUri,
         username: values.username,
@@ -150,7 +150,6 @@ export function SignupForm() {
       <div className="flex flex-col gap-3">
         <OAuthButton provider="google" onClick={() => initiateOAuth('google')} />
         <OAuthButton provider="github" onClick={() => initiateOAuth('github')} />
-        <OAuthButton provider="linkedin" onClick={() => initiateOAuth('linkedin')} />
       </div>
 
       <p className="auth-link-row">
