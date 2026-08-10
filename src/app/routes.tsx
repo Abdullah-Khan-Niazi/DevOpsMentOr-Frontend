@@ -1,7 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Route, Routes } from 'react-router-dom';
 import { ProtectedRoute } from '@/features/auth';
-import { AppShell, LoadingState } from '@/shared/components';
+import { AdminShell, AppShell, LoadingState } from '@/shared/components';
+import { PermissionRouteGuard } from '@/shared/guards';
 import { ROUTES } from '@/shared/constants';
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
@@ -21,6 +22,14 @@ const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage')
 const SecurityPage = lazy(() => import('@/features/settings/pages/SecurityPage'));
 const LoginHistoryPage = lazy(() => import('@/features/settings/pages/LoginHistoryPage'));
 const ApiTokensPage = lazy(() => import('@/features/settings/pages/ApiTokensPage'));
+const PreferencesPage = lazy(() => import('@/features/settings/pages/PreferencesPage'));
+const EditProfilePage = lazy(() => import('@/features/profile/pages/EditProfilePage'));
+const PublicProfilePage = lazy(() => import('@/features/profile/pages/PublicProfilePage'));
+const AdminUsersPage = lazy(() => import('@/features/admin/pages/AdminUsersPage'));
+const AdminUserDetailPage = lazy(() => import('@/features/admin/pages/AdminUserDetailPage'));
+const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashboardPage'));
+const AdminAuditLogsPage = lazy(() => import('@/features/admin/pages/AdminAuditLogsPage'));
+const AdminSettingsPage = lazy(() => import('@/features/admin/pages/AdminSettingsPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -129,6 +138,18 @@ export function AppRoutes() {
         }
       />
 
+      {/* ─── F2 public: any visitor, respects is_public server-side ─────── */}
+      <Route element={<AppShell />}>
+        <Route
+          path={ROUTES.PROFILE_VIEW}
+          element={
+            <LazyPage>
+              <PublicProfilePage />
+            </LazyPage>
+          }
+        />
+      </Route>
+
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route
@@ -172,6 +193,14 @@ export function AppRoutes() {
             }
           />
           <Route
+            path={ROUTES.PREFERENCES}
+            element={
+              <LazyPage>
+                <PreferencesPage />
+              </LazyPage>
+            }
+          />
+          <Route
             path={ROUTES.SECURITY}
             element={
               <LazyPage>
@@ -195,8 +224,78 @@ export function AppRoutes() {
               </LazyPage>
             }
           />
+          <Route
+            path={ROUTES.PROFILE_EDIT}
+            element={
+              <LazyPage>
+                <EditProfilePage />
+              </LazyPage>
+            }
+          />
         </Route>
       </Route>
+
+      {/* ─── F2 admin console (AdminShell layout, permission-gated) ─────── */}
+      <Route
+        path={ROUTES.ADMIN_DASHBOARD}
+        element={
+          <PermissionRouteGuard permission="platform.admin.access">
+            <AdminShell>
+              <LazyPage>
+                <AdminDashboardPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_USERS}
+        element={
+          <PermissionRouteGuard permission="platform.users.read">
+            <AdminShell>
+              <LazyPage>
+                <AdminUsersPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_USER_DETAIL}
+        element={
+          <PermissionRouteGuard permission="platform.users.read">
+            <AdminShell>
+              <LazyPage>
+                <AdminUserDetailPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_SETTINGS}
+        element={
+          <PermissionRouteGuard permission="platform.settings.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminSettingsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_AUDIT_LOGS}
+        element={
+          <PermissionRouteGuard permission="platform.admin.access">
+            <AdminShell>
+              <LazyPage>
+                <AdminAuditLogsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
 
       <Route
         path={ROUTES.HOME}
