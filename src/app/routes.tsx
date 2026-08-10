@@ -6,12 +6,21 @@ import { ROUTES } from '@/shared/constants';
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/features/auth/pages/SignupPage'));
+const VerifyEmailPage = lazy(() => import('@/features/auth/pages/VerifyEmailPage'));
+const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
 const OAuthCallbackPage = lazy(() => import('@/features/auth/pages/OAuthCallbackPage'));
+const AdminLoginPage = lazy(() => import('@/features/admin/pages/AdminLoginPage'));
+const AdminAcceptInvitePage = lazy(() => import('@/features/admin/pages/AdminAcceptInvitePage'));
+const AdminInviteRouteGuard = lazy(() => import('@/features/admin/guards/AdminInviteRouteGuard'));
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
 const UsersPage = lazy(() => import('@/features/users/pages/UsersPage'));
 const RolesPage = lazy(() => import('@/features/roles/pages/RolesPage'));
 const ReportsPage = lazy(() => import('@/features/reports/pages/ReportsPage'));
 const SettingsPage = lazy(() => import('@/features/settings/pages/SettingsPage'));
+const SecurityPage = lazy(() => import('@/features/settings/pages/SecurityPage'));
+const LoginHistoryPage = lazy(() => import('@/features/settings/pages/LoginHistoryPage'));
+const ApiTokensPage = lazy(() => import('@/features/settings/pages/ApiTokensPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -58,10 +67,64 @@ export function AppRoutes() {
       />
 
       <Route
+        path={ROUTES.VERIFY_EMAIL}
+        element={
+          <LazyPage>
+            <VerifyEmailPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.FORGOT_PASSWORD}
+        element={
+          <LazyPage>
+            <ForgotPasswordPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.RESET_PASSWORD}
+        element={
+          <LazyPage>
+            <ResetPasswordPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
         path={ROUTES.OAUTH_CALLBACK}
         element={
           <LazyPage>
             <OAuthCallbackPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.ADMIN_LOGIN}
+        element={
+          <LazyPage>
+            <AdminLoginPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.ADMIN_ACCEPT_INVITE}
+        element={
+          <LazyPage>
+            <AdminAcceptInvitePage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.ADMIN_PLATFORM_ADMINS}
+        element={
+          <LazyPage>
+            <AdminInviteRouteGuard />
           </LazyPage>
         }
       />
@@ -105,6 +168,30 @@ export function AppRoutes() {
             element={
               <LazyPage>
                 <SettingsPage />
+              </LazyPage>
+            }
+          />
+          <Route
+            path={ROUTES.SECURITY}
+            element={
+              <LazyPage>
+                <SecurityPage />
+              </LazyPage>
+            }
+          />
+          <Route
+            path={ROUTES.LOGIN_HISTORY}
+            element={
+              <LazyPage>
+                <LoginHistoryPage />
+              </LazyPage>
+            }
+          />
+          <Route
+            path={ROUTES.API_TOKENS}
+            element={
+              <LazyPage>
+                <ApiTokensPage />
               </LazyPage>
             }
           />
