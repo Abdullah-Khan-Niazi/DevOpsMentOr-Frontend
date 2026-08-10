@@ -8,6 +8,11 @@ import './SettingsPage.css';
 
 const securityLinks = [
   {
+    to: ROUTES.PREFERENCES,
+    title: 'Preferences',
+    description: 'Theme, timezone and notification defaults.',
+  },
+  {
     to: ROUTES.SECURITY,
     title: 'Security',
     description: 'Two-factor authentication and account protection.',
