@@ -7,6 +7,7 @@ import { cn } from '@/shared/utils';
 const adminNavItems = [
   { to: ROUTES.ADMIN_DASHBOARD, label: 'Dashboard' },
   { to: ROUTES.ADMIN_USERS, label: 'Users' },
+  { to: ROUTES.ADMIN_ORGANIZATIONS, label: 'Organizations' },
   { to: ROUTES.ADMIN_SETTINGS, label: 'System settings' },
   { to: ROUTES.ADMIN_AUDIT_LOGS, label: 'Audit logs' },
   { to: ROUTES.ADMIN_PLATFORM_ADMINS, label: 'Platform admins' },

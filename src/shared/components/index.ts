@@ -13,3 +13,4 @@ export { LoadingState } from './LoadingState';
 export { PageHeader } from './PageHeader';
 export { AppShell, AdminShell } from './Layout';
 export { Pagination, type PaginationProps } from './Pagination';
+export { TabRow, type TabItem } from './TabRow';

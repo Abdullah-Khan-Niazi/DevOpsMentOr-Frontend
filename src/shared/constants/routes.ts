@@ -25,6 +25,20 @@ export const ROUTES = {
   ADMIN_DASHBOARD: '/admin/dashboard',
   ADMIN_SETTINGS: '/admin/settings',
   ADMIN_AUDIT_LOGS: '/admin/audit-logs',
+  ADMIN_ORGANIZATIONS: '/admin/organizations',
+  ADMIN_ORGANIZATION_DETAIL: '/admin/organizations/:orgId',
+  // ─── F3 organization workspace (OrgAdminShell) ──────────────────────────────
+  ORG_DASHBOARD: '/org/dashboard',
+  ORG_CLASSES: '/org/classes',
+  ORG_CLASS_NEW: '/org/classes/new',
+  ORG_CLASS_DETAIL: '/org/classes/:classId',
+  ORG_CLASS_ROSTER: '/org/classes/:classId/students',
+  ORG_CLASS_INVITE: '/org/classes/:classId/invite',
+  ORG_PROFESSORS: '/org/professors',
+  ORG_SETTINGS: '/org/settings',
+  // ─── F3 enrollment (student + invitation accept) ────────────────────────────
+  ENROLL_ACCEPT: '/enroll/accept',
+  STUDENT_MY_CLASS: '/student/class',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',
