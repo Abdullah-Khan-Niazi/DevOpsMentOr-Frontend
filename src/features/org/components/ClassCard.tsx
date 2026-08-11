@@ -12,7 +12,7 @@ export function ClassCard({ klass }: { klass: ClassDto }) {
     >
       <Card interactive className="h-full p-5">
         <div className="flex items-start justify-between gap-3">
-          <h3 className="font-semibold text-slate-900">{klass.className}</h3>
+          <h3 className="font-semibold text-card-foreground">{klass.className}</h3>
           <span className="rounded-full bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
             {klass.studentCount}/{klass.maxStudents}
           </span>
@@ -20,14 +20,16 @@ export function ClassCard({ klass }: { klass: ClassDto }) {
         <p className="mt-1 line-clamp-2 text-sm text-muted">
           {klass.description || 'No description provided.'}
         </p>
-        <dl className="mt-4 space-y-1 text-xs text-slate-500">
+        <dl className="mt-4 space-y-1 text-xs text-muted">
           <div className="flex justify-between">
             <dt>Professor</dt>
-            <dd className="text-slate-700">{klass.professorName ?? 'Unassigned'}</dd>
+            <dd className="text-muted-foreground">{klass.professorName ?? 'Unassigned'}</dd>
           </div>
           <div className="flex justify-between">
             <dt>Created</dt>
-            <dd className="text-slate-700">{new Date(klass.createdAt).toLocaleDateString()}</dd>
+            <dd className="text-muted-foreground">
+              {new Date(klass.createdAt).toLocaleDateString()}
+            </dd>
           </div>
         </dl>
       </Card>

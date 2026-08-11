@@ -19,7 +19,7 @@ export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
         )}
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-xl font-semibold text-slate-900">{org.name}</h2>
+            <h2 className="text-xl font-semibold text-card-foreground">{org.name}</h2>
             {org.isVerified ? (
               <span className="text-xs font-medium uppercase tracking-wide text-green-700">
                 Verified
@@ -40,17 +40,19 @@ export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
       <dl className="mt-6 grid grid-cols-3 gap-4 items-stretch">
         <div className="flex flex-col rounded-lg border border-border bg-surface/50 p-4">
           <dt className="text-sm text-muted">Classes</dt>
-          <dd className="mt-auto text-2xl font-semibold text-slate-900">{org.stats.classCount}</dd>
+          <dd className="mt-auto text-2xl font-semibold text-card-foreground">
+            {org.stats.classCount}
+          </dd>
         </div>
         <div className="flex flex-col rounded-lg border border-border bg-surface/50 p-4">
           <dt className="text-sm text-muted">Students</dt>
-          <dd className="mt-auto text-2xl font-semibold text-slate-900">
+          <dd className="mt-auto text-2xl font-semibold text-card-foreground">
             {org.stats.studentCount}
           </dd>
         </div>
         <div className="flex flex-col rounded-lg border border-border bg-surface/50 p-4">
           <dt className="text-sm text-muted">Professors</dt>
-          <dd className="mt-auto text-2xl font-semibold text-slate-900">
+          <dd className="mt-auto text-2xl font-semibold text-card-foreground">
             {org.stats.professorCount}
           </dd>
         </div>

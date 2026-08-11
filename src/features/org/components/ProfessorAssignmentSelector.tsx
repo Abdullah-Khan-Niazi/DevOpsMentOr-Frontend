@@ -21,7 +21,7 @@ export function ProfessorAssignmentSelector({
   );
 
   if (professors.length === 0) {
-    return <p className="py-6 text-sm text-slate-500">Invite a professor first.</p>;
+    return <p className="py-6 text-sm text-muted">Invite a professor first.</p>;
   }
 
   const handleAssign = () => {

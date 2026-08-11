@@ -79,7 +79,7 @@ export function OrgClassCreatePage() {
           value={maxStudents}
           onChange={(e) => setMaxStudents(e.target.value)}
         />
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-muted">
           Students join after accepting an email invitation sent from this class.
         </p>
       </Card>

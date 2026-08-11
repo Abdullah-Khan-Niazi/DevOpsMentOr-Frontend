@@ -107,7 +107,10 @@ export function PreferencesPage() {
               <legend className="input-label">Theme</legend>
               <div className="flex gap-4">
                 {(['light', 'dark'] as const).map((theme) => (
-                  <label key={theme} className="flex items-center gap-2 text-sm text-slate-700">
+                  <label
+                    key={theme}
+                    className="flex items-center gap-2 text-sm text-muted-foreground"
+                  >
                     <input
                       type="radio"
                       value={theme}
@@ -136,7 +139,7 @@ export function PreferencesPage() {
 
             <fieldset>
               <legend className="input-label">Email notifications</legend>
-              <label className="flex items-center gap-2 text-sm text-slate-700">
+              <label className="flex items-center gap-2 text-sm text-muted-foreground">
                 <input
                   type="radio"
                   value="true"
@@ -145,7 +148,7 @@ export function PreferencesPage() {
                 />
                 Enabled
               </label>
-              <label className="mt-1 flex items-center gap-2 text-sm text-slate-700">
+              <label className="mt-1 flex items-center gap-2 text-sm text-muted-foreground">
                 <input
                   type="radio"
                   value="false"

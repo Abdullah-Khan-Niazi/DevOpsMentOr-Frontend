@@ -24,7 +24,7 @@ export function AdminDashboardPage() {
       {isLoading ? (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-28 animate-pulse rounded-lg bg-slate-200" />
+            <div key={i} className="h-28 animate-pulse rounded-lg bg-secondary" />
           ))}
         </div>
       ) : null}
@@ -50,13 +50,15 @@ export function AdminDashboardPage() {
           </div>
 
           <Card className="mt-6">
-            <h2 className="mb-3 text-base font-semibold text-slate-800">Recent admin activity</h2>
+            <h2 className="mb-3 text-base font-semibold text-card-foreground">
+              Recent admin activity
+            </h2>
             {data.recentAuditLogs.length === 0 ? (
-              <p className="text-sm text-slate-500">No administrative actions recorded yet.</p>
+              <p className="text-sm text-muted">No administrative actions recorded yet.</p>
             ) : (
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                     <th className="px-3 py-2 font-medium">Date</th>
                     <th className="px-3 py-2 font-medium">Admin</th>
                     <th className="px-3 py-2 font-medium">Action</th>
@@ -68,8 +70,8 @@ export function AdminDashboardPage() {
                     <tr key={log.logId} className="border-b border-border/60 last:border-0">
                       <td className="px-3 py-2">{formatDate(log.createdAt)}</td>
                       <td className="px-3 py-2">{log.adminFullName ?? log.adminEmail}</td>
-                      <td className="px-3 py-2 text-slate-700">{log.action}</td>
-                      <td className="px-3 py-2 text-slate-600">
+                      <td className="px-3 py-2 text-muted-foreground">{log.action}</td>
+                      <td className="px-3 py-2 text-muted-foreground">
                         {log.targetType ?? '—'}
                         {log.targetId ? ` #${log.targetId}` : ''}
                       </td>
@@ -96,8 +98,10 @@ function KpiCard({
 }) {
   return (
     <Card className="flex flex-col justify-between p-4">
-      <p className="text-sm text-slate-500">{label}</p>
-      <p className={`mt-1 text-3xl font-semibold ${muted ? 'text-slate-400' : 'text-slate-900'}`}>
+      <p className="text-sm text-muted">{label}</p>
+      <p
+        className={`mt-1 text-3xl font-semibold ${muted ? 'text-muted-foreground' : 'text-card-foreground'}`}
+      >
         {value}
       </p>
     </Card>

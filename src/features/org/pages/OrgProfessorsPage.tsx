@@ -35,20 +35,20 @@ export function OrgProfessorsPage() {
 
       <div className="grid gap-4 lg:grid-cols-3">
         <Card className="space-y-4 p-5 lg:col-span-2">
-          <h3 className="font-medium text-slate-900">Current professors</h3>
+          <h3 className="font-medium text-card-foreground">Current professors</h3>
           {query.isError ? (
             <ErrorState
               message={query.error?.message ?? 'Unable to load professors.'}
               onRetry={() => void query.refetch()}
             />
           ) : query.isLoading ? (
-            <p className="py-6 text-sm text-slate-500">Loading professors…</p>
+            <p className="py-6 text-sm text-muted">Loading professors…</p>
           ) : query.data && query.data.length === 0 ? (
-            <p className="py-6 text-sm text-slate-500">No professors yet in this organization.</p>
+            <p className="py-6 text-sm text-muted">No professors yet in this organization.</p>
           ) : (
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Professor</th>
                   <th className="px-3 py-2 font-medium">Assigned classes</th>
                 </tr>
@@ -57,13 +57,17 @@ export function OrgProfessorsPage() {
                 {query.data?.map((professor) => (
                   <tr
                     key={professor.userId}
-                    className="border-b border-border/60 last:border-0 hover:bg-slate-50/60"
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/60"
                   >
                     <td className="px-3 py-2.5">
-                      <div className="font-medium text-slate-900">{professor.fullName ?? '—'}</div>
-                      <div className="text-xs text-slate-500">{professor.email}</div>
+                      <div className="font-medium text-card-foreground">
+                        {professor.fullName ?? '—'}
+                      </div>
+                      <div className="text-xs text-muted">{professor.email}</div>
                     </td>
-                    <td className="px-3 py-2.5 text-slate-700">{professor.assignedClassCount}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground">
+                      {professor.assignedClassCount}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -73,7 +77,7 @@ export function OrgProfessorsPage() {
 
         {canInvite ? (
           <Card className="h-fit space-y-4 p-5">
-            <h3 className="font-medium text-slate-900">Invite a professor</h3>
+            <h3 className="font-medium text-card-foreground">Invite a professor</h3>
             <p className="text-sm text-muted">
               The professor receives an email invitation to join your organization.
             </p>

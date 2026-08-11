@@ -25,17 +25,17 @@ export function InvitationStatusTable({
   onResend,
 }: InvitationStatusTableProps) {
   if (isLoading) {
-    return <p className="py-6 text-sm text-slate-500">Loading invitations…</p>;
+    return <p className="py-6 text-sm text-muted">Loading invitations…</p>;
   }
 
   if (invitations.length === 0) {
-    return <p className="py-6 text-sm text-slate-500">No invitations sent yet.</p>;
+    return <p className="py-6 text-sm text-muted">No invitations sent yet.</p>;
   }
 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+        <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
           <th className="px-3 py-2 font-medium">Invitee</th>
           <th className="px-3 py-2 font-medium">Status</th>
           <th className="px-3 py-2 font-medium">Sent</th>
@@ -47,9 +47,9 @@ export function InvitationStatusTable({
         {invitations.map((invite) => (
           <tr
             key={invite.invitationId}
-            className="border-b border-border/60 last:border-0 hover:bg-slate-50/60"
+            className="border-b border-border/60 last:border-0 hover:bg-surface/60"
           >
-            <td className="px-3 py-2.5 font-medium text-slate-900">{invite.inviteeEmail}</td>
+            <td className="px-3 py-2.5 font-medium text-card-foreground">{invite.inviteeEmail}</td>
             <td className="px-3 py-2.5">
               <span
                 className={
@@ -57,16 +57,16 @@ export function InvitationStatusTable({
                     ? 'text-green-700'
                     : invite.status === 'pending'
                       ? 'text-amber-700'
-                      : 'text-slate-500'
+                      : 'text-muted'
                 }
               >
                 {STATUS_LABEL[invite.status]}
               </span>
             </td>
-            <td className="px-3 py-2.5 text-slate-600">
+            <td className="px-3 py-2.5 text-muted-foreground">
               {new Date(invite.createdAt).toLocaleDateString()}
             </td>
-            <td className="px-3 py-2.5 text-slate-600">
+            <td className="px-3 py-2.5 text-muted-foreground">
               {new Date(invite.expiresAt).toLocaleDateString()}
             </td>
             {canResend ? (

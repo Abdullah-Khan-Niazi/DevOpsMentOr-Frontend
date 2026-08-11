@@ -16,17 +16,17 @@ export function ClassRosterTable({
   onWithdraw,
 }: ClassRosterTableProps) {
   if (isLoading) {
-    return <p className="py-6 text-sm text-slate-500">Loading roster…</p>;
+    return <p className="py-6 text-sm text-muted">Loading roster…</p>;
   }
 
   if (students.length === 0) {
-    return <p className="py-6 text-sm text-slate-500">No students enrolled yet.</p>;
+    return <p className="py-6 text-sm text-muted">No students enrolled yet.</p>;
   }
 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+        <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
           <th className="px-3 py-2 font-medium">Student</th>
           <th className="px-3 py-2 font-medium">Status</th>
           <th className="px-3 py-2 font-medium">Enrolled</th>
@@ -37,16 +37,16 @@ export function ClassRosterTable({
         {students.map((student) => (
           <tr
             key={student.userId}
-            className="border-b border-border/60 last:border-0 hover:bg-slate-50/60"
+            className="border-b border-border/60 last:border-0 hover:bg-surface/60"
           >
             <td className="px-3 py-2.5">
-              <div className="font-medium text-slate-900">{student.fullName ?? '—'}</div>
-              <div className="text-xs text-slate-500">{student.email}</div>
+              <div className="font-medium text-card-foreground">{student.fullName ?? '—'}</div>
+              <div className="text-xs text-muted">{student.email}</div>
             </td>
-            <td className="px-3 py-2.5 text-slate-700">
+            <td className="px-3 py-2.5 text-muted-foreground">
               {student.isActive ? 'Active' : 'Withdrawn'}
             </td>
-            <td className="px-3 py-2.5 text-slate-600">
+            <td className="px-3 py-2.5 text-muted-foreground">
               {new Date(student.enrolledAt).toLocaleDateString()}
             </td>
             {canManage ? (

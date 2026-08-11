@@ -49,7 +49,7 @@ export function OrgDashboardPage() {
       <div className="mt-6 grid gap-4 sm:grid-cols-2">
         <Link to={ROUTES.ORG_CLASSES}>
           <Card interactive className="p-5">
-            <h3 className="font-semibold text-slate-900">Classes</h3>
+            <h3 className="font-semibold text-card-foreground">Classes</h3>
             <p className="mt-1 text-sm text-muted">
               Manage your classes, rosters, assignments and student invitations.
             </p>
@@ -58,7 +58,7 @@ export function OrgDashboardPage() {
         {canInviteProfessors ? (
           <Link to={ROUTES.ORG_PROFESSORS}>
             <Card interactive className="p-5">
-              <h3 className="font-semibold text-slate-900">Professors</h3>
+              <h3 className="font-semibold text-card-foreground">Professors</h3>
               <p className="mt-1 text-sm text-muted">
                 Invite professors and review their assignments.
               </p>
@@ -68,7 +68,7 @@ export function OrgDashboardPage() {
         {canViewSettings ? (
           <Link to={ROUTES.ORG_SETTINGS}>
             <Card interactive className="p-5">
-              <h3 className="font-semibold text-slate-900">Settings</h3>
+              <h3 className="font-semibold text-card-foreground">Settings</h3>
               <p className="mt-1 text-sm text-muted">
                 Organization details and email domain restriction.
               </p>

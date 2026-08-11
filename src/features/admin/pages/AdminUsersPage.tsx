@@ -104,7 +104,7 @@ export function AdminUsersPage() {
           <button
             type="button"
             onClick={() => applyFilters({ search: draft.trim() })}
-            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-brand-700"
           >
             Apply
           </button>

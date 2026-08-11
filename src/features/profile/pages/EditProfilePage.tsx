@@ -28,17 +28,17 @@ export default function EditProfilePage() {
       ) : (
         <div className="mx-auto max-w-3xl space-y-6">
           <Card>
-            <h2 className="mb-4 text-base font-semibold text-slate-800">Photos</h2>
+            <h2 className="mb-4 text-base font-semibold text-card-foreground">Photos</h2>
             <MediaUpload avatarUrl={profile.avatarUrl} coverPhotoUrl={profile.coverPhotoUrl} />
           </Card>
 
           <Card>
-            <h2 className="mb-4 text-base font-semibold text-slate-800">Profile details</h2>
+            <h2 className="mb-4 text-base font-semibold text-card-foreground">Profile details</h2>
             <ProfileForm userId={me.userId} initial={profile} />
           </Card>
 
           <Card>
-            <h2 className="mb-4 text-base font-semibold text-slate-800">Skills</h2>
+            <h2 className="mb-4 text-base font-semibold text-card-foreground">Skills</h2>
             <SkillsManager />
           </Card>
         </div>

@@ -63,13 +63,14 @@ export function EnrollAcceptPage() {
     return (
       <AuthLayout title="Invitation accepted" subtitle={`Welcome to ${invitee.organizationName}`}>
         <Card className="space-y-3 p-6 text-center">
-          <p className="text-sm text-slate-600">
+          <p className="text-sm text-muted-foreground">
             You're now part of{' '}
-            <span className="font-medium text-slate-900">{invitee.organizationName}</span>
+            <span className="font-medium text-card-foreground">{invitee.organizationName}</span>
             {invitee.kind === 'class' && invitee.className ? (
               <>
                 {' '}
-                in class <span className="font-medium text-slate-900">{invitee.className}</span>
+                in class{' '}
+                <span className="font-medium text-card-foreground">{invitee.className}</span>
               </>
             ) : null}
             .
@@ -85,13 +86,14 @@ export function EnrollAcceptPage() {
   return (
     <AuthLayout title="Accept invitation" subtitle={`Join ${invitee.organizationName}`}>
       <Card className="space-y-4 p-6">
-        <p className="text-sm text-slate-600">
+        <p className="text-sm text-muted-foreground">
           You've been invited to{' '}
-          <span className="font-medium text-slate-900">{invitee.organizationName}</span>
+          <span className="font-medium text-card-foreground">{invitee.organizationName}</span>
           {invitee.kind === 'class' && invitee.className ? (
             <>
               {' '}
-              for class <span className="font-medium text-slate-900">{invitee.className}</span>
+              for class{' '}
+              <span className="font-medium text-card-foreground">{invitee.className}</span>
             </>
           ) : null}
           .

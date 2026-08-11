@@ -112,7 +112,7 @@ export function AdminAuditLogsPage() {
           <button
             type="button"
             onClick={applySearch}
-            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-brand-700"
           >
             Apply
           </button>
@@ -126,15 +126,15 @@ export function AdminAuditLogsPage() {
         ) : isLoading ? (
           <div className="space-y-2 py-1">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-10 animate-pulse rounded-md bg-slate-200" />
+              <div key={i} className="h-10 animate-pulse rounded-md bg-secondary" />
             ))}
           </div>
         ) : data && data.data.length === 0 ? (
-          <p className="py-6 text-sm text-slate-500">No audit logs found.</p>
+          <p className="py-6 text-sm text-muted">No audit logs found.</p>
         ) : data ? (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                 <th className="px-3 py-2 font-medium">Date</th>
                 <th className="px-3 py-2 font-medium">Admin</th>
                 <th className="px-3 py-2 font-medium">Action</th>
@@ -148,15 +148,17 @@ export function AdminAuditLogsPage() {
                 <tr key={log.logId} className="border-b border-border/60 last:border-0">
                   <td className="px-3 py-2">{formatDate(log.createdAt)}</td>
                   <td className="px-3 py-2">{log.adminFullName ?? log.adminEmail}</td>
-                  <td className="px-3 py-2 text-slate-700">{log.action}</td>
-                  <td className="px-3 py-2 text-slate-600">
+                  <td className="px-3 py-2 text-muted-foreground">{log.action}</td>
+                  <td className="px-3 py-2 text-muted-foreground">
                     {log.targetType ?? '—'}
                     {log.targetId ? ` #${log.targetId}` : ''}
                   </td>
-                  <td className="px-3 py-2 text-slate-600">{log.ipAddress ?? '—'}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{log.ipAddress ?? '—'}</td>
                   <td className="px-3 py-2">
                     {log.changes ? (
-                      <code className="text-xs text-slate-600">{JSON.stringify(log.changes)}</code>
+                      <code className="text-xs text-muted-foreground">
+                        {JSON.stringify(log.changes)}
+                      </code>
                     ) : (
                       '—'
                     )}

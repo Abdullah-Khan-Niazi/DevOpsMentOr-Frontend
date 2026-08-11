@@ -75,8 +75,8 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
 
   return (
     <div className="grid gap-4 md:grid-cols-2">
-      <div className="rounded-lg border border-border bg-white p-4">
-        <h3 className="mb-2 text-sm font-semibold text-slate-800">Profile picture</h3>
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h3 className="mb-2 text-sm font-semibold text-card-foreground">Profile picture</h3>
         {currentAvatar ? (
           <img
             src={currentAvatar}
@@ -84,7 +84,7 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
             className="mb-3 h-24 w-24 rounded-full object-cover"
           />
         ) : (
-          <div className="mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-slate-100 text-sm text-slate-400">
+          <div className="mb-3 flex h-24 w-24 items-center justify-center rounded-full bg-secondary text-sm text-muted-foreground">
             No avatar
           </div>
         )}
@@ -110,11 +110,11 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
         >
           Upload avatar
         </Button>
-        <p className="mt-2 text-xs text-slate-400">JPEG, PNG or WebP up to 5 MB.</p>
+        <p className="mt-2 text-xs text-muted-foreground">JPEG, PNG or WebP up to 5 MB.</p>
       </div>
 
-      <div className="rounded-lg border border-border bg-white p-4">
-        <h3 className="mb-2 text-sm font-semibold text-slate-800">Cover photo</h3>
+      <div className="rounded-lg border border-border bg-card p-4">
+        <h3 className="mb-2 text-sm font-semibold text-card-foreground">Cover photo</h3>
         {currentCover ? (
           <img
             src={currentCover}
@@ -122,7 +122,7 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
             className="mb-3 h-24 w-full rounded-md object-cover"
           />
         ) : (
-          <div className="mb-3 flex h-24 w-full items-center justify-center rounded-md bg-slate-100 text-sm text-slate-400">
+          <div className="mb-3 flex h-24 w-full items-center justify-center rounded-md bg-secondary text-sm text-muted-foreground">
             No cover photo
           </div>
         )}
@@ -148,7 +148,7 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
         >
           Upload cover
         </Button>
-        <p className="mt-2 text-xs text-slate-400">JPEG, PNG or WebP up to 5 MB.</p>
+        <p className="mt-2 text-xs text-muted-foreground">JPEG, PNG or WebP up to 5 MB.</p>
       </div>
     </div>
   );

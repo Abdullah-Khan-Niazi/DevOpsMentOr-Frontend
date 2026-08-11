@@ -112,7 +112,7 @@ export function AdminOrganizationsPage() {
           <button
             type="button"
             onClick={applySearch}
-            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-white transition-colors hover:bg-brand-700"
+            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-brand-700"
           >
             Apply
           </button>
@@ -124,7 +124,7 @@ export function AdminOrganizationsPage() {
             onRetry={() => void refetch()}
           />
         ) : isLoading ? (
-          <p className="py-6 text-sm text-slate-500">Loading organizations…</p>
+          <p className="py-6 text-sm text-muted">Loading organizations…</p>
         ) : data && data.data.length === 0 ? (
           <EmptyState
             title={search ? 'No matching organizations' : 'No organizations yet'}
@@ -139,7 +139,7 @@ export function AdminOrganizationsPage() {
           <>
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Organization</th>
                   <th className="px-3 py-2 font-medium">Slug</th>
                   <th className="px-3 py-2 font-medium">Industry</th>
@@ -151,17 +151,17 @@ export function AdminOrganizationsPage() {
                 {data?.data.map((org) => (
                   <tr
                     key={org.organizationId}
-                    className="border-b border-border/60 last:border-0 hover:bg-slate-50/60"
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/60"
                   >
                     <td className="px-3 py-2.5">
-                      <div className="font-medium text-slate-900">{org.name}</div>
+                      <div className="font-medium text-card-foreground">{org.name}</div>
                       {org.billingEmail ? (
-                        <div className="text-xs text-slate-500">{org.billingEmail}</div>
+                        <div className="text-xs text-muted">{org.billingEmail}</div>
                       ) : null}
                     </td>
-                    <td className="px-3 py-2.5 text-slate-600">{org.slug}</td>
-                    <td className="px-3 py-2.5 text-slate-600">{org.industry ?? '—'}</td>
-                    <td className="px-3 py-2.5 text-slate-600">
+                    <td className="px-3 py-2.5 text-muted-foreground">{org.slug}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground">{org.industry ?? '—'}</td>
+                    <td className="px-3 py-2.5 text-muted-foreground">
                       {new Date(org.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-3 py-2.5">

@@ -139,29 +139,29 @@ export function SkillsManager() {
       </div>
 
       {grouped.length === 0 ? (
-        <p className="text-sm text-slate-500">No skills added yet — pick from the catalog above.</p>
+        <p className="text-sm text-muted">No skills added yet — pick from the catalog above.</p>
       ) : (
         <div className="space-y-3">
           {grouped.map(([category, skills]) => (
             <div key={category}>
-              <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                 {CATEGORY_LABELS[category] ?? category}
               </h4>
               <div className="flex flex-wrap gap-2">
                 {skills.map((skill) => (
                   <span
                     key={skill.skillId}
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-slate-50 px-3 py-1 text-sm text-slate-700"
+                    className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-sm text-muted-foreground"
                   >
                     {skill.skillName}
-                    <span className="text-xs text-slate-400">
+                    <span className="text-xs text-muted-foreground">
                       {skill.proficiencyLevel}
                       {skill.yearsExperience > 0 ? ` · ${skill.yearsExperience}y` : ''}
                     </span>
                     <button
                       type="button"
                       aria-label={`Remove ${skill.skillName}`}
-                      className="text-slate-400 transition-colors hover:text-danger"
+                      className="text-muted-foreground transition-colors hover:text-danger"
                       onClick={() => handleRemove(skill.skillId)}
                       disabled={removeSkill.isPending}
                     >

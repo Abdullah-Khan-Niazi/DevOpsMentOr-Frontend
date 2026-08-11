@@ -84,7 +84,7 @@ export function OrgDetailForm({
       />
 
       <Card className="space-y-4 p-6">
-        <h3 className="font-medium text-slate-900">Details</h3>
+        <h3 className="font-medium text-card-foreground">Details</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
           <Input label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
@@ -119,7 +119,7 @@ export function OrgDetailForm({
 
       <Card className="mt-4 space-y-4 p-6">
         <div>
-          <h3 className="font-medium text-slate-900">Organization admin</h3>
+          <h3 className="font-medium text-card-foreground">Organization admin</h3>
           <p className="mt-1 text-sm text-muted">
             {org.adminUserId && org.adminEmail
               ? `Currently: ${org.adminEmail} (user #${org.adminUserId})`

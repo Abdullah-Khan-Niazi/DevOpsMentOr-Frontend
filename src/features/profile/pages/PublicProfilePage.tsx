@@ -70,21 +70,21 @@ export default function PublicProfilePage() {
 
       {profile.skills.length > 0 ? (
         <Card>
-          <h2 className="mb-4 text-base font-semibold text-slate-800">Skills</h2>
+          <h2 className="mb-4 text-base font-semibold text-card-foreground">Skills</h2>
           <div className="space-y-3">
             {[...grouped.entries()].map(([category, skills]) => (
               <div key={category}>
-                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-slate-500">
+                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                   {CATEGORY_LABELS[category] ?? category}
                 </h4>
                 <div className="flex flex-wrap gap-2">
                   {skills.map((skill) => (
                     <span
                       key={skill.skillId}
-                      className="inline-flex items-center gap-2 rounded-full border border-border bg-slate-50 px-3 py-1 text-sm text-slate-700"
+                      className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-sm text-muted-foreground"
                     >
                       {skill.skillName}
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-muted-foreground">
                         {skill.proficiencyLevel}
                         {skill.yearsExperience > 0 ? ` · ${skill.yearsExperience}y` : ''}
                       </span>

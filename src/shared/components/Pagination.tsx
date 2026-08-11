@@ -18,7 +18,7 @@ export function Pagination({ page, pageSize, total, totalPages, onPageChange }: 
 
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 px-1 pb-2 pt-4">
-      <p className="text-sm text-slate-500">
+      <p className="text-sm text-muted">
         Showing {from}–{to} of {total}
       </p>
       <div className="flex items-center gap-2">
@@ -31,7 +31,7 @@ export function Pagination({ page, pageSize, total, totalPages, onPageChange }: 
         >
           Previous
         </Button>
-        <span className="text-sm text-slate-600">
+        <span className="text-sm text-muted-foreground">
           Page {page} of {totalPages}
         </span>
         <Button

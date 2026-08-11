@@ -65,7 +65,7 @@ export function OrgClassRosterPage() {
         actions={
           <Link
             to={ROUTES.ORG_CLASS_DETAIL.replace(':classId', classId)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
           >
             ← Back to class
           </Link>

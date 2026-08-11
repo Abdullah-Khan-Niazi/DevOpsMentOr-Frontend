@@ -40,7 +40,7 @@ export function TabRow({ items, activeId, onChange }: TabRowProps) {
           aria-selected={item.id === activeId}
           role="tab"
           className={cn(
-            'rounded-t-md px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:text-slate-900',
+            'rounded-t-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-card-foreground',
             item.id === activeId && 'text-brand-700',
           )}
         >

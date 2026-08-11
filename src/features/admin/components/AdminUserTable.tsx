@@ -25,17 +25,17 @@ interface AdminUserTableProps {
 
 export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
   if (isLoading) {
-    return <p className="py-6 text-sm text-slate-500">Loading users…</p>;
+    return <p className="py-6 text-sm text-muted">Loading users…</p>;
   }
 
   if (users.length === 0) {
-    return <p className="py-6 text-sm text-slate-500">No users found matching filters.</p>;
+    return <p className="py-6 text-sm text-muted">No users found matching filters.</p>;
   }
 
   return (
     <table className="w-full text-left text-sm">
       <thead>
-        <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+        <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
           <th className="px-3 py-2 font-medium">User</th>
           <th className="px-3 py-2 font-medium">Roles</th>
           <th className="px-3 py-2 font-medium">Status</th>
@@ -47,19 +47,21 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
         {users.map((user) => (
           <tr
             key={user.userId}
-            className="border-b border-border/60 last:border-0 hover:bg-slate-50/60"
+            className="border-b border-border/60 last:border-0 hover:bg-surface/60"
           >
             <td className="px-3 py-2.5">
-              <div className="font-medium text-slate-900">{user.fullName ?? user.username}</div>
-              <div className="text-xs text-slate-500">
+              <div className="font-medium text-card-foreground">
+                {user.fullName ?? user.username}
+              </div>
+              <div className="text-xs text-muted">
                 @{user.username} · {user.email}
               </div>
             </td>
-            <td className="px-3 py-2.5 text-slate-600">
+            <td className="px-3 py-2.5 text-muted-foreground">
               {user.roles.length === 0 ? '—' : user.roles.join(', ')}
             </td>
-            <td className="px-3 py-2.5 text-slate-700">{statusText(user)}</td>
-            <td className="px-3 py-2.5 text-slate-600">{formatDate(user.createdAt)}</td>
+            <td className="px-3 py-2.5 text-muted-foreground">{statusText(user)}</td>
+            <td className="px-3 py-2.5 text-muted-foreground">{formatDate(user.createdAt)}</td>
             <td className="px-3 py-2.5">
               <Link
                 to={`/admin/users/${user.userId}`}

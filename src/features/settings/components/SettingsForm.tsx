@@ -43,7 +43,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-xl space-y-4 rounded-lg border border-border bg-white p-6"
+      className="max-w-xl space-y-4 rounded-lg border border-border bg-card p-6"
       noValidate
     >
       <Input
@@ -59,7 +59,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
       />
       <Input label="Timezone" error={errors.timezone?.message} {...register('timezone')} />
 
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-sm text-muted-foreground">
         <input
           type="checkbox"
           className="size-4 rounded border-border"

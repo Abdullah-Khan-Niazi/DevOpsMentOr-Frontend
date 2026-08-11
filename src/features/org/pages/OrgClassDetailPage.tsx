@@ -136,30 +136,34 @@ export function OrgClassDetailPage() {
       {activeTab === 'overview' && (
         <div className="grid gap-4 lg:grid-cols-2">
           <Card className="p-5">
-            <h3 className="font-medium text-slate-900">Details</h3>
+            <h3 className="font-medium text-card-foreground">Details</h3>
             <dl className="mt-3 space-y-2 text-sm">
               <div className="flex justify-between">
-                <dt className="text-slate-500">Slug</dt>
-                <dd className="text-slate-900">{klass.slug}</dd>
+                <dt className="text-muted">Slug</dt>
+                <dd className="text-card-foreground">{klass.slug}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Max students</dt>
-                <dd className="text-slate-900">{klass.maxStudents}</dd>
+                <dt className="text-muted">Max students</dt>
+                <dd className="text-card-foreground">{klass.maxStudents}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Enrolled</dt>
-                <dd className="text-slate-900">{klass.studentCount}</dd>
+                <dt className="text-muted">Enrolled</dt>
+                <dd className="text-card-foreground">{klass.studentCount}</dd>
               </div>
               <div className="flex justify-between">
-                <dt className="text-slate-500">Created</dt>
-                <dd className="text-slate-900">{new Date(klass.createdAt).toLocaleDateString()}</dd>
+                <dt className="text-muted">Created</dt>
+                <dd className="text-card-foreground">
+                  {new Date(klass.createdAt).toLocaleDateString()}
+                </dd>
               </div>
             </dl>
-            <p className="mt-4 text-sm text-slate-600">{klass.description || 'No description.'}</p>
+            <p className="mt-4 text-sm text-muted-foreground">
+              {klass.description || 'No description.'}
+            </p>
           </Card>
 
           <Card className="p-5">
-            <h3 className="font-medium text-slate-900">Professor assignment</h3>
+            <h3 className="font-medium text-card-foreground">Professor assignment</h3>
             <div className="mt-3">
               {canManage ? (
                 <ProfessorAssignmentSelector
@@ -174,7 +178,7 @@ export function OrgClassDetailPage() {
                   }
                 />
               ) : (
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-muted-foreground">
                   {klass.professorName ?? 'No professor assigned yet.'}
                 </p>
               )}
@@ -185,7 +189,7 @@ export function OrgClassDetailPage() {
 
       {activeTab === 'settings' && (
         <Card className="max-w-2xl space-y-4 p-6">
-          <h3 className="font-medium text-slate-900">Class settings</h3>
+          <h3 className="font-medium text-card-foreground">Class settings</h3>
           {canManage ? (
             editing ? (
               <>
@@ -228,7 +232,7 @@ export function OrgClassDetailPage() {
               </Button>
             )
           ) : (
-            <p className="text-sm text-slate-500">You do not have permission to edit this class.</p>
+            <p className="text-sm text-muted">You do not have permission to edit this class.</p>
           )}
         </Card>
       )}

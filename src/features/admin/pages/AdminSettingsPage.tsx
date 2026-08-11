@@ -55,7 +55,7 @@ export function AdminSettingsPage() {
       {query.isLoading ? (
         <div className="space-y-2">
           {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 animate-pulse rounded-md bg-slate-200" />
+            <div key={i} className="h-12 animate-pulse rounded-md bg-secondary" />
           ))}
         </div>
       ) : null}
@@ -71,7 +71,7 @@ export function AdminSettingsPage() {
         <Card>
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                 <th className="px-3 py-2 font-medium">Setting</th>
                 <th className="px-3 py-2 font-medium">Value</th>
                 <th className="px-3 py-2 font-medium">Group</th>
@@ -83,16 +83,16 @@ export function AdminSettingsPage() {
               {query.data.map((setting) => (
                 <tr key={setting.settingId} className="border-b border-border/60 last:border-0">
                   <td className="px-3 py-2.5">
-                    <div className="font-medium text-slate-900">{setting.settingKey}</div>
+                    <div className="font-medium text-card-foreground">{setting.settingKey}</div>
                     {setting.description ? (
-                      <div className="text-xs text-slate-500">{setting.description}</div>
+                      <div className="text-xs text-muted">{setting.description}</div>
                     ) : null}
                   </td>
-                  <td className="px-3 py-2.5 font-mono text-xs text-slate-700">
+                  <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground">
                     {displayValue(setting.settingValue)}
                   </td>
-                  <td className="px-3 py-2.5 text-slate-600">{setting.groupName ?? '—'}</td>
-                  <td className="px-3 py-2.5 text-slate-600">
+                  <td className="px-3 py-2.5 text-muted-foreground">{setting.groupName ?? '—'}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">
                     {setting.updatedAt ? new Date(setting.updatedAt).toLocaleDateString() : '—'}
                   </td>
                   <td className="px-3 py-2.5">
@@ -105,7 +105,7 @@ export function AdminSettingsPage() {
                         Edit
                       </button>
                     ) : (
-                      <span className="text-xs text-slate-400">Read-only</span>
+                      <span className="text-xs text-muted-foreground">Read-only</span>
                     )}
                   </td>
                 </tr>

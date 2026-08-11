@@ -80,7 +80,7 @@ export function OrgClassInvitePage() {
         actions={
           <Link
             to={ROUTES.ORG_CLASS_DETAIL.replace(':classId', classId)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-slate-600 transition-colors hover:bg-slate-100"
+            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
           >
             ← Back to class
           </Link>
@@ -90,7 +90,7 @@ export function OrgClassInvitePage() {
       <div className="grid gap-4 lg:grid-cols-2">
         <Card className="space-y-4 p-5">
           <div>
-            <h3 className="font-medium text-slate-900">Invite by email</h3>
+            <h3 className="font-medium text-card-foreground">Invite by email</h3>
             <p className="mt-1 text-sm text-muted">
               One email per line or comma-separated (max 50 per call). Students must match your
               organization's email domain if restricted.
@@ -99,7 +99,7 @@ export function OrgClassInvitePage() {
           {canInvite ? (
             <InviteStudentsForm submitting={invite.isPending} onSubmit={handleInvite} />
           ) : (
-            <p className="text-sm text-slate-500">You do not have invite permission.</p>
+            <p className="text-sm text-muted">You do not have invite permission.</p>
           )}
 
           <BulkImportPanel
@@ -111,7 +111,7 @@ export function OrgClassInvitePage() {
 
         <Card className="space-y-4 p-5">
           <div>
-            <h3 className="font-medium text-slate-900">Invitation status</h3>
+            <h3 className="font-medium text-card-foreground">Invitation status</h3>
             <p className="mt-1 text-sm text-muted">
               Resend reminders to pending invitations; expired invites are replaced.
             </p>

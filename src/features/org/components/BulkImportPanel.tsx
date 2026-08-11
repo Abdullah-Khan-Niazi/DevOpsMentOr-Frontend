@@ -34,9 +34,9 @@ export function BulkImportPanel({ submitting, onImport, result }: BulkImportPane
   return (
     <Card className="space-y-4 p-5">
       <div>
-        <h4 className="font-medium text-slate-900">Bulk import students</h4>
+        <h4 className="font-medium text-card-foreground">Bulk import students</h4>
         <p className="mt-1 text-sm text-muted">
-          Upload a CSV with a single <code className="rounded bg-slate-100 px-1">Email</code> column
+          Upload a CSV with a single <code className="rounded bg-secondary px-1">Email</code> column
           to invite many students at once.
         </p>
       </div>
@@ -64,11 +64,11 @@ export function BulkImportPanel({ submitting, onImport, result }: BulkImportPane
 
       {result ? (
         <div className="rounded-lg border border-border bg-surface/50 p-4 text-sm">
-          <p className="font-medium text-slate-900">
+          <p className="font-medium text-card-foreground">
             {result.successCount} of {result.totalRows} rows invited
           </p>
           {result.errors.length > 0 ? (
-            <ul className="mt-2 list-inside list-disc space-y-1 text-slate-600">
+            <ul className="mt-2 list-inside list-disc space-y-1 text-muted-foreground">
               {result.errors.slice(0, 10).map((err) => (
                 <li key={`${err.row}-${err.email}`}>
                   Row {err.row} ({err.email}): {err.reason}

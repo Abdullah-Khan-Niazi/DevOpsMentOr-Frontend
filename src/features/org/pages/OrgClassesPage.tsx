@@ -87,7 +87,7 @@ export function OrgClassesPage() {
             onRetry={() => void refetch()}
           />
         ) : isLoading ? (
-          <p className="py-6 text-sm text-slate-500">Loading classes…</p>
+          <p className="py-6 text-sm text-muted">Loading classes…</p>
         ) : data && data.data.length === 0 ? (
           <EmptyState
             title={search ? 'No matching classes' : 'No classes yet'}

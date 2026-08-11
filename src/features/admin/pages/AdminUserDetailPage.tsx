@@ -63,12 +63,12 @@ export function AdminUserDetailPage() {
   if (query.isLoading || !query.data) {
     return (
       <>
-        <div className="h-8 w-64 animate-pulse rounded-md bg-slate-200" />
+        <div className="h-8 w-64 animate-pulse rounded-md bg-secondary" />
         <div className="mt-6 grid gap-6 lg:grid-cols-2">
-          <div className="h-64 animate-pulse rounded-lg bg-slate-200" />
-          <div className="h-64 animate-pulse rounded-lg bg-slate-200" />
+          <div className="h-64 animate-pulse rounded-lg bg-secondary" />
+          <div className="h-64 animate-pulse rounded-lg bg-secondary" />
         </div>
-        <div className="mt-6 h-56 animate-pulse rounded-lg bg-slate-200" />
+        <div className="mt-6 h-56 animate-pulse rounded-lg bg-secondary" />
       </>
     );
   }
@@ -129,7 +129,7 @@ export function AdminUserDetailPage() {
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
-          <h2 className="mb-3 text-base font-semibold text-slate-800">Account</h2>
+          <h2 className="mb-3 text-base font-semibold text-card-foreground">Account</h2>
           <dl className="space-y-2 text-sm">
             <Row label="Status">{statusText(user)}</Row>
             <Row label="Roles">{user.roles.join(', ') || '—'}</Row>
@@ -170,7 +170,7 @@ export function AdminUserDetailPage() {
         </Card>
 
         <Card>
-          <h2 className="mb-3 text-base font-semibold text-slate-800">Engagement</h2>
+          <h2 className="mb-3 text-base font-semibold text-card-foreground">Engagement</h2>
           <dl className="space-y-2 text-sm">
             <Row label="Followers">{user.followersCount}</Row>
             <Row label="Following">{user.followingCount}</Row>
@@ -178,7 +178,7 @@ export function AdminUserDetailPage() {
             <Row label="Reputation">{user.profile?.reputationScore ?? 0}</Row>
           </dl>
           {user.skills.length > 0 ? (
-            <div className="mt-3 text-sm text-slate-600">
+            <div className="mt-3 text-sm text-muted-foreground">
               {user.skills.map((skill) => skill.skillName).join(', ')}
             </div>
           ) : null}
@@ -186,13 +186,13 @@ export function AdminUserDetailPage() {
       </div>
 
       <Card>
-        <h2 className="mb-3 text-base font-semibold text-slate-800">Login history</h2>
+        <h2 className="mb-3 text-base font-semibold text-card-foreground">Login history</h2>
         {user.loginHistory.length === 0 ? (
-          <p className="text-sm text-slate-500">No recorded sign-ins yet.</p>
+          <p className="text-sm text-muted">No recorded sign-ins yet.</p>
         ) : (
           <table className="w-full text-left text-sm">
             <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-slate-500">
+              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                 <th className="px-3 py-2 font-medium">Date</th>
                 <th className="px-3 py-2 font-medium">Method</th>
                 <th className="px-3 py-2 font-medium">IP</th>
@@ -205,7 +205,7 @@ export function AdminUserDetailPage() {
                   <td className="px-3 py-2">{formatDate(login.createdAt)}</td>
                   <td className="px-3 py-2">{login.loginType}</td>
                   <td className="px-3 py-2">{login.ipAddress ?? '—'}</td>
-                  <td className="px-3 py-2 text-slate-700">
+                  <td className="px-3 py-2 text-muted-foreground">
                     {login.isSuccessful ? 'Success' : 'Failed'}
                   </td>
                 </tr>
@@ -271,8 +271,8 @@ export function AdminUserDetailPage() {
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="flex justify-between gap-4">
-      <dt className="text-slate-500">{label}</dt>
-      <dd className="text-right text-slate-800">{children}</dd>
+      <dt className="text-muted">{label}</dt>
+      <dd className="text-right text-card-foreground">{children}</dd>
     </div>
   );
 }

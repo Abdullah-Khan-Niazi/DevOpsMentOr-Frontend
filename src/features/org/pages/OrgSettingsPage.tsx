@@ -84,7 +84,7 @@ function OrgSettingsForm({
       <PageHeader title="Settings" description="Organization profile and invitation policy." />
 
       <Card className="space-y-4 p-6">
-        <h3 className="font-medium text-slate-900">Organization details</h3>
+        <h3 className="font-medium text-card-foreground">Organization details</h3>
         <div className="grid gap-4 sm:grid-cols-2">
           <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
           <Input label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
@@ -119,7 +119,7 @@ function OrgSettingsForm({
 
       <Card className="mt-4 space-y-4 p-6">
         <div>
-          <h3 className="font-medium text-slate-900">Email domain restriction</h3>
+          <h3 className="font-medium text-card-foreground">Email domain restriction</h3>
           <p className="mt-1 text-sm text-muted">
             When set, only invitations to emails at this domain are accepted by students.
           </p>

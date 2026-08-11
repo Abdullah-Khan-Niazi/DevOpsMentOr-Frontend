@@ -153,9 +153,9 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
         <Input label="City" error={errors.city?.message} {...register('city')} />
 
         <div>
-          <label className="mb-1 block text-sm font-medium text-slate-700">Country</label>
+          <label className="mb-1 block text-sm font-medium text-muted-foreground">Country</label>
           <select
-            className="w-full rounded-md border border-border bg-white px-3 py-2 text-sm text-slate-800 outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
+            className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-card-foreground outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500"
             {...register('countryId')}
           >
             <option value="">Select a country</option>
@@ -201,7 +201,7 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
         {...register('discordUsername')}
       />
 
-      <label className="flex items-center gap-2 text-sm text-slate-700">
+      <label className="flex items-center gap-2 text-sm text-muted-foreground">
         <input type="checkbox" className="size-4 rounded border-border" {...register('isPublic')} />
         Make my profile public
       </label>
