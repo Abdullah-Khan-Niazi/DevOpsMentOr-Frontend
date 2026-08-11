@@ -23,8 +23,11 @@ export function OrgClassDetailPage() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const permissions = useAuthStore((state) => new Set(state.user?.permissions ?? []));
-  const canManage = permissions.has('org:classes:manage') || permissions.has('class:manage');
+  const canManage = useAuthStore((state) =>
+    (state.user?.permissions ?? []).some(
+      (permission) => permission === 'org:classes:manage' || permission === 'class:manage',
+    ),
+  );
 
   const [localTab, setLocalTab] = useState<LocalTab>('overview');
   const { query: detail, update, assignProfessor } = useClassDetail(classId);
