@@ -1,6 +1,6 @@
 export interface DashboardStats {
   totalUsers: number;
-  activeRoles: number;
-  openReports: number;
-  systemHealth: 'healthy' | 'degraded' | 'critical';
+  activeUsers: number;
+  totalRoles: number;
+  totalPermissions: number;
 }
