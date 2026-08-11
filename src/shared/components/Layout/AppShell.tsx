@@ -1,11 +1,12 @@
 import { NavLink, Outlet } from 'react-router-dom';
 import { LogoutButton } from '@/features/auth/components';
+import { useAuthStore } from '@/features/auth/stores/authStore';
 import { ENV, ROUTES } from '@/shared/constants';
 import { useUiStore } from '@/shared/stores/uiStore';
 import { cn } from '@/shared/utils';
 import { Button } from '@/shared/components/Button';
 
-const navItems = [
+const baseNavItems = [
   { to: ROUTES.DASHBOARD, label: 'Dashboard' },
   { to: ROUTES.USERS, label: 'Users' },
   { to: ROUTES.ROLES, label: 'Roles' },
@@ -15,6 +16,18 @@ const navItems = [
 
 export function AppShell() {
   const { isSidebarOpen, toggleSidebar } = useUiStore();
+  const user = useAuthStore((state) => state.user);
+  const permissions = user?.permissions ?? [];
+
+  const navItems = [
+    ...baseNavItems,
+    ...(permissions.includes('org:read')
+      ? [{ to: ROUTES.ORG_DASHBOARD, label: 'Organization' }]
+      : []),
+    ...(permissions.includes('enrollment:read')
+      ? [{ to: ROUTES.STUDENT_MY_CLASS, label: 'My class' }]
+      : []),
+  ];
 
   return (
     <div className="flex min-h-screen bg-surface">
