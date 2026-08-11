@@ -1,6 +1,7 @@
 export { Button, type ButtonProps } from './Button';
 export { Card, type CardProps } from './Card';
 export { Logo, SiteLogo } from './Logo';
+export { Icon, iconNames, type IconName } from './Icon';
 export { Input, type InputProps } from './Input';
 export { PasswordInput, type PasswordInputProps } from './PasswordInput';
 export { Modal } from './Modal';
@@ -11,6 +12,6 @@ export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
 export { PageHeader } from './PageHeader';
-export { AppShell, AdminShell } from './Layout';
+export { AppShell, AdminShell, AppChrome, buildNavItems, type AppNavItem } from './Layout';
 export { Pagination, type PaginationProps } from './Pagination';
 export { TabRow, type TabItem } from './TabRow';
