@@ -10,15 +10,15 @@ export function ReportsList({ reports }: ReportsListProps) {
       {reports.map((report) => (
         <li
           key={report.id}
-          className="flex items-center justify-between rounded-lg border border-border bg-white px-4 py-3"
+          className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
         >
           <div>
-            <h3 className="font-medium text-slate-900">{report.title}</h3>
+            <h3 className="font-medium text-card-foreground">{report.title}</h3>
             <p className="text-xs text-muted">
               Updated {new Date(report.updatedAt).toLocaleString()}
             </p>
           </div>
-          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs capitalize text-slate-700">
+          <span className="rounded-full bg-secondary px-2.5 py-1 text-xs capitalize text-muted-foreground">
             {report.status}
           </span>
         </li>

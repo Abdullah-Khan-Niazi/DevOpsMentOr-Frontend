@@ -18,55 +18,6 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fixed atmosphere gradient — does not scroll with content */
-.site-atmosphere {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: var(--z-base);
-  overflow: hidden;
-  background: var(--gradient-atmosphere);
-}
-
-/* §5.8 Security & Trust — sober atmosphere variant (base + wave layers) */
-.site-atmosphere--sober,
-.site-atmosphere--sober::before,
-.site-atmosphere--sober::after {
-  background: var(--gradient-atmosphere-sober);
-}
-
-/* Gentle wave — barely-there crests lap outward from the center to both
-   edges (right-to-left and left-to-right). Overlays the static base
-   gradient with the sober tint at low opacity; noticed only on close look. */
-.site-atmosphere::before,
-.site-atmosphere::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: var(--gradient-atmosphere-sober);
-  transform-origin: 50% -10%;
-  animation: atmosphere-wave 13s ease-in-out infinite;
-}
-
-.site-atmosphere::after {
-  animation-delay: -6.5s;
-}
-
-@keyframes atmosphere-wave {
-  0% {
-    transform: scaleX(0.85) scaleY(1);
-    opacity: 0.3;
-  }
-  50% {
-    transform: scaleX(1.15) scaleY(1.04);
-    opacity: 0.55;
-  }
-  100% {
-    transform: scaleX(0.85) scaleY(1);
-    opacity: 0.3;
-  }
-}
-
 /* ─── Scroll Reveal Animation ─────────────────────────────────────────────── */
 /* §6.2: IntersectionObserver-driven. Fires once. */
 @keyframes site-reveal {
@@ -116,13 +67,6 @@
   .node-pulse-anim {
     animation: none !important;
     stroke-dashoffset: 0 !important;
-  }
-
-  /* Freeze atmosphere wave — static base gradient remains */
-  .site-atmosphere::before,
-  .site-atmosphere::after {
-    animation: none !important;
-    opacity: 0 !important;
   }
 }
 

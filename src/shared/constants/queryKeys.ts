@@ -17,4 +17,37 @@ export const QUERY_KEYS = {
   dashboard: {
     stats: ['dashboard', 'stats'] as const,
   },
+  profile: {
+    me: ['profile', 'me'] as const,
+    public: (userId: string | number) => ['profile', String(userId)] as const,
+    mySkills: ['profile', 'me', 'skills'] as const,
+    skillsCatalog: ['profile', 'catalog', 'skills'] as const,
+    countries: ['profile', 'catalog', 'countries'] as const,
+  },
+  preferences: {
+    mySettings: ['preferences', 'my-settings'] as const,
+  },
+  admin: {
+    users: (params: string) => ['admin', 'users', params] as const,
+    userDetail: (userId: string | number) => ['admin', 'users', String(userId)] as const,
+    dashboard: ['admin', 'dashboard'] as const,
+    auditLogs: (params: string) => ['admin', 'audit-logs', params] as const,
+    systemSettings: ['admin', 'system-settings'] as const,
+    organizations: (params: string) => ['admin', 'organizations', params] as const,
+    organizationDetail: (orgId: string | number) =>
+      ['admin', 'organizations', String(orgId)] as const,
+  },
+  org: {
+    me: ['org', 'me'] as const,
+    professors: ['org', 'professors'] as const,
+    classes: ['org', 'classes'] as const,
+    classDetail: (classId: string | number) => ['org', 'classes', String(classId)] as const,
+    roster: (classId: string | number) => ['org', 'classes', String(classId), 'students'] as const,
+    invitations: (classId: string | number) =>
+      ['org', 'classes', String(classId), 'invitations'] as const,
+  },
+  enrollment: {
+    validate: (token: string) => ['enroll', 'validate', token] as const,
+    myClass: ['student', 'my-class'] as const,
+  },
 } as const;

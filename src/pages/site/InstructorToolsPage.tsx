@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { SiteSpineList, type SiteSpineItem } from './components/SiteSpineList';
 import { ProductFrame } from './components/ProductFrame';
 import './styles/SiteSubPage.css';
@@ -14,19 +14,23 @@ import './InstructorToolsPage.css';
 const CAPABILITIES: SiteSpineItem[] = [
   {
     label: 'Live cohort grading',
-    description: 'Assertions run against live cluster state — see who is stuck and where, as it happens',
+    description:
+      'Assertions run against live cluster state — see who is stuck and where, as it happens',
   },
   {
     label: 'Lab authoring',
-    description: 'The curriculum engine with versioned exercises, reference solutions, and per-module grading rules',
+    description:
+      'The curriculum engine with versioned exercises, reference solutions, and per-module grading rules',
   },
   {
     label: 'Environment control',
-    description: 'Cohort-wide spin-up, pause, and teardown of student environments — no per-student plumbing',
+    description:
+      'Cohort-wide spin-up, pause, and teardown of student environments — no per-student plumbing',
   },
   {
     label: 'Cohort analytics',
-    description: 'Completion, error hotspots, and time-to-completion per module for next lecture planning',
+    description:
+      'Completion, error hotspots, and time-to-completion per module for next lecture planning',
   },
 ];
 
@@ -54,10 +58,7 @@ function InstructorConsoleMock() {
           <span className="it-console__module">{student.module}</span>
           <span className="it-console__bar-cell">
             <span className="it-console__bar">
-              <span
-                className="it-console__bar-fill"
-                style={{ width: `${student.progress}%` }}
-              />
+              <span className="it-console__bar-fill" style={{ width: `${student.progress}%` }} />
             </span>
             <span className="it-console__pct">{student.progress}%</span>
           </span>
@@ -113,7 +114,10 @@ export default function InstructorToolsPage() {
         </section>
 
         {/* ── Closing CTA ────────────────────────────────────────────────── */}
-        <section className="ssp-cta-section site-section--void" aria-label="Request instructor access">
+        <section
+          className="ssp-cta-section site-section--void"
+          aria-label="Request instructor access"
+        >
           <div className="site-container">
             <div className="site-reveal ssp-cta-inner" ref={ctaRevealRef}>
               <h2 className="ssp-cta-headline">Bring the console to your department.</h2>
@@ -125,9 +129,9 @@ export default function InstructorToolsPage() {
                 , or tell us about your program and we will walk through provisioning together.
               </p>
               <Link to={ROUTES.CONTACT} aria-label="Request instructor access — contact us">
-                <SiteButton variant="primary" withArrow size="md">
+                <Button variant="primary" withArrow size="md">
                   Request access
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

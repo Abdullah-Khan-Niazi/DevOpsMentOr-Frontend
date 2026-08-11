@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useMediaQuery, useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { ProductFrame } from './components/ProductFrame';
 import './HowItWorksPage.css';
 
@@ -769,9 +769,9 @@ export default function HowItWorksPage() {
                 className="hiw-cta-link"
                 aria-label="Explore the curriculum — opens curriculum page"
               >
-                <SiteButton variant="primary" withArrow size="lg">
+                <Button variant="primary" withArrow size="lg">
                   Explore the curriculum
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

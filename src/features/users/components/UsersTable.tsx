@@ -6,9 +6,9 @@ interface UsersTableProps {
 
 export function UsersTable({ users }: UsersTableProps) {
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-white">
+    <div className="overflow-hidden rounded-lg border border-border bg-card">
       <table className="min-w-full divide-y divide-border text-left text-sm">
-        <thead className="bg-slate-50 text-muted">
+        <thead className="bg-secondary text-muted">
           <tr>
             <th className="px-4 py-3 font-medium">Name</th>
             <th className="px-4 py-3 font-medium">Email</th>
@@ -18,11 +18,11 @@ export function UsersTable({ users }: UsersTableProps) {
         </thead>
         <tbody className="divide-y divide-border">
           {users.map((user) => (
-            <tr key={user.id} className="hover:bg-slate-50">
-              <td className="px-4 py-3 font-medium text-slate-900">{user.name}</td>
-              <td className="px-4 py-3 text-slate-600">{user.email}</td>
-              <td className="px-4 py-3 text-slate-600">{user.role}</td>
-              <td className="px-4 py-3 capitalize text-slate-600">{user.status}</td>
+            <tr key={user.id} className="hover:bg-surface/60">
+              <td className="px-4 py-3 font-medium text-card-foreground">{user.name}</td>
+              <td className="px-4 py-3 text-muted-foreground">{user.email}</td>
+              <td className="px-4 py-3 text-muted-foreground">{user.role}</td>
+              <td className="px-4 py-3 capitalize text-muted-foreground">{user.status}</td>
             </tr>
           ))}
         </tbody>

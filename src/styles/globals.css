@@ -19,6 +19,42 @@
   --color-success: #16a34a;
 }
 
+/* ─── §0 Semantic Class Bridge ──────────────────────────────────────────── */
+/* App feature components (profiles, admin, org, enrollment, dashboard, ...)
+   are written against legacy utility names (surface / muted / border / brand)
+   whose tokens were dropped when the public-site token system landed. Until
+   components are migrated, re-map those names onto the current design tokens
+   so Tailwind regenerates the utilities and they follow the active theme.   */
+@theme {
+  --color-surface:      var(--color-bg-raised);
+  --color-muted:        var(--color-text-secondary);
+  --color-border:       var(--color-border-default);
+
+  --color-brand-50:     var(--color-accent-950);
+  --color-brand-100:    var(--color-accent-950);
+  --color-brand-500:    var(--color-accent-500);
+  --color-brand-600:    var(--color-accent-600);
+  --color-brand-700:    var(--color-accent-400);
+  --color-brand-900:    var(--color-accent-950);
+
+  /* Semantic aliases — component-agnostic names resolving to the theme. */
+  --color-background:         var(--color-bg-void);
+  --color-foreground:         var(--color-text-primary);
+  --color-card:               var(--color-bg-raised);
+  --color-card-foreground:    var(--color-text-primary);
+  --color-popover:            var(--color-bg-overlay);
+  --color-popover-foreground: var(--color-text-primary);
+  --color-primary:            var(--color-accent-600);
+  --color-primary-foreground: var(--color-text-on-accent);
+  --color-secondary:          var(--color-bg-raised);
+  --color-secondary-foreground: var(--color-text-primary);
+  --color-muted-foreground:   var(--color-text-tertiary);
+  --color-accent:             var(--color-accent-600);
+  --color-accent-foreground:  var(--color-text-on-accent);
+  --color-input:              var(--color-border-strong);
+  --color-ring:               var(--color-accent-500);
+}
+
 * {
   box-sizing: border-box;
 }

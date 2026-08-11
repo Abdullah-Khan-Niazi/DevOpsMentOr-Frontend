@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { SiteLogo } from './Logo';
+import { SiteLogo } from '@/shared/components/Logo';
 import './SiteHeader.css';
 
 // §3.1 — Floating, Compact, Shrinking Header

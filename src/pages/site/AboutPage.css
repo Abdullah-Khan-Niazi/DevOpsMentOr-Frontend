@@ -167,7 +167,7 @@
   filter: saturate(1);
 }
 
-/* Monogram fallback tile — only when the LinkedIn photo cannot be fetched */
+/* Monogram fallback tile — only when the team photo cannot be fetched */
 .abt-row__monogram {
   width: 100%;
   max-width: 340px;

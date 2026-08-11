@@ -6,8 +6,8 @@ import { z } from 'zod';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteCard } from './components/SiteCard';
-import { SiteButton } from './components/SiteButton';
+import { Card } from '@/shared/components';
+import { Button } from '@/shared/components';
 import { NodeGraph } from './components/NodeGraph';
 import './ContactPage.css';
 
@@ -115,7 +115,7 @@ export default function ContactPage() {
                 }`}
               >
                 {/* ── Card 1: FOR INSTITUTIONS ───────────────────────────────── */}
-                <SiteCard highlighted={isInstitutionalQuery} className="contact-card">
+                <Card highlighted={isInstitutionalQuery} className="contact-card">
                   <div className="contact-card__header">
                     <p className="contact-card__eyebrow">FOR INSTITUTIONS</p>
                     <h2 className="contact-card__title">Institutional Inquiry</h2>
@@ -194,19 +194,19 @@ export default function ContactPage() {
                       )}
                     </div>
 
-                    <SiteButton
+                    <Button
                       type="submit"
                       variant="primary"
                       disabled={isSubmitting}
                       className="contact-submit-btn"
                     >
                       {isSubmitting ? 'Sending...' : 'Send inquiry'}
-                    </SiteButton>
+                    </Button>
                   </form>
-                </SiteCard>
+                </Card>
 
                 {/* ── Card 2: FOR INDIVIDUALS ────────────────────────────────── */}
-                <SiteCard className="contact-card">
+                <Card className="contact-card">
                   <div className="contact-card__header">
                     <p className="contact-card__eyebrow">FOR INDIVIDUALS</p>
                     <h2 className="contact-card__title">General / Support</h2>
@@ -268,16 +268,16 @@ export default function ContactPage() {
                       )}
                     </div>
 
-                    <SiteButton
+                    <Button
                       type="submit"
                       variant="secondary"
                       disabled={isSubmitting}
                       className="contact-submit-btn"
                     >
                       {isSubmitting ? 'Sending...' : 'Send message'}
-                    </SiteButton>
+                    </Button>
                   </form>
-                </SiteCard>
+                </Card>
               </div>
 
               {/* ── §5.6.3 Success State Cross-Fade Layer ───────────────────── */}
@@ -287,7 +287,7 @@ export default function ContactPage() {
                 }`}
                 aria-live="polite"
               >
-                <SiteCard className="contact-success-card">
+                <Card className="contact-success-card">
                   <div className="contact-success-content">
                     <p className="contact-success-eyebrow">
                       {submittedPath === 'institutional'
@@ -311,7 +311,7 @@ export default function ContactPage() {
                       Send another message
                     </button>
                   </div>
-                </SiteCard>
+                </Card>
               </div>
             </div>
           </div>
