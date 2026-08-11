@@ -30,6 +30,24 @@ const AdminUserDetailPage = lazy(() => import('@/features/admin/pages/AdminUserD
 const AdminDashboardPage = lazy(() => import('@/features/admin/pages/AdminDashboardPage'));
 const AdminAuditLogsPage = lazy(() => import('@/features/admin/pages/AdminAuditLogsPage'));
 const AdminSettingsPage = lazy(() => import('@/features/admin/pages/AdminSettingsPage'));
+const AdminOrganizationsPage = lazy(
+  () => import('@/features/admin/organizations/pages/AdminOrganizationsPage'),
+);
+const AdminOrganizationDetailPage = lazy(
+  () => import('@/features/admin/organizations/pages/AdminOrganizationDetailPage'),
+);
+// ─── F3 organization workspace + enrollment ─────────────────────────────────
+const OrgAdminShell = lazy(() => import('@/features/org/components/OrgAdminShell'));
+const OrgDashboardPage = lazy(() => import('@/features/org/pages/OrgDashboardPage'));
+const OrgClassesPage = lazy(() => import('@/features/org/pages/OrgClassesPage'));
+const OrgClassCreatePage = lazy(() => import('@/features/org/pages/OrgClassCreatePage'));
+const OrgClassDetailPage = lazy(() => import('@/features/org/pages/OrgClassDetailPage'));
+const OrgClassRosterPage = lazy(() => import('@/features/org/pages/OrgClassRosterPage'));
+const OrgClassInvitePage = lazy(() => import('@/features/org/pages/OrgClassInvitePage'));
+const OrgProfessorsPage = lazy(() => import('@/features/org/pages/OrgProfessorsPage'));
+const OrgSettingsPage = lazy(() => import('@/features/org/pages/OrgSettingsPage'));
+const EnrollAcceptPage = lazy(() => import('@/features/enrollment/pages/EnrollAcceptPage'));
+const StudentMyClassPage = lazy(() => import('@/features/enrollment/pages/StudentMyClassPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -150,6 +168,16 @@ export function AppRoutes() {
         />
       </Route>
 
+      {/* ─── F3 enrollment: public invitation accept (optional auth) ─── */}
+      <Route
+        path={ROUTES.ENROLL_ACCEPT}
+        element={
+          <LazyPage>
+            <EnrollAcceptPage />
+          </LazyPage>
+        }
+      />
+
       <Route element={<ProtectedRoute />}>
         <Route element={<AppShell />}>
           <Route
@@ -232,6 +260,16 @@ export function AppRoutes() {
               </LazyPage>
             }
           />
+          <Route
+            path={ROUTES.STUDENT_MY_CLASS}
+            element={
+              <PermissionRouteGuard permission="enrollment:read">
+                <LazyPage>
+                  <StudentMyClassPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
         </Route>
       </Route>
 
@@ -293,6 +331,146 @@ export function AppRoutes() {
                 <AdminAuditLogsPage />
               </LazyPage>
             </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+
+      {/* ─── F3 platform-admin organization management (AdminShell) ─────── */}
+      <Route
+        path={ROUTES.ADMIN_ORGANIZATIONS}
+        element={
+          <PermissionRouteGuard permission="platform.organizations.read">
+            <AdminShell>
+              <LazyPage>
+                <AdminOrganizationsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_ORGANIZATION_DETAIL}
+        element={
+          <PermissionRouteGuard permission="platform.organizations.read">
+            <AdminShell>
+              <LazyPage>
+                <AdminOrganizationDetailPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+
+      {/* ─── F3 org workspace (OrgAdminShell, permission-gated) ─────────── */}
+      <Route
+        path={ROUTES.ORG_DASHBOARD}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgDashboardPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_CLASSES}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgClassesPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_CLASS_NEW}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgClassCreatePage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_CLASS_DETAIL}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgClassDetailPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_CLASS_ROSTER}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgClassRosterPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_CLASS_INVITE}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgClassInvitePage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_PROFESSORS}
+        element={
+          <PermissionRouteGuard permission="org:professors:invite">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgProfessorsPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ORG_SETTINGS}
+        element={
+          <PermissionRouteGuard permission="org:read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgSettingsPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
           </PermissionRouteGuard>
         }
       />
