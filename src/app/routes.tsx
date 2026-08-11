@@ -13,7 +13,9 @@ const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPassword
 const OAuthCallbackPage = lazy(() => import('@/features/auth/pages/OAuthCallbackPage'));
 const AdminLoginPage = lazy(() => import('@/features/admin/pages/AdminLoginPage'));
 const AdminAcceptInvitePage = lazy(() => import('@/features/admin/pages/AdminAcceptInvitePage'));
-const AdminInviteRouteGuard = lazy(() => import('@/features/admin/guards/AdminInviteRouteGuard'));
+const AdminPlatformAdminsPage = lazy(
+  () => import('@/features/admin/pages/AdminPlatformAdminsPage'),
+);
 const DashboardPage = lazy(() => import('@/features/dashboard/pages/DashboardPage'));
 const UsersPage = lazy(() => import('@/features/users/pages/UsersPage'));
 const RolesPage = lazy(() => import('@/features/roles/pages/RolesPage'));
@@ -143,15 +145,6 @@ export function AppRoutes() {
         element={
           <LazyPage>
             <AdminAcceptInvitePage />
-          </LazyPage>
-        }
-      />
-
-      <Route
-        path={ROUTES.ADMIN_PLATFORM_ADMINS}
-        element={
-          <LazyPage>
-            <AdminInviteRouteGuard />
           </LazyPage>
         }
       />
@@ -329,6 +322,18 @@ export function AppRoutes() {
             <AdminShell>
               <LazyPage>
                 <AdminAuditLogsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_PLATFORM_ADMINS}
+        element={
+          <PermissionRouteGuard permission="platform.admin.invite">
+            <AdminShell>
+              <LazyPage>
+                <AdminPlatformAdminsPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
