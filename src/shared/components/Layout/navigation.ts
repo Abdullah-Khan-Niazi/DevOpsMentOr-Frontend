@@ -62,6 +62,12 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         icon: 'platform-admins',
         section: 'Administration',
       },
+      {
+        to: ROUTES.ADMIN_CURRICULUM,
+        label: 'Curriculum',
+        icon: 'roles',
+        section: 'Administration',
+      },
     );
     return items;
   }
@@ -110,6 +116,14 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       to: ROUTES.STUDENT_MY_CLASS,
       label: 'My class',
       icon: 'my-class',
+      section: 'Workspace',
+    });
+  }
+  if (permissions.has('curriculum:read')) {
+    items.push({
+      to: ROUTES.LEARN,
+      label: 'Learn',
+      icon: 'roles',
       section: 'Workspace',
     });
   }

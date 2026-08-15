@@ -50,6 +50,17 @@ const OrgProfessorsPage = lazy(() => import('@/features/org/pages/OrgProfessorsP
 const OrgSettingsPage = lazy(() => import('@/features/org/pages/OrgSettingsPage'));
 const EnrollAcceptPage = lazy(() => import('@/features/enrollment/pages/EnrollAcceptPage'));
 const StudentMyClassPage = lazy(() => import('@/features/enrollment/pages/StudentMyClassPage'));
+// ─── F4 canonical curriculum (admin + learner) ─────────────────────────────
+const AdminCurriculumPage = lazy(() => import('@/features/curriculum/pages/AdminCurriculumPage'));
+const AdminModuleEditorPage = lazy(
+  () => import('@/features/curriculum/pages/AdminModuleEditorPage'),
+);
+const AdminLessonEditorPage = lazy(
+  () => import('@/features/curriculum/pages/AdminLessonEditorPage'),
+);
+const AdminQuizBuilderPage = lazy(() => import('@/features/curriculum/pages/AdminQuizBuilderPage'));
+const LearnCurriculumPage = lazy(() => import('@/features/curriculum/pages/LearnCurriculumPage'));
+const LearnLessonPage = lazy(() => import('@/features/curriculum/pages/LearnLessonPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -263,6 +274,27 @@ export function AppRoutes() {
               </PermissionRouteGuard>
             }
           />
+          {/* ─── F4 learner curriculum (AppShell, permission-gated) ─────── */}
+          <Route
+            path={ROUTES.LEARN}
+            element={
+              <PermissionRouteGuard permission="curriculum:read">
+                <LazyPage>
+                  <LearnCurriculumPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.LEARN_LESSON}
+            element={
+              <PermissionRouteGuard permission="curriculum:read">
+                <LazyPage>
+                  <LearnLessonPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
         </Route>
       </Route>
 
@@ -360,6 +392,56 @@ export function AppRoutes() {
             <AdminShell>
               <LazyPage>
                 <AdminOrganizationDetailPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+
+      {/* ─── F4 curriculum management (AdminShell, permission-gated) ─────── */}
+      <Route
+        path={ROUTES.ADMIN_CURRICULUM}
+        element={
+          <PermissionRouteGuard permission="platform.curriculum.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminCurriculumPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_CURRICULUM_MODULE}
+        element={
+          <PermissionRouteGuard permission="platform.curriculum.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminModuleEditorPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_CURRICULUM_LESSON}
+        element={
+          <PermissionRouteGuard permission="platform.curriculum.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminLessonEditorPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_CURRICULUM_QUIZ}
+        element={
+          <PermissionRouteGuard permission="platform.curriculum.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminQuizBuilderPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
