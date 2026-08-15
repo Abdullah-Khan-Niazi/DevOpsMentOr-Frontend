@@ -39,6 +39,13 @@ export const ROUTES = {
   // ─── F3 enrollment (student + invitation accept) ────────────────────────────
   ENROLL_ACCEPT: '/enroll/accept',
   STUDENT_MY_CLASS: '/student/class',
+  // ─── F4 canonical curriculum (platform admin + learner) ─────────────────────
+  ADMIN_CURRICULUM: '/admin/curriculum',
+  ADMIN_CURRICULUM_MODULE: '/admin/curriculum/modules/:moduleId',
+  ADMIN_CURRICULUM_LESSON: '/admin/curriculum/lessons/:lessonId',
+  ADMIN_CURRICULUM_QUIZ: '/admin/curriculum/quizzes/:quizId',
+  LEARN: '/learn',
+  LEARN_LESSON: '/learn/lessons/:lessonId',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',

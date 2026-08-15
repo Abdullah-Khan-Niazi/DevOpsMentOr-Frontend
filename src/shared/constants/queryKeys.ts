@@ -50,4 +50,24 @@ export const QUERY_KEYS = {
     validate: (token: string) => ['enroll', 'validate', token] as const,
     myClass: ['student', 'my-class'] as const,
   },
+  curriculum: {
+    adminCourse: ['admin', 'curriculum', 'course'] as const,
+    adminModules: (params: string) => ['admin', 'curriculum', 'modules', params] as const,
+    moduleEditor: (moduleId: string | number) =>
+      ['admin', 'curriculum', 'modules', String(moduleId)] as const,
+    lessonEditor: (lessonId: string | number) =>
+      ['admin', 'curriculum', 'lessons', String(lessonId)] as const,
+    quizEditor: (quizId: string | number) =>
+      ['admin', 'curriculum', 'quizzes', String(quizId)] as const,
+    tags: ['admin', 'curriculum', 'tags'] as const,
+  },
+  learn: {
+    overview: ['learn', 'overview'] as const,
+    module: (moduleId: string | number) => ['learn', 'modules', String(moduleId)] as const,
+    moduleLessons: (moduleId: string | number) =>
+      ['learn', 'modules', String(moduleId), 'lessons'] as const,
+    lesson: (lessonId: string | number) => ['learn', 'lessons', String(lessonId)] as const,
+    quizzes: (moduleId: string | number) =>
+      ['learn', 'modules', String(moduleId), 'quizzes'] as const,
+  },
 } as const;
