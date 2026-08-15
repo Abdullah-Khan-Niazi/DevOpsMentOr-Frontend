@@ -61,6 +61,15 @@ const AdminLessonEditorPage = lazy(
 const AdminQuizBuilderPage = lazy(() => import('@/features/curriculum/pages/AdminQuizBuilderPage'));
 const LearnCurriculumPage = lazy(() => import('@/features/curriculum/pages/LearnCurriculumPage'));
 const LearnLessonPage = lazy(() => import('@/features/curriculum/pages/LearnLessonPage'));
+// ─── F5 learning experience & progress tracking ─────────────────────────────
+const QuizAttemptPage = lazy(() => import('@/features/progress/pages/QuizAttemptPage'));
+const ProfessorClassProgressPage = lazy(
+  () => import('@/features/progress/pages/ProfessorClassProgressPage'),
+);
+const OrgStudentsProgressPage = lazy(
+  () => import('@/features/progress/pages/OrgStudentsProgressPage'),
+);
+const AdminUserProgressPage = lazy(() => import('@/features/progress/pages/AdminUserProgressPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -295,6 +304,28 @@ export function AppRoutes() {
               </PermissionRouteGuard>
             }
           />
+          {/* ─── F5 quiz attempt (AppShell, permission-gated) ──────────── */}
+          <Route
+            path={ROUTES.LEARN_QUIZ}
+            element={
+              <PermissionRouteGuard permission="progress.self.read">
+                <LazyPage>
+                  <QuizAttemptPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          {/* ─── F5 professor class analytics (AppShell, permission-gated) ─ */}
+          <Route
+            path={ROUTES.PROFESSOR_CLASS_PROGRESS}
+            element={
+              <PermissionRouteGuard permission="progress.class.read">
+                <LazyPage>
+                  <ProfessorClassProgressPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
         </Route>
       </Route>
 
@@ -330,6 +361,19 @@ export function AppRoutes() {
             <AdminShell>
               <LazyPage>
                 <AdminUserDetailPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F5 admin user progress detail (AdminShell, permission-gated) ── */}
+      <Route
+        path={ROUTES.ADMIN_USER_PROGRESS}
+        element={
+          <PermissionRouteGuard permission="platform.progress.read">
+            <AdminShell>
+              <LazyPage>
+                <AdminUserProgressPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
@@ -555,6 +599,21 @@ export function AppRoutes() {
               <OrgAdminShell>
                 <LazyPage>
                   <OrgSettingsPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F5 org-admin student analytics (OrgAdminShell, permission-gated) ─ */}
+      <Route
+        path={ROUTES.ORG_STUDENTS_PROGRESS}
+        element={
+          <PermissionRouteGuard permission="progress.org.read">
+            <Suspense fallback={<LoadingState />}>
+              <OrgAdminShell>
+                <LazyPage>
+                  <OrgStudentsProgressPage />
                 </LazyPage>
               </OrgAdminShell>
             </Suspense>

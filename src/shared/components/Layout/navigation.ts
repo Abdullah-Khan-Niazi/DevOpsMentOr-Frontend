@@ -127,6 +127,14 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       section: 'Workspace',
     });
   }
+  if (permissions.has('progress.org.read')) {
+    items.push({
+      to: ROUTES.ORG_STUDENTS_PROGRESS,
+      label: 'Student progress',
+      icon: 'professors',
+      section: 'Workspace',
+    });
+  }
 
   return items;
 }
