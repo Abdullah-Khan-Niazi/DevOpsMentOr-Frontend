@@ -24,6 +24,10 @@ export function OrgClassRosterPage() {
       ['class:students:invite', 'org:students:invite'].includes(permission),
     ),
   );
+  // F5 boundary exception (user-approved): entry point for SCR-F5-03.
+  const canViewClassProgress = useAuthStore((state) =>
+    (state.user?.permissions ?? []).includes('progress.class.read'),
+  );
 
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -63,12 +67,22 @@ export function OrgClassRosterPage() {
             : 'Class students'
         }
         actions={
-          <Link
-            to={ROUTES.ORG_CLASS_DETAIL.replace(':classId', classId)}
-            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
-          >
-            ← Back to class
-          </Link>
+          <div className="flex items-center gap-2">
+            {canViewClassProgress ? (
+              <Link
+                to={ROUTES.PROFESSOR_CLASS_PROGRESS.replace(':classId', classId)}
+                className="rounded-md px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
+              >
+                View progress
+              </Link>
+            ) : null}
+            <Link
+              to={ROUTES.ORG_CLASS_DETAIL.replace(':classId', classId)}
+              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
+            >
+              ← Back to class
+            </Link>
+          </div>
         }
       />
 
