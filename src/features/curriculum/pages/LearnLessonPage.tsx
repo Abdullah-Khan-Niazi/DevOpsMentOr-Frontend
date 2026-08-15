@@ -1,11 +1,19 @@
+import { useEffect, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ErrorState, PageHeader } from '@/shared/components';
+import { Button, ErrorState, PageHeader, toast } from '@/shared/components';
 import { CONTENT_TYPE_LABELS } from '../components/ContentTypeIcon';
 import { LessonBody } from '../components/LessonBody';
 import { LessonSidebar } from '../components/LessonSidebar';
 import { useLearnLesson, useLearnModule, useLearnModuleLessons } from '../hooks';
+import { useAuthStore } from '@/features/auth/stores/authStore';
+import { useCompleteLesson, useStartLesson } from '@/features/progress/hooks';
 
-/** F4 SCR-F4-06: learner lesson viewer with outline sidebar (F4-API-04..05). */
+/**
+ * F4 SCR-F4-06: learner lesson viewer with outline sidebar (F4-API-04..05).
+ * F5 boundary exception (user-approved): wires F5-API-01 (auto start on
+ * render) and F5-API-02 ("Mark complete") into the lesson screen so the
+ * learner journey is end-to-end functional.
+ */
 export function LearnLessonPage() {
   const { lessonId = '' } = useParams<{ lessonId: string }>();
 
@@ -14,6 +22,41 @@ export function LearnLessonPage() {
 
   const moduleQuery = useLearnModule(lesson?.moduleId ?? '', Boolean(lesson));
   const lessonsQuery = useLearnModuleLessons(lesson?.moduleId ?? '', Boolean(lesson));
+
+  const canWriteProgress = useAuthStore((state) =>
+    (state.user?.permissions ?? []).includes('progress.self.write'),
+  );
+  const startLesson = useStartLesson();
+  const completeLesson = useCompleteLesson();
+  const startedRef = useRef<number | null>(null);
+  const [startedAt] = useState(() => Date.now());
+  const [isCompleted, setIsCompleted] = useState(false);
+
+  useEffect(() => {
+    if (!canWriteProgress || !lesson) return;
+    if (startedRef.current === lesson.lessonId) return;
+    startedRef.current = lesson.lessonId;
+    startLesson.mutate(lesson.lessonId, {
+      onError: () => undefined,
+    });
+  }, [canWriteProgress, lesson, startLesson]);
+
+  const handleComplete = () => {
+    if (!lesson) return;
+    const timeSpentSeconds = Math.min(3600, Math.floor((Date.now() - startedAt) / 1000));
+    completeLesson.mutate(
+      { lessonId: lesson.lessonId, payload: { timeSpentSeconds } },
+      {
+        onSuccess: (data) => {
+          setIsCompleted(true);
+          toast.success(
+            `Lesson completed. Course progress: ${data.courseProgress.progressPercentage}%`,
+          );
+        },
+        onError: (error) => toast.error(error.message),
+      },
+    );
+  };
 
   if (lessonQuery.isLoading) {
     return (
@@ -76,6 +119,18 @@ export function LearnLessonPage() {
         <div className="mt-6">
           <LessonBody lesson={lesson} />
         </div>
+
+        {canWriteProgress ? (
+          <div className="mt-8 flex items-center justify-end gap-3">
+            {isCompleted ? (
+              <p className="text-sm font-medium text-green-700">✓ Lesson completed</p>
+            ) : (
+              <Button type="button" onClick={handleComplete} isLoading={completeLesson.isPending}>
+                Mark complete
+              </Button>
+            )}
+          </div>
+        ) : null}
       </article>
     </div>
   );
