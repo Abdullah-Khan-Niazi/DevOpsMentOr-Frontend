@@ -46,6 +46,11 @@ export const ROUTES = {
   ADMIN_CURRICULUM_QUIZ: '/admin/curriculum/quizzes/:quizId',
   LEARN: '/learn',
   LEARN_LESSON: '/learn/lessons/:lessonId',
+  // ─── F5 learning experience & progress tracking ────────────────────────────
+  LEARN_QUIZ: '/learn/quizzes/:quizId',
+  PROFESSOR_CLASS_PROGRESS: '/professor/classes/:classId/progress',
+  ORG_STUDENTS_PROGRESS: '/org/students/progress',
+  ADMIN_USER_PROGRESS: '/admin/users/:userId/progress',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',

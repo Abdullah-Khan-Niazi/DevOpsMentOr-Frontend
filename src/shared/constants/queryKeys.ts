@@ -70,4 +70,21 @@ export const QUERY_KEYS = {
     quizzes: (moduleId: string | number) =>
       ['learn', 'modules', String(moduleId), 'quizzes'] as const,
   },
+  progress: {
+    course: ['progress', 'course'] as const,
+    modules: ['progress', 'modules'] as const,
+    continue: ['progress', 'continue'] as const,
+    activity: (limit: number) => ['progress', 'activity', String(limit)] as const,
+    quizMeta: (quizId: string | number) => ['progress', 'quizzes', String(quizId)] as const,
+    quizQuestions: (quizId: string | number) =>
+      ['progress', 'quizzes', String(quizId), 'questions'] as const,
+    quizAttempts: (quizId: string | number) =>
+      ['progress', 'quizzes', String(quizId), 'attempts'] as const,
+    classStudents: (classId: string | number) =>
+      ['progress', 'classes', String(classId), 'students'] as const,
+    studentDetail: (classId: string | number, userId: number | null) =>
+      ['progress', 'classes', String(classId), 'students', String(userId)] as const,
+    orgStudents: (orgId: number | null) => ['progress', 'orgs', String(orgId), 'students'] as const,
+    adminUser: (userId: string | number) => ['progress', 'admin', 'users', String(userId)] as const,
+  },
 } as const;
