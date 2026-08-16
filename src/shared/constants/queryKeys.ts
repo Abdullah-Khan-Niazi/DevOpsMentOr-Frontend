@@ -87,4 +87,21 @@ export const QUERY_KEYS = {
     orgStudents: (orgId: number | null) => ['progress', 'orgs', String(orgId), 'students'] as const,
     adminUser: (userId: string | number) => ['progress', 'admin', 'users', String(userId)] as const,
   },
+  labs: {
+    all: ['labs'] as const,
+    detail: (labId: string | number) => ['labs', String(labId)] as const,
+    detailBySlug: (slug: string) => ['labs', 'slug', slug] as const,
+    activeInstance: ['labs', 'instances', 'active'] as const,
+    vpnConfig: ['labs', 'vpn', 'config'] as const,
+    tracks: ['tracks'] as const,
+    trackDetail: (trackId: string | number) => ['tracks', String(trackId)] as const,
+    trackProgress: (trackId: string | number) => ['tracks', String(trackId), 'progress'] as const,
+    aiMentorSession: (lessonId: number) =>
+      ['labs', 'ai-mentor', 'session', String(lessonId)] as const,
+  },
+  adminLabs: {
+    labs: (params: string) => ['admin', 'labs', params] as const,
+    tracks: (params: string) => ['admin', 'tracks', params] as const,
+    instances: (params: string) => ['admin', 'lab-instances', params] as const,
+  },
 } as const;

@@ -51,6 +51,17 @@ export const ROUTES = {
   PROFESSOR_CLASS_PROGRESS: '/professor/classes/:classId/progress',
   ORG_STUDENTS_PROGRESS: '/org/students/progress',
   ADMIN_USER_PROGRESS: '/admin/users/:userId/progress',
+  // ─── F6 labs, execution engine & AI Mentor ─────────────────────────────────
+  LABS: '/labs',
+  LAB_DETAIL: '/labs/:labSlug',
+  LAB_SESSION: '/labs/:labSlug/session',
+  SHERLOCK_DIAGNOSTIC: '/labs/:labSlug/diagnostic',
+  TRACKS: '/tracks',
+  TRACK_DETAIL: '/tracks/:trackId',
+  VPN_SETTINGS: '/settings/vpn',
+  ADMIN_LABS: '/admin/labs',
+  ADMIN_TRACKS: '/admin/tracks',
+  ADMIN_LAB_INSTANCES: '/admin/lab-instances',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',
