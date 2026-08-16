@@ -83,6 +83,24 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         section: 'Administration',
       });
     }
+    if (permissions.has('platform.gamification.manage')) {
+      items.push(
+        {
+          to: ROUTES.ADMIN_GAMIFICATION,
+          label: 'Gamification',
+          icon: 'award',
+          section: 'Administration',
+        },
+        { to: ROUTES.ADMIN_BADGES, label: 'Badges', icon: 'award', section: 'Administration' },
+        {
+          to: ROUTES.ADMIN_ACHIEVEMENTS,
+          label: 'Achievements',
+          icon: 'leaderboard',
+          section: 'Administration',
+        },
+        { to: ROUTES.ADMIN_SEASONS, label: 'Seasons', icon: 'track', section: 'Administration' },
+      );
+    }
     return items;
   }
 
@@ -155,6 +173,21 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
     );
   }
+  // ─── F7 achievements & leaderboards (§04 surface control) ──────────────
+  if (permissions.has('gamification:profile:read')) {
+    items.push({
+      to: ROUTES.ACHIEVEMENTS,
+      label: 'Achievements',
+      icon: 'award',
+      section: 'Workspace',
+    });
+  }
+  items.push({
+    to: ROUTES.LEADERBOARD,
+    label: 'Leaderboard',
+    icon: 'leaderboard',
+    section: 'Workspace',
+  });
 
   return items;
 }

@@ -81,6 +81,26 @@ const VpnSettingsPage = lazy(() => import('@/features/labs/pages/VpnSettingsPage
 const AdminLabsPage = lazy(() => import('@/features/labs/pages/AdminLabsPage'));
 const AdminTracksPage = lazy(() => import('@/features/labs/pages/AdminTracksPage'));
 const AdminLabInstancesPage = lazy(() => import('@/features/labs/pages/AdminLabInstancesPage'));
+// ─── F7 achievements, gamification & certification ─────────────────────────
+const AchievementsPage = lazy(() => import('@/features/achievements/pages/AchievementsPage'));
+const LeaderboardPage = lazy(() => import('@/features/leaderboard/pages/LeaderboardPage'));
+const SeasonLeaderboardPage = lazy(
+  () => import('@/features/leaderboard/pages/SeasonLeaderboardPage'),
+);
+const CohortLeaderboardPage = lazy(
+  () => import('@/features/leaderboard/pages/CohortLeaderboardPage'),
+);
+const VerifyCertificatePage = lazy(
+  () => import('@/features/certificates/pages/VerifyCertificatePage'),
+);
+const AdminGamificationPage = lazy(
+  () => import('@/features/admin/gamification/pages/AdminGamificationPage'),
+);
+const AdminBadgesPage = lazy(() => import('@/features/admin/gamification/pages/AdminBadgesPage'));
+const AdminAchievementsPage = lazy(
+  () => import('@/features/admin/gamification/pages/AdminAchievementsPage'),
+);
+const AdminSeasonsPage = lazy(() => import('@/features/admin/gamification/pages/AdminSeasonsPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -190,6 +210,24 @@ export function AppRoutes() {
             </LazyPage>
           }
         />
+        {/* ─── F7 global + season leaderboards: public (§09 guard = Public,
+             unauthenticated visitors may view; own row simply unhighlighted) ── */}
+        <Route
+          path={ROUTES.LEADERBOARD}
+          element={
+            <LazyPage>
+              <LeaderboardPage />
+            </LazyPage>
+          }
+        />
+        <Route
+          path={ROUTES.LEADERBOARD_SEASON}
+          element={
+            <LazyPage>
+              <SeasonLeaderboardPage />
+            </LazyPage>
+          }
+        />
       </Route>
 
       {/* ─── F3 enrollment: public invitation accept (optional auth) ─── */}
@@ -198,6 +236,16 @@ export function AppRoutes() {
         element={
           <LazyPage>
             <EnrollAcceptPage />
+          </LazyPage>
+        }
+      />
+
+      {/* ─── F7 certificate verification: public, no shell (SCR-F7-05) ── */}
+      <Route
+        path={ROUTES.VERIFY_CERTIFICATE}
+        element={
+          <LazyPage>
+            <VerifyCertificatePage />
           </LazyPage>
         }
       />
@@ -394,6 +442,34 @@ export function AppRoutes() {
               <PermissionRouteGuard permission="labs:instance:read">
                 <LazyPage>
                   <VpnSettingsPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          {/* ─── F7 learner achievements (AppShell, permission-gated) ──── */}
+          <Route
+            path={ROUTES.ACHIEVEMENTS}
+            element={
+              <PermissionRouteGuard permission="gamification:profile:read">
+                <LazyPage>
+                  <AchievementsPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          {/* ─── F7 cohort leaderboard (AppShell, any-of permission-gated) ── */}
+          <Route
+            path={ROUTES.LEADERBOARD_COHORT}
+            element={
+              <PermissionRouteGuard
+                permission={[
+                  'gamification:class:read',
+                  'gamification:org:read',
+                  'platform.gamification.manage',
+                ]}
+              >
+                <LazyPage>
+                  <CohortLeaderboardPage />
                 </LazyPage>
               </PermissionRouteGuard>
             }
@@ -737,6 +813,56 @@ export function AppRoutes() {
                 </LazyPage>
               </OrgAdminShell>
             </Suspense>
+          </PermissionRouteGuard>
+        }
+      />
+
+      {/* ─── F7 gamification management (AdminShell, permission-gated) ─── */}
+      <Route
+        path={ROUTES.ADMIN_GAMIFICATION}
+        element={
+          <PermissionRouteGuard permission="platform.gamification.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminGamificationPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_BADGES}
+        element={
+          <PermissionRouteGuard permission="platform.gamification.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminBadgesPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_ACHIEVEMENTS}
+        element={
+          <PermissionRouteGuard permission="platform.gamification.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminAchievementsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_SEASONS}
+        element={
+          <PermissionRouteGuard permission="platform.gamification.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminSeasonsPage />
+              </LazyPage>
+            </AdminShell>
           </PermissionRouteGuard>
         }
       />

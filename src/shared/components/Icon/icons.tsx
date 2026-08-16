@@ -19,6 +19,9 @@ export const iconNames = [
   'platform-admins',
   'lab',
   'track',
+  'award',
+  'leaderboard',
+  'x-circle',
   'logout',
   'chevrons-left',
   'chevrons-right',
@@ -135,6 +138,27 @@ export const ICONS: Record<IconName, ReactNode> = {
     <>
       <path d="M13 6l6 6-6 6" />
       <path d="M6 6l6 6-6 6" />
+    </>
+  ),
+  award: (
+    <>
+      <circle cx="12" cy="9" r="5" />
+      <path d="M9 13.2L7.5 21l4.5-2.4L16.5 21 15 13.2" />
+      <path d="M8.8 8.5L6 5.5M15.2 8.5L18 5.5" />
+    </>
+  ),
+  leaderboard: (
+    <>
+      <path d="M4 20h16" />
+      <path d="M7.5 20v-6" />
+      <path d="M12 20V9" />
+      <path d="M16.5 20V4.5" />
+    </>
+  ),
+  'x-circle': (
+    <>
+      <circle cx="12" cy="12" r="8.5" />
+      <path d="M9.5 9.5l5 5M14.5 9.5l-5 5" />
     </>
   ),
 };
