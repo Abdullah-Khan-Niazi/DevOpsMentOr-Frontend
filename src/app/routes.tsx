@@ -70,6 +70,17 @@ const OrgStudentsProgressPage = lazy(
   () => import('@/features/progress/pages/OrgStudentsProgressPage'),
 );
 const AdminUserProgressPage = lazy(() => import('@/features/progress/pages/AdminUserProgressPage'));
+// ─── F6 labs, execution engine & AI Mentor ────────────────────────────────
+const LabsPage = lazy(() => import('@/features/labs/pages/LabsPage'));
+const LabDetailPage = lazy(() => import('@/features/labs/pages/LabDetailPage'));
+const LabSessionPage = lazy(() => import('@/features/labs/pages/LabSessionPage'));
+const SherlockLabPage = lazy(() => import('@/features/labs/pages/SherlockLabPage'));
+const TracksPage = lazy(() => import('@/features/labs/pages/TracksPage'));
+const TrackDetailPage = lazy(() => import('@/features/labs/pages/TrackDetailPage'));
+const VpnSettingsPage = lazy(() => import('@/features/labs/pages/VpnSettingsPage'));
+const AdminLabsPage = lazy(() => import('@/features/labs/pages/AdminLabsPage'));
+const AdminTracksPage = lazy(() => import('@/features/labs/pages/AdminTracksPage'));
+const AdminLabInstancesPage = lazy(() => import('@/features/labs/pages/AdminLabInstancesPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -326,7 +337,79 @@ export function AppRoutes() {
               </PermissionRouteGuard>
             }
           />
+          {/* ─── F6 labs catalog & session (AppShell, permission-gated) ── */}
+          <Route
+            path={ROUTES.LABS}
+            element={
+              <PermissionRouteGuard permission="labs:instance:read">
+                <LazyPage>
+                  <LabsPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.LAB_DETAIL}
+            element={
+              <PermissionRouteGuard permission="labs:instance:read">
+                <LazyPage>
+                  <LabDetailPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.SHERLOCK_DIAGNOSTIC}
+            element={
+              <PermissionRouteGuard permission="labs:instance:read">
+                <LazyPage>
+                  <SherlockLabPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.TRACKS}
+            element={
+              <PermissionRouteGuard permission="labs:instance:read">
+                <LazyPage>
+                  <TracksPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.TRACK_DETAIL}
+            element={
+              <PermissionRouteGuard permission="labs:instance:read">
+                <LazyPage>
+                  <TrackDetailPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.VPN_SETTINGS}
+            element={
+              <PermissionRouteGuard permission="labs:instance:read">
+                <LazyPage>
+                  <VpnSettingsPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
         </Route>
+        {/* ─── F6 lab session: full-viewport LabShell, no AppShell sidebar ─── */}
+        <Route
+          path={ROUTES.LAB_SESSION}
+          element={
+            <PermissionRouteGuard permission="labs:instance:read">
+              <LazyPage>
+                <LabSessionPage />
+              </LazyPage>
+            </PermissionRouteGuard>
+          }
+        />
       </Route>
 
       {/* ─── F2 admin console (AdminShell layout, permission-gated) ─────── */}
@@ -410,6 +493,43 @@ export function AppRoutes() {
             <AdminShell>
               <LazyPage>
                 <AdminPlatformAdminsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F6 labs admin (AdminShell, permission-gated) ──────────────── */}
+      <Route
+        path={ROUTES.ADMIN_LABS}
+        element={
+          <PermissionRouteGuard permission="platform.labs.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminLabsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_TRACKS}
+        element={
+          <PermissionRouteGuard permission="platform.labs.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminTracksPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      <Route
+        path={ROUTES.ADMIN_LAB_INSTANCES}
+        element={
+          <PermissionRouteGuard permission="platform.labs.admin">
+            <AdminShell>
+              <LazyPage>
+                <AdminLabInstancesPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>

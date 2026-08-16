@@ -17,6 +17,8 @@ export const iconNames = [
   'professors',
   'audit-logs',
   'platform-admins',
+  'lab',
+  'track',
   'logout',
   'chevrons-left',
   'chevrons-right',
@@ -99,6 +101,21 @@ export const ICONS: Record<IconName, ReactNode> = {
       <path d="M12 3l7 2.6v5.4c0 4.4-2.9 7.6-7 9.5-4.1-1.9-7-5.1-7-9.5V5.6z" />
       <circle cx="9.5" cy="9.5" r="2.3" />
       <path d="M6.5 15.5c.5-1.7 1.6-2.6 3-2.6s2.5.9 3 2.6" />
+    </>
+  ),
+  lab: (
+    <>
+      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
+      <path d="M8 9h8M8 13h5" />
+      <path d="M9.5 16.5h.01M12.5 16.5h.01" strokeWidth="2.4" />
+    </>
+  ),
+  track: (
+    <>
+      <path d="M12 3.5v17" />
+      <path d="M12 6.5c-2.8 0-5-1.5-5-3s2.2-3 5-3 5 1.5 5 3-2.2 3-5 3z" />
+      <path d="M12 12.5c-2.8 0-5-1.5-5-3s2.2-3 5-3 5 1.5 5 3-2.2 3-5 3z" />
+      <path d="M12 18.5c-2.8 0-5-1.5-5-3s2.2-3 5-3 5 1.5 5 3-2.2 3-5 3z" />
     </>
   ),
   logout: (

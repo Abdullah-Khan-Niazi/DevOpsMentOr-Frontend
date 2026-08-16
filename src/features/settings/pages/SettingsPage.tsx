@@ -27,6 +27,11 @@ const securityLinks = [
     title: 'API tokens',
     description: 'Personal tokens for programmatic API access.',
   },
+  {
+    to: ROUTES.VPN_SETTINGS,
+    title: 'VPN',
+    description: 'Your lab network assignment and OpenVPN config download.',
+  },
 ] as const;
 
 export default function SettingsPage() {

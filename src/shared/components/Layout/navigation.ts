@@ -69,6 +69,20 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         section: 'Administration',
       },
     );
+    if (permissions.has('platform.labs.manage')) {
+      items.push(
+        { to: ROUTES.ADMIN_LABS, label: 'Labs', icon: 'lab', section: 'Administration' },
+        { to: ROUTES.ADMIN_TRACKS, label: 'Tracks', icon: 'track', section: 'Administration' },
+      );
+    }
+    if (permissions.has('platform.labs.admin')) {
+      items.push({
+        to: ROUTES.ADMIN_LAB_INSTANCES,
+        label: 'Lab instances',
+        icon: 'classes',
+        section: 'Administration',
+      });
+    }
     return items;
   }
 
@@ -134,6 +148,12 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       icon: 'professors',
       section: 'Workspace',
     });
+  }
+  if (permissions.has('labs:instance:read')) {
+    items.push(
+      { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
+      { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
+    );
   }
 
   return items;
