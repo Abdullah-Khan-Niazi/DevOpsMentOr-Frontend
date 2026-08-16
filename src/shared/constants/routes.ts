@@ -62,6 +62,16 @@ export const ROUTES = {
   ADMIN_LABS: '/admin/labs',
   ADMIN_TRACKS: '/admin/tracks',
   ADMIN_LAB_INSTANCES: '/admin/lab-instances',
+  // ─── F7 achievements, gamification & certification ──────────────────────────
+  ACHIEVEMENTS: '/achievements',
+  LEADERBOARD: '/leaderboard',
+  LEADERBOARD_SEASON: '/leaderboard/season/:seasonId',
+  LEADERBOARD_COHORT: '/leaderboard/cohort',
+  VERIFY_CERTIFICATE: '/verify/:certNumber',
+  ADMIN_GAMIFICATION: '/admin/gamification',
+  ADMIN_BADGES: '/admin/badges',
+  ADMIN_ACHIEVEMENTS: '/admin/achievements',
+  ADMIN_SEASONS: '/admin/seasons',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',

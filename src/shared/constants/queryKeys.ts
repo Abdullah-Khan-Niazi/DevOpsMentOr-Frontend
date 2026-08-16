@@ -104,4 +104,31 @@ export const QUERY_KEYS = {
     tracks: (params: string) => ['admin', 'tracks', params] as const,
     instances: (params: string) => ['admin', 'lab-instances', params] as const,
   },
+  // ─── F7 achievements, gamification & certification ───────────────────────
+  gamification: {
+    profile: ['gamification', 'me'] as const,
+    badgeCatalog: ['gamification', 'badges'] as const,
+    achievementCatalog: ['gamification', 'achievements'] as const,
+    pointsHistory: (page: number) => ['gamification', 'points', 'history', String(page)] as const,
+  },
+  leaderboard: {
+    seasons: ['leaderboard', 'seasons'] as const,
+    seasonDetail: (seasonId: string | number) =>
+      ['leaderboard', 'seasons', String(seasonId)] as const,
+    global: (params: string) => ['leaderboard', 'global', params] as const,
+    country: (countryCode: string, params: string) =>
+      ['leaderboard', 'country', countryCode, params] as const,
+    season: (seasonId: string | number, params: string) =>
+      ['leaderboard', 'season', String(seasonId), params] as const,
+    class: (classId: string | number) => ['leaderboard', 'class', String(classId)] as const,
+    org: (orgId: string | number) => ['leaderboard', 'org', String(orgId)] as const,
+  },
+  certificates: {
+    verify: (certNumber: string) => ['certificates', 'verify', certNumber] as const,
+  },
+  adminGamification: {
+    badges: ['admin', 'gamification', 'badges'] as const,
+    achievements: ['admin', 'gamification', 'achievements'] as const,
+    seasons: ['admin', 'gamification', 'seasons'] as const,
+  },
 } as const;
