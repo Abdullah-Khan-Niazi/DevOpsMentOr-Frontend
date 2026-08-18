@@ -7,6 +7,9 @@ import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useUiStore } from '@/shared/stores/uiStore';
 import { ROUTES } from '@/shared/constants';
 import { cn } from '@/shared/utils';
+import { AnnouncementBanner } from '@/features/notifications/components/AnnouncementBanner';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
+import { usePublishedAnnouncements } from '@/features/notifications/hooks/useNotifications';
 import type { AppNavItem } from './navigation';
 import './AppChrome.css';
 
@@ -39,6 +42,8 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
   const { isSidebarOpen, toggleSidebar } = useUiStore();
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
+  const { data: announcements } = usePublishedAnnouncements();
+  const canSeeNotifications = (user?.permissions ?? []).includes('notifications:inbox:read');
 
   const profileName = user?.fullName ?? user?.username ?? 'Account';
   const profileTo = user?.userId
@@ -75,6 +80,8 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
               className="app-chrome__collapse-icon"
             />
           </button>
+
+          {canSeeNotifications ? <NotificationBell /> : null}
         </div>
 
         <nav className="app-chrome__nav" aria-label="Primary">
@@ -122,7 +129,12 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
         </div>
       </aside>
 
-      <main className="app-chrome__main">{children}</main>
+      <main className="app-chrome__main">
+        {announcements && announcements.length > 0 ? (
+          <AnnouncementBanner announcements={announcements} />
+        ) : null}
+        {children}
+      </main>
     </div>
   );
 }

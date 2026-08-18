@@ -101,6 +101,50 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         { to: ROUTES.ADMIN_SEASONS, label: 'Seasons', icon: 'track', section: 'Administration' },
       );
     }
+    // ─── F8 analytics, notifications & platform operations (§04 surface
+    //      control — every item below is permission-gated) ─────────────
+    if (permissions.has('platform.content.moderate')) {
+      items.push(
+        {
+          to: ROUTES.ADMIN_ANNOUNCEMENTS,
+          label: 'Announcements',
+          icon: 'megaphone',
+          section: 'Administration',
+        },
+        {
+          to: ROUTES.ADMIN_MODERATION,
+          label: 'Moderation',
+          icon: 'flag',
+          section: 'Administration',
+        },
+        {
+          to: ROUTES.ADMIN_REPORTS,
+          label: 'Report queue',
+          icon: 'reports',
+          section: 'Administration',
+        },
+      );
+    }
+    if (permissions.has('platform.admin.access')) {
+      items.push(
+        { to: ROUTES.ADMIN_EVENTS, label: 'Events', icon: 'calendar', section: 'Administration' },
+        {
+          to: ROUTES.ADMIN_EMAIL_TEMPLATES,
+          label: 'Email templates',
+          icon: 'email',
+          section: 'Administration',
+        },
+        { to: ROUTES.ADMIN_FILES, label: 'Files', icon: 'file', section: 'Administration' },
+      );
+    }
+    if (permissions.has('platform.analytics.read')) {
+      items.push({
+        to: ROUTES.ADMIN_ANALYTICS,
+        label: 'Analytics',
+        icon: 'chart',
+        section: 'Administration',
+      });
+    }
     return items;
   }
 
@@ -188,6 +232,29 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
     icon: 'leaderboard',
     section: 'Workspace',
   });
+  // ─── F8 events (public surface, no permission gate) ──────────────────
+  items.push({
+    to: ROUTES.EVENTS,
+    label: 'Events',
+    icon: 'calendar',
+    section: 'Workspace',
+  });
+  // ─── F8 announcements (public surface, no permission gate) ────────────
+  items.push({
+    to: ROUTES.ANNOUNCEMENTS,
+    label: 'Announcements',
+    icon: 'megaphone',
+    section: 'Workspace',
+  });
+  // ─── F8 notification preferences (§04 surface control) ────────────────
+  if (permissions.has('notifications:preferences:write')) {
+    items.push({
+      to: ROUTES.NOTIFICATION_PREFERENCES,
+      label: 'Notification settings',
+      icon: 'settings',
+      section: 'Workspace',
+    });
+  }
 
   return items;
 }

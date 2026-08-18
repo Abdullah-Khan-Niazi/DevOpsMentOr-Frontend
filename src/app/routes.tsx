@@ -101,6 +101,30 @@ const AdminAchievementsPage = lazy(
   () => import('@/features/admin/gamification/pages/AdminAchievementsPage'),
 );
 const AdminSeasonsPage = lazy(() => import('@/features/admin/gamification/pages/AdminSeasonsPage'));
+// ─── F8 analytics, notifications & platform operations ─────────────────────
+const NotificationInboxPage = lazy(
+  () => import('@/features/notifications/pages/NotificationInboxPage'),
+);
+const NotificationPreferencesPage = lazy(
+  () => import('@/features/notifications/pages/NotificationPreferencesPage'),
+);
+const AnnouncementsPage = lazy(() => import('@/features/notifications/pages/AnnouncementsPage'));
+const EventsPage = lazy(() => import('@/features/operations/pages/EventsPage'));
+const AdminAnnouncementsPage = lazy(
+  () => import('@/features/admin/announcements/pages/AdminAnnouncementsPage'),
+);
+const AdminEventsPage = lazy(() => import('@/features/admin/events/pages/AdminEventsPage'));
+const AdminModerationPage = lazy(
+  () => import('@/features/admin/moderation/pages/AdminModerationPage'),
+);
+const AdminReportsPage = lazy(() => import('@/features/admin/moderation/pages/AdminReportsPage'));
+const AdminEmailTemplatesPage = lazy(
+  () => import('@/features/admin/email-templates/pages/AdminEmailTemplatesPage'),
+);
+const AdminAnalyticsPage = lazy(
+  () => import('@/features/admin/analytics/pages/AdminAnalyticsPage'),
+);
+const AdminFilesPage = lazy(() => import('@/features/admin/files/pages/AdminFilesPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
 const HomePage = lazy(() => import('@/pages/site/HomePage'));
 const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
@@ -225,6 +249,24 @@ export function AppRoutes() {
           element={
             <LazyPage>
               <SeasonLeaderboardPage />
+            </LazyPage>
+          }
+        />
+        {/* ─── F8 announcements + events: public (§09 guard = Public,
+             register/report actions require a session) ────────────── */}
+        <Route
+          path={ROUTES.ANNOUNCEMENTS}
+          element={
+            <LazyPage>
+              <AnnouncementsPage />
+            </LazyPage>
+          }
+        />
+        <Route
+          path={ROUTES.EVENTS}
+          element={
+            <LazyPage>
+              <EventsPage />
             </LazyPage>
           }
         />
@@ -474,6 +516,28 @@ export function AppRoutes() {
               </PermissionRouteGuard>
             }
           />
+          {/* ─── F8 notification inbox (AppShell, permission-gated) ───── */}
+          <Route
+            path={ROUTES.NOTIFICATIONS}
+            element={
+              <PermissionRouteGuard permission="notifications:inbox:read">
+                <LazyPage>
+                  <NotificationInboxPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          {/* ─── F8 notification preferences (AppShell, permission-gated) ── */}
+          <Route
+            path={ROUTES.NOTIFICATION_PREFERENCES}
+            element={
+              <PermissionRouteGuard permission="notifications:preferences:write">
+                <LazyPage>
+                  <NotificationPreferencesPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
         </Route>
         {/* ─── F6 lab session: full-viewport LabShell, no AppShell sidebar ─── */}
         <Route
@@ -557,6 +621,97 @@ export function AppRoutes() {
             <AdminShell>
               <LazyPage>
                 <AdminAuditLogsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin announcements (AdminShell, permission-gated) ─── */}
+      <Route
+        path={ROUTES.ADMIN_ANNOUNCEMENTS}
+        element={
+          <PermissionRouteGuard permission="platform.content.moderate">
+            <AdminShell>
+              <LazyPage>
+                <AdminAnnouncementsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin events (AdminShell, permission-gated) ─────────── */}
+      <Route
+        path={ROUTES.ADMIN_EVENTS}
+        element={
+          <PermissionRouteGuard permission="platform.admin.access">
+            <AdminShell>
+              <LazyPage>
+                <AdminEventsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin moderation (AdminShell, permission-gated) ─────── */}
+      <Route
+        path={ROUTES.ADMIN_MODERATION}
+        element={
+          <PermissionRouteGuard permission="platform.content.moderate">
+            <AdminShell>
+              <LazyPage>
+                <AdminModerationPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin report queue (AdminShell, permission-gated) ───── */}
+      <Route
+        path={ROUTES.ADMIN_REPORTS}
+        element={
+          <PermissionRouteGuard permission="platform.content.moderate">
+            <AdminShell>
+              <LazyPage>
+                <AdminReportsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin email templates (AdminShell, permission-gated) ── */}
+      <Route
+        path={ROUTES.ADMIN_EMAIL_TEMPLATES}
+        element={
+          <PermissionRouteGuard permission="platform.admin.access">
+            <AdminShell>
+              <LazyPage>
+                <AdminEmailTemplatesPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin analytics (AdminShell, permission-gated) ──────── */}
+      <Route
+        path={ROUTES.ADMIN_ANALYTICS}
+        element={
+          <PermissionRouteGuard permission="platform.analytics.read">
+            <AdminShell>
+              <LazyPage>
+                <AdminAnalyticsPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F8 admin file library (AdminShell, permission-gated) ───── */}
+      <Route
+        path={ROUTES.ADMIN_FILES}
+        element={
+          <PermissionRouteGuard permission="platform.admin.access">
+            <AdminShell>
+              <LazyPage>
+                <AdminFilesPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
