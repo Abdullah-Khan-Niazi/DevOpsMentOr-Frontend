@@ -72,6 +72,18 @@ export const ROUTES = {
   ADMIN_BADGES: '/admin/badges',
   ADMIN_ACHIEVEMENTS: '/admin/achievements',
   ADMIN_SEASONS: '/admin/seasons',
+  // ─── F8 analytics, notifications & platform operations ───────────────────
+  NOTIFICATIONS: '/notifications',
+  NOTIFICATION_PREFERENCES: '/settings/notifications',
+  ANNOUNCEMENTS: '/announcements',
+  EVENTS: '/events',
+  ADMIN_ANNOUNCEMENTS: '/admin/announcements',
+  ADMIN_EVENTS: '/admin/events',
+  ADMIN_MODERATION: '/admin/moderation',
+  ADMIN_REPORTS: '/admin/reports',
+  ADMIN_EMAIL_TEMPLATES: '/admin/email-templates',
+  ADMIN_ANALYTICS: '/admin/analytics',
+  ADMIN_FILES: '/admin/files',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
   HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',

@@ -131,4 +131,54 @@ export const QUERY_KEYS = {
     achievements: ['admin', 'gamification', 'achievements'] as const,
     seasons: ['admin', 'gamification', 'seasons'] as const,
   },
+  // ─── F8 analytics, notifications & platform operations ───────────────────
+  notifications: {
+    inbox: (page: number, unreadOnly: boolean) =>
+      ['notifications', 'inbox', String(page), String(unreadOnly)] as const,
+    inboxPrefix: ['notifications', 'inbox'] as const,
+    unreadCount: ['notifications', 'inbox', 'unread-count'] as const,
+    preferences: ['notifications', 'preferences'] as const,
+  },
+  announcements: {
+    published: ['announcements', 'published'] as const,
+  },
+  community: {
+    reviews: (targetType: string, targetId: number) =>
+      ['community', 'reviews', targetType, String(targetId)] as const,
+    comments: (targetType: string, targetId: number) =>
+      ['community', 'comments', targetType, String(targetId)] as const,
+  },
+  events: {
+    list: (page: number, upcomingOnly: boolean) =>
+      ['events', String(page), String(upcomingOnly)] as const,
+    listPrefix: ['events'] as const,
+  },
+  adminNotifications: {
+    announcements: ['admin', 'announcements'] as const,
+  },
+  adminEvents: {
+    listPrefix: ['admin', 'events'] as const,
+    attendees: (eventId: number) => ['admin', 'events', String(eventId), 'attendees'] as const,
+  },
+  adminModeration: {
+    reviews: (status: string, page: number) =>
+      ['admin', 'moderation', 'reviews', status, String(page)] as const,
+    reviewsPrefix: ['admin', 'moderation', 'reviews'] as const,
+    comments: (page: number) => ['admin', 'moderation', 'comments', String(page)] as const,
+    commentsPrefix: ['admin', 'moderation', 'comments'] as const,
+    reports: (status: string, page: number) =>
+      ['admin', 'moderation', 'reports', status, String(page)] as const,
+    reportsPrefix: ['admin', 'moderation', 'reports'] as const,
+  },
+  adminEmailTemplates: {
+    list: ['admin', 'email-templates'] as const,
+  },
+  adminFiles: {
+    list: (params: string) => ['admin', 'files', params] as const,
+    listPrefix: ['admin', 'files'] as const,
+  },
+  adminAnalytics: {
+    overview: ['admin', 'analytics', 'overview'] as const,
+    activity: (days: number) => ['admin', 'analytics', 'activity', String(days)] as const,
+  },
 } as const;
