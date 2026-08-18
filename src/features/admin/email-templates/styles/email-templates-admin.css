@@ -1,0 +1,112 @@
+/* ─── F8 Admin Email Templates (SCR-F8-13) ─────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.email-templates-admin-page__list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.email-templates-admin-page__item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.email-templates-admin-page__item-title {
+  font-weight: 600;
+}
+
+.email-templates-admin-page__item-key {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-sunken);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+}
+
+.email-templates-admin-page__item-subject {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.email-templates-admin-page__item-meta {
+  margin-top: var(--space-1);
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.email-templates-admin-page__item-actions {
+  margin-top: var(--space-3);
+}
+
+.email-templates-admin-page__editor {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.email-templates-admin-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.email-templates-admin-page__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.email-templates-admin-page__textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+  resize: vertical;
+}
+
+.email-templates-admin-page__textarea--mono {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+}
+
+.email-templates-admin-page__check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.email-templates-admin-page__check input {
+  accent-color: var(--color-accent-600);
+  width: 16px;
+  height: 16px;
+}
+
+.email-templates-admin-page__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.email-templates-admin-page__preview {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.email-templates-admin-page__preview-subject {
+  font-weight: 600;
+}
+
+.email-templates-admin-page__preview-html {
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}

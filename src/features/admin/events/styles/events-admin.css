@@ -1,0 +1,151 @@
+/* ─── F8 Admin Events (SCR-F8-10) ──────────────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.events-admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.events-admin-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.events-admin-page__form-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.events-admin-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.events-admin-page__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.events-admin-page__textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+  resize: vertical;
+}
+
+.events-admin-page__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.events-admin-page__select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.events-admin-page__check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.events-admin-page__check input {
+  accent-color: var(--color-accent-600);
+  width: 16px;
+  height: 16px;
+}
+
+.events-admin-page__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.events-admin-page__list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.events-admin-page__item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.events-admin-page__item-title {
+  font-weight: 600;
+}
+
+.events-admin-page__item-type {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-accent-950);
+  color: var(--color-accent-400);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.events-admin-page__item-meta {
+  margin-top: var(--space-2);
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+}
+
+.events-admin-page__item-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
+
+.events-admin-page__attendees {
+  border-color: var(--color-accent-600);
+}
+
+.events-admin-page__attendees-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.events-admin-page__table {
+  width: 100%;
+  margin-top: var(--space-4);
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.events-admin-page__table th,
+.events-admin-page__table td {
+  padding: var(--space-2) var(--space-3);
+  text-align: left;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+.events-admin-page__table th {
+  color: var(--color-text-tertiary);
+  font-weight: 600;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.events-admin-page__empty {
+  margin-top: var(--space-4);
+  color: var(--color-text-tertiary);
+}

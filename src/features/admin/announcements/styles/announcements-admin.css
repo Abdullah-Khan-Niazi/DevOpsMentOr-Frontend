@@ -1,0 +1,110 @@
+/* ─── F8 Admin Announcements (SCR-F8-09) ───────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.announcements-admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.announcements-admin-page__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.announcements-admin-page__form-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.announcements-admin-page__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.announcements-admin-page__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.announcements-admin-page__textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+  resize: vertical;
+}
+
+.announcements-admin-page__row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.announcements-admin-page__select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.announcements-admin-page__form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+.announcements-admin-page__list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.announcements-admin-page__item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.announcements-admin-page__item-title {
+  font-weight: 600;
+}
+
+.announcements-admin-page__item-status {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-sunken);
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.announcements-admin-page__item-status[data-published='true'] {
+  background: var(--color-accent-950);
+  color: var(--color-accent-400);
+}
+
+.announcements-admin-page__item-content {
+  margin-top: var(--space-2);
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.announcements-admin-page__item-meta {
+  margin-top: var(--space-2);
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.announcements-admin-page__item-actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}
