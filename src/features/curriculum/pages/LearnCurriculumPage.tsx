@@ -1,13 +1,21 @@
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, ErrorState, PageHeader } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, Icon } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { ModuleAccordionList } from '../components/ModuleAccordionList';
 import { useCourseOverview } from '../hooks';
+import { CommentThread, ReportModal, ReviewSection } from '@/features/community';
 
-/** F4 SCR-F4-05: learner course viewer with module accordions (F4-API-01..03). */
+/**
+ * F4 SCR-F4-05: learner course viewer with module accordions (F4-API-01..03).
+ * F8 boundary exception (user-approved): embeds SCR-F8-05 reviews and
+ * SCR-F8-06 comments for the course, plus a SCR-F8-07 report trigger on
+ * the course card.
+ */
 export function LearnCurriculumPage() {
   const navigate = useNavigate();
   const overview = useCourseOverview();
+  const [reportOpen, setReportOpen] = useState(false);
 
   if (overview.isLoading) {
     return (
@@ -46,8 +54,16 @@ export function LearnCurriculumPage() {
       <PageHeader title="Learn" description={course.title} />
 
       <Card className="p-6">
-        <h2 className="text-xl font-semibold text-card-foreground">{course.title}</h2>
-        <p className="mt-1 text-sm text-muted">{course.description ?? 'No description.'}</p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h2 className="text-xl font-semibold text-card-foreground">{course.title}</h2>
+            <p className="mt-1 text-sm text-muted">{course.description ?? 'No description.'}</p>
+          </div>
+          <Button variant="ghost" size="sm" onClick={() => setReportOpen(true)}>
+            <Icon name="flag" size={14} />
+            Report
+          </Button>
+        </div>
         <dl className="mt-4 flex gap-6 text-sm">
           <div>
             <dt className="text-muted">Modules</dt>
@@ -68,12 +84,22 @@ export function LearnCurriculumPage() {
         </dl>
       </Card>
 
+      <ReportModal
+        open={reportOpen}
+        onClose={() => setReportOpen(false)}
+        targetType="course"
+        targetId={course.courseId}
+      />
+
       <ModuleAccordionList
         modules={modules}
         isError={false}
         onRetry={() => void overview.refetch()}
         onOpenLesson={openLesson}
       />
+
+      <ReviewSection targetType="course" targetId={course.courseId} />
+      <CommentThread targetType="course" targetId={course.courseId} />
     </div>
   );
 }

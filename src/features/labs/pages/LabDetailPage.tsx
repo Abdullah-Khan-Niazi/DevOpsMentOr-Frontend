@@ -13,8 +13,14 @@ import {
   useTerminateInstance,
 } from '../hooks';
 import type { LabDetailDto, VpnRegion } from '../types';
+import { CommentThread } from '@/features/community';
+import { ReviewSection } from '@/features/community';
 
-/** SCR-F6-01: lab detail with description, requirements and Start Lab. */
+/**
+ * SCR-F6-01: lab detail with description, requirements and Start Lab.
+ * F8 boundary exception (user-approved): embeds SCR-F8-05 reviews and
+ * SCR-F8-06 comments for the lab.
+ */
 export function LabDetailPage() {
   const { labSlug } = useParams<{ labSlug: string }>();
   const navigate = useNavigate();
@@ -175,6 +181,9 @@ export function LabDetailPage() {
           )}
         </Card>
       </div>
+
+      <ReviewSection targetType="lab" targetId={lab.labId} />
+      <CommentThread targetType="lab" targetId={lab.labId} />
     </div>
   );
 }
