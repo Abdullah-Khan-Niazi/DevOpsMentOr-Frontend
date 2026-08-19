@@ -1,0 +1,55 @@
+.plan-card {
+  all: unset;
+  cursor: pointer;
+  width: 100%;
+}
+
+.plan-card__card {
+  height: 100%;
+  padding: var(--space-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.plan-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.plan-card__name {
+  font-size: var(--text-body-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.plan-card__selected {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-secondary);
+}
+
+.plan-card__price {
+  margin: 0;
+  font-size: var(--text-body-l);
+  color: var(--color-text-primary);
+}
+
+.plan-card__cycle {
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+}
+
+.plan-card__features {
+  margin: 0;
+  padding-left: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  font-size: var(--text-body-s);
+  color: var(--color-text-secondary);
+}

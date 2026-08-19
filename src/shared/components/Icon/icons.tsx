@@ -33,6 +33,7 @@ export const iconNames = [
   'file',
   'flag',
   'pin',
+  'card',
 ] as const;
 
 export type IconName = (typeof iconNames)[number];
@@ -198,6 +199,13 @@ export const ICONS: Record<IconName, ReactNode> = {
     <>
       <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
       <path d="M4.5 7l7.5 6 7.5-6" />
+    </>
+  ),
+  card: (
+    <>
+      <rect x="3.5" y="6" width="17" height="12" rx="2" />
+      <path d="M3.5 10h17" />
+      <path d="M7.5 15h4" />
     </>
   ),
   file: (

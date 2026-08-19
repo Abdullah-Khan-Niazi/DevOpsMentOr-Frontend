@@ -181,4 +181,19 @@ export const QUERY_KEYS = {
     overview: ['admin', 'analytics', 'overview'] as const,
     activity: (days: number) => ['admin', 'analytics', 'activity', String(days)] as const,
   },
+  // ─── F9 billing, subscriptions & payment methods ───────────────────────
+  billing: {
+    current: ['billing', 'current'] as const,
+    plans: ['billing', 'plans'] as const,
+    paymentMethods: ['billing', 'payment-methods'] as const,
+    orders: (page: number) => ['billing', 'orders', String(page)] as const,
+    invoices: (page: number) => ['billing', 'invoices', String(page)] as const,
+    portalSession: ['billing', 'portal-session'] as const,
+  },
+  adminBilling: {
+    overview: ['admin', 'billing', 'overview'] as const,
+    subscriptions: (params: string) => ['admin', 'billing', 'subscriptions', params] as const,
+    orders: (params: string) => ['admin', 'billing', 'orders', params] as const,
+    coupons: (params: string) => ['admin', 'billing', 'coupons', params] as const,
+  },
 } as const;

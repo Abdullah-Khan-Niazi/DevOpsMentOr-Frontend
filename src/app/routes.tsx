@@ -78,6 +78,10 @@ const SherlockLabPage = lazy(() => import('@/features/labs/pages/SherlockLabPage
 const TracksPage = lazy(() => import('@/features/labs/pages/TracksPage'));
 const TrackDetailPage = lazy(() => import('@/features/labs/pages/TrackDetailPage'));
 const VpnSettingsPage = lazy(() => import('@/features/labs/pages/VpnSettingsPage'));
+// ─── F9 billing (learner portal) and pricing checkout ─────────────────
+const BillingPage = lazy(() => import('@/features/billing/pages/BillingPage'));
+const PaymentMethodsPage = lazy(() => import('@/features/billing/pages/PaymentMethodsPage'));
+const BillingHistoryPage = lazy(() => import('@/features/billing/pages/BillingHistoryPage'));
 const AdminLabsPage = lazy(() => import('@/features/labs/pages/AdminLabsPage'));
 const AdminTracksPage = lazy(() => import('@/features/labs/pages/AdminTracksPage'));
 const AdminLabInstancesPage = lazy(() => import('@/features/labs/pages/AdminLabInstancesPage'));
@@ -534,6 +538,37 @@ export function AppRoutes() {
               <PermissionRouteGuard permission="notifications:preferences:write">
                 <LazyPage>
                   <NotificationPreferencesPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          {/* ─── F9 billing hub (AppShell, permission-gated) ────────────── */}
+          <Route
+            path={ROUTES.BILLING}
+            element={
+              <PermissionRouteGuard permission="billing:subscription:read">
+                <LazyPage>
+                  <BillingPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.BILLING_PAYMENT_METHODS}
+            element={
+              <PermissionRouteGuard permission="billing:paymentmethod:manage">
+                <LazyPage>
+                  <PaymentMethodsPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.BILLING_HISTORY}
+            element={
+              <PermissionRouteGuard permission="billing:order:read">
+                <LazyPage>
+                  <BillingHistoryPage />
                 </LazyPage>
               </PermissionRouteGuard>
             }

@@ -62,6 +62,11 @@ export const ROUTES = {
   ADMIN_LABS: '/admin/labs',
   ADMIN_TRACKS: '/admin/tracks',
   ADMIN_LAB_INSTANCES: '/admin/lab-instances',
+  // ─── F9 billing, subscription & payment methods (learner portal) ─────────
+  BILLING: '/settings/billing',
+  BILLING_PAYMENT_METHODS: '/settings/billing/payment-methods',
+  BILLING_HISTORY: '/settings/billing/history',
+  ADMIN_BILLING: '/admin/billing',
   // ─── F7 achievements, gamification & certification ──────────────────────────
   ACHIEVEMENTS: '/achievements',
   LEADERBOARD: '/leaderboard',
