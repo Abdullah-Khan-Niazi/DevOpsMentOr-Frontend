@@ -145,6 +145,14 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         section: 'Administration',
       });
     }
+    if (permissions.has('platform.billing.manage')) {
+      items.push({
+        to: ROUTES.ADMIN_BILLING,
+        label: 'Billing',
+        icon: 'card',
+        section: 'Administration',
+      });
+    }
     return items;
   }
 
@@ -252,6 +260,15 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       to: ROUTES.NOTIFICATION_PREFERENCES,
       label: 'Notification settings',
       icon: 'settings',
+      section: 'Workspace',
+    });
+  }
+  // ─── F9 billing (§04 surface control) ─────────────────────────────────
+  if (permissions.has('billing:subscription:read')) {
+    items.push({
+      to: ROUTES.BILLING,
+      label: 'Billing',
+      icon: 'card',
       section: 'Workspace',
     });
   }

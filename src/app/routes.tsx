@@ -82,6 +82,7 @@ const VpnSettingsPage = lazy(() => import('@/features/labs/pages/VpnSettingsPage
 const BillingPage = lazy(() => import('@/features/billing/pages/BillingPage'));
 const PaymentMethodsPage = lazy(() => import('@/features/billing/pages/PaymentMethodsPage'));
 const BillingHistoryPage = lazy(() => import('@/features/billing/pages/BillingHistoryPage'));
+const AdminBillingPage = lazy(() => import('@/features/admin/billing/pages/AdminBillingPage'));
 const AdminLabsPage = lazy(() => import('@/features/labs/pages/AdminLabsPage'));
 const AdminTracksPage = lazy(() => import('@/features/labs/pages/AdminTracksPage'));
 const AdminLabInstancesPage = lazy(() => import('@/features/labs/pages/AdminLabInstancesPage'));
@@ -747,6 +748,19 @@ export function AppRoutes() {
             <AdminShell>
               <LazyPage>
                 <AdminFilesPage />
+              </LazyPage>
+            </AdminShell>
+          </PermissionRouteGuard>
+        }
+      />
+      {/* ─── F9 admin billing (AdminShell, permission-gated) ─────────── */}
+      <Route
+        path={ROUTES.ADMIN_BILLING}
+        element={
+          <PermissionRouteGuard permission="platform.billing.manage">
+            <AdminShell>
+              <LazyPage>
+                <AdminBillingPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
