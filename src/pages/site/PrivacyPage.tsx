@@ -32,8 +32,8 @@ export default function PrivacyPage() {
             <div className="site-reveal" ref={frameRevealRef}>
               <ProductFrame variant="app" label="sudo — devopsmentor" className="pr-frame">
                 <p className="pr-line">
-                  We trust you have received the usual lecture from the local System
-                  Administrator. It usually boils down to these three things:
+                  We trust you have received the usual lecture from the local System Administrator.
+                  It usually boils down to these three things:
                 </p>
                 <p className="pr-line pr-line--rule">- Respect the privacy of others.</p>
                 <p className="pr-line pr-line--rule">- Think before you type.</p>

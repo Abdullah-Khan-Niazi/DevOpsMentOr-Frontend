@@ -16,7 +16,7 @@ function OAuthCallbackPage() {
     if (calledRef.current) return;
     calledRef.current = true;
 
-    if (!provider || !['google', 'github', 'linkedin'].includes(provider)) {
+    if (!provider || !['google', 'github'].includes(provider)) {
       void navigate(ROUTES.LOGIN, { replace: true });
       return;
     }
@@ -34,7 +34,7 @@ function OAuthCallbackPage() {
 
     sessionStorage.removeItem('oauth_mode');
 
-    const oauthProvider = provider as 'google' | 'github' | 'linkedin';
+    const oauthProvider = provider as 'google' | 'github';
     const redirectUri = `${window.location.origin}/api/auth/callback/${provider}`;
 
     authService

@@ -1,4 +1,5 @@
 export { SettingsForm } from './components';
-export { useSettings, useUpdateSettings } from './hooks';
+export { useSettings, useUpdateSettings, useMySettings, useUpdateMySettings } from './hooks';
 export { settingsService } from './services';
-export type { AppSettings, UpdateSettingsInput } from './types';
+export { default as PreferencesPage } from './pages/PreferencesPage';
+export type { AppSettings, UpdateSettingsInput, UserSetting, UpdateMySettingsInput } from './types';

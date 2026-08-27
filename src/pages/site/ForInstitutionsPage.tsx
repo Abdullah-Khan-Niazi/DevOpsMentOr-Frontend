@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { SiteSpineList, type SiteSpineItem } from './components/SiteSpineList';
 import './ForInstitutionsPage.css';
 
@@ -203,9 +203,9 @@ export default function ForInstitutionsPage() {
                 className="inst-cta-link"
                 aria-label="Discuss institutional access — opens contact form pre-filled for institutions"
               >
-                <SiteButton variant="primary" withArrow size="md">
+                <Button variant="primary" withArrow size="md">
                   Discuss institutional access
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

@@ -1,9 +1,10 @@
-import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { Link } from 'react-router-dom';
 import { z } from 'zod';
-import { Input } from '@/shared/components';
-import { useSignup, useOAuthSignup } from '../hooks';
+import { Button, Input, PasswordInput } from '@/shared/components';
+import { ROUTES } from '@/shared/constants';
+import { useOAuthLogin, useSignup } from '../hooks';
 import { OAuthButton } from './OAuthButton';
 
 const signupSchema = z
@@ -27,14 +28,7 @@ type SignupFormValues = z.infer<typeof signupSchema>;
 
 export function SignupForm() {
   const { mutate: doSignup, isPending, error, isError } = useSignup();
-  const { mutation: oauthMutation, initiateOAuth, feedback } = useOAuthSignup();
-
-  // Lazy initializer — reads the OAuth handoff marker once on mount (no
-  // setState-in-effect, avoids the cascading-render lint rule).
-  const [oauthProvider] = useState<string | null>(() => {
-    if (typeof window === 'undefined') return null;
-    return sessionStorage.getItem('oauth_signup_provider');
-  });
+  const { initiateOAuth, feedback } = useOAuthLogin();
 
   const {
     register,
@@ -46,38 +40,12 @@ export function SignupForm() {
   });
 
   const onSubmit = (values: SignupFormValues) => {
-    const provider = sessionStorage.getItem('oauth_signup_provider');
-    const code = sessionStorage.getItem('oauth_signup_code');
-    const redirectUri = sessionStorage.getItem('oauth_signup_redirect');
-
-    if (provider && code && redirectUri) {
-      sessionStorage.removeItem('oauth_signup_provider');
-      sessionStorage.removeItem('oauth_signup_code');
-      sessionStorage.removeItem('oauth_signup_redirect');
-      oauthMutation.mutate({
-        provider: provider as 'google' | 'github' | 'linkedin',
-        code,
-        redirectUri,
-        username: values.username,
-        fullName: values.fullName,
-      });
-      return;
-    }
-
     const { confirmPassword: _, ...payload } = values;
     doSignup(payload);
   };
 
-  const isSubmitting = isPending || oauthMutation.isPending;
-
   return (
     <div className="flex flex-col gap-6">
-      {oauthProvider ? (
-        <p className="auth-alert" role="status">
-          Complete sign up with {oauthProvider}
-        </p>
-      ) : null}
-
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         <div className="grid grid-cols-2 gap-3">
           <Input
@@ -108,17 +76,15 @@ export function SignupForm() {
         />
 
         <div className="grid grid-cols-2 gap-3">
-          <Input
+          <PasswordInput
             label="Password"
-            type="password"
             autoComplete="new-password"
             placeholder="Min. 8 characters"
             error={errors.password?.message}
             {...register('password')}
           />
-          <Input
+          <PasswordInput
             label="Confirm password"
-            type="password"
             autoComplete="new-password"
             placeholder="Re-enter password"
             error={errors.confirmPassword?.message}
@@ -132,9 +98,9 @@ export function SignupForm() {
           </p>
         ) : null}
 
-        <button type="submit" disabled={isSubmitting} className="auth-submit">
-          {isSubmitting ? 'Creating account…' : 'Create account'}
-        </button>
+        <Button type="submit" className="w-full" isLoading={isPending}>
+          Create account
+        </Button>
       </form>
 
       {feedback ? (
@@ -150,14 +116,13 @@ export function SignupForm() {
       <div className="flex flex-col gap-3">
         <OAuthButton provider="google" onClick={() => initiateOAuth('google')} />
         <OAuthButton provider="github" onClick={() => initiateOAuth('github')} />
-        <OAuthButton provider="linkedin" onClick={() => initiateOAuth('linkedin')} />
       </div>
 
       <p className="auth-link-row">
         Already have an account?{' '}
-        <a href="/login" className="auth-link">
+        <Link to={ROUTES.LOGIN} className="auth-link">
           Sign in
-        </a>
+        </Link>
       </p>
     </div>
   );

@@ -1,0 +1,125 @@
+/* Global Button — token-driven (§5.1: primary/secondary/ghost, --radius-sm,
+   max one primary CTA per viewport section; arrow only on the single
+   highest-priority CTA). Danger is destructive-secondary (error border/text). */
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-weight: 500;
+  letter-spacing: var(--tracking-normal);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-instant) var(--ease-standard);
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+/* Sizes: sm=36px / md=44px (default) / lg=52px (hero only) */
+.btn--sm {
+  height: 36px;
+  padding: 0 var(--space-4);
+  font-size: var(--text-body-s);
+}
+
+.btn--md {
+  height: 44px;
+  padding: 0 var(--space-6);
+  font-size: var(--text-body-m);
+}
+
+.btn--lg {
+  height: 52px;
+  padding: 0 var(--space-8);
+  font-size: var(--text-body-l);
+}
+
+/* ─── Variants ─────────────────────────────────────────────────────────────── */
+
+/* Primary */
+.btn--primary {
+  background-color: var(--color-accent-500);
+  color: var(--color-text-on-accent);
+}
+
+.btn--primary:hover:not(:disabled) {
+  background-color: var(--color-accent-400);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+/* Secondary */
+.btn--secondary {
+  background-color: transparent;
+  color: var(--color-text-primary);
+  border: 1px solid var(--color-border-strong);
+}
+
+.btn--secondary:hover:not(:disabled) {
+  border-color: var(--color-text-secondary);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+}
+
+/* Ghost */
+.btn--ghost {
+  background-color: transparent;
+  color: var(--color-text-secondary);
+}
+
+.btn--ghost:hover:not(:disabled) {
+  color: var(--color-text-primary);
+}
+
+/* Danger — destructive secondary (error border/text, never a filled error block) */
+.btn--danger {
+  background-color: transparent;
+  color: var(--color-error);
+  border: 1px solid color-mix(in srgb, var(--color-error) 55%, transparent);
+}
+
+.btn--danger:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--color-error) 9%, transparent);
+  border-color: var(--color-error);
+}
+
+/* Disabled state — opacity 0.4, no hover transform */
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Arrow glyph — shifts translateX(2px) on hover */
+.btn__arrow {
+  display: inline-block;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.btn:hover:not(:disabled) .btn__arrow {
+  transform: translateX(2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn,
+  .btn__arrow {
+    transition: none;
+  }
+  .btn:active {
+    transform: none;
+  }
+}

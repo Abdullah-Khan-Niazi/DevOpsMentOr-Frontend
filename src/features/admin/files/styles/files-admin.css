@@ -1,0 +1,77 @@
+/* ─── F8 Admin Files (SCR-F8-17) ───────────────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.files-admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.files-admin-page__upload {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.files-admin-page__check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+  cursor: pointer;
+}
+
+.files-admin-page__check input {
+  accent-color: var(--color-accent-600);
+  width: 16px;
+  height: 16px;
+}
+
+.files-admin-page__file-input {
+  flex: 1;
+  min-width: 200px;
+  color: var(--color-text-secondary);
+  font-size: 0.875rem;
+}
+
+.files-admin-page__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.files-admin-page__item-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.files-admin-page__item-title {
+  font-weight: 600;
+  font-size: 0.9375rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.files-admin-page__item-visibility {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-sunken);
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.files-admin-page__item-visibility[data-public='true'] {
+  background: var(--color-accent-950);
+  color: var(--color-accent-400);
+}
+
+.files-admin-page__item-meta {
+  margin-top: var(--space-2);
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+}

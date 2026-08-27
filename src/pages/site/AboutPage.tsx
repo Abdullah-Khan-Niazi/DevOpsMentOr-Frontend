@@ -2,12 +2,12 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants/routes';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { useScrollReveal } from './hooks';
 import './AboutPage.css';
 
 // ─── §5.4 team data ──────────────────────────────────────────────────────────
-// Photos are fetched dynamically at runtime from the LinkedIn CDN links.
+// Photos are fetched dynamically at runtime from the team profile CDN.
 // If a link fails (e.g. expired signed URL), the monogram fallback renders.
 interface TeamMember {
   name: string;
@@ -51,7 +51,7 @@ const TEAM: TeamMember[] = [
 // Photo frame: --radius-md, 1px --color-border-default, no card background,
 // no drop shadow, no Product Frame chrome. Falls back to a monogram tile
 // (initials, --font-display, --color-bg-raised bg, --color-accent-500 text)
-// when the LinkedIn image cannot be fetched.
+// when the photo cannot be fetched.
 function TeamPhoto({ member }: { member: TeamMember }) {
   const [failed, setFailed] = useState(false);
 
@@ -156,9 +156,9 @@ export default function AboutPage() {
                 className="abt-cta-link"
                 aria-label="See what we built — opens how it works page"
               >
-                <SiteButton variant="primary" withArrow size="lg">
+                <Button variant="primary" withArrow size="lg">
                   See what we built
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

@@ -1,5 +1,13 @@
 export { LoginForm, ProtectedRoute } from './components';
-export { useLogin, useLogout, useSessionValidator } from './hooks';
+export { useLogin, useSignup, useLogout, useSessionValidator } from './hooks';
 export { authService } from './services';
 export { useAuthStore } from './stores/authStore';
-export type { AuthUser, LoginCredentials, LoginResponse } from './types';
+export type {
+  AuthUser,
+  LoginCredentials,
+  LoginResponse,
+  AdminLoginCredentials,
+  SignupCredentials,
+  MessageResponse,
+  TwoFactorSetup,
+} from './types';

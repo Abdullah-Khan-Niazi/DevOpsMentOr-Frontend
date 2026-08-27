@@ -1,0 +1,47 @@
+/* Global brand logo lockup — colors via currentColor, design tokens only */
+
+.logo,
+.logo--full {
+  display: inline-flex;
+  align-items: center;
+  color: var(--color-text-primary);
+  line-height: 0;
+}
+
+.logo svg,
+.logo--full svg {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+/* Icon mark — 36px header scale */
+.logo--mark {
+  height: 36px;
+}
+
+/* Wordmark — optically aligned to the mark */
+.logo--wordmark {
+  height: 24px;
+  margin-left: var(--space-3);
+}
+
+/* Stacked lockup (icon above wordmark) */
+.logo--icon-text {
+  height: 64px;
+  align-items: flex-start;
+}
+
+/* Composed lockup — always the compact header scale */
+.logo--full {
+  height: 31px;
+}
+
+.logo--full .logo--mark {
+  height: 31px;
+}
+
+.logo--full .logo--wordmark {
+  height: 19px;
+  margin-left: var(--space-3);
+}
