@@ -25,7 +25,9 @@ export function useLogin() {
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (data) => {
       setSession(data);
-      void navigate(redirectTo(), { replace: true });
+      if (data.data.user.isVerified) {
+        void navigate(redirectTo(), { replace: true });
+      }
     },
   });
 }

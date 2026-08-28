@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query';
 import type { ApiError } from '@/shared/types';
 import { authService } from '../services';
-import type { MessageResponse, ResendVerificationPayload, VerifyEmailPayload } from '../types';
+import type { LoginResponse, ResendVerificationPayload, VerifyEmailPayload } from '../types';
 
 export function useVerifyEmail() {
-  return useMutation<MessageResponse, ApiError, VerifyEmailPayload>({
+  return useMutation<LoginResponse, ApiError, VerifyEmailPayload>({
     mutationFn: (payload) => authService.verifyEmail(payload),
   });
 }
