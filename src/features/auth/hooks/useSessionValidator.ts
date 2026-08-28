@@ -21,6 +21,7 @@ export function useSessionValidator() {
         email: me.email,
         fullName: me.fullName,
         status: user?.status ?? 'active',
+        isVerified: user?.isVerified ?? false,
         roles: me.roles,
         permissions: me.permissions,
       });

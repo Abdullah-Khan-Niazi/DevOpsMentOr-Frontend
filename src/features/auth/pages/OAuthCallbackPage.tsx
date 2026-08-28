@@ -41,7 +41,7 @@ function OAuthCallbackPage() {
     authService
       .oauthLogin({ provider: oauthProvider, code, redirectUri })
       .then((data) => {
-        if (data.exists) {
+        if ('data' in data) {
           setSession(data);
           void navigate(ROUTES.DASHBOARD, { replace: true });
           return;

@@ -37,8 +37,8 @@ export const authService = {
     return data;
   },
 
-  async verifyEmail(payload: VerifyEmailPayload): Promise<MessageResponse> {
-    const { data } = await apiClient.post<MessageResponse>('/auth/verify-email', payload);
+  async verifyEmail(payload: VerifyEmailPayload): Promise<LoginResponse> {
+    const { data } = await apiClient.post<LoginResponse>('/auth/verify-email', payload);
     return data;
   },
 

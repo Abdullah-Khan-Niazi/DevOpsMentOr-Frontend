@@ -42,7 +42,7 @@ function handleOAuthResult(
   setSession: (payload: LoginResponse) => void,
   navigate: ReturnType<typeof useNavigate>,
 ): void {
-  if (data.exists) {
+  if ('data' in data) {
     setSession(data);
     void navigate(ROUTES.DASHBOARD, { replace: true });
     return;

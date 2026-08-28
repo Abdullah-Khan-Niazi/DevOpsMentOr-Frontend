@@ -85,13 +85,23 @@ function FinishStep({
   navigate: ReturnType<typeof useNavigate>;
 }) {
   useEffect(() => {
-    complete.mutate({
-      pendingToken: oauth.pendingToken,
-      accountType: accountType ?? 'individual',
-      fullName: oauth.name,
-      organization: useOnboardingStore.getState().organization ?? undefined,
-      invitationCode: useOnboardingStore.getState().invitationCode ?? undefined,
-    });
+    const state = useOnboardingStore.getState();
+    const common = { pendingToken: oauth.pendingToken, fullName: oauth.name };
+    if (accountType === 'organization') {
+      complete.mutate({
+        ...common,
+        accountType: 'organization',
+        organization: state.organization!,
+      });
+    } else if (accountType === 'member') {
+      complete.mutate({
+        ...common,
+        accountType: 'member',
+        invitationCode: state.invitationCode!,
+      });
+    } else {
+      complete.mutate({ ...common, accountType: 'individual' });
+    }
   }, [oauth, accountType, complete]);
 
   return (
@@ -173,7 +183,14 @@ export default function OnboardingPage() {
     if (step === 'organization') return <OrganizationStep onNext={goNext} onBack={goBack} />;
     if (step === 'invitation') return <InvitationStep onNext={goNext} onBack={goBack} />;
     if (step === 'verify')
-      return <VerifyEmailStep onVerified={onVerified} password={password} onBack={goBack} />;
+      return (
+        <VerifyEmailStep
+          onVerified={onVerified}
+          password={password}
+          onBack={goBack}
+          onNext={() => {}}
+        />
+      );
     if (oauth)
       return (
         <FinishStep
