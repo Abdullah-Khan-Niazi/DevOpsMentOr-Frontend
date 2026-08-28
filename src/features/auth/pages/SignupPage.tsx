@@ -1,23 +1,23 @@
 import { Navigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { SignupForm } from '../components/SignupForm';
-import { AuthLayout } from '../components/AuthLayout';
 import { useAuthStore } from '../stores/authStore';
+import { useOnboardingStore } from '../stores/onboardingStore';
+import OnboardingPage from './OnboardingPage';
 import '../styles/auth.css';
 
 export default function SignupPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const flow = useOnboardingStore((state) => state.flow);
+  const oauth = useOnboardingStore((state) => state.oauth);
 
   if (isAuthenticated) {
     return <Navigate to={ROUTES.DASHBOARD} replace />;
   }
 
-  return (
-    <AuthLayout
-      title="Create your account"
-      subtitle="Start with Module 01 — individual access is free."
-    >
-      <SignupForm />
-    </AuthLayout>
-  );
+  // The signup route is the email entry point of the onboarding wizard.
+  if (flow !== 'email' && !oauth) {
+    useOnboardingStore.getState().startEmail({});
+  }
+
+  return <OnboardingPage />;
 }
