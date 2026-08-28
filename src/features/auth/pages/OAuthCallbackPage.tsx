@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
+import { useOnboardingStore } from '@/features/auth/stores/onboardingStore';
 import { authService } from '@/features/auth/services';
 import '../styles/auth.css';
 
@@ -40,8 +41,19 @@ function OAuthCallbackPage() {
     authService
       .oauthLogin({ provider: oauthProvider, code, redirectUri })
       .then((data) => {
-        setSession(data);
-        void navigate(ROUTES.DASHBOARD, { replace: true });
+        if (data.exists) {
+          setSession(data);
+          void navigate(ROUTES.DASHBOARD, { replace: true });
+          return;
+        }
+
+        useOnboardingStore.getState().startOAuth({
+          pendingToken: data.pendingToken,
+          email: data.email,
+          name: data.name,
+          provider: data.provider,
+        });
+        void navigate(ROUTES.ONBOARDING, { replace: true });
       })
       .catch(() => {
         void navigate(ROUTES.LOGIN, { replace: true });

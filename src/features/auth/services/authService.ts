@@ -13,7 +13,9 @@ import type {
   LoginResponse,
   MeResponse,
   MessageResponse,
+  OAuthCompleteCredentials,
   OAuthCredentials,
+  OAuthLoginResult,
   OAuthSignupCredentials,
   PendingAdminInvite,
   ResetPasswordPayload,
@@ -55,13 +57,18 @@ export const authService = {
     return data;
   },
 
-  async oauthLogin(credentials: OAuthCredentials): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/auth/oauth/login', credentials);
+  async oauthLogin(credentials: OAuthCredentials): Promise<OAuthLoginResult> {
+    const { data } = await apiClient.post<OAuthLoginResult>('/auth/oauth/login', credentials);
     return data;
   },
 
-  async oauthSignup(credentials: OAuthSignupCredentials): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/auth/oauth/signup', credentials);
+  async oauthSignup(credentials: OAuthSignupCredentials): Promise<OAuthLoginResult> {
+    const { data } = await apiClient.post<OAuthLoginResult>('/auth/oauth/signup', credentials);
+    return data;
+  },
+
+  async oauthComplete(credentials: OAuthCompleteCredentials): Promise<LoginResponse> {
+    const { data } = await apiClient.post<LoginResponse>('/auth/oauth/complete', credentials);
     return data;
   },
 

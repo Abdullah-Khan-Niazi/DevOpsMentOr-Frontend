@@ -8,6 +8,7 @@ export interface AuthUser {
   email: string;
   fullName: string | null;
   status: string;
+  isVerified: boolean;
   roles: string[];
   permissions?: string[];
 }
@@ -63,11 +64,25 @@ export interface LoginCredentials {
 
 export type AdminLoginCredentials = LoginCredentials;
 
+export type AccountType = 'individual' | 'organization' | 'member';
+
+export interface OrganizationInput {
+  name: string;
+  slug: string;
+  description?: string;
+  website?: string;
+  industry?: string;
+  billingEmail?: string;
+}
+
 export interface SignupCredentials {
   username: string;
   email: string;
   password: string;
   fullName: string;
+  accountType: AccountType;
+  organization?: OrganizationInput;
+  invitationCode?: string;
 }
 
 export interface VerifyEmailPayload {
@@ -115,6 +130,27 @@ export interface OAuthSignupCredentials extends OAuthCredentials {
   username?: string;
   fullName?: string;
 }
+
+export interface OAuthPendingResult {
+  exists: false;
+  pendingToken: string;
+  email: string;
+  name: string;
+  provider: OAuthProvider;
+}
+
+export type OAuthLoginResult = LoginResponse | OAuthPendingResult;
+
+interface BaseOAuthComplete {
+  pendingToken: string;
+  username?: string;
+  fullName?: string;
+}
+
+export type OAuthCompleteCredentials =
+  | (BaseOAuthComplete & { accountType: 'individual' })
+  | (BaseOAuthComplete & { accountType: 'organization'; organization: OrganizationInput })
+  | (BaseOAuthComplete & { accountType: 'member'; invitationCode: string });
 
 /* ─── Admin invitations ──────────────────────────────────────────────────── */
 
