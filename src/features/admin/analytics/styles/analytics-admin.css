@@ -1,0 +1,81 @@
+/* ─── F8 Admin Analytics (SCR-F8-16) ───────────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.analytics-admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.analytics-admin-page__kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--space-4);
+}
+
+.analytics-kpi {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.analytics-kpi__value {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--color-accent-500);
+  font-variant-numeric: tabular-nums;
+}
+
+.analytics-kpi__label {
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.analytics-admin-page__chart-card {
+  padding: var(--space-6);
+}
+
+.analytics-admin-page__chart-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  margin-bottom: var(--space-4);
+}
+
+.analytics-admin-page__chart-title {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.analytics-admin-page__range {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.analytics-admin-page__range-btn {
+  padding: var(--space-1) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.analytics-admin-page__range-btn[data-active='true'] {
+  border-color: var(--color-accent-600);
+  color: var(--color-accent-400);
+}
+
+.analytics-admin-page__chart {
+  width: 100%;
+  min-width: 0;
+}

@@ -1,0 +1,37 @@
+.billing-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-8);
+}
+
+.billing-page__section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.billing-page__section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+}
+
+.billing-page__section-title {
+  margin: 0;
+  font-size: var(--text-body-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.billing-page__methods {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.billing-page__hint {
+  margin: 0;
+  font-size: var(--text-body-s);
+  color: var(--color-text-tertiary);
+}

@@ -6,6 +6,7 @@ import { Card } from '@/shared/components';
 import { Button } from '@/shared/components';
 import { SiteAccordion } from './components/SiteAccordion';
 import { FAQ_CATEGORIES } from './siteData';
+import { PricingCheckoutSection } from '@/features/pricing';
 import './PricingPage.css';
 
 export default function PricingPage() {
@@ -101,6 +102,17 @@ export default function PricingPage() {
                   </div>
                 </Card>
               </div>
+            </div>
+          </div>
+        </section>
+
+        {/* ── F9 SCR-F9-01: Pricing & Checkout (public cards; checkout
+             requires authentication, returns here after login) ─────── */}
+        <section className="prc-checkout-section site-section--base" aria-label="Subscribe">
+          <div className="site-container">
+            <div className="site-reveal">
+              <h2 className="prc-checkout-headline">Subscribe</h2>
+              <PricingCheckoutSection />
             </div>
           </div>
         </section>

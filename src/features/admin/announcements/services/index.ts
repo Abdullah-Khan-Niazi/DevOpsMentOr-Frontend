@@ -1,0 +1,1 @@
+export { adminAnnouncementService } from './adminAnnouncementService';

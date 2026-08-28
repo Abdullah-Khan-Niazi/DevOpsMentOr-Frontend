@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   Button,
   Card,
@@ -10,6 +10,7 @@ import {
   toast,
 } from '@/shared/components';
 import { useAdminUserDetail } from '../hooks';
+import { ROUTES } from '@/shared/constants';
 
 function formatDate(value: string | null): string {
   if (!value) return '—';
@@ -121,9 +122,23 @@ export function AdminUserDetailPage() {
         title={user.fullName ?? user.username}
         description={`@${user.username} · ${user.email}`}
         actions={
-          <Button type="button" variant="ghost" size="sm" onClick={() => navigate('/admin/users')}>
-            Back to users
-          </Button>
+          <div className="flex items-center gap-2">
+            {/* F5 boundary exception (user-approved): entry point for SCR-F5-05. */}
+            <Link
+              to={ROUTES.ADMIN_USER_PROGRESS.replace(':userId', String(user.userId))}
+              className="inline-block rounded-md px-3 py-2 text-sm font-medium text-brand-700 hover:bg-brand-50"
+            >
+              View progress
+            </Link>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => navigate('/admin/users')}
+            >
+              Back to users
+            </Button>
+          </div>
         }
       />
 

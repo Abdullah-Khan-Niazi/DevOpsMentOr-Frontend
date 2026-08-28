@@ -3,4 +3,5 @@ export const ENV = {
   APP_NAME: import.meta.env.VITE_APP_NAME ?? 'DevOps Mentor',
   GOOGLE_CLIENT_ID: import.meta.env.VITE_GOOGLE_CLIENT_ID ?? '',
   GITHUB_CLIENT_ID: import.meta.env.VITE_GITHUB_CLIENT_ID ?? '',
+  STRIPE_PUBLISHABLE_KEY: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY ?? '',
 } as const;

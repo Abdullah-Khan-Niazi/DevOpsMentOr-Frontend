@@ -50,4 +50,150 @@ export const QUERY_KEYS = {
     validate: (token: string) => ['enroll', 'validate', token] as const,
     myClass: ['student', 'my-class'] as const,
   },
+  curriculum: {
+    adminCourse: ['admin', 'curriculum', 'course'] as const,
+    adminModules: (params: string) => ['admin', 'curriculum', 'modules', params] as const,
+    moduleEditor: (moduleId: string | number) =>
+      ['admin', 'curriculum', 'modules', String(moduleId)] as const,
+    lessonEditor: (lessonId: string | number) =>
+      ['admin', 'curriculum', 'lessons', String(lessonId)] as const,
+    quizEditor: (quizId: string | number) =>
+      ['admin', 'curriculum', 'quizzes', String(quizId)] as const,
+    tags: ['admin', 'curriculum', 'tags'] as const,
+  },
+  learn: {
+    overview: ['learn', 'overview'] as const,
+    module: (moduleId: string | number) => ['learn', 'modules', String(moduleId)] as const,
+    moduleLessons: (moduleId: string | number) =>
+      ['learn', 'modules', String(moduleId), 'lessons'] as const,
+    lesson: (lessonId: string | number) => ['learn', 'lessons', String(lessonId)] as const,
+    quizzes: (moduleId: string | number) =>
+      ['learn', 'modules', String(moduleId), 'quizzes'] as const,
+  },
+  progress: {
+    course: ['progress', 'course'] as const,
+    modules: ['progress', 'modules'] as const,
+    continue: ['progress', 'continue'] as const,
+    activity: (limit: number) => ['progress', 'activity', String(limit)] as const,
+    quizMeta: (quizId: string | number) => ['progress', 'quizzes', String(quizId)] as const,
+    quizQuestions: (quizId: string | number) =>
+      ['progress', 'quizzes', String(quizId), 'questions'] as const,
+    quizAttempts: (quizId: string | number) =>
+      ['progress', 'quizzes', String(quizId), 'attempts'] as const,
+    classStudents: (classId: string | number) =>
+      ['progress', 'classes', String(classId), 'students'] as const,
+    studentDetail: (classId: string | number, userId: number | null) =>
+      ['progress', 'classes', String(classId), 'students', String(userId)] as const,
+    orgStudents: (orgId: number | null) => ['progress', 'orgs', String(orgId), 'students'] as const,
+    adminUser: (userId: string | number) => ['progress', 'admin', 'users', String(userId)] as const,
+  },
+  labs: {
+    all: ['labs'] as const,
+    detail: (labId: string | number) => ['labs', String(labId)] as const,
+    detailBySlug: (slug: string) => ['labs', 'slug', slug] as const,
+    activeInstance: ['labs', 'instances', 'active'] as const,
+    vpnConfig: ['labs', 'vpn', 'config'] as const,
+    tracks: ['tracks'] as const,
+    trackDetail: (trackId: string | number) => ['tracks', String(trackId)] as const,
+    trackProgress: (trackId: string | number) => ['tracks', String(trackId), 'progress'] as const,
+    aiMentorSession: (lessonId: number) =>
+      ['labs', 'ai-mentor', 'session', String(lessonId)] as const,
+  },
+  adminLabs: {
+    labs: (params: string) => ['admin', 'labs', params] as const,
+    tracks: (params: string) => ['admin', 'tracks', params] as const,
+    instances: (params: string) => ['admin', 'lab-instances', params] as const,
+  },
+  // ─── F7 achievements, gamification & certification ───────────────────────
+  gamification: {
+    profile: ['gamification', 'me'] as const,
+    badgeCatalog: ['gamification', 'badges'] as const,
+    achievementCatalog: ['gamification', 'achievements'] as const,
+    pointsHistory: (page: number) => ['gamification', 'points', 'history', String(page)] as const,
+  },
+  leaderboard: {
+    seasons: ['leaderboard', 'seasons'] as const,
+    seasonDetail: (seasonId: string | number) =>
+      ['leaderboard', 'seasons', String(seasonId)] as const,
+    global: (params: string) => ['leaderboard', 'global', params] as const,
+    country: (countryCode: string, params: string) =>
+      ['leaderboard', 'country', countryCode, params] as const,
+    season: (seasonId: string | number, params: string) =>
+      ['leaderboard', 'season', String(seasonId), params] as const,
+    class: (classId: string | number) => ['leaderboard', 'class', String(classId)] as const,
+    org: (orgId: string | number) => ['leaderboard', 'org', String(orgId)] as const,
+  },
+  certificates: {
+    verify: (certNumber: string) => ['certificates', 'verify', certNumber] as const,
+  },
+  adminGamification: {
+    badges: ['admin', 'gamification', 'badges'] as const,
+    achievements: ['admin', 'gamification', 'achievements'] as const,
+    seasons: ['admin', 'gamification', 'seasons'] as const,
+  },
+  // ─── F8 analytics, notifications & platform operations ───────────────────
+  notifications: {
+    inbox: (page: number, unreadOnly: boolean) =>
+      ['notifications', 'inbox', String(page), String(unreadOnly)] as const,
+    inboxPrefix: ['notifications', 'inbox'] as const,
+    unreadCount: ['notifications', 'inbox', 'unread-count'] as const,
+    preferences: ['notifications', 'preferences'] as const,
+  },
+  announcements: {
+    published: ['announcements', 'published'] as const,
+  },
+  community: {
+    reviews: (targetType: string, targetId: number) =>
+      ['community', 'reviews', targetType, String(targetId)] as const,
+    comments: (targetType: string, targetId: number) =>
+      ['community', 'comments', targetType, String(targetId)] as const,
+  },
+  events: {
+    list: (page: number, upcomingOnly: boolean) =>
+      ['events', String(page), String(upcomingOnly)] as const,
+    listPrefix: ['events'] as const,
+  },
+  adminNotifications: {
+    announcements: ['admin', 'announcements'] as const,
+  },
+  adminEvents: {
+    listPrefix: ['admin', 'events'] as const,
+    attendees: (eventId: number) => ['admin', 'events', String(eventId), 'attendees'] as const,
+  },
+  adminModeration: {
+    reviews: (status: string, page: number) =>
+      ['admin', 'moderation', 'reviews', status, String(page)] as const,
+    reviewsPrefix: ['admin', 'moderation', 'reviews'] as const,
+    comments: (page: number) => ['admin', 'moderation', 'comments', String(page)] as const,
+    commentsPrefix: ['admin', 'moderation', 'comments'] as const,
+    reports: (status: string, page: number) =>
+      ['admin', 'moderation', 'reports', status, String(page)] as const,
+    reportsPrefix: ['admin', 'moderation', 'reports'] as const,
+  },
+  adminEmailTemplates: {
+    list: ['admin', 'email-templates'] as const,
+  },
+  adminFiles: {
+    list: (params: string) => ['admin', 'files', params] as const,
+    listPrefix: ['admin', 'files'] as const,
+  },
+  adminAnalytics: {
+    overview: ['admin', 'analytics', 'overview'] as const,
+    activity: (days: number) => ['admin', 'analytics', 'activity', String(days)] as const,
+  },
+  // ─── F9 billing, subscriptions & payment methods ───────────────────────
+  billing: {
+    current: ['billing', 'current'] as const,
+    plans: ['billing', 'plans'] as const,
+    paymentMethods: ['billing', 'payment-methods'] as const,
+    orders: (page: number) => ['billing', 'orders', String(page)] as const,
+    invoices: (page: number) => ['billing', 'invoices', String(page)] as const,
+    portalSession: ['billing', 'portal-session'] as const,
+  },
+  adminBilling: {
+    overview: ['admin', 'billing', 'overview'] as const,
+    subscriptions: (params: string) => ['admin', 'billing', 'subscriptions', params] as const,
+    orders: (params: string) => ['admin', 'billing', 'orders', params] as const,
+    coupons: (params: string) => ['admin', 'billing', 'coupons', params] as const,
+  },
 } as const;
