@@ -8,6 +8,7 @@ import { ROUTES } from '@/shared/constants';
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/features/auth/pages/SignupPage'));
 const VerifyEmailPage = lazy(() => import('@/features/auth/pages/VerifyEmailPage'));
+const OnboardingPage = lazy(() => import('@/features/auth/pages/OnboardingPage'));
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
 const OAuthCallbackPage = lazy(() => import('@/features/auth/pages/OAuthCallbackPage'));
@@ -180,6 +181,15 @@ export function AppRoutes() {
         element={
           <LazyPage>
             <VerifyEmailPage />
+          </LazyPage>
+        }
+      />
+
+      <Route
+        path={ROUTES.ONBOARDING}
+        element={
+          <LazyPage>
+            <OnboardingPage />
           </LazyPage>
         }
       />

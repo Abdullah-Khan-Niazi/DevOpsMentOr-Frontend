@@ -3,6 +3,7 @@ export const ROUTES = {
   LOGIN: '/login',
   SIGNUP: '/register',
   VERIFY_EMAIL: '/verify-email',
+  ONBOARDING: '/onboarding',
   FORGOT_PASSWORD: '/forgot-password',
   RESET_PASSWORD: '/reset-password',
   OAUTH_CALLBACK: '/api/auth/callback/:provider',

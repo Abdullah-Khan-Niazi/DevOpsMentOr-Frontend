@@ -2,7 +2,9 @@ import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { Button, Input, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
+import { useAuthStore } from '@/features/auth';
 import { useResendVerification, useVerifyEmail } from '../hooks';
+import { useOnboardingStore } from '../stores/onboardingStore';
 import { AuthLayout } from '../components/AuthLayout';
 import { OtpInputGroup } from '../components/OtpInputGroup';
 import '../styles/auth.css';
@@ -12,9 +14,14 @@ export default function VerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const state = location.state as { email?: string; message?: string } | null;
+  const onboardingEmail = useOnboardingStore.getState().email;
 
-  const [email, setEmail] = useState(state?.email ?? searchParams.get('email') ?? '');
-  const [askEmail, setAskEmail] = useState(!(state?.email ?? searchParams.get('email')));
+  const [email, setEmail] = useState(
+    state?.email ?? searchParams.get('email') ?? onboardingEmail ?? '',
+  );
+  const [askEmail, setAskEmail] = useState(
+    !(state?.email ?? searchParams.get('email') ?? onboardingEmail),
+  );
   const [code, setCode] = useState('');
   const [info, setInfo] = useState<string | null>(state?.message ?? null);
   const [verified, setVerified] = useState(false);
@@ -50,8 +57,10 @@ export default function VerifyEmailPage() {
       { email, code },
       {
         onSuccess: (data) => {
+          useAuthStore.getState().setSession(data);
+          useOnboardingStore.getState().reset();
           setVerified(true);
-          setInfo(data.data.message);
+          setInfo('Your email is verified and you are signed in.');
         },
         onError: (error) => {
           setInfo(error.message);
@@ -86,9 +95,9 @@ export default function VerifyEmailPage() {
           <Button
             type="button"
             className="w-full"
-            onClick={() => void navigate(ROUTES.LOGIN, { state: { verified: true } })}
+            onClick={() => void navigate(ROUTES.DASHBOARD, { replace: true })}
           >
-            Continue to sign in
+            Go to dashboard
           </Button>
         </div>
       </AuthLayout>
