@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { CURRICULUM_PHASES, modulesForPhase } from './siteData';
 import './styles/SiteSubPage.css';
 import './ModuleCatalogPage.css';
@@ -81,9 +81,9 @@ export default function ModuleCatalogPage() {
                 Free during the initial release — your first lab provisions in under 90 seconds.
               </p>
               <Link to={ROUTES.SIGNUP} aria-label="Start with Module 01 — create a free account">
-                <SiteButton variant="primary" withArrow size="md">
+                <Button variant="primary" withArrow size="md">
                   Start with Module 01
-                </SiteButton>
+                </Button>
               </Link>
             </div>
           </div>

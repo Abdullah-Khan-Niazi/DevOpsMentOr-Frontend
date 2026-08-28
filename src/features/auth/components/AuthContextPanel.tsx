@@ -1,7 +1,5 @@
-import { SiteLogo } from '@/pages/site/components/Logo';
+import { SiteLogo } from '@/shared/components';
 
-// Honest platform facts — real mechanisms from the platform, no fabricated
-// numbers (§2.4 honesty-first copy rules).
 const FACTS = [
   '15 modules — Containers to GitOps',
   'Kubernetes labs in under 90 seconds',

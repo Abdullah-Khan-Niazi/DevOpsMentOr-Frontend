@@ -1,0 +1,113 @@
+/* ─── F7 Admin Gamification (SCR-F7-06..09) ──────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.gamification-admin__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-4);
+}
+
+.gamification-admin__card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-5);
+}
+
+.gamification-admin__title {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.3;
+  color: var(--color-text-primary);
+}
+
+.gamification-admin__note {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+}
+
+.gamification-admin__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  margin-top: var(--space-1);
+}
+
+.gamification-admin__check {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: 14px;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.gamification-admin__section {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gamification-admin__section legend {
+  color: var(--color-text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  padding: 0 var(--space-1);
+}
+
+.gamification-admin__content-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto auto;
+  align-items: end;
+  gap: var(--space-2);
+}
+
+/* Admin modal form (same skeleton as the F6 lab-admin form) */
+.gamification-admin__form {
+  width: 100%;
+  max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.gamification-admin__form h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+/* Contextual table skeleton (guidelines §4 — no full-page spinners). */
+.admin-table-wrap {
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background-color: var(--color-bg-raised);
+  overflow: hidden;
+}
+
+.admin-table--skeleton {
+  height: 360px;
+  background-color: var(--color-bg-sunken);
+  animation: gamification-pulse var(--duration-base) ease-in-out infinite alternate;
+}
+
+@keyframes gamification-pulse {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 720px) {
+  .gamification-admin__content-row {
+    grid-template-columns: 1fr 1fr;
+  }
+}

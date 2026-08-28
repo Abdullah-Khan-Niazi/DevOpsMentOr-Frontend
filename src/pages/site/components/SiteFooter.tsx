@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { SiteLogo } from './Logo';
+import { SiteLogo } from '@/shared/components/Logo';
 import './SiteFooter.css';
 
 // §3.2 — Grounded Footer
@@ -97,15 +97,6 @@ export function SiteFooter() {
             aria-label="GitHub"
           >
             GH
-          </a>
-          <a
-            href="https://linkedin.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="site-footer__social-link"
-            aria-label="LinkedIn"
-          >
-            LI
           </a>
         </div>
       </div>

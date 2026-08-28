@@ -1,0 +1,310 @@
+/* ─── F8 Community (SCR-F8-05..07) ─────────────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+/* ReviewSection (SCR-F8-05) */
+.review-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  margin-top: var(--space-8);
+}
+
+.review-section__heading,
+.comment-thread__heading {
+  font-size: 1.375rem;
+  font-weight: 600;
+}
+
+.review-section__histogram {
+  display: grid;
+  gap: var(--space-1);
+  max-width: 480px;
+}
+
+.review-section__bar-row {
+  display: grid;
+  grid-template-columns: 40px 1fr 32px;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.review-section__bar-label {
+  color: var(--color-text-secondary);
+  font-size: 0.8125rem;
+}
+
+.review-section__bar-track {
+  height: 8px;
+  border-radius: var(--radius-full);
+  background: var(--color-bg-sunken);
+  overflow: hidden;
+}
+
+.review-section__bar-fill {
+  height: 100%;
+  border-radius: var(--radius-full);
+  background: var(--color-accent-500);
+  transition: width var(--duration-base) var(--ease-standard);
+}
+
+.review-section__bar-count {
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  text-align: right;
+}
+
+.review-section__list {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.review-section__card-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.review-section__author {
+  font-weight: 600;
+  font-size: 0.9375rem;
+}
+
+.review-section__stars {
+  color: var(--color-warning);
+  letter-spacing: 2px;
+}
+
+.review-section__time {
+  margin-left: auto;
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.review-section__title {
+  margin-top: var(--space-2);
+  font-weight: 600;
+}
+
+.review-section__content {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+}
+
+.review-section__form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-6);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.review-section__form-title {
+  font-weight: 600;
+}
+
+.review-section__rating {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.review-section__star {
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: 1.5rem;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.review-section__star[data-active='true'] {
+  color: var(--color-warning);
+}
+
+.review-section__input,
+.review-section__textarea,
+.comment-thread__textarea,
+.report-modal__textarea {
+  width: 100%;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.review-section__textarea,
+.comment-thread__textarea {
+  resize: vertical;
+}
+
+.review-section__actions,
+.comment-thread__composer-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.review-section__hint,
+.comment-thread__hint {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-tertiary);
+  font-size: 0.875rem;
+}
+
+.review-section__error,
+.comment-thread__error {
+  color: var(--color-error);
+}
+
+/* CommentThread (SCR-F8-06) */
+.comment-thread {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-top: var(--space-8);
+}
+
+.comment-thread__composer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.comment-thread__list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.comment-row {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-raised);
+}
+
+.comment-row--reply {
+  margin-left: var(--space-8);
+  background: var(--color-bg-base);
+}
+
+.comment-row__head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.comment-row__author {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.comment-row__pinned {
+  display: grid;
+  place-items: center;
+  color: var(--color-warning);
+}
+
+.comment-row__time {
+  margin-left: auto;
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+}
+
+.comment-row__content {
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.comment-row__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.comment-row__action {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  border: none;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.comment-row__action:hover {
+  color: var(--color-accent-400);
+}
+
+.comment-row__action--danger:hover {
+  color: var(--color-error);
+}
+
+.comment-thread__empty {
+  color: var(--color-text-tertiary);
+}
+
+.comment-thread__reply-box {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+}
+
+.comment-thread__reply-target {
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+}
+
+/* ReportModal (SCR-F8-07) */
+.report-modal {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.report-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.report-modal__label {
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.report-modal__select {
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-base);
+  color: var(--color-text-primary);
+  font: inherit;
+}
+
+.report-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-3);
+}
+
+@media (max-width: 560px) {
+  .comment-row--reply {
+    margin-left: var(--space-3);
+  }
+}

@@ -1,0 +1,387 @@
+/* ─── App Chrome — unified authenticated shell (sidebar only) ────────────────
+   No top header: brand, navigation, collapse control, profile and logout all
+   live inside the Gemini-style collapsible sidebar. Every value is
+   token-driven — no hardcoded hex/px colors anywhere. */
+
+.app-chrome {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--color-bg-void);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+}
+
+/* ─── Sidebar — Gemini-style collapse ─────────────────────────────────────── */
+.app-chrome__sidebar {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  width: 64px;
+  background-color: var(--color-bg-base);
+  border-right: 1px solid var(--color-border-subtle);
+  overflow: hidden;
+  transition: width var(--duration-base) var(--ease-standard);
+}
+
+.app-chrome__sidebar--open {
+  width: 288px;
+}
+
+/* ─── Top bar: brand + collapse control ───────────────────────────────────── */
+.app-chrome__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  flex-shrink: 0;
+  height: 64px;
+  padding: 0 var(--space-3);
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+
+/* Brand — full lockup when expanded, mark only when collapsed. Sized down so
+   the wordmark (wide SVG, ~9.6:1) fits inside the rail. */
+.app-chrome__logo {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  text-decoration: none;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__logo:hover {
+  opacity: 0.8;
+}
+
+.app-chrome__logo:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 4px;
+  border-radius: var(--radius-xs);
+}
+
+.app-chrome__logo .logo--full {
+  height: 26px;
+}
+
+.app-chrome__logo .logo--full .logo--mark {
+  height: 26px;
+}
+
+.app-chrome__logo .logo--full .logo--wordmark {
+  height: 14px;
+  margin-left: var(--space-3);
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+/* Collapse control — icon button at the right of the top bar */
+.app-chrome__collapse {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__collapse:hover {
+  color: var(--color-text-primary);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+}
+
+.app-chrome__collapse:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* Collapsed: no expand icon at rest. The whole top bar becomes a hover zone —
+   hovering the mark or the empty space swaps the mark for a right-arrow
+   expand button; clicking anywhere in the bar expands the sidebar. */
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__top {
+  position: relative;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__collapse {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  opacity: 0;
+  background: none;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logo .logo--full {
+  height: 22px;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logo .logo--full .logo--mark {
+  height: 22px;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logo .logo--full .logo--wordmark {
+  opacity: 0;
+  width: 0;
+  margin-left: 0;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__top:hover .app-chrome__collapse,
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__collapse:focus-visible {
+  opacity: 1;
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__top:hover .app-chrome__logo {
+  opacity: 0;
+}
+
+/* ─── Navigation ──────────────────────────────────────────────────────────── */
+.app-chrome__nav {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  flex: 1;
+  padding: var(--space-3);
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.app-chrome__nav-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.app-chrome__nav-section {
+  margin: 0;
+  padding: 0 var(--space-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-caption);
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-wide);
+  color: var(--color-text-tertiary);
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__nav-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 40px;
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__nav-item:hover,
+.app-chrome__nav-item:focus-visible {
+  color: var(--color-text-primary);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+}
+
+.app-chrome__nav-item:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+/* Selection: vertical accent line on the left edge + subtle tint — no filled
+   pill, in both the expanded and collapsed states. */
+.app-chrome__nav-item--active,
+.app-chrome__nav-item--active:hover,
+.app-chrome__nav-item--active:focus-visible {
+  color: var(--color-text-primary);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+  outline: none;
+}
+
+.app-chrome__nav-item--active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-500);
+}
+
+.app-chrome__nav-icon {
+  flex-shrink: 0;
+}
+
+.app-chrome__nav-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+/* Collapsed: icon-only, horizontally centered, labels hidden. Labels are
+   collapsed to zero width (not just faded) so the icon is truly centered —
+   an invisible label would otherwise keep pushing it off-center. The active
+   vertical line stays visible so the selection reads the same as expanded. */
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__nav-item {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__nav-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__nav-section {
+  display: none;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__nav-item--active {
+  color: var(--color-accent-500);
+}
+
+/* ─── Footer: profile + logout (single home for both) ─────────────────────── */
+.app-chrome__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  flex-shrink: 0;
+  padding: var(--space-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.app-chrome__profile,
+.app-chrome__logout {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  height: 40px;
+  padding: 0 var(--space-3);
+  border: none;
+  border-radius: var(--radius-md);
+  background: none;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__profile:hover,
+.app-chrome__logout:hover {
+  color: var(--color-text-primary);
+  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+}
+
+.app-chrome__profile:focus-visible,
+.app-chrome__logout:focus-visible {
+  outline: 2px solid var(--color-accent-500);
+  outline-offset: 2px;
+}
+
+.app-chrome__logout:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.app-chrome__avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-accent-600);
+  color: var(--color-text-on-accent);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  letter-spacing: var(--tracking-normal);
+}
+
+.app-chrome__logout-icon {
+  flex-shrink: 0;
+}
+
+.app-chrome__profile-name,
+.app-chrome__logout-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  transition: opacity var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__profile-name {
+  font-weight: 500;
+}
+
+/* Collapsed footer: icon-only, centered (labels also collapsed to zero
+   width so the avatar/logout icons sit dead-center) */
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile,
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout {
+  justify-content: center;
+  gap: 0;
+  padding: 0;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile-name,
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout-label {
+  opacity: 0;
+  width: 0;
+  overflow: hidden;
+}
+
+/* ─── Content ─────────────────────────────────────────────────────────────── */
+.app-chrome__main {
+  flex: 1;
+  min-width: 0;
+  padding: var(--space-8) var(--gutter) var(--space-16);
+}
+
+@media (max-width: 767px) {
+  .app-chrome__main {
+    padding: var(--space-6) var(--space-4) var(--space-12);
+  }
+}
+
+/* ─── Reduced motion ──────────────────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  .app-chrome__sidebar,
+  .app-chrome__logo,
+  .app-chrome__nav-item,
+  .app-chrome__nav-label,
+  .app-chrome__nav-section,
+  .app-chrome__collapse,
+  .app-chrome__profile,
+  .app-chrome__logout,
+  .app-chrome__profile-name,
+  .app-chrome__logout-label,
+  .app-chrome__logo .logo--full .logo--wordmark {
+    transition: none;
+  }
+}

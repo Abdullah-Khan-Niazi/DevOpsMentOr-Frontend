@@ -1,0 +1,39 @@
+/* Global Card — token-referenced exclusively */
+
+.card {
+  background-color: var(--color-bg-raised);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  padding: var(--space-8);
+  box-shadow: none;
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.card--interactive:hover {
+  transform: translateY(-2px);
+  border-color: var(--color-border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.card--highlighted {
+  border-color: var(--color-accent-500);
+  box-shadow: var(--shadow-accent-glow);
+}
+
+@media (max-width: 767px) {
+  .card {
+    padding: var(--space-6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .card {
+    transition: none;
+  }
+  .card--interactive:hover {
+    transform: none;
+  }
+}

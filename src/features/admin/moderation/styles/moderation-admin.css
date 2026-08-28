@@ -1,0 +1,66 @@
+/* ─── F8 Admin Moderation (SCR-F8-11/12) ───────────────────────────────────── */
+/* Dual-theme tokens only — zero hardcoded hex values. */
+
+.moderation-admin-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.moderation-admin-page__list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.moderation-admin-page__sub-tabs {
+  margin-bottom: var(--space-2);
+}
+
+.moderation-item__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.moderation-item__author {
+  font-weight: 600;
+}
+
+.moderation-item__badge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-full);
+  background: var(--color-bg-sunken);
+  color: var(--color-text-tertiary);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.moderation-item__badge[data-pending='true'] {
+  background: var(--color-warning);
+  color: var(--color-text-on-accent);
+}
+
+.moderation-item__meta {
+  margin-top: var(--space-2);
+  color: var(--color-text-tertiary);
+  font-size: 0.8125rem;
+}
+
+.moderation-item__title {
+  margin-top: var(--space-2);
+  font-weight: 600;
+}
+
+.moderation-item__content {
+  margin-top: var(--space-1);
+  color: var(--color-text-secondary);
+  line-height: 1.55;
+}
+
+.moderation-item__actions {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-3);
+}

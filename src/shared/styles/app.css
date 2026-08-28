@@ -1,0 +1,22 @@
+/* Shared token-driven app-page primitives (F1 surfaces under AppShell) */
+
+.app-page-header {
+  margin-bottom: var(--space-8);
+}
+
+.app-page-header__title {
+  font-family: var(--font-body);
+  font-size: var(--text-heading-l);
+  font-weight: 500;
+  line-height: var(--leading-tight);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.app-page-header__description {
+  margin: var(--space-2) 0 0;
+  font-size: var(--text-body-m);
+  color: var(--color-text-secondary);
+  max-width: 60ch;
+}

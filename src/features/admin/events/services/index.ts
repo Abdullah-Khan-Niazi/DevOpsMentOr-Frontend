@@ -1,0 +1,1 @@
+export { adminEventService } from './adminEventService';

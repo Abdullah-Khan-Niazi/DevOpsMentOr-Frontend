@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
-import { SiteButton } from './components/SiteButton';
+import { Button } from '@/shared/components';
 import { ProductFrame } from './components/ProductFrame';
 import { useReducedMotion } from './hooks';
 import './NotFoundPage.css';
@@ -25,10 +25,7 @@ const TERMINAL_LINES: TermLine[] = [
 const CHAR_MS = 16;
 const LINE_HOLD = 20; // ticks of pause after each line (~320ms)
 
-const TOTAL_TICKS = TERMINAL_LINES.reduce(
-  (sum, line) => sum + line.text.length + LINE_HOLD,
-  0,
-);
+const TOTAL_TICKS = TERMINAL_LINES.reduce((sum, line) => sum + line.text.length + LINE_HOLD, 0);
 
 // Map an absolute tick counter to (lineIndex, charIndex) so the interval is a
 // single monotonic count — no cascading timers.
@@ -39,7 +36,10 @@ function progressAt(tick: number): { line: number; char: number } {
     if (remaining < lineTicks) return { line: i, char: Math.max(0, remaining) };
     remaining -= lineTicks;
   }
-  return { line: TERMINAL_LINES.length - 1, char: TERMINAL_LINES[TERMINAL_LINES.length - 1].text.length };
+  return {
+    line: TERMINAL_LINES.length - 1,
+    char: TERMINAL_LINES[TERMINAL_LINES.length - 1].text.length,
+  };
 }
 
 export default function NotFoundPage() {
@@ -90,9 +90,9 @@ export default function NotFoundPage() {
 
           <div className={`notfound-cta-wrap ${done ? 'notfound-cta-wrap--visible' : ''}`}>
             <Link to={ROUTES.HOME}>
-              <SiteButton variant="primary" size="md">
+              <Button variant="primary" size="md">
                 Return home
-              </SiteButton>
+              </Button>
             </Link>
           </div>
         </div>

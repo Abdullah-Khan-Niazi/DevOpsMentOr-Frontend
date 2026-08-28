@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
+import { useOnboardingStore } from '@/features/auth/stores/onboardingStore';
 import { authService } from '@/features/auth/services';
 import '../styles/auth.css';
 
@@ -16,7 +17,7 @@ function OAuthCallbackPage() {
     if (calledRef.current) return;
     calledRef.current = true;
 
-    if (!provider || !['google', 'github', 'linkedin'].includes(provider)) {
+    if (!provider || !['google', 'github'].includes(provider)) {
       void navigate(ROUTES.LOGIN, { replace: true });
       return;
     }
@@ -34,14 +35,25 @@ function OAuthCallbackPage() {
 
     sessionStorage.removeItem('oauth_mode');
 
-    const oauthProvider = provider as 'google' | 'github' | 'linkedin';
+    const oauthProvider = provider as 'google' | 'github';
     const redirectUri = `${window.location.origin}/api/auth/callback/${provider}`;
 
     authService
       .oauthLogin({ provider: oauthProvider, code, redirectUri })
       .then((data) => {
-        setSession(data);
-        void navigate(ROUTES.DASHBOARD, { replace: true });
+        if (data.exists) {
+          setSession(data);
+          void navigate(ROUTES.DASHBOARD, { replace: true });
+          return;
+        }
+
+        useOnboardingStore.getState().startOAuth({
+          pendingToken: data.pendingToken,
+          email: data.email,
+          name: data.name,
+          provider: data.provider,
+        });
+        void navigate(ROUTES.ONBOARDING, { replace: true });
       })
       .catch(() => {
         void navigate(ROUTES.LOGIN, { replace: true });
