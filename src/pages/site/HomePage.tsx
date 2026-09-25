@@ -8,12 +8,18 @@ import { SiteAccordion } from './components/SiteAccordion';
 import { FAQ_CATEGORIES, MODULES } from './siteData';
 import {
   useInView,
-  useMediaQuery,
-  useParallaxPlane,
   useReducedMotion,
   useScrollReveal,
 } from './hooks';
 import './HomePage.css';
+import loopSvg from '@/assets/hero/loop.svg';
+import serverSvg from '@/assets/hero/server.svg';
+import terminalSvg from '@/assets/hero/terminal.svg';
+import containersSvg from '@/assets/hero/containers.svg';
+import k8Svg from '@/assets/hero/k8.svg';
+import cloud1Svg from '@/assets/hero/cloud-1.svg';
+import cloud2Svg from '@/assets/hero/cloud-2.svg';
+import cloud3Svg from '@/assets/hero/cloud-3.svg';
 
 // ─── Data ──────────────────────────────────────────────────────────────────────
 // Canonical 15-module curriculum lives in ./siteData (shared with Curriculum).
@@ -228,57 +234,214 @@ function ModuleRail() {
   );
 }
 
-// ─── Section 2: Hero — Dominant Product Canvas ────────────────────────────────
+// ─── Section 2: Hero — Isometric Illustrated Canvas ──────────────────────────
 function HeroSection() {
-  const reduced = useReducedMotion();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
-  const loop = useLabLoop(HERO_LABS.length, true, reduced ? 0 : 1300);
-  const atmoRef = useParallaxPlane<HTMLDivElement>(0.4, isDesktop && !reduced);
-  const frameRef = useParallaxPlane<HTMLDivElement>(1.15, isDesktop && !reduced);
+  const [hoveredAsset, setHoveredAsset] = useState<string | null>(null);
+  const [clickedAsset, setClickedAsset] = useState<string | null>(null);
+
+  const triggerClick = (id: string) => {
+    setClickedAsset(id);
+    setTimeout(() => setClickedAsset(null), 350);
+  };
 
   return (
-    <section className="hp-hero site-section--void" aria-labelledby="hp-hero-title">
-      {/* Atmosphere — fixed feel, slow 12s breathing pulse (homepage only) */}
-      <div className="hp-hero__atmosphere" aria-hidden="true" ref={atmoRef} />
-
-      <div className="site-container">
+    <section className="hp-hero" aria-labelledby="hp-hero-title">
+      <div className="hp-hero__inner">
+        {/* Left Column: Headlines, copy, CTAs */}
         <div className="hp-hero__text">
-          <p className="hp-hero__eyebrow">FOR UNIVERSITY DEVOPS PROGRAMS</p>
           <h1 id="hp-hero-title" className="hp-hero__title">
-            Real containers. Real clusters.
-            <br />
-            Zero local setup.
+            <span className="hp-hero__title-line">Master DevOps</span>
+            <span className="hp-hero__title-line">Interactively.</span>
           </h1>
           <p className="hp-hero__sub">
-            Launch isolated Docker and Kubernetes labs in your browser, graded automatically,
-            debugged with guardrailed AI hints.
+            Hands-on labs. Real environments. Build your DevOps skills, step by step.
           </p>
           <div className="hp-hero__ctas">
             <Link to={ROUTES.SIGNUP} className="hp-hero__cta-link">
-              <Button variant="primary" size="lg" withArrow>
-                Start free
+              <Button variant="primary" size="lg">
+                Start Learning
               </Button>
             </Link>
-            <Link to={ROUTES.HOW_IT_WORKS} className="hp-hero__cta-link">
-              <Button variant="ghost" size="lg">
-                See how it works
+            <Link to={ROUTES.CURRICULUM} className="hp-hero__cta-link">
+              <Button variant="secondary" size="lg">
+                Explore Labs
               </Button>
             </Link>
           </div>
         </div>
-      </div>
 
-      {/* Dominant product canvas — wider than the text above it */}
-      <div className="hp-hero__frame-wrap" ref={frameRef}>
-        <div className="hp-hero__frame-enter">
-          <ProductFrame variant="browser" url="app.devopsmentor.io/dashboard">
-            <LabQueue loop={loop} />
-          </ProductFrame>
-          <div className="hp-hero__capsule" aria-live="polite">
-            <span className="hp-hero__capsule-label">AI Mentor:</span> {loop.hints} hints given this
-            session
+        {/* Right Column: Isometric visual cluster */}
+        <div className="hp-hero__visual">
+          <div className="hp-hero__stage">
+            {/* Ambient Floor Shadows */}
+            <div className="hp-hero__shadows" aria-hidden="true">
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--cloud-3 ${
+                  hoveredAsset === 'cloud-3' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--cloud-1 ${
+                  hoveredAsset === 'cloud-1' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--cloud-2 ${
+                  hoveredAsset === 'cloud-2' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--server ${
+                  hoveredAsset === 'server' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--loop-dev ${
+                  hoveredAsset === 'loop' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--loop-ops ${
+                  hoveredAsset === 'loop' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--terminal ${
+                  hoveredAsset === 'terminal' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--k8 ${
+                  hoveredAsset === 'k8' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--containers ${
+                  hoveredAsset === 'containers' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+            </div>
+
+            {/* Cloud 3 — Top Left */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--cloud-3 ${
+                hoveredAsset === 'cloud-3' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'cloud-3' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('cloud-3')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('cloud-3')}
+              role="button"
+              tabIndex={0}
+              aria-label="Multi-Cloud Infrastructure"
+            >
+              <img src={cloud3Svg} alt="" className="hp-hero__drift hp-hero__drift--cloud-3" />
+            </div>
+
+            {/* Cloud 1 — Top Right (Above Server) */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--cloud-1 ${
+                hoveredAsset === 'cloud-1' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'cloud-1' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('cloud-1')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('cloud-1')}
+              role="button"
+              tabIndex={0}
+              aria-label="Edge Mesh Infrastructure"
+            >
+              <img src={cloud1Svg} alt="" className="hp-hero__drift hp-hero__drift--cloud-1" />
+            </div>
+
+            {/* Cloud 2 — Mid Right */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--cloud-2 ${
+                hoveredAsset === 'cloud-2' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'cloud-2' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('cloud-2')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('cloud-2')}
+              role="button"
+              tabIndex={0}
+              aria-label="Serverless Cloud"
+            >
+              <img src={cloud2Svg} alt="" className="hp-hero__drift hp-hero__drift--cloud-2" />
+            </div>
+
+            {/* Server Rack — Upper Right behind Loop */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--server ${
+                hoveredAsset === 'server' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'server' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('server')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('server')}
+              role="button"
+              tabIndex={0}
+              aria-label="Production Bare-Metal Server Cluster"
+            >
+              <img src={serverSvg} alt="" className="hp-hero__drift hp-hero__drift--server" />
+            </div>
+
+            {/* DEV/OPS Infinity Loop — Center Anchor */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--loop ${
+                hoveredAsset === 'loop' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'loop' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('loop')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('loop')}
+              role="button"
+              tabIndex={0}
+              aria-label="Continuous DevOps Delivery Loop"
+            >
+              <img src={loopSvg} alt="" className="hp-hero__drift hp-hero__drift--loop" />
+            </div>
+
+            {/* Terminal Panel — Lower Left in front of Loop */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--terminal ${
+                hoveredAsset === 'terminal' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'terminal' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('terminal')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('terminal')}
+              role="button"
+              tabIndex={0}
+              aria-label="Interactive Kubernetes Terminal Lab"
+            >
+              <img src={terminalSvg} alt="" className="hp-hero__drift hp-hero__drift--terminal" />
+            </div>
+
+            {/* Containers Plinth — Lower Right */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--containers ${
+                hoveredAsset === 'containers' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'containers' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('containers')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('containers')}
+              role="button"
+              tabIndex={0}
+              aria-label="Docker Containerized Microservices"
+            >
+              <img src={containersSvg} alt="" className="hp-hero__drift hp-hero__drift--containers" />
+            </div>
+
+            {/* Kubernetes Pedestal — Lower Center */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--k8 ${
+                hoveredAsset === 'k8' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'k8' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('k8')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('k8')}
+              role="button"
+              tabIndex={0}
+              aria-label="Kubernetes Cluster Control Plane"
+            >
+              <img src={k8Svg} alt="" className="hp-hero__drift hp-hero__drift--k8" />
+            </div>
           </div>
-          <div className="hp-hero__glow" aria-hidden="true" />
         </div>
       </div>
     </section>

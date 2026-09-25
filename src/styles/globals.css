@@ -1,58 +1,38 @@
 @import 'tailwindcss';
 
 @theme {
-  --font-sans: 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  --font-sans: 'Geist', 'Geist Fallback', system-ui, -apple-system, sans-serif;
+  --font-display: 'Geist', 'Geist Fallback', system-ui, -apple-system, sans-serif;
+  --font-body: 'Geist', 'Geist Fallback', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
-  --color-deep-onyx: #121212;
-  --color-deep-onyx-800: #1e1e1e;
-  --color-deep-onyx-600: #2d2d2d;
+  --color-surface:      var(--pearl-100);
+  --color-muted:        var(--text-secondary);
+  --color-border:       var(--paper-line);
 
-  --color-spring-green: #00c853;
-  --color-spring-green-600: #00a844;
-  --color-spring-green-700: #008f3a;
+  --color-brand-50:     var(--paper-dim);
+  --color-brand-100:    var(--paper-dim);
+  --color-brand-500:    var(--ink);
+  --color-brand-600:    var(--ink);
+  --color-brand-700:    var(--ink-soft);
+  --color-brand-900:    var(--ink-faint);
 
-  --color-chalk-white: #f5f5f0;
-  --color-chalk-white-200: #eaeae3;
-  --color-chalk-white-400: #d4d4cc;
-
-  --color-danger: #dc2626;
-  --color-success: #16a34a;
-}
-
-/* ─── §0 Semantic Class Bridge ──────────────────────────────────────────── */
-/* App feature components (profiles, admin, org, enrollment, dashboard, ...)
-   are written against legacy utility names (surface / muted / border / brand)
-   whose tokens were dropped when the public-site token system landed. Until
-   components are migrated, re-map those names onto the current design tokens
-   so Tailwind regenerates the utilities and they follow the active theme.   */
-@theme {
-  --color-surface:      var(--color-bg-raised);
-  --color-muted:        var(--color-text-secondary);
-  --color-border:       var(--color-border-default);
-
-  --color-brand-50:     var(--color-accent-950);
-  --color-brand-100:    var(--color-accent-950);
-  --color-brand-500:    var(--color-accent-500);
-  --color-brand-600:    var(--color-accent-600);
-  --color-brand-700:    var(--color-accent-400);
-  --color-brand-900:    var(--color-accent-950);
-
-  /* Semantic aliases — component-agnostic names resolving to the theme. */
-  --color-background:         var(--color-bg-void);
-  --color-foreground:         var(--color-text-primary);
-  --color-card:               var(--color-bg-raised);
-  --color-card-foreground:    var(--color-text-primary);
-  --color-popover:            var(--color-bg-overlay);
-  --color-popover-foreground: var(--color-text-primary);
-  --color-primary:            var(--color-accent-600);
-  --color-primary-foreground: var(--color-text-on-accent);
-  --color-secondary:          var(--color-bg-raised);
-  --color-secondary-foreground: var(--color-text-primary);
-  --color-muted-foreground:   var(--color-text-tertiary);
-  --color-accent:             var(--color-accent-600);
-  --color-accent-foreground:  var(--color-text-on-accent);
-  --color-input:              var(--color-border-strong);
-  --color-ring:               var(--color-accent-500);
+  /* Semantic aliases */
+  --color-background:         var(--paper);
+  --color-foreground:         var(--ink);
+  --color-card:               var(--pearl-100);
+  --color-card-foreground:    var(--ink);
+  --color-popover:            var(--pearl-100);
+  --color-popover-foreground: var(--ink);
+  --color-primary:            var(--ink);
+  --color-primary-foreground: var(--pearl-100);
+  --color-secondary:          var(--paper-dim);
+  --color-secondary-foreground: var(--ink);
+  --color-muted-foreground:   var(--text-tertiary);
+  --color-accent:             var(--accent);
+  --color-accent-foreground:  var(--pearl-100);
+  --color-input:              var(--paper-line);
+  --color-ring:               var(--ink);
 }
 
 * {
@@ -67,60 +47,62 @@ body,
 
 body {
   margin: 0;
-  font-family: var(--font-sans);
-  background-color: var(--color-bg-void);
-  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  background-color: var(--paper);
+  color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
 }
 
-/* ─── §1 Public Site Design Tokens ─────────────────────────────────────────── */
-/* These are the contract-authoritative tokens for all public site pages.      */
-/* No hardcoded hex/px/ms values anywhere in site components — token only.     */
+/* ─── Contract v8 Design Tokens (Single Light Theme) ───────────────────────── */
 :root {
-  /* §1.1 Base surfaces — Deep Onyx scale */
-  --color-bg-void:        #0A0B0D;
-  --color-bg-base:        #101215;
-  --color-bg-raised:      #16191D;
-  --color-bg-overlay:     #1C2024;
-  --color-bg-sunken:      #0D0E10;
+  /* ---- Paper / light surfaces ---- */
+  --paper:        #FAF9F6;   /* primary page background — warm off-white, not clinical */
+  --paper-dim:     #F1EFE9;   /* secondary surface, one step down */
+  --paper-line:    #E2DFD5;   /* hairline borders / dividers on paper */
 
-  /* §1.1 Borders */
-  --color-border-subtle:  #1F2328;
-  --color-border-default: #292E34;
-  --color-border-strong:  #3A4046;
+  /* ---- Pearl white — the button/card "white" family, not the page background ---- */
+  --pearl-100:     #FDFCFA;   /* lightest pearl, near-white but not pure */
+  --pearl-200:     #F3F1EC;
+  --pearl-300:     #E7E4DC;
 
-  /* §1.1 Spring Green — the ONLY accent hue in the system */
-  --color-accent-950:     #052E1A;
-  --color-accent-800:     #0B5C34;
-  --color-accent-600:     #12A150;
-  --color-accent-500:     #17C964;
-  --color-accent-400:     #3DDB7F;
-  --color-accent-300:     #6EE8A0;
-  --color-accent-glow:    rgba(23, 201, 100, 0.18);
+  /* ---- Ink / pearl black — the primary color family, never pure #000 ---- */
+  --ink:           #14140F;   /* pearl black — PRIMARY color, replaces the old accent-green role */
+  --ink-soft:      #232320;   /* secondary ink, one step lighter */
+  --ink-faint:     #3A3A35;   /* tertiary ink, for de-emphasized dark text/icons */
 
-  /* §1.1 Text */
-  --color-text-primary:   #F3F5F4;
-  --color-text-secondary: #A5ADB4;
-  --color-text-tertiary:  #6B7178;
-  --color-text-on-accent: #052E1A;
-  --color-text-link:      #6EE8A0;
+  /* ---- Neutral text scale ---- */
+  --text-primary:  var(--ink);
+  --text-secondary:#5B5B54;
+  --text-tertiary: #8A897F;
 
-  /* §1.1 Semantic — functional meaning only, never decoration */
-  --color-success:        #17C964;
-  --color-error:          #E5484D;
-  --color-warning:        #F2A93B;
-  --color-info:           #4CA6E8;
+  /* ---- Functional accent — used sparingly, for live/status states only ---- */
+  --accent:        #1F6E4A;   /* muted, desaturated green — status/success only, never decorative */
+  --accent-warn:   #9C5B12;   /* muted amber — pending/retry states only */
 
-  /* §1.2 Typography */
-  --font-display: 'Fraunces', 'Georgia', serif;
-  --font-body:    'DM Sans', 'Helvetica Now', -apple-system, sans-serif;
-  /* NOTE: DM Sans is the open-source substitute for Söhne/Neue Haas Grotesk (both paid). */
-  --font-mono:    'JetBrains Mono', 'Berkeley Mono', ui-monospace, monospace;
+  /* ---- Fonts ---- */
+  --font-display:  "Geist", "Geist Fallback", system-ui, -apple-system, sans-serif;
+  --font-body:     "Geist", "Geist Fallback", system-ui, -apple-system, sans-serif;
+  --font-mono:     "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
-  --text-display-hero: clamp(4rem, 8vw, 7.5rem); /* Homepage hero H1 only, sitewide */
-  --text-display-xl: clamp(3.5rem, 6vw, 6rem);
-  --text-display-l:  clamp(2.5rem, 4.2vw, 4rem);
-  --text-display-m:  clamp(1.875rem, 3vw, 2.75rem);
+  /* ---- Radius — always zero ---- */
+  --radius: 0px;
+  --radius-none: 0px;
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-full: 0px;
+
+  /* ---- Spacing (8px base) ---- */
+  --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
+  --space-6: 24px;  --space-8: 32px;  --space-12: 48px; --space-16: 64px;
+  --space-24: 96px; --space-32: 128px; --space-48: 192px;
+
+  /* Typography scale */
+  --text-display-hero: clamp(2.75rem, 5vw, 4.5rem);
+  --text-display-xl: clamp(2.5rem, 4.5vw, 3.75rem);
+  --text-display-l:  clamp(2rem, 3.5vw, 2.75rem);
+  --text-display-m:  clamp(1.5rem, 2.5vw, 2rem);
   --text-heading-l:  1.5rem;
   --text-heading-m:  1.25rem;
   --text-body-l:     1.125rem;
@@ -137,37 +119,46 @@ body {
   --tracking-normal: 0;
   --tracking-wide:   0.04em;
 
-  /* §1.3 Spacing — 8pt base grid */
-  --space-1:  0.25rem;
-  --space-2:  0.5rem;
-  --space-3:  0.75rem;
-  --space-4:  1rem;
-  --space-6:  1.5rem;
-  --space-8:  2rem;
-  --space-12: 3rem;
-  --space-16: 4rem;
-  --space-24: 6rem;
-  --space-32: 8rem;
-  --space-48: 12rem;
+  /* Backward compatibility aliases */
+  --color-bg-void:        var(--paper);
+  --color-bg-base:        var(--paper);
+  --color-bg-raised:      var(--pearl-100);
+  --color-bg-overlay:     var(--pearl-100);
+  --color-bg-sunken:      var(--paper-dim);
+
+  --color-border-subtle:  var(--paper-line);
+  --color-border-default: var(--paper-line);
+  --color-border-strong:  var(--paper-line);
+
+  --color-accent-950:     var(--pearl-200);
+  --color-accent-800:     var(--pearl-300);
+  --color-accent-600:     var(--ink);
+  --color-accent-500:     var(--ink);
+  --color-accent-400:     var(--ink-soft);
+  --color-accent-300:     var(--ink-faint);
+  --color-accent-glow:    none;
+
+  --color-text-primary:   var(--ink);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary:  var(--text-tertiary);
+  --color-text-on-accent: var(--pearl-100);
+  --color-text-link:      var(--ink);
+
+  --color-success:        var(--accent);
+  --color-error:          #B83232;
+  --color-warning:        var(--accent-warn);
+  --color-info:           #2A628F;
 
   --container-max:     1440px;
   --container-content: 1120px;
   --gutter:            clamp(1.5rem, 4vw, 4rem);
 
-  /* §1.4 Radius */
-  --radius-none: 0px;
-  --radius-xs:   4px;
-  --radius-sm:   6px;
-  --radius-md:   10px;
-  --radius-lg:   16px;
-  --radius-full: 999px; /* Reserved for functional status only — none on this site */
-
-  /* §1.5 Elevation */
-  --shadow-sm:           0 1px 2px rgba(0,0,0,0.4);
-  --shadow-md:           0 4px 12px rgba(0,0,0,0.45), 0 1px 2px rgba(0,0,0,0.3);
-  --shadow-lg:           0 12px 32px rgba(0,0,0,0.5), 0 2px 6px rgba(0,0,0,0.35);
-  --shadow-xl:           0 24px 64px rgba(0,0,0,0.55);
-  --shadow-accent-glow:  0 0 40px var(--color-accent-glow);
+  /* Shadows purged — tone and hairline borders only */
+  --shadow-sm:           none;
+  --shadow-md:           none;
+  --shadow-lg:           none;
+  --shadow-xl:           none;
+  --shadow-accent-glow:  none;
 
   --z-base:    0;
   --z-raised:  10;
@@ -176,88 +167,26 @@ body {
   --z-overlay: 500;
   --z-toast:   900;
 
-  /* §1.6 Motion */
-  --ease-standard:   cubic-bezier(0.4, 0.0, 0.2, 1);
-  --ease-decelerate: cubic-bezier(0.0, 0.0, 0.2, 1);
-  --ease-accelerate: cubic-bezier(0.4, 0.0, 1, 1);
-  --ease-spring:     cubic-bezier(0.34, 1.56, 0.64, 1); /* Sparing use only */
+  /* Motion */
+  --ease-standard:   cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-decelerate: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --ease-out:        cubic-bezier(0.16, 1, 0.3, 1);
 
   --duration-instant: 100ms;
-  --duration-fast:    180ms;
+  --duration-fast:    160ms;
   --duration-base:    280ms;
   --duration-slow:    460ms;
   --duration-slower:  720ms;
   --duration-scroll:  900ms;
 
-  /* §1.7 Gradients */
-  --gradient-atmosphere: radial-gradient(
-    ellipse 1200px 600px at 50% -10%,
-    rgba(23, 201, 100, 0.42) 0%,
-    rgba(23, 201, 100, 0.18) 35%,
-    transparent 70%
-  );
-  --gradient-atmosphere-sober: radial-gradient(
-    ellipse 1200px 600px at 50% -10%,
-    rgba(23, 201, 100, 0.14) 0%,
-    rgba(23, 201, 100, 0.05) 35%,
-    transparent 70%
-  );
+  /* Gradients purged */
+  --gradient-atmosphere: none;
+  --gradient-atmosphere-sober: none;
 
-  /* §1.8 Node Graph Palette */
-  --node-stroke:     var(--color-accent-500);
-  --node-stroke-dim: rgba(23, 201, 100, 0.35);
-  --node-fill-dot:   var(--color-accent-500);
-  --node-canvas-bg:  var(--color-bg-raised);
-}
-
-/* ─── §1.2 Light Theme — Chalk ──────────────────────────────────────────── */
-/* Same token names, resolved differently per theme. Applied via [data-theme]
-   on :root by theme.ts (prefers-color-scheme, live-updating). */
-[data-theme="light"] {
-  --color-bg-void:        #FAFAF8;
-  --color-bg-base:        #F4F3F0;
-  --color-bg-raised:      #FFFFFF;
-  --color-bg-overlay:     #FFFFFF;
-  --color-bg-sunken:      #EDECE8;
-
-  --color-border-subtle:  #E8E7E2;
-  --color-border-default: #DBDAD3;
-  --color-border-strong:  #C4C2B8;
-
-  --color-accent-950:     #E8F7EE;
-  --color-accent-800:     #A8E6C1;
-  --color-accent-600:     #22A85A;
-  --color-accent-500:     #0F9C4E;
-  --color-accent-400:     #12A150;
-  --color-accent-300:     #17C964;
-  --color-accent-glow:    rgba(15, 156, 78, 0.14);
-
-  --color-text-primary:   #16191D;
-  --color-text-secondary: #4A5057;
-  --color-text-tertiary:  #7A8088;
-  --color-text-on-accent: #FAFAF8;
-  --color-text-link:      #0F9C4E;
-
-  --color-success: #0F9C4E;
-  --color-error:   #C43D42;
-  --color-warning: #B5791F;
-  --color-info:    #2E7FB8;
-
-  --node-stroke:      var(--color-accent-500);
-  --node-stroke-dim:  rgba(15, 156, 78, 0.30);
-  --node-fill-dot:    var(--color-accent-500);
-  --node-canvas-bg:   var(--color-bg-raised);
-
-  --gradient-atmosphere: radial-gradient(
-    ellipse 1200px 600px at 50% -10%,
-    rgba(15, 156, 78, 0.36) 0%,
-    rgba(15, 156, 78, 0.16) 35%,
-    transparent 70%
-  );
-  --gradient-atmosphere-sober: radial-gradient(
-    ellipse 1200px 600px at 50% -10%,
-    rgba(15, 156, 78, 0.1) 0%,
-    rgba(15, 156, 78, 0.05) 35%,
-    transparent 70%
-  );
+  /* Node Graph Palette */
+  --node-stroke:     var(--ink-faint);
+  --node-stroke-dim: var(--paper-line);
+  --node-fill-dot:   var(--ink);
+  --node-canvas-bg:  var(--pearl-100);
 }

@@ -1,6 +1,7 @@
-/* Global Button — token-driven (§5.1: primary/secondary/ghost, --radius-sm,
-   max one primary CTA per viewport section; arrow only on the single
-   highest-priority CTA). Danger is destructive-secondary (error border/text). */
+/* Global Button — Contract v8 (§5.1)
+   Hard rectangle, 0px radius, pixelated/dithered native texture.
+   Primary: --ink fill, --pearl-100 text, no border.
+   Secondary: --paper fill, --paper-line 1px border, --ink text. */
 
 .btn {
   display: inline-flex;
@@ -8,7 +9,7 @@
   justify-content: center;
   gap: var(--space-2);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 0px !important;
   font-family: var(--font-body);
   font-weight: 500;
   letter-spacing: var(--tracking-normal);
@@ -16,23 +17,24 @@
   text-decoration: none;
   white-space: nowrap;
   outline: none;
+  position: relative;
+  overflow: hidden;
   transition:
-    background-color var(--duration-fast) var(--ease-standard),
-    border-color var(--duration-fast) var(--ease-standard),
-    box-shadow var(--duration-fast) var(--ease-standard),
-    transform var(--duration-instant) var(--ease-standard);
+    background-color 160ms var(--ease-standard),
+    border-color 160ms var(--ease-standard),
+    transform 160ms var(--ease-standard);
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--color-accent-500);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
-.btn:active {
-  transform: scale(0.98);
+.btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
-/* Sizes: sm=36px / md=44px (default) / lg=52px (hero only) */
+/* Sizes: sm=36px / md=44px (default) / lg=52px */
 .btn--sm {
   height: 36px;
   padding: 0 var(--space-4);
@@ -46,68 +48,91 @@
 }
 
 .btn--lg {
-  height: 52px;
-  padding: 0 var(--space-8);
-  font-size: var(--text-body-l);
+  height: 50px;
+  padding: 0 var(--space-6);
+  font-size: var(--text-body-m);
 }
 
-/* ─── Variants ─────────────────────────────────────────────────────────────── */
-
-/* Primary */
+/* ─── Primary Variant ──────────────────────────────────────────────────────── */
+/* --ink fill (#14140F), --pearl-100 text (#FDFCFA), no border.
+   Subtle native 8px micro-cell pixel dither texture across button face. */
 .btn--primary {
-  background-color: var(--color-accent-500);
-  color: var(--color-text-on-accent);
+  background-color: var(--ink);
+  color: var(--pearl-100);
+  border: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect width='4' height='4' x='0' y='0' fill='%231C1C17'/%3E%3Crect width='4' height='4' x='4' y='0' fill='%2314140F'/%3E%3Crect width='4' height='4' x='0' y='4' fill='%2314140F'/%3E%3Crect width='4' height='4' x='4' y='4' fill='%2324241F'/%3E%3C/svg%3E");
+  background-size: 8px 8px;
 }
 
 .btn--primary:hover:not(:disabled) {
-  background-color: var(--color-accent-400);
-  box-shadow: var(--shadow-accent-glow);
+  /* Grid contrast sharpens/settles over 160ms; optical 1px nudge */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect width='4' height='4' x='0' y='0' fill='%23252520'/%3E%3Crect width='4' height='4' x='4' y='0' fill='%230D0D09'/%3E%3Crect width='4' height='4' x='0' y='4' fill='%230D0D09'/%3E%3Crect width='4' height='4' x='4' y='4' fill='%2333332B'/%3E%3C/svg%3E");
+  transform: translateY(-1px);
 }
 
-/* Secondary */
+.btn--primary:active:not(:disabled) {
+  /* Invert contrast direction briefly for press feedback */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect width='4' height='4' x='0' y='0' fill='%230D0D09'/%3E%3Crect width='4' height='4' x='4' y='0' fill='%23252520'/%3E%3Crect width='4' height='4' x='0' y='4' fill='%2333332B'/%3E%3Crect width='4' height='4' x='4' y='4' fill='%230D0D09'/%3E%3C/svg%3E");
+  transform: translateY(0);
+}
+
+/* ─── Secondary Variant ────────────────────────────────────────────────────── */
+/* --paper fill (#FAF9F6), --paper-line 1px border (#E2DFD5), --ink text (#14140F).
+   Subtle native 8px micro-cell pixel dither texture. */
 .btn--secondary {
-  background-color: transparent;
-  color: var(--color-text-primary);
-  border: 1px solid var(--color-border-strong);
+  background-color: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--paper-line);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect width='4' height='4' x='0' y='0' fill='%23F4F2EC'/%3E%3Crect width='4' height='4' x='4' y='0' fill='%23FAF9F6'/%3E%3Crect width='4' height='4' x='0' y='4' fill='%23FAF9F6'/%3E%3Crect width='4' height='4' x='4' y='4' fill='%23ECEAE2'/%3E%3C/svg%3E");
+  background-size: 8px 8px;
 }
 
 .btn--secondary:hover:not(:disabled) {
-  border-color: var(--color-text-secondary);
-  background-color: color-mix(in srgb, var(--color-bg-raised) 60%, transparent);
+  border-color: var(--text-secondary);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect width='4' height='4' x='0' y='0' fill='%23E5E2D8'/%3E%3Crect width='4' height='4' x='4' y='0' fill='%23FDFCFA'/%3E%3Crect width='4' height='4' x='0' y='4' fill='%23FDFCFA'/%3E%3Crect width='4' height='4' x='4' y='4' fill='%23DDD9CE'/%3E%3C/svg%3E");
+  transform: translateY(-1px);
 }
 
-/* Ghost */
+.btn--secondary:active:not(:disabled) {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='8' height='8' viewBox='0 0 8 8'%3E%3Crect width='4' height='4' x='0' y='0' fill='%23FDFCFA'/%3E%3Crect width='4' height='4' x='4' y='0' fill='%23E5E2D8'/%3E%3Crect width='4' height='4' x='0' y='4' fill='%23DDD9CE'/%3E%3Crect width='4' height='4' x='4' y='4' fill='%23FDFCFA'/%3E%3C/svg%3E");
+  transform: translateY(0);
+}
+
+/* ─── Ghost Variant ────────────────────────────────────────────────────────── */
 .btn--ghost {
   background-color: transparent;
-  color: var(--color-text-secondary);
+  color: var(--text-secondary);
+  border: 1px solid transparent;
 }
 
 .btn--ghost:hover:not(:disabled) {
-  color: var(--color-text-primary);
+  color: var(--ink);
+  background-color: var(--paper-dim);
+  border-color: var(--paper-line);
 }
 
-/* Danger — destructive secondary (error border/text, never a filled error block) */
+/* ─── Danger Variant ───────────────────────────────────────────────────────── */
 .btn--danger {
   background-color: transparent;
   color: var(--color-error);
-  border: 1px solid color-mix(in srgb, var(--color-error) 55%, transparent);
+  border: 1px solid var(--color-error);
 }
 
 .btn--danger:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--color-error) 9%, transparent);
-  border-color: var(--color-error);
+  background-color: var(--paper-dim);
 }
 
-/* Disabled state — opacity 0.4, no hover transform */
+/* Disabled state */
 .btn:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+  transform: none !important;
 }
 
 /* Arrow glyph — shifts translateX(2px) on hover */
 .btn__arrow {
   display: inline-block;
-  transition: transform var(--duration-fast) var(--ease-standard);
+  transition: transform 160ms var(--ease-standard);
 }
 
 .btn:hover:not(:disabled) .btn__arrow {
@@ -117,9 +142,7 @@
 @media (prefers-reduced-motion: reduce) {
   .btn,
   .btn__arrow {
-    transition: none;
-  }
-  .btn:active {
-    transform: none;
+    transition: none !important;
+    transform: none !important;
   }
 }

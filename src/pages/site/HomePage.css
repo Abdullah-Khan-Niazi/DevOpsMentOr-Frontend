@@ -1,147 +1,685 @@
-/* §5.1 HomePage styles — all values via design tokens.                    */
-/* Layout dimensions not covered by the spacing scale are contract-literal  */
-/* (marked with § refs); every color/font/motion value is a token.          */
+/* §5.1 HomePage styles — Contract v8 Standalone Direction                   */
+/* Single light theme, no gradients, hard rectangular 0px radius.              */
 
-/* ═══════════════ Section 2: Hero — Dominant Product Canvas ═══════════════ */
+/* ═══════════════ Section 2: Hero — Isometric Illustrated Canvas ═══════════════ */
 
 .hp-hero {
   position: relative;
-  /* Solid canvas behind the atmosphere layer — keeps the gradient's fade-out
-     edges from showing seams against the header strip or the section below */
-  background-color: var(--color-bg-void);
-  padding-top: var(--space-16);
-  padding-bottom: var(--space-24);
+  background-color: var(--paper);
+  /* Dotted matrix background texture */
+  background-image: radial-gradient(var(--paper-line) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  border-bottom: 1px solid var(--paper-line);
+  /* Header inclusive: 64px header space, fits exactly within 100vh */
+  padding-top: 64px;
+  padding-bottom: 0;
+  overflow: hidden;
+  width: 100%;
+  box-sizing: border-box;
 }
 
-/* Atmosphere — starts at the very top of the page (behind the transparent
-   fixed header) and flows down to the page center, combined with the hero
-   text + frame above the strong first half of the glow. Parallax target
-   (0.4×). Entrance fade in (720ms), then a slow 12s breathing pulse
-   (opacity only — the parallax hook owns transform on this element). */
-.hp-hero__atmosphere {
-  position: absolute;
-  /* Bleed above the page edge (header is 64px §3.1; extra overhang absorbs
-     sub-pixel rounding so no hairline of page background shows at y=0) */
-  top: -96px;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  z-index: 0;
-  pointer-events: none;
-  /* Two stacked glows: the keyed token atmosphere plus a viewport-sized
-     ellipse whose peak sits exactly at the top page edge (96px down the
-     bleeding element) and flows down to ~the page's vertical center */
-  background:
-    radial-gradient(ellipse 110vw 62vh at 50% 96px, var(--color-accent-glow), transparent 60%),
-    var(--gradient-atmosphere);
-  animation:
-    hp-atmo-in var(--duration-slower) var(--ease-decelerate) both,
-    hp-breathe 12s ease-in-out var(--duration-slower) infinite;
+@media (min-width: 1024px) {
+  .hp-hero {
+    height: 100vh;
+    max-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
 }
+
+.hp-hero__inner {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: start;
+  gap: var(--space-8);
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  padding-inline: var(--gutter);
+  padding-top: var(--space-4);
+  padding-bottom: 0;
+  box-sizing: border-box;
+}
+
+@media (min-width: 1024px) {
+  .hp-hero__inner {
+    grid-template-columns: 1fr 1.35fr;
+    gap: var(--space-6);
+    align-items: start;
+    padding-top: var(--space-2);
+    padding-bottom: 0;
+    height: calc(100vh - 64px);
+    max-height: calc(100vh - 64px);
+    flex: 1;
+  }
+}
+
+/* ─── Hero Left Column (Copy & CTAs) ──────────────────────────────────────── */
 
 .hp-hero__text {
   position: relative;
-  z-index: 1;
-  text-align: center;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+  align-self: flex-start;
+  margin-top: 0;
+  padding-top: var(--space-2);
 }
 
-.hp-hero__eyebrow {
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--color-accent-500);
-  margin: 0 0 var(--space-6);
-  animation: hp-rise var(--duration-base) var(--ease-decelerate) 100ms both;
+@media (max-width: 1023px) {
+  .hp-hero__text {
+    align-items: center;
+    text-align: center;
+    padding-top: var(--space-6);
+  }
 }
 
 .hp-hero__title {
   font-family: var(--font-display);
-  font-size: var(--text-display-hero);
-  font-weight: 400;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text-primary);
+  font-size: clamp(2rem, 3.8vw, 4.2rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: -0.035em;
+  color: var(--ink);
   margin: 0;
-  animation: hp-rise var(--duration-base) var(--ease-decelerate) 180ms both;
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-hero__title-line {
+  display: block;
+  color: var(--ink);
+  animation: hp-hero-rise 600ms var(--ease-out) both;
+}
+
+.hp-hero__title-line:nth-child(1) {
+  animation-delay: 100ms;
+}
+
+.hp-hero__title-line:nth-child(2) {
+  animation-delay: 180ms;
+  color: var(--ink);
 }
 
 .hp-hero__sub {
-  font-size: var(--text-body-l);
-  color: var(--color-text-secondary);
-  margin: var(--space-6) auto 0;
-  max-width: 56ch;
-  animation: hp-rise var(--duration-base) var(--ease-decelerate) 260ms both;
+  font-family: var(--font-body);
+  font-size: clamp(1rem, 1.6vw, 1.25rem);
+  font-weight: 400;
+  line-height: 1.55;
+  color: var(--text-secondary);
+  margin: var(--space-3) 0 0;
+  max-width: 44ch;
+  font-size: clamp(0.95rem, 1.4vw, 1.15rem);
+  animation: hp-hero-rise 600ms var(--ease-out) 260ms both;
 }
 
 .hp-hero__ctas {
   display: flex;
-  justify-content: center;
   align-items: center;
   gap: var(--space-4);
-  margin-top: var(--space-8);
-  animation: hp-rise var(--duration-base) var(--ease-decelerate) 340ms both;
+  margin-top: var(--space-4);
+  animation: hp-hero-rise 600ms var(--ease-out) 340ms both;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 1023px) {
+  .hp-hero__ctas {
+    justify-content: center;
+  }
 }
 
 .hp-hero__cta-link {
   text-decoration: none;
 }
 
-/* Frame canvas — breaks --container-content per §5.1.1/§3.6: 92% of
-   --container-max, wider than the text above it. */
-.hp-hero__frame-wrap {
+/* ─── Hero Right Column (Isometric Visual Composition) ────────────────────── */
+
+.hp-hero__visual {
   position: relative;
   width: 100%;
-  max-width: calc(var(--container-max) * 0.92);
-  margin: var(--space-16) auto 0;
-  padding-inline: var(--gutter);
+  max-width: min(100%, calc((100vh - 84px) * 1.30));
+  margin: 0 auto;
+  user-select: none;
+  pointer-events: none;
+  overflow: visible;
+  align-self: center;
 }
 
-/* Entrance: scale + fade + translateY (420ms, §5.1.1). Loop begins after. */
-.hp-hero__frame-enter {
+.hp-hero__stage {
   position: relative;
-  z-index: 1;
-  animation: hp-frame-in var(--duration-slow) var(--ease-decelerate) 420ms both;
+  width: 100%;
+  aspect-ratio: 1027 / 790;
+  overflow: visible;
 }
 
-.hp-hero__frame-enter .pf-frame {
-  position: relative;
-  z-index: 1;
-}
-
-/* Depth stack §5.1.1: --shadow-accent-glow at 50% frame width, centered,
-   offset down 24px beneath the frame. */
-.hp-hero__glow {
+/* ─── Ambient Floor Shadows ─────────────────────────────────────────────── */
+.hp-hero__shadows {
   position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-  bottom: calc(-1 * var(--space-6));
-  width: 50%;
-  height: 128px;
-  background: radial-gradient(closest-side, var(--color-accent-glow), transparent 70%);
-  z-index: 0;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  animation: hp-shadows-fade 800ms var(--ease-out) 200ms both;
+}
+
+.hp-hero__shadow {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  transform-origin: center center;
+  transition:
+    transform 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2),
+    filter 350ms ease,
+    opacity 350ms ease;
+}
+
+.hp-hero__shadow--active {
+  animation-play-state: paused !important;
+  transform: scale(1.25) !important;
+  opacity: 0.55 !important;
+  filter: blur(18px) !important;
+}
+
+/* Cloud shadows */
+.hp-hero__shadow--cloud-3 {
+  left: 9%;
+  top: 6%;
+  width: 19%;
+  height: 6%;
+  background: radial-gradient(ellipse at center, rgba(100, 130, 180, 0.20) 0%, rgba(100, 130, 180, 0.05) 60%, transparent 72%);
+  filter: blur(8px);
+  animation: hp-shadow-cloud-3 5.2s ease-in-out infinite alternate;
+}
+
+.hp-hero__shadow--cloud-1 {
+  left: 70%;
+  top: 1%;
+  width: 13%;
+  height: 4%;
+  background: radial-gradient(ellipse at center, rgba(100, 130, 180, 0.20) 0%, rgba(100, 130, 180, 0.05) 60%, transparent 72%);
+  filter: blur(8px);
+  animation: hp-shadow-cloud-1 5.8s ease-in-out infinite alternate;
+}
+
+.hp-hero__shadow--cloud-2 {
+  left: 74%;
+  top: 17%;
+  width: 12%;
+  height: 4%;
+  background: radial-gradient(ellipse at center, rgba(100, 130, 180, 0.18) 0%, rgba(100, 130, 180, 0.04) 60%, transparent 72%);
+  filter: blur(8px);
+  animation: hp-shadow-cloud-2 6.4s ease-in-out infinite alternate;
+}
+
+/* Server plinth shadow - moved up and left with server */
+.hp-hero__shadow--server {
+  left: 48%;
+  top: 10%;
+  width: 21%;
+  height: 6%;
+  background: radial-gradient(ellipse at center, rgba(60, 95, 155, 0.28) 0%, rgba(60, 95, 155, 0.10) 55%, transparent 72%);
+  filter: blur(12px);
+  animation: hp-shadow-server 4.8s ease-in-out infinite alternate;
+}
+
+/* DEV loop ring shadow - moved a bit up with loop */
+.hp-hero__shadow--loop-dev {
+  left: 13%;
+  top: 49%;
+  width: 27%;
+  height: 12%;
+  background: radial-gradient(ellipse at center, rgba(60, 95, 155, 0.22) 0%, rgba(60, 95, 155, 0.06) 55%, transparent 72%);
+  filter: blur(14px);
+  animation: hp-shadow-loop 5.4s ease-in-out infinite alternate;
+}
+
+/* OPS loop ring shadow - moved a bit up with loop */
+.hp-hero__shadow--loop-ops {
+  left: 41%;
+  top: 50%;
+  width: 31%;
+  height: 12%;
+  background: radial-gradient(ellipse at center, rgba(60, 95, 155, 0.22) 0%, rgba(60, 95, 155, 0.06) 55%, transparent 72%);
+  filter: blur(14px);
+  animation: hp-shadow-loop 5.4s ease-in-out infinite alternate;
+}
+
+/* Terminal plinth shadow - moved a bit up */
+.hp-hero__shadow--terminal {
+  left: -11%;
+  top: 73%;
+  width: 27%;
+  height: 10%;
+  background: radial-gradient(ellipse at center, rgba(50, 85, 145, 0.30) 0%, rgba(50, 85, 145, 0.10) 55%, transparent 72%);
+  filter: blur(12px);
+  animation: hp-shadow-terminal 4.6s ease-in-out infinite alternate;
+}
+
+/* K8 pedestal shadow - moved a bit up */
+.hp-hero__shadow--k8 {
+  left: 33%;
+  top: 76%;
+  width: 18%;
+  height: 8%;
+  background: radial-gradient(ellipse at center, rgba(50, 90, 160, 0.32) 0%, rgba(50, 90, 160, 0.10) 55%, transparent 72%);
+  filter: blur(10px);
+  animation: hp-shadow-k8 4.4s ease-in-out infinite alternate;
+}
+
+/* Containers plinth shadow - moved a bit up */
+.hp-hero__shadow--containers {
+  left: 61%;
+  top: 77%;
+  width: 31%;
+  height: 9%;
+  background: radial-gradient(ellipse at center, rgba(50, 85, 145, 0.30) 0%, rgba(50, 85, 145, 0.10) 55%, transparent 72%);
+  filter: blur(12px);
+  animation: hp-shadow-containers 5.0s ease-in-out infinite alternate;
+}
+.hp-hero__asset {
+  position: absolute;
+  transform-origin: center center;
+  will-change: transform, filter;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  transition:
+    transform 420ms cubic-bezier(0.2, 0.9, 0.3, 1.2),
+    filter 320ms ease;
+}
+
+.hp-hero__asset img {
+  display: block;
+  width: 100%;
+  height: auto;
   pointer-events: none;
 }
 
-/* Floating context capsule — overlaps the frame's bottom-right ~20px (§5.1.1).
-   Card, not pill: --radius-md, bordered, single live-updating line. */
-.hp-hero__capsule {
-  position: absolute;
-  right: -20px; /* §5.1.1 ~20px overlap */
-  bottom: -20px;
-  z-index: var(--z-raised);
-  background-color: var(--color-bg-raised);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  padding: var(--space-3) var(--space-4);
-  font-size: var(--text-body-s);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
+/* Hover Elevation & Focus Ring States */
+.hp-hero__asset:hover,
+.hp-hero__asset:focus-visible,
+.hp-hero__asset--hovered {
+  z-index: 38 !important;
 }
 
-.hp-hero__capsule-label {
-  color: var(--color-text-tertiary);
+.hp-hero__asset--cloud-3:hover,
+.hp-hero__asset--cloud-3.hp-hero__asset--hovered {
+  transform: translate3d(0, -12px, 0) scale(1.05);
+  filter: drop-shadow(0 20px 30px rgba(80, 110, 160, 0.28)) brightness(1.06);
+}
+
+.hp-hero__asset--cloud-1:hover,
+.hp-hero__asset--cloud-1.hp-hero__asset--hovered {
+  transform: translate3d(0, -9px, 0) scale(1.06);
+  filter: drop-shadow(0 16px 24px rgba(80, 110, 160, 0.24)) brightness(1.06);
+}
+
+.hp-hero__asset--cloud-2:hover,
+.hp-hero__asset--cloud-2.hp-hero__asset--hovered {
+  transform: translate3d(0, -8px, 0) scale(1.06);
+  filter: drop-shadow(0 14px 22px rgba(80, 110, 160, 0.22)) brightness(1.06);
+}
+
+.hp-hero__asset--server:hover,
+.hp-hero__asset--server.hp-hero__asset--hovered {
+  transform: translate3d(0, -10px, 0) scale(1.04);
+  filter: drop-shadow(0 26px 36px rgba(15, 35, 75, 0.25)) brightness(1.05);
+}
+
+.hp-hero__asset--loop:hover,
+.hp-hero__asset--loop.hp-hero__asset--hovered {
+  transform: translate3d(0, -9px, 0) scale(1.025);
+  filter: drop-shadow(0 30px 42px rgba(15, 35, 75, 0.28)) brightness(1.04);
+}
+
+.hp-hero__asset--terminal:hover,
+.hp-hero__asset--terminal.hp-hero__asset--hovered {
+  transform: translate3d(0, -10px, 0) scale(1.04);
+  filter: drop-shadow(0 28px 38px rgba(15, 35, 75, 0.28)) brightness(1.05);
+}
+
+.hp-hero__asset--containers:hover,
+.hp-hero__asset--containers.hp-hero__asset--hovered {
+  transform: translate3d(0, -9px, 0) scale(1.03);
+  filter: drop-shadow(0 26px 36px rgba(15, 35, 75, 0.26)) brightness(1.05);
+}
+
+.hp-hero__asset--k8:hover,
+.hp-hero__asset--k8.hp-hero__asset--hovered {
+  transform: translate3d(0, -11px, 0) scale(1.06);
+  filter: drop-shadow(0 26px 36px rgba(30, 110, 220, 0.36)) brightness(1.08);
+}
+
+/* Active / Click Tactile Micro-interaction */
+.hp-hero__asset:active,
+.hp-hero__asset.hp-hero__asset--active {
+  transform: translate3d(0, -3px, 0) scale(0.985) !important;
+  transition-duration: 80ms !important;
+}
+
+/* ─── Asset Placements & Entrance Animations (staggered ~60-100ms) ────────── */
+
+/* Cloud 3: Top-left above DEV loop - a bit bigger, brought down a bit */
+.hp-hero__asset--cloud-3 {
+  left: 9%;
+  top: -9%;
+  width: 22%;
+  z-index: 2;
+  filter: drop-shadow(0 12px 18px rgba(80, 110, 160, 0.18));
+  animation: hp-enter-cloud-3 750ms var(--ease-out) 80ms both;
+}
+
+/* Cloud 1: Top-right above server - shrunk */
+.hp-hero__asset--cloud-1 {
+  left: 70%;
+  top: -9%;
+  width: 13%;
+  z-index: 2;
+  filter: drop-shadow(0 10px 14px rgba(80, 110, 160, 0.14));
+  animation: hp-enter-cloud-1 750ms var(--ease-out) 150ms both;
+}
+
+/* Cloud 2: Mid-right - shrunk */
+.hp-hero__asset--cloud-2 {
+  left: 74%;
+  top: 6%;
+  width: 12%;
+  z-index: 2;
+  filter: drop-shadow(0 8px 12px rgba(80, 110, 160, 0.12));
+  animation: hp-enter-cloud-2 750ms var(--ease-out) 220ms both;
+}
+
+/* Server Rack: Shrunk, moved a bit UP and a bit LEFT to prevent collision */
+.hp-hero__asset--server {
+  left: 48.5%;
+  top: -13%;
+  width: 20%;
+  z-index: 4;
+  filter: drop-shadow(0 16px 26px rgba(15, 35, 75, 0.16));
+  animation: hp-enter-server 700ms var(--ease-out) 180ms both;
+}
+
+/* DEV/OPS Infinity Loop: Center-right anchor - moved a bit up */
+.hp-hero__asset--loop {
+  left: 11.5%;
+  top: 21%;
+  width: 64%;
+  z-index: 8;
+  filter: drop-shadow(0 20px 32px rgba(15, 35, 75, 0.18));
+  animation: hp-enter-loop 650ms var(--ease-out) 300ms both;
+}
+
+/* Terminal: Lower-left in front - moved a bit up */
+.hp-hero__asset--terminal {
+  left: -13%;
+  top: 48%;
+  width: 30%;
+  z-index: 12;
+  filter: drop-shadow(0 18px 28px rgba(15, 35, 75, 0.20));
+  animation: hp-enter-terminal 700ms var(--ease-out) 240ms both;
+}
+
+/* Containers: Lower-right beneath OPS loop - moved a bit up */
+.hp-hero__asset--containers {
+  left: 61%;
+  top: 57%;
+  width: 31%;
+  z-index: 14;
+  filter: drop-shadow(0 18px 28px rgba(15, 35, 75, 0.20));
+  animation: hp-enter-containers 700ms var(--ease-out) 380ms both;
+}
+
+/* Kubernetes Pedestal: Bottom-center under loop intersection - moved a bit up */
+.hp-hero__asset--k8 {
+  left: 33%;
+  top: 60%;
+  width: 18%;
+  z-index: 15;
+  filter: drop-shadow(0 18px 26px rgba(15, 35, 75, 0.20));
+  animation: hp-enter-k8 700ms var(--ease-out) 440ms both;
+}
+/* ─── Entrance Keyframes ─────────────────────────────────────────────────── */
+
+@keyframes hp-shadows-fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes hp-hero-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hp-enter-cloud-1 {
+  from {
+    opacity: 0;
+    transform: translateY(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hp-enter-cloud-2 {
+  from {
+    opacity: 0;
+    transform: translate(-20px, -18px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes hp-enter-cloud-3 {
+  from {
+    opacity: 0;
+    transform: translate(24px, -12px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes hp-enter-server {
+  from {
+    opacity: 0;
+    transform: translateY(32px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hp-enter-terminal {
+  from {
+    opacity: 0;
+    transform: translate(-30px, 15px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+@keyframes hp-enter-loop {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes hp-enter-containers {
+  from {
+    opacity: 0;
+    transform: translateY(34px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes hp-enter-k8 {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ─── Continuous Ambient Floating (Mid-Air Levitation) ────────────────── */
+
+.hp-hero__drift {
+  will-change: transform;
+}
+
+.hp-hero__drift--cloud-3 {
+  animation: hp-drift-cloud-3 5.2s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--cloud-1 {
+  animation: hp-drift-cloud-1 5.8s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--cloud-2 {
+  animation: hp-drift-cloud-2 6.4s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--loop {
+  animation: hp-drift-loop 5.4s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--server {
+  animation: hp-drift-server 4.8s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--terminal {
+  animation: hp-drift-terminal 4.6s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--containers {
+  animation: hp-drift-containers 5.0s ease-in-out infinite alternate;
+}
+
+.hp-hero__drift--k8 {
+  animation: hp-drift-k8 4.4s ease-in-out infinite alternate;
+}
+
+@keyframes hp-drift-cloud-3 {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(7px, -15px, 0); }
+}
+
+@keyframes hp-drift-cloud-1 {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(5px, -13px, 0); }
+}
+
+@keyframes hp-drift-cloud-2 {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(-5px, -12px, 0); }
+}
+
+@keyframes hp-drift-loop {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -14px, 0); }
+}
+
+@keyframes hp-drift-server {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -12px, 0); }
+}
+
+@keyframes hp-drift-terminal {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -12px, 0); }
+}
+
+@keyframes hp-drift-containers {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -11px, 0); }
+}
+
+@keyframes hp-drift-k8 {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0, -13px, 0); }
+}
+
+/* ─── Synchronized Ambient Shadow Breathing ─────────────────────────── */
+@keyframes hp-shadow-cloud-3 {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.12); opacity: 0.70; }
+}
+
+@keyframes hp-shadow-cloud-1 {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.10); opacity: 0.72; }
+}
+
+@keyframes hp-shadow-cloud-2 {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.10); opacity: 0.72; }
+}
+
+@keyframes hp-shadow-server {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.10); opacity: 0.74; }
+}
+
+@keyframes hp-shadow-loop {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.09); opacity: 0.74; }
+}
+
+@keyframes hp-shadow-terminal {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.10); opacity: 0.75; }
+}
+
+@keyframes hp-shadow-containers {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.09); opacity: 0.75; }
+}
+
+@keyframes hp-shadow-k8 {
+  0% { transform: scale(1); opacity: 1; }
+  100% { transform: scale(1.11); opacity: 0.72; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hp-hero__asset,
+  .hp-hero__drift,
+  .hp-hero__title-line,
+  .hp-hero__sub,
+  .hp-hero__ctas {
+    animation: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
 }
 
 /* ═══════════════ Section 3: Trust Bar ═══════════════ */
