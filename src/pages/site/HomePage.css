@@ -1929,19 +1929,25 @@
   }
 }
 
-/* ═══════════════ Feature Modules (Zig-Zag) ═══════════════ */
-.hp-fm {
+/* ═══════════════ Section: Every Lab Is Graded & OB-1 Telemetry ═══════════════ */
+.hp-eval {
   padding: var(--space-16) 0;
 }
 
-.hp-fm__grid {
+.hp-eval__grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--space-16);
+  grid-template-columns: 0.85fr 1.35fr;
+  gap: clamp(var(--space-8), 3.5vw, var(--space-12));
   align-items: center;
 }
 
-.hp-fm__title {
+/* Left Column: Consolidated Header & Subtitle */
+.hp-eval__text {
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-eval__title {
   font-family: var(--font-display);
   font-size: var(--text-display-m);
   font-weight: 400;
@@ -1951,44 +1957,424 @@
   margin: 0;
 }
 
-.hp-fm__body {
+.hp-eval__body {
   font-size: var(--text-body-l);
+  line-height: var(--leading-normal);
   color: var(--text-secondary);
   margin: var(--space-4) 0 0;
-  max-width: 52ch;
+  max-width: 48ch;
 }
 
-.hp-fm__visual {
+/* Right Column: Rounded Frame with Soft Shadow */
+.hp-eval__visual {
   min-width: 0;
+  position: relative;
 }
 
-/* Terminal pane (inside ProductFrame) */
-.hp-terminal {
+.hp-eval-frame {
+  background-color: #FAF8F5;
+  border: 1px solid #D5D0C3;
+  border-radius: 12px;
+  box-shadow:
+    0 24px 60px -12px rgba(15, 23, 42, 0.12),
+    0 8px 24px -4px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  gap: var(--space-2);
 }
 
-.hp-terminal__line {
-  margin: 0;
-  color: var(--ink);
+/* Window Bar: Three Traffic Dots (Red, Yellow, Green) */
+.hp-eval-frame__bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 16px;
+  background: #ECE9E1;
+  border-bottom: 1px solid #DDD8CE;
+  gap: 16px;
+}
+
+.hp-eval-dots {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  width: 54px;
+  flex-shrink: 0;
+}
+
+.hp-eval-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50% !important;
+  display: inline-block;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.15);
+}
+
+.hp-eval-dot--red {
+  background-color: #EF4444;
+}
+
+.hp-eval-dot--yellow {
+  background-color: #F59E0B;
+}
+
+.hp-eval-dot--green {
+  background-color: #10B981;
+}
+
+.hp-eval-frame__address {
+  flex: 1;
+  max-width: 380px;
+  margin: 0 auto;
+  background: #F7F5EE;
+  border: 1px solid #D8D4C8;
+  border-radius: 6px;
+  padding: 4px 14px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #52525B;
+  text-align: center;
+  letter-spacing: 0.02em;
+}
+
+.hp-eval-frame__sec {
+  color: #10B981;
+  font-weight: 600;
+}
+
+.hp-eval-frame__actions {
+  width: 54px;
+  flex-shrink: 0;
+}
+
+/* Terminal Window (Fixed Height, No Interior Dividers) */
+.hp-eval-term {
+  background: rgba(20, 22, 28, 0.96);
+  color: #E2E8F0;
+  font-family: var(--font-mono);
+  height: 285px;
+  min-height: 285px;
+  max-height: 285px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.hp-eval-term__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 18px;
+  background: rgba(30, 33, 42, 0.7);
+  backdrop-filter: blur(8px);
+}
+
+.hp-eval-term__title {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: #94A3B8;
+  letter-spacing: 0.02em;
+}
+
+.hp-eval-term__body {
+  padding: 16px 20px;
+  height: 240px;
+  min-height: 240px;
+  max-height: 240px;
+  overflow: hidden;
   font-family: var(--font-mono);
   font-size: 0.8125rem;
+  line-height: 1.55;
+  color: #E2E8F0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.hp-terminal__prompt {
-  color: var(--accent);
+.hp-eval-term__line {
+  margin: 0;
+}
+
+.hp-eval-term__prompt-line {
+  margin: 0;
+  font-weight: 600;
+  white-space: pre-wrap;
+}
+
+.hp-eval-term__user {
+  color: #34D399;
+}
+
+.hp-eval-term__sep {
+  color: #64748B;
+}
+
+.hp-eval-term__path {
+  color: #60A5FA;
+}
+
+.hp-eval-term__sym {
+  color: #94A3B8;
+}
+
+.hp-eval-term__cmd {
+  color: #F1F5F9;
   font-weight: 700;
+  white-space: pre-wrap;
+  word-break: break-all;
 }
 
-.hp-terminal__output {
-  color: var(--text-tertiary);
+.hp-eval-term__cursor {
+  display: inline-block;
+  color: #FCD34D;
+  animation: hp-cursor-blink 1s steps(2, start) infinite;
+  margin-left: 2px;
 }
 
-.hp-terminal__pass {
-  color: var(--accent);
+.hp-eval-term__output-block {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-top: 4px;
+  padding-left: 12px;
+}
+
+.hp-eval-term__err-line {
+  margin: 0;
+  color: #FCA5A5;
+  font-size: 0.78rem;
+  line-height: 1.45;
+}
+
+/* Fix / Resolution block (Whitespace separated, no borders) */
+.hp-eval-term__fix-block {
+  margin-top: 8px;
+  padding-top: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hp-eval-term__prompt-line--fix {
+  opacity: 0.95;
+}
+
+.hp-eval-term__fix-line {
+  margin: 0;
+  color: #94A3B8;
+  font-size: 0.78rem;
+  padding-left: 12px;
+}
+
+.hp-eval-term__pass-line {
+  margin: 4px 0 0;
+  color: #34D399;
   font-weight: 700;
-  margin-top: var(--space-1);
+  font-size: 0.78rem;
+  padding-left: 12px;
+}
+
+/* Lower Telemetry Deck: Assertions + OB-1 (Fixed Height, No Dividers) */
+.hp-eval-telemetry {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #FAF8F5;
+  height: 225px;
+  min-height: 225px;
+  max-height: 225px;
+  overflow: hidden;
+}
+
+/* Panel 1: Live Assertions (Soft tone background, pure whitespace) */
+.hp-eval-assertions {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #FAF8F5;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hp-eval-assertions__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2px;
+}
+
+.hp-eval-assertions__title {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #52525B;
+}
+
+.hp-eval-assertions__status {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.hp-eval-assertions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.hp-eval-assertion-row {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  padding: 6px 10px;
+  background: #ECE9DF;
+  border-radius: 4px;
+}
+
+.hp-eval-assertion-row--fail {
+  color: #71717A;
+}
+
+.hp-eval-assertion-row--pass {
+  color: #18181B;
+}
+
+.hp-eval-assertion-row__left {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.hp-eval-assertion-icon {
+  font-weight: 700;
+  width: 12px;
+}
+
+.hp-eval-assertion-row--fail .hp-eval-assertion-icon {
+  color: #A1A1AA;
+}
+
+.hp-eval-assertion-row--pass .hp-eval-assertion-icon {
+  color: var(--accent);
+}
+
+.hp-eval-assertion-label {
+  font-weight: 500;
+  color: inherit;
+}
+
+.hp-eval-assertion-detail {
+  font-size: 0.65rem;
+  padding-left: 19px;
+  color: #71717A;
+}
+
+.hp-eval-assertion-row--pass .hp-eval-assertion-detail {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+/* Panel 2: OB-1 AI Mentor (Comfortable Height, Zero Overlay/Clipping) */
+.hp-eval-ob1 {
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  background: #FAF8F5;
+  height: 100%;
+  overflow: hidden;
+}
+
+.hp-eval-ob1__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.hp-eval-ob1__id {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.hp-eval-ob1__name {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #F59E0B;
+  letter-spacing: 0.04em;
+}
+
+.hp-eval-ob1__role {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: #71717A;
+}
+
+.hp-eval-ob1__body {
+  flex: 1;
+  height: 165px;
+  min-height: 165px;
+  max-height: 165px;
+  overflow: hidden;
+}
+
+.hp-eval-ob1__text {
+  margin: 0;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #3F3F46;
+  white-space: normal;
+}
+
+.hp-eval-ob1__idle {
+  color: #A1A1AA;
+  font-style: italic;
+  font-size: 0.72rem;
+}
+
+@media (max-width: 1024px) {
+  .hp-eval__grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-12);
+  }
+
+  .hp-eval-frame {
+    height: auto;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .hp-eval-term {
+    height: auto;
+    min-height: 220px;
+    max-height: none;
+  }
+
+  .hp-eval-term__body {
+    height: auto;
+    min-height: 180px;
+    max-height: none;
+  }
+
+  .hp-eval-telemetry {
+    grid-template-columns: 1fr;
+    height: auto;
+    min-height: auto;
+    max-height: none;
+  }
+
+  .hp-eval-ob1__body {
+    height: auto;
+    min-height: 90px;
+    max-height: none;
+  }
 }
 
 /* ═══════════════ Section 7: How It Works (§5.7) ═══════════════ */

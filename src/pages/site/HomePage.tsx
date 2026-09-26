@@ -759,49 +759,448 @@ function ModuleCatalogTeaserSection() {
   );
 }
 
-// ─── Section 4: Every Lab Is Graded (§5.4) ────────────────────────────────────
+// ─── Section 4: Live Cluster Grading & AI Mentorship (§5.4) ───────────────────
+interface EvaluatorAssertion {
+  label: string;
+  failDetail: string;
+  passDetail: string;
+  passedDuringError?: boolean;
+}
+
+interface EvaluatorScenario {
+  id: string;
+  badCommand: string;
+  badOutput: string[];
+  assertions: EvaluatorAssertion[];
+  ob1ErrorText: string;
+  fixCommand: string;
+  fixOutput: string[];
+  passNote: string;
+  ob1FixText: string;
+}
+
+const EVALUATOR_SCENARIOS: EvaluatorScenario[] = [
+  {
+    id: 'fork-bomb',
+    badCommand: ':(){ :|:& };:',
+    badOutput: [
+      'bash: fork: retry: Resource temporarily unavailable',
+      'bash: fork: retry: Resource temporarily unavailable',
+      '[kernel] cgroups: pids.max ceiling hit (256/256)',
+    ],
+    assertions: [
+      {
+        label: 'cgroups: pids.max ceiling',
+        failDetail: '256/256 saturated',
+        passDetail: '14 active (healthy)',
+      },
+      {
+        label: 'worker.service responsiveness',
+        failDetail: 'timed out',
+        passDetail: 'listening on :5000',
+      },
+    ],
+    ob1ErrorText:
+      "A classic fork bomb. Process table saturated in 42 milliseconds. That wasn't on the lab syllabus, but congratulations on discovering exponential PID exhaustion. Hint: let cgroups isolate the rogue forks, then reload worker.service to restore responsiveness.",
+    fixCommand: 'systemctl restart worker.service',
+    fixOutput: [
+      'worker.service: Unit reloaded successfully.',
+      '[cgroups] Active tasks: 14. PID limit restored.',
+    ],
+    passNote: '2 of 2 assertions passed: cgroups healthy',
+    ob1FixText:
+      "Worker service reloaded and cgroups stabilized at 14 tasks. See? Order restored without setting the entire node on fire.",
+  },
+  {
+    id: 'rm-rf',
+    badCommand: 'sudo rm -rf /etc/nginx/',
+    badOutput: [
+      'rm: removing /etc/nginx/sites-available',
+      'rm: removing /etc/nginx/nginx.conf',
+      '[inotify] inode deletion on /etc/nginx/nginx.conf',
+    ],
+    assertions: [
+      {
+        label: '/etc/nginx/nginx.conf exists',
+        failDetail: 'missing inode (ENOENT)',
+        passDetail: 'verified (mode 0644)',
+      },
+      {
+        label: 'nginx configuration syntax',
+        failDetail: 'test failed (exit 1)',
+        passDetail: 'syntax ok (test successful)',
+      },
+    ],
+    ob1ErrorText:
+      "If you're going to obliterate critical configuration, at least pass --no-preserve-root and do it with conviction. Sandbox snapshot restored in 18ms. Hint: discard your destructive changes with git checkout /etc/nginx, then run nginx -t to verify the syntax.",
+    fixCommand: 'git checkout /etc/nginx && nginx -t',
+    fixOutput: [
+      'nginx: the configuration file /etc/nginx/nginx.conf syntax is ok',
+      'nginx: configuration file /etc/nginx/nginx.conf test is successful',
+    ],
+    passNote: '2 of 2 assertions passed: configuration verified',
+    ob1FixText:
+      "Configuration restored and syntax test successful. It's almost as if configuration files exist for a reason.",
+  },
+  {
+    id: 'chained-commands',
+    badCommand: 'service nginx stop && killall -9 nginx && /usr/sbin/nginx &',
+    badOutput: [
+      '[warn] Terminated active TCP connections',
+      '[error] Detached background PID 3192 ignoring cgroups',
+      '[evaluator] Port 80 connection dropped during hard kill',
+    ],
+    assertions: [
+      {
+        label: 'zero-downtime reload',
+        failDetail: 'dropped active TCP sockets',
+        passDetail: '0 dropped packets (verified)',
+      },
+      {
+        label: 'systemd service ownership',
+        failDetail: 'orphaned PID detached',
+        passDetail: 'managed by systemd unit',
+      },
+    ],
+    ob1ErrorText:
+      "You must unlearn what you have learned. Chaining legacy SysV scripts and killall is not how modern Linux services are managed. Hint: do this instead - use systemctl reload to gracefully update the service without dropping active connections.",
+    fixCommand: 'systemctl reload nginx && systemctl status nginx',
+    fixOutput: [
+      'nginx.service: Reloaded active (running).',
+      '[evaluator] Graceful reload verified. Zero dropped connections.',
+    ],
+    passNote: '2 of 2 assertions passed: zero-downtime verified',
+    ob1FixText:
+      "Clean reload executed. The unit reloaded gracefully with zero dropped packets. That is the modern way.",
+  },
+  {
+    id: 'loopback-trap',
+    badCommand: 'python3 -m http.server 8080 --bind 127.0.0.1',
+    badOutput: [
+      'Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...',
+      '[probe] GET http://172.17.0.2:8080 -> Connection refused',
+    ],
+    assertions: [
+      {
+        label: 'python3 daemon running',
+        failDetail: 'running (PID 2841)',
+        passDetail: 'running (PID 2841)',
+        passedDuringError: true,
+      },
+      {
+        label: 'external ingress reachability',
+        failDetail: 'connection refused on eth0:8080',
+        passDetail: '200 OK (latency 3ms)',
+      },
+    ],
+    ob1ErrorText:
+      "Your daemon is happily listening to itself on loopback. Too bad external traffic routed through the ingress bridge can't reach 127.0.0.1, unless your deployment target is an audience of one. Hint: rebind your socket to 0.0.0.0 so the container bridge can forward ingress traffic to port 8080.",
+    fixCommand: 'python3 -m http.server 8080 --bind 0.0.0.0',
+    fixOutput: [
+      'Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...',
+      '[probe] Ingress healthcheck 200 OK from bridge 172.17.0.1',
+    ],
+    passNote: '2 of 2 assertions passed: live ingress verified',
+    ob1FixText:
+      "Socket bound to 0.0.0.0 and ingress probe responding 200 OK. Welcome to the public network.",
+  },
+];
+
 function FeatureGradingSection() {
+  const { ref: containerRef, inView } = useInView<HTMLElement>(0.1);
   const textRef = useScrollReveal<HTMLDivElement>();
   const visualRef = useScrollReveal<HTMLDivElement>();
+  const reduced = useReducedMotion();
+
+  const [activeScenarioIdx, setActiveScenarioIdx] = useState(0);
+  // step: 0=typing bad cmd, 1=bad cmd executed, 2=ob1 error streaming, 3=typing fix cmd, 4=fix cmd executed, 5=ob1 fix streaming, 6=pause before next
+  const [animStep, setAnimStep] = useState(0);
+  const [badCharIdx, setBadCharIdx] = useState(0);
+  const [ob1ErrorIdx, setOb1ErrorIdx] = useState(0);
+  const [fixCharIdx, setFixCharIdx] = useState(0);
+  const [ob1FixIdx, setOb1FixIdx] = useState(0);
+
+  const sc = EVALUATOR_SCENARIOS[activeScenarioIdx];
+
+  useEffect(() => {
+    if (!inView) return;
+
+    if (reduced) {
+      setAnimStep(5);
+      setBadCharIdx(sc.badCommand.length);
+      setFixCharIdx(sc.fixCommand.length);
+      setOb1ErrorIdx(sc.ob1ErrorText.length);
+      setOb1FixIdx(sc.ob1FixText.length);
+      return;
+    }
+
+    let timer: number;
+
+    if (animStep === 0) {
+      // Slow deliberate typing for bad command with word smash drop
+      if (badCharIdx < sc.badCommand.length) {
+        timer = window.setTimeout(() => {
+          setBadCharIdx((c) => c + 1);
+        }, 130);
+      } else {
+        timer = window.setTimeout(() => {
+          setAnimStep(1);
+        }, 500);
+      }
+    } else if (animStep === 1) {
+      // Display error output, then stream OB-1 error remark
+      timer = window.setTimeout(() => {
+        setAnimStep(2);
+        setOb1ErrorIdx(0);
+      }, 700);
+    } else if (animStep === 2) {
+      // Stream OB-1 diagnosis with context-aware hint
+      if (ob1ErrorIdx < sc.ob1ErrorText.length) {
+        timer = window.setTimeout(() => {
+          setOb1ErrorIdx((c) => Math.min(c + 2, sc.ob1ErrorText.length));
+        }, 18);
+      } else {
+        // Pause after OB-1 finishes, then begin typing fix command
+        timer = window.setTimeout(() => {
+          setAnimStep(3);
+          setFixCharIdx(0);
+        }, 1800);
+      }
+    } else if (animStep === 3) {
+      // Slow deliberate typing for fix command with word smash drop
+      if (fixCharIdx < sc.fixCommand.length) {
+        timer = window.setTimeout(() => {
+          setFixCharIdx((c) => c + 1);
+        }, 120);
+      } else {
+        timer = window.setTimeout(() => {
+          setAnimStep(4);
+        }, 500);
+      }
+    } else if (animStep === 4) {
+      // Fix output executed, assertions pass, stream OB-1 fix remark
+      timer = window.setTimeout(() => {
+        setAnimStep(5);
+        setOb1FixIdx(0);
+      }, 600);
+    } else if (animStep === 5) {
+      // Stream OB-1 fix remark
+      if (ob1FixIdx < sc.ob1FixText.length) {
+        timer = window.setTimeout(() => {
+          setOb1FixIdx((c) => Math.min(c + 2, sc.ob1FixText.length));
+        }, 18);
+      } else {
+        // Hold final state for 4.5 seconds, then advance to next scenario
+        timer = window.setTimeout(() => {
+          setActiveScenarioIdx((prev) => (prev + 1) % EVALUATOR_SCENARIOS.length);
+          setAnimStep(0);
+          setBadCharIdx(0);
+          setOb1ErrorIdx(0);
+          setFixCharIdx(0);
+          setOb1FixIdx(0);
+        }, 4500);
+      }
+    }
+
+    return () => window.clearTimeout(timer);
+  }, [
+    inView,
+    reduced,
+    activeScenarioIdx,
+    animStep,
+    badCharIdx,
+    ob1ErrorIdx,
+    fixCharIdx,
+    ob1FixIdx,
+    sc.badCommand.length,
+    sc.ob1ErrorText.length,
+    sc.fixCommand.length,
+    sc.ob1FixText.length,
+  ]);
 
   return (
-    <section className="hp-fm site-section--dim" aria-labelledby="hp-fm1-title">
-      <div className="site-container hp-fm__grid">
-        <div className="site-reveal hp-fm__text hp-fm__text--left" ref={textRef}>
-          <h2 id="hp-fm1-title" className="hp-fm__title">
-            Every lab is graded, not just run.
+    <section className="hp-fm hp-eval site-section--dim" aria-labelledby="hp-eval-title" ref={containerRef}>
+      <div className="site-container hp-eval__grid">
+        {/* Left Column: Punchy Header & Subtitle */}
+        <div className="site-reveal hp-eval__text hp-eval__text--left" ref={textRef}>
+          <h2 id="hp-eval-title" className="hp-eval__title">
+            Live cluster grading with context-aware AI mentorship.
           </h2>
-          <p className="hp-fm__body">
-            Each lab ships with an automated evaluation sidecar that watches container state in
-            real time. Assertions evaluate live infrastructure as you work. Labs pass or fail
-            within seconds of your action with zero manual review queue.
+          <p className="hp-eval__body">
+            Every hands-on lab evaluates your live container and kernel state in real time, while AI Mentor(OB-1) provides context-aware hints and troubleshooting the moment something breaks. Verify real infrastructure and pass within seconds with zero review queue.
           </p>
         </div>
-        <div className="site-reveal hp-fm__visual hp-fm__visual--right" ref={visualRef}>
-          <ProductFrame variant="app" label="evaluator: devopsmentor">
-            <div className="hp-terminal">
-              <p className="hp-terminal__line">
-                <span className="hp-terminal__prompt">$</span> kubectl apply -f pod-affinity.yaml
-              </p>
-              <p className="hp-terminal__line hp-terminal__output">
-                deployment.apps/pod-affinity-demo created
-              </p>
-              <p className="hp-terminal__line">
-                <span className="hp-terminal__prompt">$</span> kubectl rollout status deploy/pod-affinity-demo
-              </p>
-              <p className="hp-terminal__line hp-terminal__output">
-                deployment &quot;pod-affinity-demo&quot; successfully rolled out
-              </p>
-              <p className="hp-terminal__line hp-terminal__pass">
-                ✓ assertion 5/5 passed: live cluster verified
-              </p>
+
+        {/* Right Column: Rounded Live Evaluator Frame with Soft Shadows */}
+        <div className="site-reveal hp-eval__visual hp-eval__visual--right" ref={visualRef}>
+          <div className="hp-eval-frame">
+            {/* Window Bar: Three Traffic Dots (Red, Yellow, Green) */}
+            <div className="hp-eval-frame__bar">
+              <div className="hp-eval-dots" aria-hidden="true">
+                <span className="hp-eval-dot hp-eval-dot--red" />
+                <span className="hp-eval-dot hp-eval-dot--yellow" />
+                <span className="hp-eval-dot hp-eval-dot--green" />
+              </div>
+              <div className="hp-eval-frame__address">
+                <span className="hp-eval-frame__sec">https://</span>app.devopsmentor.io/evaluator
+              </div>
+              <div className="hp-eval-frame__actions" aria-hidden="true" />
             </div>
-          </ProductFrame>
+
+            {/* Terminal Window */}
+            <div className="hp-eval-term">
+              <div className="hp-eval-term__header">
+                <span className="hp-eval-term__title">mentor@lab-vm:~/workspace</span>
+              </div>
+              <div className="hp-eval-term__body">
+                {/* Bad Command Prompt Line (with Word Smash Drop & Preserved Spaces) */}
+                <p className="hp-eval-term__line hp-eval-term__prompt-line">
+                  <span className="hp-eval-term__user">mentor@lab</span>
+                  <span className="hp-eval-term__sep">:</span>
+                  <span className="hp-eval-term__path">~</span>
+                  <span className="hp-eval-term__sym">$</span>{' '}
+                  <span className="hp-eval-term__cmd">
+                    {animStep === 0
+                      ? sc.badCommand.slice(0, badCharIdx).split('').map((ch, idx) => (
+                          <span key={idx} className="hp-ld__char-drop">
+                            {ch === ' ' ? '\u00A0' : ch}
+                          </span>
+                        ))
+                      : sc.badCommand}
+                  </span>
+                  {animStep === 0 && <span className="hp-eval-term__cursor">█</span>}
+                </p>
+
+                {/* Error Output */}
+                {animStep >= 1 && (
+                  <div className="hp-eval-term__output-block">
+                    {sc.badOutput.map((line, lIdx) => (
+                      <p key={lIdx} className="hp-eval-term__err-line">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Fix Command Line (with Word Smash Drop & Preserved Spaces) */}
+                {animStep >= 3 && (
+                  <div className="hp-eval-term__fix-block">
+                    <p className="hp-eval-term__prompt-line hp-eval-term__prompt-line--fix">
+                      <span className="hp-eval-term__user">mentor@lab</span>
+                      <span className="hp-eval-term__sep">:</span>
+                      <span className="hp-eval-term__path">~</span>
+                      <span className="hp-eval-term__sym">$</span>{' '}
+                      <span className="hp-eval-term__cmd">
+                        {animStep === 3
+                          ? sc.fixCommand.slice(0, fixCharIdx).split('').map((ch, idx) => (
+                              <span key={idx} className="hp-ld__char-drop">
+                                {ch === ' ' ? '\u00A0' : ch}
+                              </span>
+                            ))
+                          : sc.fixCommand}
+                      </span>
+                      {animStep === 3 && <span className="hp-eval-term__cursor">█</span>}
+                    </p>
+
+                    {/* Fix Output & Passed State */}
+                    {animStep >= 4 && (
+                      <>
+                        {sc.fixOutput.map((fLine, fIdx) => (
+                          <p key={fIdx} className="hp-eval-term__fix-line">
+                            {fLine}
+                          </p>
+                        ))}
+                        <p className="hp-eval-term__pass-line">
+                          ✓ {sc.passNote}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Telemetry Deck: Assertions + OB-1 Mentor */}
+            <div className="hp-eval-telemetry">
+              {/* Panel 1: Live Assertions (No dividers, pure whitespace & soft tone) */}
+              <div className="hp-eval-assertions">
+                <div className="hp-eval-assertions__head">
+                  <span className="hp-eval-assertions__title">Assertions</span>
+                  <span className="hp-eval-assertions__status">
+                    {animStep >= 1
+                      ? `${
+                          animStep >= 4
+                            ? sc.assertions.length
+                            : sc.assertions.filter((a) => a.passedDuringError).length
+                        } of ${sc.assertions.length} Passed`
+                      : 'Awaiting execution...'}
+                  </span>
+                </div>
+
+                <div className="hp-eval-assertions__list">
+                  {sc.assertions.map((ast, aIdx) => {
+                    const isPassed =
+                      animStep >= 4 || (animStep >= 1 && Boolean(ast.passedDuringError));
+                    return (
+                      <div
+                        key={aIdx}
+                        className={`hp-eval-assertion-row ${
+                          isPassed ? 'hp-eval-assertion-row--pass' : 'hp-eval-assertion-row--fail'
+                        }`}
+                      >
+                        <div className="hp-eval-assertion-row__left">
+                          <span className="hp-eval-assertion-icon">{isPassed ? '✓' : '○'}</span>
+                          <span className="hp-eval-assertion-label">{ast.label}</span>
+                        </div>
+                        <span className="hp-eval-assertion-detail">
+                          {isPassed ? ast.passDetail : ast.failDetail}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Panel 2: OB-1 AI Mentor */}
+              <div className="hp-eval-ob1">
+                <div className="hp-eval-ob1__head">
+                  <div className="hp-eval-ob1__id">
+                    <span className="hp-eval-ob1__name">OB-1</span>
+                    <span className="hp-eval-ob1__role">AI Mentor</span>
+                  </div>
+                </div>
+
+                <div className="hp-eval-ob1__body">
+                  <p className="hp-eval-ob1__text">
+                    {animStep < 2 ? (
+                      <span className="hp-eval-ob1__idle">Awaiting command execution...</span>
+                    ) : animStep < 4 ? (
+                      <>
+                        {sc.ob1ErrorText.slice(0, ob1ErrorIdx)}
+                        {animStep === 2 && ob1ErrorIdx < sc.ob1ErrorText.length && (
+                          <span className="hp-eval-term__cursor">█</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {sc.ob1FixText.slice(0, ob1FixIdx)}
+                        {animStep === 5 && ob1FixIdx < sc.ob1FixText.length && (
+                          <span className="hp-eval-term__cursor">█</span>
+                        )}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
+
+
 
 // ─── Section 7: How It Works (§5.7) ───────────────────────────────────────────
 const HIW_STEPS = [
