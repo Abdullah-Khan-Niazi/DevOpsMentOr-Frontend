@@ -1,232 +1,772 @@
-/* §5.2 CurriculumPage styles — design tokens exclusively */
+/* ══════════════════════════════════════════════════════════════════════════════
+   DevOpsMentor — Curriculum Slideshow (Contract v8 Standalone)
+   Zero cards, zero borders, pure elevated typography & floating 3D icons.
+   Strict token-based design: zero hardcoded colors or raw pixel fonts.
+   Margins & max-width match homepage sections (1200px container, clamp padding).
+   ══════════════════════════════════════════════════════════════════════════════ */
 
-/* ─── §5.2 Header ──────────────────────────────────────────────────────────── */
-.cur-header-section {
-  padding-top: var(--space-24);
-  padding-bottom: var(--space-16);
-}
-
-.cur-headline {
-  margin: 0 0 var(--space-4) 0;
-  font-family: var(--font-display);
-  font-size: var(--text-display-l);
-  font-weight: 400;
-  line-height: var(--leading-tight);
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text-primary);
-}
-
-.cur-subhead {
-  margin: 0;
-  max-width: 60ch;
-  font-family: var(--font-body);
-  font-size: var(--text-body-l);
-  line-height: var(--leading-normal);
-  color: var(--color-text-secondary);
-}
-
-/* ─── §5.2 Phase groups ────────────────────────────────────────────────────── */
-.cur-phase {
-  position: relative;
+/* Complete Scrollbar Suppression across all browsers (Firefox, Chrome, Safari, Edge) */
+html:has(.cur-slideshow),
+body:has(.cur-slideshow) {
   overflow: hidden;
-  padding: var(--space-24) 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-.cur-phase > .site-container {
+html:has(.cur-slideshow)::-webkit-scrollbar,
+body:has(.cur-slideshow)::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.cur-slideshow {
   position: relative;
-  z-index: 1;
+  width: 100%;
+  height: calc(100vh - 64px);
+  min-height: calc(100vh - 64px);
+  background-color: var(--paper);
+  /* Dotted matrix canvas texture matching Hero and Catalog Teaser */
+  background-image: radial-gradient(var(--paper-line) 1.5px, transparent 1.5px);
+  background-size: 24px 24px;
+  background-position: 0 0;
+  overflow: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  display: flex;
+  flex-direction: column;
 }
 
-/* Hex-node texture — behind the phase content, theme-aware via node tokens */
-.cur-hex {
+.cur-slideshow::-webkit-scrollbar,
+.cur-slideshow *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 900px) {
+  .cur-slideshow {
+    height: auto;
+    min-height: calc(100vh - 64px);
+    overflow-y: visible;
+  }
+}
+
+/* ═══════════════ Vertical Dot Navigation (Right Side Middle) ═══════════════ */
+.cur-dots-nav {
+  position: fixed;
+  right: var(--space-6);
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  z-index: var(--z-sticky, 200);
+  background: transparent;
+  pointer-events: auto;
+}
+
+@media (max-width: 900px) {
+  .cur-dots-nav {
+    display: none;
+  }
+}
+
+.cur-dot {
+  position: relative;
+  width: 9px;
+  height: 9px;
+  border-radius: var(--radius-full, 50%);
+  background-color: var(--paper-line);
+  border: 1px solid var(--paper-line);
+  padding: 0;
+  cursor: pointer;
+  outline: none;
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard);
+}
+
+/* Expanded clickable hit target (17px high × 37px wide) tiling vertically without overlap */
+.cur-dot::before {
+  content: '';
+  position: absolute;
+  inset: -4px -14px;
+  border-radius: var(--radius-full, 50%);
+  background: transparent;
+}
+
+.cur-dot:hover {
+  background-color: var(--text-secondary);
+  border-color: var(--text-secondary);
+  transform: scale(1.35);
+}
+
+.cur-dot--active {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  transform: scale(1.45);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--ink) 12%, transparent);
+}
+
+/* ═══════════════ Slide Layout & Transition Physics ═══════════════ */
+.cur-slide {
   position: absolute;
   inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.45;
-}
-
-.cur-hex__svg {
   width: 100%;
   height: 100%;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(14px);
+  transition:
+    opacity var(--duration-slow, 420ms) var(--ease-standard),
+    transform var(--duration-slow, 420ms) var(--ease-standard);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  padding-top: clamp(40px, 4.8vh, 48px);
+  padding-bottom: clamp(var(--space-4), 2.5vh, var(--space-6));
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
-/* Phase header — eyebrow + title, description as subtitle beneath */
-.cur-phase__head {
+.cur-slide--overview,
+.cur-slide--closing {
+  justify-content: center;
+}
+
+.cur-slide::-webkit-scrollbar,
+.cur-slide *::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+@media (max-width: 900px) {
+  .cur-slide {
+    position: relative;
+    inset: auto;
+    height: auto;
+    opacity: 1;
+    pointer-events: auto;
+    transform: none;
+    display: none;
+    padding: var(--space-8) 0;
+  }
+
+  .cur-slide--active {
+    display: flex !important;
+  }
+}
+
+.cur-slide--active {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateY(0);
+  z-index: var(--z-raised, 10);
+}
+
+/* Unified container strictly matching homepage sections below Hero (§5.1.2) */
+.cur-slide__inner,
+.cur-slide__inner.site-container {
+  width: 100%;
+  max-width: 1200px !important;
+  margin: 0 auto !important;
+  padding-left: clamp(1.25rem, 2.5vw, 2rem) !important;
+  padding-right: clamp(1.25rem, 2.5vw, 2rem) !important;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+
+.cur-slide__grid {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(var(--space-8), 4vw, var(--space-16));
+  align-items: center;
+  width: 100%;
+}
+
+.cur-slide__grid--overview {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: clamp(var(--space-8), 4vw, var(--space-16));
+  align-items: center;
+  width: 100%;
+}
+
+.cur-slide--module .cur-slide__grid {
+  grid-template-columns: minmax(0, 1fr) clamp(240px, 24vw, 320px);
+  gap: clamp(var(--space-8), 4vw, var(--space-14));
+  align-items: start;
+  width: 100%;
+}
+
+.cur-slide--module .cur-slide__visual {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: clamp(280px, 36vh, 340px);
+  width: 100%;
+}
+
+@media (max-width: 900px) {
+  .cur-slide__inner,
+  .cur-slide__inner.site-container {
+    min-height: auto;
+  }
+
+  .cur-slide__head-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .cur-slide__head-row .cur-slide__title {
+    white-space: normal;
+  }
+
+  .cur-slide__grid,
+  .cur-slide--module .cur-slide__grid {
+    grid-template-columns: 1fr !important;
+    gap: var(--space-8);
+  }
+}
+
+/* ─── Left Column Typography ─── */
+.cur-slide__text {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  gap: var(--space-4);
-  margin-bottom: var(--space-12);
+  width: 100%;
 }
 
-.cur-phase__head-left {
+/* ─── Module Slide Header Row (Title Left, Tab Switcher Right at Same Level) ─── */
+.cur-slide__head-row {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  width: 100%;
+  margin-bottom: var(--space-4);
+  padding-bottom: 0;
+  border-bottom: none;
+  min-height: 40px;
+  flex-shrink: 0;
 }
 
-.cur-phase__range {
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--color-accent-500);
-}
-
-.cur-phase__title {
+.cur-slide__head-row .cur-slide__title {
   margin: 0;
   font-family: var(--font-display);
-  font-size: var(--text-display-m);
-  font-weight: 400;
-  line-height: var(--leading-tight);
+  font-size: clamp(1.45rem, 2.3vw, 2.2rem);
+  font-weight: 500;
+  line-height: 1.25;
   letter-spacing: var(--tracking-tight);
-  color: var(--color-text-primary);
+  color: var(--ink);
+  white-space: nowrap;
 }
 
-.cur-phase__desc {
-  margin: 0;
-  max-width: 65ch;
+.cur-slide__head-row .cur-slide__tabs {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 0;
+  padding: 4px;
+  border: 1px solid var(--paper-line);
+  background-color: var(--paper-dim);
+  border-radius: 9999px;
+  width: auto;
+  max-width: none;
+  flex-shrink: 0;
+}
+
+.cur-slide__head-row .cur-slide__tab {
+  padding: 5px 16px;
+  font-size: 0.8rem;
+}
+
+.cur-slide__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.4rem, 2.2vw, 2.15rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
+  margin: 0 0 var(--space-3);
+  white-space: nowrap;
+}
+
+.cur-slide--overview .cur-slide__title {
+  margin: 0 0 var(--space-4);
+  white-space: normal;
+}
+
+.cur-slide__body {
   font-family: var(--font-body);
-  font-size: var(--text-body-m);
-  line-height: var(--leading-normal);
-  color: var(--color-text-secondary);
+  font-size: clamp(0.98rem, 1.15vw, 1.08rem);
+  line-height: 1.72;
+  color: var(--text-secondary);
+  margin: 0 0 clamp(var(--space-4), 2vh, var(--space-6));
+  max-width: 680px;
 }
 
-/* 4-column grid per phase (§5.2) */
-.cur-phase__grid {
+/* ─── Interactive Segmented Tabs ─── */
+.cur-slide__tabs {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-4);
+  width: 100%;
+  max-width: 580px;
+}
+
+.cur-slide__tab {
+  background: transparent;
+  border: 1px solid transparent;
+  font-family: var(--font-mono);
+  font-size: var(--text-caption, 0.75rem);
+  font-weight: 500;
+  letter-spacing: var(--tracking-wide, 0.02em);
+  color: var(--text-secondary);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 9999px;
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
+}
+
+.cur-slide__tab:hover {
+  color: var(--ink);
+  background-color: var(--paper-dim);
+}
+
+.cur-slide__tab--active {
+  background-color: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+
+.cur-slide__tab:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+/* ─── Tab Panes & Content ─── */
+.cur-tab-pane {
+  width: 100%;
+  max-width: 760px;
+  display: flex;
+  flex-direction: column;
+}
+
+.cur-slide__desc {
+  font-family: var(--font-body);
+  font-size: clamp(0.94rem, 1.1vw, 1.04rem);
+  line-height: 1.68;
+  color: var(--text-secondary);
+  margin: 0;
+  max-width: 760px;
+}
+
+/* ─── Coverage & Outcomes Consolidated Section ─── */
+.cur-slide__coverage {
+  width: 100%;
+  max-width: 760px;
+  margin-top: clamp(var(--space-4), 2.5vh, var(--space-6));
+}
+
+.cur-slide__coverage-heading {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--text-tertiary);
+  margin-bottom: var(--space-3);
+  text-transform: uppercase;
+}
+
+.cur-slide__coverage-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-2), 1.6vh, var(--space-3));
+}
+
+.cur-slide__coverage-item {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  font-family: var(--font-body);
+  font-size: clamp(0.9rem, 1.06vw, 0.98rem);
+  line-height: 1.58;
+  color: var(--text-secondary);
+}
+
+.cur-slide__coverage-bullet {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.cur-slide__coverage-text {
+  color: var(--text-secondary);
+}
+
+.cur-slide__coverage-label {
+  font-weight: 600;
+  color: var(--ink);
+}
+
+/* ─── Hands-On Labs (Whitespace Separated, No Cards, No Badges, No Dividers) ─── */
+.cur-tab-pane--labs {
+  max-width: 880px;
+  width: 100%;
+}
+
+.cur-labs-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: clamp(var(--space-8), 4vw, var(--space-12));
+  width: 100%;
+  overflow: visible;
 }
 
-/* Scheduled entrance — each phase group is its own trigger; cards enter in
-   sequence with a stagger, never scroll-revealed as one blob (§5.2, §6.2). */
-.cur-phase__grid .cur-module-card {
-  opacity: 0;
-  transform: translateY(20px);
-  animation: none;
+.cur-labs-col {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(var(--space-3), 1.4vh, var(--space-4));
+  min-width: 0;
 }
 
-.cur-phase__grid--visible .cur-module-card {
-  animation: cur-card-enter var(--duration-slow) var(--ease-decelerate) forwards;
-  animation-delay: calc(var(--i, 0) * 90ms);
+.cur-lab-row {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  min-width: 0;
+  transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
-@keyframes cur-card-enter {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
+.cur-lab-row__num {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent);
+  line-height: 1.3;
+  flex-shrink: 0;
+  width: 2.2ch;
+  margin-top: 1px;
+  letter-spacing: 0.02em;
+}
+
+.cur-lab-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.cur-lab-row__title {
+  font-family: var(--font-display);
+  font-size: clamp(0.86rem, 0.98vw, 0.92rem);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+  transition: color var(--duration-fast) var(--ease-standard);
+}
+
+.cur-lab-row:hover .cur-lab-row__title {
+  color: var(--accent);
+}
+
+.cur-lab-row__desc {
+  font-family: var(--font-body);
+  font-size: clamp(0.76rem, 0.86vw, 0.8rem);
+  color: var(--text-secondary);
+  line-height: 1.45;
+}
+
+@media (max-width: 768px) {
+  .cur-labs-grid {
+    grid-template-columns: 1fr;
+    row-gap: var(--space-4);
   }
-  to {
+}
+
+.cur-slide__action,
+.cur-slide__action-row {
+  margin-top: clamp(var(--space-6), 3vh, var(--space-8));
+}
+
+/* ═══════════════ Slide 1: 16 Floating Icons in 4x4 Grid ═══════════════ */
+.cur-floating-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--space-3) var(--space-2);
+  align-items: center;
+  width: 100%;
+}
+
+@keyframes cur-tile-pop {
+  0% {
+    opacity: 0;
+    transform: translateY(22px) scale(0.86);
+    filter: drop-shadow(0 2px 4px color-mix(in srgb, var(--ink) 4%, transparent));
+  }
+  60% {
     opacity: 1;
+    transform: translateY(-4px) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--ink) 8%, transparent));
+  }
+}
+
+.cur-floating-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: var(--space-1);
+  padding: 2px;
+  background: transparent !important;
+  border: none !important;
+  border-radius: var(--radius, 0px);
+  box-shadow: none;
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+  user-select: none;
+  transition: transform var(--duration-base) var(--ease-standard);
+  animation: cur-tile-pop 520ms var(--ease-standard) calc(var(--i, 0) * 35ms) both;
+}
+
+.cur-floating-tile:hover {
+  transform: translateY(-8px);
+}
+
+.cur-floating-tile:active {
+  transform: translateY(-2px) scale(0.96);
+  transition-duration: var(--duration-fast);
+}
+
+.cur-floating-tile:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+
+/* 3D Isometric Floating Tile Icons — 72px Matching Homepage Teaser */
+.cur-floating-tile__img {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 14px color-mix(in srgb, var(--ink) 8%, transparent));
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    filter var(--duration-base) var(--ease-standard);
+  will-change: transform, filter;
+  flex-shrink: 0;
+}
+
+.cur-floating-tile:hover .cur-floating-tile__img {
+  transform: scale(1.12);
+  filter: drop-shadow(0 20px 30px color-mix(in srgb, var(--ink) 20%, transparent));
+}
+
+.cur-floating-tile:active .cur-floating-tile__img {
+  transform: scale(0.96);
+  filter: drop-shadow(0 4px 8px color-mix(in srgb, var(--ink) 12%, transparent));
+}
+
+.cur-floating-tile__name {
+  font-family: var(--font-mono);
+  font-size: var(--text-caption, 0.75rem);
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: var(--tracking-wide, 0.01em);
+  text-align: center;
+  line-height: var(--leading-tight, 1.2);
+  min-height: 2.2em;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  transition: color var(--duration-fast) var(--ease-standard), font-weight var(--duration-fast) var(--ease-standard);
+}
+
+.cur-floating-tile:hover .cur-floating-tile__name {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+@media (max-width: 600px) {
+  .cur-floating-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3) var(--space-1);
+  }
+
+  .cur-floating-tile__img {
+    width: 48px;
+    height: 48px;
+  }
+
+  .cur-floating-tile__name {
+    font-size: 0.68rem;
+  }
+}
+
+/* ═══════════════ Slides 2–16: Floating Solo 3D Showcase (No Cards) ═══════════════ */
+.cur-solo-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-3), 2vh, var(--space-4));
+  width: 100%;
+  user-select: none;
+}
+
+@keyframes cur-solo-bob {
+  0% {
     transform: translateY(0);
   }
+  100% {
+    transform: translateY(-8px);
+  }
 }
 
-/* Module card — mirrors the homepage teaser card (§5.1.5) */
-.cur-module-card {
+.cur-solo-icon-wrap {
   display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  padding: var(--space-6);
-  background-color: var(--color-bg-raised);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  cursor: crosshair; /* §6.5 — the curriculum cards' crosshair exception */
+  align-items: center;
+  justify-content: center;
+  animation: cur-solo-bob 3.6s ease-in-out infinite alternate;
+}
+
+/* Scaled 3D icon balanced with rich module overview */
+.cur-solo-icon {
+  width: clamp(130px, 17vh, 168px);
+  height: clamp(130px, 17vh, 168px);
+  object-fit: contain;
+  filter: drop-shadow(0 16px 28px color-mix(in srgb, var(--ink) 14%, transparent));
   transition:
-    border-color var(--duration-base) var(--ease-decelerate),
-    transform var(--duration-base) var(--ease-decelerate);
+    transform var(--duration-base) var(--ease-standard),
+    filter var(--duration-base) var(--ease-standard);
+  will-change: transform, filter;
+  cursor: pointer;
 }
 
-.cur-module-card:hover {
-  border-color: var(--color-border-strong);
-  transform: translateY(-2px);
+.cur-solo-stage:hover .cur-solo-icon {
+  transform: translateY(-6px) scale(1.08);
+  filter: drop-shadow(0 24px 38px color-mix(in srgb, var(--ink) 22%, transparent));
 }
 
-.cur-module-card__num {
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  color: var(--color-accent-500);
-  font-variant-numeric: tabular-nums;
-}
-
-.cur-module-card__title {
-  font-family: var(--font-display);
-  font-size: var(--text-heading-m);
-  font-weight: 400;
-  line-height: var(--leading-snug);
-  letter-spacing: var(--tracking-tight);
-  color: var(--color-text-primary);
-  margin: 0;
-}
-
-.cur-module-card__focus {
-  font-size: var(--text-body-s);
-  color: var(--color-text-tertiary);
-  margin: 0;
-}
-
-/* ─── §5.2 Closing CTA ─────────────────────────────────────────────────────── */
-.cur-cta-section {
-  padding: var(--space-24) 0 var(--space-32);
-  border-top: 1px solid var(--color-border-subtle);
-}
-
-.cur-cta-inner {
+.cur-solo-caption {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  gap: var(--space-4);
+  align-items: center;
+  gap: 2px;
+  text-align: center;
 }
 
-.cur-cta-headline {
-  margin: 0;
+.cur-solo-caption__name {
   font-family: var(--font-display);
-  font-size: var(--text-display-m);
-  font-weight: 400;
-  line-height: var(--leading-tight);
+  font-size: clamp(1.3rem, 1.8vw, 1.6rem);
+  font-weight: 600;
+  color: var(--ink);
   letter-spacing: var(--tracking-tight);
-  color: var(--color-text-primary);
 }
 
-.cur-cta-body {
+.cur-solo-caption__sub {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  color: var(--text-tertiary);
+  letter-spacing: var(--tracking-wide);
+}
+
+@media (max-width: 900px) {
+  .cur-solo-icon {
+    width: 90px;
+    height: 90px;
+  }
+
+  .cur-solo-caption__name {
+    font-size: 1.15rem;
+  }
+}
+
+/* ═══════════════ Slide 17: Closing CTA-Only Slide (No Cards) ═══════════════ */
+.cur-closing-box {
+  padding: var(--space-12) var(--space-8);
+  text-align: center;
+  max-width: 860px;
+  margin: 0 auto;
+}
+
+@media (max-width: 600px) {
+  .cur-closing-box {
+    padding: var(--space-8) var(--space-4);
+  }
+}
+
+.cur-closing-box__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: var(--tracking-tight);
+  color: var(--ink);
   margin: 0 0 var(--space-4);
-  max-width: 52ch;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .cur-closing-box__title {
+    white-space: normal;
+  }
+}
+
+.cur-closing-box__desc {
   font-family: var(--font-body);
-  font-size: var(--text-body-m);
-  line-height: var(--leading-normal);
-  color: var(--color-text-secondary);
+  font-size: var(--text-body-l);
+  line-height: 1.7;
+  color: var(--text-secondary);
+  max-width: 540px;
+  margin: 0 auto var(--space-8);
 }
 
-/* ─── Responsive ───────────────────────────────────────────────────────────── */
-@media (max-width: 1023px) {
-  .cur-phase__grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.cur-closing-box__ctas {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-4);
+  flex-wrap: wrap;
 }
 
-@media (max-width: 767px) {
-  .cur-header-section {
-    padding-top: var(--space-16);
-    padding-bottom: var(--space-12);
-  }
-
-  .cur-phase {
-    padding: var(--space-16) 0;
-  }
-
-  .cur-phase__grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-/* ─── Reduced Motion ───────────────────────────────────────────────────────── */
+/* ═══════════════ Reduced Motion ═══════════════ */
 @media (prefers-reduced-motion: reduce) {
-  .cur-phase__grid .cur-module-card,
-  .cur-phase__grid--visible .cur-module-card {
-    opacity: 1;
-    transform: none;
-    animation: none;
+  .cur-slide,
+  .cur-floating-tile,
+  .cur-floating-tile__img,
+  .cur-solo-icon,
+  .cur-dot {
+    transition: none !important;
+    animation: none !important;
+    transform: none !important;
   }
 }
