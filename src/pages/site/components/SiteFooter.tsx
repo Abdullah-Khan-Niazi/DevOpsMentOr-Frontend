@@ -19,9 +19,7 @@ const footerColumns = [
   {
     heading: 'Curriculum',
     links: [
-      { label: '15 Modules', to: ROUTES.CURRICULUM },
-      { label: 'Module Catalog', to: ROUTES.MODULE_CATALOG },
-      { label: 'Learning Path', to: ROUTES.LEARNING_PATH },
+      { label: 'Module Catalog', to: ROUTES.CURRICULUM },
     ],
   },
   {
