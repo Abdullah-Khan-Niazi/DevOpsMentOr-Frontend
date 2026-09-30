@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
@@ -13,7 +13,7 @@ import {
   InvitationStep,
   VerifyEmailStep,
 } from '../components/onboarding/OnboardingSteps';
-import type { AccountType, LoginResponse, OAuthProvider } from '../types';
+import type { AccountType, LoginResponse, OAuthCompleteCredentials, OAuthProvider } from '../types';
 import '../styles/auth.css';
 
 interface OAuthPending {
@@ -84,19 +84,71 @@ function FinishStep({
   reset: () => void;
   navigate: ReturnType<typeof useNavigate>;
 }) {
+  const started = useRef(false);
+
   useEffect(() => {
-    complete.mutate({
-      pendingToken: oauth.pendingToken,
-      accountType: accountType ?? 'individual',
-      fullName: oauth.name,
-      organization: useOnboardingStore.getState().organization ?? undefined,
-      invitationCode: useOnboardingStore.getState().invitationCode ?? undefined,
-    });
-  }, [oauth, accountType, complete]);
+    if (started.current) return;
+    started.current = true;
+
+    if (!oauth?.pendingToken) {
+      toast.error('OAuth session is missing or expired. Please sign in with your provider again.');
+      reset();
+      void navigate(ROUTES.LOGIN, { replace: true });
+      return;
+    }
+
+    const effectiveType = accountType ?? 'individual';
+    const trimmedName = oauth.name?.trim();
+    const validFullName = trimmedName && trimmedName.length >= 2 ? trimmedName : undefined;
+
+    let payload: OAuthCompleteCredentials;
+
+    if (effectiveType === 'organization') {
+      const org = useOnboardingStore.getState().organization;
+      if (!org) {
+        toast.error('Organization details are missing.');
+        useOnboardingStore.getState().setStep('organization');
+        return;
+      }
+      payload = {
+        accountType: 'organization',
+        pendingToken: oauth.pendingToken,
+        ...(validFullName ? { fullName: validFullName } : {}),
+        organization: {
+          name: org.name.trim(),
+          slug: org.slug.trim(),
+          website: org.website?.trim() || undefined,
+          industry: org.industry?.trim() || undefined,
+          billingEmail: org.billingEmail?.trim() || undefined,
+        },
+      };
+    } else if (effectiveType === 'member') {
+      const invitationCode = useOnboardingStore.getState().invitationCode;
+      if (!invitationCode) {
+        toast.error('Invitation code is missing.');
+        useOnboardingStore.getState().setStep('invitation');
+        return;
+      }
+      payload = {
+        accountType: 'member',
+        pendingToken: oauth.pendingToken,
+        ...(validFullName ? { fullName: validFullName } : {}),
+        invitationCode: invitationCode.trim(),
+      };
+    } else {
+      payload = {
+        accountType: 'individual',
+        pendingToken: oauth.pendingToken,
+        ...(validFullName ? { fullName: validFullName } : {}),
+      };
+    }
+
+    complete.mutate(payload);
+  }, [oauth, accountType, complete, reset, navigate]);
 
   return (
     <div className="flex flex-col gap-4">
-      <p className="auth-status">Finishing your account…</p>
+      <p className="auth-status">Finishing your account...</p>
       {complete.isError ? (
         <p className="auth-alert auth-alert--error" role="alert">
           {complete.error.message}
@@ -120,6 +172,7 @@ function FinishStep({
 
 export default function OnboardingPage() {
   const navigate = useNavigate();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const flow = useOnboardingStore((s) => s.flow);
   const oauth = useOnboardingStore((s) => s.oauth);
   const accountType = useOnboardingStore((s) => s.accountType);
@@ -132,13 +185,38 @@ export default function OnboardingPage() {
   const order = getStepOrder(flow ?? 'email', accountType ?? 'individual');
   const currentIndex = Math.max(0, order.indexOf(step));
 
-  if (flow !== 'oauth' && !oauth && flow !== 'email') {
-    void navigate(ROUTES.LOGIN, { replace: true });
-    return null;
+  useEffect(() => {
+    if (isAuthenticated) {
+      void navigate(ROUTES.DASHBOARD, { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
+
+  useEffect(() => {
+    if (!isAuthenticated && flow !== 'oauth' && !oauth && flow !== 'email') {
+      void navigate(ROUTES.LOGIN, { replace: true });
+    }
+  }, [isAuthenticated, flow, oauth, navigate]);
+
+  useEffect(() => {
+    if (step === 'verify' && !password) {
+      setStep('credentials');
+    }
+  }, [step, password, setStep]);
+
+  if (isAuthenticated) {
+    return (
+      <div className="auth-page auth-page--center">
+        <p className="auth-status">Redirecting to your dashboard...</p>
+      </div>
+    );
   }
 
-  if (step === 'verify' && !password) {
-    setStep('credentials');
+  if (flow !== 'oauth' && !oauth && flow !== 'email') {
+    return (
+      <div className="auth-page auth-page--center">
+        <p className="auth-status">Redirecting to sign in...</p>
+      </div>
+    );
   }
 
   const goNext = () => {
@@ -174,7 +252,7 @@ export default function OnboardingPage() {
     if (step === 'invitation') return <InvitationStep onNext={goNext} onBack={goBack} />;
     if (step === 'verify')
       return <VerifyEmailStep onVerified={onVerified} password={password} onBack={goBack} />;
-    if (oauth)
+    if (step === 'finish' && oauth) {
       return (
         <FinishStep
           oauth={oauth}
@@ -184,7 +262,12 @@ export default function OnboardingPage() {
           navigate={navigate}
         />
       );
-    return null;
+    }
+    return (
+      <div className="flex flex-col gap-4">
+        <p className="auth-status">Setting up your workspace...</p>
+      </div>
+    );
   };
 
   return (

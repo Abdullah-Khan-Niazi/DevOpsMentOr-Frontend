@@ -201,7 +201,7 @@
   font-weight: 500;
   text-decoration: none;
   text-underline-offset: 2px;
-  border-radius: 2px;
+  border-radius: 0;
   outline: none;
 }
 
@@ -495,7 +495,7 @@
   width: 1.75rem;
   height: 1.75rem;
   flex-shrink: 0;
-  border-radius: 50%;
+  border-radius: 0;
   background-color: transparent;
   border: 1.5px solid var(--color-border-strong);
   font-size: 0.8rem;
@@ -530,7 +530,7 @@
   background: transparent;
   font: inherit;
   padding: var(--space-1) var(--space-3);
-  border-radius: var(--radius-pill);
+  border-radius: 0;
   transition: background-color var(--duration-base) var(--ease-standard);
 }
 

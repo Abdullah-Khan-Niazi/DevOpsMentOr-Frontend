@@ -9,6 +9,7 @@ export interface AuthUser {
   fullName: string | null;
   status: string;
   isVerified: boolean;
+  twoFactorEnabled?: boolean;
   roles: string[];
   permissions?: string[];
 }
@@ -37,8 +38,12 @@ export interface MeResponse {
   message: string;
   data: {
     userId: number;
+    username: string;
     email: string;
     fullName: string | null;
+    status: string;
+    isVerified: boolean;
+    twoFactorEnabled: boolean;
     roles: string[];
     permissions: string[];
   };
@@ -139,7 +144,13 @@ export interface OAuthPendingResult {
   provider: OAuthProvider;
 }
 
-export type OAuthLoginResult = LoginResponse | OAuthPendingResult;
+export interface OAuthPendingEnvelope {
+  success: boolean;
+  message: string;
+  data: OAuthPendingResult;
+}
+
+export type OAuthLoginResult = LoginResponse | OAuthPendingEnvelope | OAuthPendingResult;
 
 interface BaseOAuthComplete {
   pendingToken: string;

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Button, Card, toast } from '@/shared/components';
 import { use2fa } from '@/features/auth/hooks';
+import { useAuthStore } from '@/features/auth/stores/authStore';
 import { OtpInputGroup } from '@/features/auth/components/OtpInputGroup';
 import { QRCodeDisplay } from '@/features/auth/components/QRCodeDisplay';
 import '@/shared/styles/app.css';
@@ -8,7 +9,7 @@ import './SettingsSecurity.css';
 
 const ALREADY_ENABLED = 'Two-factor authentication is already enabled.';
 
-type TwoFactorState = 'unknown' | 'setup' | 'enabled' | 'verifying-disable';
+type TwoFactorState = 'loading' | 'disabled' | 'setup' | 'enabled' | 'verifying-disable';
 
 interface TwoFactorSetup {
   secret: string;
@@ -17,21 +18,32 @@ interface TwoFactorSetup {
 
 export default function SecurityPage() {
   const { enable, verify, disable } = use2fa();
-  const [state, setState] = useState<TwoFactorState>('unknown');
+  const twoFactorEnabled = useAuthStore((state) => state.user?.twoFactorEnabled);
+  const [flowState, setFlowState] = useState<'setup' | 'verifying-disable' | null>(null);
   const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
   const [code, setCode] = useState('');
   const [setupError, setSetupError] = useState<string | null>(null);
+
+  // Derive the active state from flowState if in a setup/disable workflow,
+  // or dynamically from the auth store's twoFactorEnabled flag.
+  const state: TwoFactorState =
+    flowState ??
+    (twoFactorEnabled === undefined ? 'loading' : twoFactorEnabled ? 'enabled' : 'disabled');
 
   const handleEnable = () => {
     setSetupError(null);
     enable.mutate(undefined, {
       onSuccess: (nextSetup) => {
         setSetup(nextSetup);
-        setState('setup');
+        setFlowState('setup');
       },
       onError: (error) => {
         if (error.message === ALREADY_ENABLED) {
-          setState('enabled');
+          const user = useAuthStore.getState().user;
+          if (user) {
+            useAuthStore.getState().setUser({ ...user, twoFactorEnabled: true });
+          }
+          setFlowState(null);
         } else {
           toast.error(error.message);
         }
@@ -45,10 +57,14 @@ export default function SecurityPage() {
       { code, secret: setup.secret },
       {
         onSuccess: () => {
-          toast.success('2FA enabled');
+          toast.success('2FA enabled successfully.');
           setCode('');
           setSetup(null);
-          setState('enabled');
+          const user = useAuthStore.getState().user;
+          if (user) {
+            useAuthStore.getState().setUser({ ...user, twoFactorEnabled: true });
+          }
+          setFlowState(null);
         },
         onError: (error) => setSetupError(error.message),
       },
@@ -61,9 +77,13 @@ export default function SecurityPage() {
       { code },
       {
         onSuccess: () => {
-          toast.success('2FA disabled');
+          toast.success('2FA disabled.');
           setCode('');
-          setState('unknown');
+          const user = useAuthStore.getState().user;
+          if (user) {
+            useAuthStore.getState().setUser({ ...user, twoFactorEnabled: false });
+          }
+          setFlowState(null);
         },
         onError: (error) => setSetupError(error.message),
       },
@@ -80,7 +100,13 @@ export default function SecurityPage() {
       </header>
 
       <div className="settings-stack">
-        {state === 'unknown' ? (
+        {state === 'loading' ? (
+          <Card className="settings-card">
+            <p className="settings-card__body">Loading security settings...</p>
+          </Card>
+        ) : null}
+
+        {state === 'disabled' ? (
           <Card className="settings-card">
             <h2 className="settings-card__title">Two-factor authentication</h2>
             <p className="settings-card__body">
@@ -126,7 +152,7 @@ export default function SecurityPage() {
                   type="button"
                   variant="secondary"
                   onClick={() => {
-                    setState('unknown');
+                    setFlowState(null);
                     setCode('');
                     setSetup(null);
                     setSetupError(null);
@@ -161,7 +187,11 @@ export default function SecurityPage() {
                   <Button
                     type="button"
                     variant="danger"
-                    onClick={() => setState('verifying-disable')}
+                    onClick={() => {
+                      setCode('');
+                      setSetupError(null);
+                      setFlowState('verifying-disable');
+                    }}
                   >
                     Disable 2FA
                   </Button>
@@ -185,7 +215,7 @@ export default function SecurityPage() {
                     type="button"
                     variant="secondary"
                     onClick={() => {
-                      setState('enabled');
+                      setFlowState(null);
                       setCode('');
                       setSetupError(null);
                     }}

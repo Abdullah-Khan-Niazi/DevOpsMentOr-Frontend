@@ -2846,6 +2846,7 @@
   transition: all 140ms ease;
   box-sizing: border-box;
   width: 100%;
+  cursor: pointer;
 }
 
 .hp-final-card__btn--google,

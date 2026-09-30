@@ -11,8 +11,8 @@ function formatTime(iso: string): string {
 }
 
 function formatUserAgent(userAgent: string | null): string {
-  if (!userAgent) return '—';
-  return userAgent.length > 60 ? `${userAgent.slice(0, 60)}…` : userAgent;
+  if (!userAgent) return '-';
+  return userAgent.length > 60 ? `${userAgent.slice(0, 60)}...` : userAgent;
 }
 
 export default function LoginHistoryPage() {
@@ -31,7 +31,7 @@ export default function LoginHistoryPage() {
         <Card className="settings-card">
           <h2 className="settings-card__title">Recent activity</h2>
 
-          {isLoading ? <LoadingState label="Loading history…" /> : null}
+          {isLoading ? <LoadingState label="Loading history..." /> : null}
 
           {isError ? (
             <div className="flex flex-col gap-3">
@@ -66,7 +66,7 @@ export default function LoginHistoryPage() {
                       <td className="admin-table__strong">{formatTime(entry.createdAt)}</td>
                       <td>{entry.loginType}</td>
                       <td>{entry.isSuccessful ? 'Success' : 'Failed'}</td>
-                      <td>{entry.ipAddress ?? '—'}</td>
+                      <td>{entry.ipAddress ?? '-'}</td>
                       <td>{formatUserAgent(entry.userAgent)}</td>
                     </tr>
                   ))}

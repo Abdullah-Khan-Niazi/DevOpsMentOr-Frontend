@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button, Input, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useForgotPassword } from '../hooks';
@@ -10,15 +10,15 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState('');
   const [sent, setSent] = useState(false);
   const forgot = useForgotPassword();
+  const navigate = useNavigate();
 
   const onSubmit = () => {
     if (!email.trim()) return;
     forgot.mutate(
       { email },
       {
-        onSuccess: (data) => {
+        onSuccess: () => {
           setSent(true);
-          toast.success(data.data.message);
         },
         onError: (error) => toast.error(error.message),
       },
@@ -30,14 +30,28 @@ export default function ForgotPasswordPage() {
       <AuthLayout title="Check your email" subtitle="We sent a 6-digit reset code to your inbox.">
         <div className="flex flex-col gap-4">
           <p className="auth-alert" role="status">
-            If an account exists for {email}, a reset code is on its way. It expires shortly, so use
-            it before requesting another.
+            If an account exists for <strong>{email}</strong>, a reset code is on its way. It
+            expires in 15 minutes, so use it soon.
           </p>
+
+          <Button
+            type="button"
+            className="w-full"
+            onClick={() =>
+              void navigate(ROUTES.RESET_PASSWORD, { state: { email }, replace: false })
+            }
+          >
+            Enter reset code
+          </Button>
+
           <Button
             type="button"
             variant="secondary"
             className="w-full"
-            onClick={() => void forgot.reset()}
+            onClick={() => {
+              forgot.reset();
+              setSent(false);
+            }}
           >
             Use a different email
           </Button>

@@ -32,7 +32,7 @@ export function ApiTokenRevealModal({
   return (
     <Modal open={open} onClose={onClose} title="API token created">
       <p className="modal-panel__body">
-        Copy your token now — for security, it is shown only once and cannot be retrieved again.
+        Copy your token now: for security, it is shown only once and cannot be retrieved again.
       </p>
 
       <div className="token-reveal">

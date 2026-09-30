@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { Button, Input, PasswordInput, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
@@ -25,8 +25,12 @@ type ResetFormValues = z.infer<typeof resetSchema>;
 
 export default function ResetPasswordPage() {
   const navigate = useNavigate();
+  const location = useLocation();
   const [code, setCode] = useState('');
   const reset = useResetPassword();
+
+  // Pre-populate email from ForgotPasswordPage navigation state.
+  const prefillEmail = (location.state as { email?: string } | null)?.email ?? '';
 
   const {
     register,
@@ -34,7 +38,7 @@ export default function ResetPasswordPage() {
     formState: { errors },
   } = useForm<ResetFormValues>({
     resolver: zodResolver(resetSchema),
-    defaultValues: { email: '', password: '', confirmPassword: '' },
+    defaultValues: { email: prefillEmail, password: '', confirmPassword: '' },
   });
 
   const onSubmit = (values: ResetFormValues) => {
