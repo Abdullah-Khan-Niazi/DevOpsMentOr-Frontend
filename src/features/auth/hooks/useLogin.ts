@@ -11,23 +11,24 @@ export function useLogin() {
   const location = useLocation();
   const setSession = useAuthStore((state) => state.setSession);
 
-  const redirectTo = () => {
-    const params = new URLSearchParams(location.search);
-    const redirect = params.get('redirect');
-    // Only honor same-app relative paths (prevent open-redirect).
-    if (redirect && redirect.startsWith('/')) {
-      return redirect;
-    }
-    return ROUTES.DASHBOARD;
-  };
-
   return useMutation<LoginResponse, ApiError, LoginCredentials>({
     mutationFn: (credentials) => authService.login(credentials),
     onSuccess: (data) => {
       setSession(data);
       if (data.data.user.isVerified) {
-        void navigate(redirectTo(), { replace: true });
+        const perms = data.data.user.permissions ?? [];
+        const params = new URLSearchParams(location.search);
+        const redirect = params.get('redirect');
+
+        if (redirect && redirect.startsWith('/')) {
+          void navigate(redirect, { replace: true });
+        } else if (perms.includes('platform.admin.access')) {
+          void navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
+        } else {
+          void navigate(ROUTES.DASHBOARD, { replace: true });
+        }
       }
+      // If not verified, LoginForm handles the email verification step.
     },
   });
 }

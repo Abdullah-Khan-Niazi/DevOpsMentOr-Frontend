@@ -1,7 +1,7 @@
 import { SiteLogo } from '@/shared/components';
 
 const FACTS = [
-  '15 modules — Containers to GitOps',
+  '15 modules: Containers to GitOps',
   'Kubernetes labs in under 90 seconds',
   'Graded against live cluster state',
 ] as const;
@@ -13,11 +13,11 @@ export function AuthContextPanel() {
         <SiteLogo />
         <div className="auth-context__statement">
           <p className="auth-context__headline">
-            Practice where it counts — on real infrastructure.
+            Practice where it counts: on real infrastructure.
           </p>
           <p className="auth-context__body">
             DevOpsMentOr runs Kubernetes labs in your browser, grades them against live cluster
-            state, and lets the AI Mentor guide you with hints — never answers.
+            state, and lets the AI Mentor guide you with hints, never answers.
           </p>
         </div>
         <ul className="auth-facts">

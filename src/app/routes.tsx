@@ -12,7 +12,6 @@ const OnboardingPage = lazy(() => import('@/features/auth/pages/OnboardingPage')
 const ForgotPasswordPage = lazy(() => import('@/features/auth/pages/ForgotPasswordPage'));
 const ResetPasswordPage = lazy(() => import('@/features/auth/pages/ResetPasswordPage'));
 const OAuthCallbackPage = lazy(() => import('@/features/auth/pages/OAuthCallbackPage'));
-const AdminLoginPage = lazy(() => import('@/features/admin/pages/AdminLoginPage'));
 const AdminAcceptInvitePage = lazy(() => import('@/features/admin/pages/AdminAcceptInvitePage'));
 const AdminPlatformAdminsPage = lazy(
   () => import('@/features/admin/pages/AdminPlatformAdminsPage'),
@@ -219,14 +218,8 @@ export function AppRoutes() {
         }
       />
 
-      <Route
-        path={ROUTES.ADMIN_LOGIN}
-        element={
-          <LazyPage>
-            <AdminLoginPage />
-          </LazyPage>
-        }
-      />
+      {/* /admin/login is deprecated — admins use the shared /login gateway */}
+      <Route path={ROUTES.ADMIN_LOGIN} element={<Navigate to={ROUTES.LOGIN} replace />} />
 
       <Route
         path={ROUTES.ADMIN_ACCEPT_INVITE}

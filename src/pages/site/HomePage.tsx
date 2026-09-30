@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
 import { Button, GoogleIcon, GitHubIcon } from '@/shared/components';
+import { useAuthStore, useOAuthLogin } from '@/features/auth';
 import {
   useInView,
   useReducedMotion,
@@ -85,6 +86,7 @@ const OB1_MENTOR_HINT =
 
 // ─── Section 1: Hero: Isometric Illustrated Canvas ──────────────────────────
 function HeroSection() {
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const [hoveredAsset, setHoveredAsset] = useState<string | null>(null);
   const [clickedAsset, setClickedAsset] = useState<string | null>(null);
 
@@ -106,11 +108,19 @@ function HeroSection() {
             Hands-on labs. Real environments. Build your DevOps skills, step by step.
           </p>
           <div className="hp-hero__ctas">
-            <Link to={ROUTES.SIGNUP} className="hp-hero__cta-link">
-              <Button variant="primary" size="lg">
-                Start Learning
-              </Button>
-            </Link>
+            {isAuthenticated ? (
+              <Link to={ROUTES.DASHBOARD} className="hp-hero__cta-link">
+                <Button variant="primary" size="lg">
+                  Go to Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Link to={ROUTES.SIGNUP} className="hp-hero__cta-link">
+                <Button variant="primary" size="lg">
+                  Start Learning
+                </Button>
+              </Link>
+            )}
             <Link to={ROUTES.CURRICULUM} className="hp-hero__cta-link">
               <Button variant="secondary" size="lg">
                 Explore Labs
@@ -1410,6 +1420,9 @@ function EducatorSpotlightSection() {
 // ─── Section 7: Final CTA (§5.11) ───────────────────────────────────────────
 function FinalCtaSection() {
   const revealRef = useScrollReveal<HTMLDivElement>();
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const { initiateOAuth } = useOAuthLogin();
+
   return (
     <section className="hp-final" aria-labelledby="hp-final-title">
       <div className="site-container">
@@ -1425,67 +1438,86 @@ function FinalCtaSection() {
           {/* Right Column: Account Creation Card */}
           <div className="hp-final__card-col">
             <div className="hp-final-card">
-              <h3 className="hp-final-card__heading">Create Your Free Account</h3>
+              {isAuthenticated ? (
+                <>
+                  <h3 className="hp-final-card__heading">Welcome Back</h3>
+                  <div className="hp-final-card__actions">
+                    <Link
+                      to={ROUTES.DASHBOARD}
+                      className="hp-final-card__btn hp-final-card__btn--email"
+                      aria-label="Go to Dashboard"
+                    >
+                      <span>Go to Dashboard</span>
+                    </Link>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h3 className="hp-final-card__heading">Create Your Free Account</h3>
 
-              <div className="hp-final-card__actions">
-                <Link
-                  to={`${ROUTES.SIGNUP}?provider=google`}
-                  className="hp-final-card__btn hp-final-card__btn--google"
-                  aria-label="Continue with Google"
-                >
-                  <GoogleIcon className="hp-final-card__icon" width={18} height={18} />
-                  <span>Continue with Google</span>
-                </Link>
+                  <div className="hp-final-card__actions">
+                    <button
+                      type="button"
+                      onClick={() => initiateOAuth('google')}
+                      className="hp-final-card__btn hp-final-card__btn--google"
+                      aria-label="Continue with Google"
+                    >
+                      <GoogleIcon className="hp-final-card__icon" width={18} height={18} />
+                      <span>Continue with Google</span>
+                    </button>
 
-                <Link
-                  to={`${ROUTES.SIGNUP}?provider=github`}
-                  className="hp-final-card__btn hp-final-card__btn--github"
-                  aria-label="Continue with GitHub"
-                >
-                  <GitHubIcon className="hp-final-card__icon" width={18} height={18} />
-                  <span>Continue with GitHub</span>
-                </Link>
+                    <button
+                      type="button"
+                      onClick={() => initiateOAuth('github')}
+                      className="hp-final-card__btn hp-final-card__btn--github"
+                      aria-label="Continue with GitHub"
+                    >
+                      <GitHubIcon className="hp-final-card__icon" width={18} height={18} />
+                      <span>Continue with GitHub</span>
+                    </button>
 
-                <div className="hp-final-card__divider" aria-hidden="true">
-                  <span className="hp-final-card__divider-line" />
-                  <span className="hp-final-card__divider-text">or</span>
-                  <span className="hp-final-card__divider-line" />
-                </div>
+                    <div className="hp-final-card__divider" aria-hidden="true">
+                      <span className="hp-final-card__divider-line" />
+                      <span className="hp-final-card__divider-text">or</span>
+                      <span className="hp-final-card__divider-line" />
+                    </div>
 
-                <Link
-                  to={ROUTES.SIGNUP}
-                  className="hp-final-card__btn hp-final-card__btn--email"
-                  aria-label="Continue with Email"
-                >
-                  <svg
-                    className="hp-final-card__icon"
-                    width="18"
-                    height="18"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    aria-hidden="true"
-                  >
-                    <rect width="20" height="16" x="2" y="4" rx="0" />
-                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                  </svg>
-                  <span>Continue with Email</span>
-                </Link>
-              </div>
+                    <Link
+                      to={ROUTES.SIGNUP}
+                      className="hp-final-card__btn hp-final-card__btn--email"
+                      aria-label="Continue with Email"
+                    >
+                      <svg
+                        className="hp-final-card__icon"
+                        width="18"
+                        height="18"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        aria-hidden="true"
+                      >
+                        <rect width="20" height="16" x="2" y="4" rx="0" />
+                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                      </svg>
+                      <span>Continue with Email</span>
+                    </Link>
+                  </div>
 
-              <p className="hp-final-card__legal">
-                By continuing, you agree to our{' '}
-                <Link to={ROUTES.TERMS} className="hp-final-card__legal-link">
-                  Terms of Use
-                </Link>{' '}
-                and{' '}
-                <Link to={ROUTES.PRIVACY} className="hp-final-card__legal-link">
-                  Privacy Policy
-                </Link>.
-              </p>
+                  <p className="hp-final-card__legal">
+                    By continuing, you agree to our{' '}
+                    <Link to={ROUTES.TERMS} className="hp-final-card__legal-link">
+                      Terms of Use
+                    </Link>{' '}
+                    and{' '}
+                    <Link to={ROUTES.PRIVACY} className="hp-final-card__legal-link">
+                      Privacy Policy
+                    </Link>.
+                  </p>
+                </>
+              )}
             </div>
           </div>
         </div>

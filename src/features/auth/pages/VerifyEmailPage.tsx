@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Button, Input, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth';
@@ -8,6 +8,9 @@ import { useOnboardingStore } from '../stores/onboardingStore';
 import { AuthLayout } from '../components/AuthLayout';
 import { OtpInputGroup } from '../components/OtpInputGroup';
 import '../styles/auth.css';
+
+// Must stay in sync with backend env.OTP_TTL_MINUTES (default 15).
+const OTP_TTL_SECONDS = 15 * 60;
 
 export default function VerifyEmailPage() {
   const location = useLocation();
@@ -19,42 +22,41 @@ export default function VerifyEmailPage() {
   const [email, setEmail] = useState(
     state?.email ?? searchParams.get('email') ?? onboardingEmail ?? '',
   );
-  const [askEmail, setAskEmail] = useState(
-    !(state?.email ?? searchParams.get('email') ?? onboardingEmail),
-  );
   const [code, setCode] = useState('');
   const [info, setInfo] = useState<string | null>(state?.message ?? null);
   const [verified, setVerified] = useState(false);
   const [cooldown, setCooldown] = useState(0);
 
+  const [expiresAt, setExpiresAt] = useState<number | null>(() =>
+    email ? Date.now() + OTP_TTL_SECONDS * 1000 : null,
+  );
+  const [remaining, setRemaining] = useState<number | null>(() =>
+    email ? OTP_TTL_SECONDS : null,
+  );
+
   const verify = useVerifyEmail();
   const resend = useResendVerification();
 
+  // Count-down ticker for OTP expiry.
+  useEffect(() => {
+    if (expiresAt === null) return;
+    const tick = () => setRemaining(Math.max(0, Math.round((expiresAt - Date.now()) / 1000)));
+    tick();
+    const id = setInterval(tick, 1000);
+    return () => clearInterval(id);
+  }, [expiresAt]);
+
+  // Count-down for resend cooldown.
   useEffect(() => {
     if (cooldown <= 0) return;
-    const timer = window.setInterval(() => setCooldown((c) => c - 1), 1000);
-    return () => window.clearInterval(timer);
+    const id = setTimeout(() => setCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
   }, [cooldown]);
 
-  const submitEmail = () => {
-    if (!email.trim()) return;
-    setInfo('Sending a new verification code…');
-    resend.mutate(
-      { email },
-      {
-        onSuccess: () => {
-          setAskEmail(false);
-          setInfo('Enter the 6-digit code sent to your email.');
-        },
-        onError: (error) => setInfo(error.message),
-      },
-    );
-  };
-
   const submitCode = () => {
-    if (code.length < 6) return;
+    if (code.length < 6 || !email.trim()) return;
     verify.mutate(
-      { email, code },
+      { email: email.trim(), code },
       {
         onSuccess: (data) => {
           useAuthStore.getState().setSession(data);
@@ -70,17 +72,29 @@ export default function VerifyEmailPage() {
   };
 
   const resendCode = () => {
-    if (cooldown > 0) return;
+    if (cooldown > 0 || !email.trim()) return;
     resend.mutate(
-      { email },
+      { email: email.trim() },
       {
         onSuccess: () => {
+          const expiry = Date.now() + OTP_TTL_SECONDS * 1000;
+          setExpiresAt(expiry);
           setCooldown(60);
-          toast.success('Verification code sent.');
+          setRemaining(OTP_TTL_SECONDS);
+          setInfo(null);
+          toast.success('A fresh verification code has been sent.');
         },
         onError: (error) => toast.error(error.message),
       },
     );
+  };
+
+  const isExpired = remaining !== null && remaining === 0;
+
+  const formatTime = (secs: number) => {
+    const m = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
   };
 
   if (verified) {
@@ -110,79 +124,73 @@ export default function VerifyEmailPage() {
       subtitle="Check your inbox for a 6-digit verification code."
     >
       <div className="flex flex-col gap-4">
-        {askEmail ? (
-          <form
-            className="flex flex-col gap-4"
-            onSubmit={(event) => {
-              event.preventDefault();
-              submitEmail();
-            }}
-            noValidate
+        <Input
+          label="Email address"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+
+        {info ? (
+          <p className="auth-alert" role="status">
+            {info}
+          </p>
+        ) : null}
+
+        {isExpired ? (
+          <p className="auth-alert auth-alert--error" role="alert">
+            This code has expired. Request a new one below.
+          </p>
+        ) : null}
+
+        {verify.isError ? (
+          <p className="auth-alert auth-alert--error" role="alert">
+            {verify.error.message}
+          </p>
+        ) : null}
+
+        <OtpInputGroup
+          value={code}
+          onChange={setCode}
+          disabled={verify.isPending || resend.isPending || isExpired}
+          autoFocus
+        />
+
+        {remaining !== null && !isExpired ? (
+          <p className="auth-sub">Code expires in {formatTime(remaining)}</p>
+        ) : null}
+
+        <Button
+          type="button"
+          className="w-full"
+          isLoading={verify.isPending}
+          disabled={code.length < 6 || !email.trim() || isExpired}
+          onClick={submitCode}
+        >
+          Verify email
+        </Button>
+
+        <p className="auth-link-row">
+          Did not receive a code?{' '}
+          <button
+            type="button"
+            className="auth-link"
+            onClick={resendCode}
+            disabled={cooldown > 0 || resend.isPending || !email.trim()}
           >
-            <Input
-              label="Email address"
-              type="email"
-              autoComplete="email"
-              placeholder="you@example.com"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-            <Button type="submit" className="w-full" disabled={!email.trim()}>
-              Send verification code
-            </Button>
-          </form>
-        ) : (
-          <>
-            {info ? (
-              <p className="auth-alert" role="status">
-                {info}
-              </p>
-            ) : null}
+            {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
+          </button>
+        </p>
 
-            {verify.isError ? (
-              <p className="auth-alert auth-alert--error" role="alert">
-                {verify.error.message}
-              </p>
-            ) : null}
-
-            <OtpInputGroup
-              value={code}
-              onChange={setCode}
-              disabled={verify.isPending || resend.isPending}
-              autoFocus
-            />
-
-            <Button
-              type="button"
-              className="w-full"
-              isLoading={verify.isPending}
-              disabled={code.length < 6}
-              onClick={submitCode}
-            >
-              Verify email
-            </Button>
-
-            <p className="auth-link-row">
-              Did not receive a code?{' '}
-              <button
-                type="button"
-                className="auth-link"
-                onClick={resendCode}
-                disabled={cooldown > 0 || resend.isPending}
-              >
-                {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
-              </button>
-            </p>
-
-            <button
-              type="button"
-              className="auth-link auth-link--end"
-              onClick={() => setAskEmail(true)}
-            >
-              Use a different email
-            </button>
-          </>
-        )}
+        <button
+          type="button"
+          className="auth-link auth-link--end"
+          onClick={() => void navigate(ROUTES.LOGIN, { replace: true })}
+        >
+          Back to sign in
+        </button>
       </div>
     </AuthLayout>
   );

@@ -11,6 +11,7 @@ import type {
   OAuthCompleteCredentials,
   OAuthCredentials,
   OAuthLoginResult,
+  OAuthPendingResult,
   OAuthSignupCredentials,
 } from '../types';
 
@@ -42,21 +43,40 @@ function handleOAuthResult(
   setSession: (payload: LoginResponse) => void,
   navigate: ReturnType<typeof useNavigate>,
 ): void {
-  if ('data' in data) {
-    setSession(data);
+  // Backend returns AuthResponseDto for existing users, or OAuthPendingResultDto for new users,
+  // wrapped in the ApiSuccessResponse envelope ({ success: true, message, data: { ... } }).
+  const raw = data as any;
+  const inner = raw?.data ?? raw;
+
+  if (inner?.tokens && inner?.user) {
+    const sessionPayload: LoginResponse =
+      raw?.success && raw?.data
+        ? (raw as LoginResponse)
+        : {
+            success: true,
+            message: 'Signed in successfully.',
+            data: {
+              user: inner.user,
+              tokens: inner.tokens,
+            },
+          };
+    setSession(sessionPayload);
     void navigate(ROUTES.DASHBOARD, { replace: true });
     return;
   }
 
   // New identity: stash the pending token and continue onboarding at the
   // "what defines you best" step, resumable if the user leaves midway.
-  useOnboardingStore.getState().startOAuth({
-    pendingToken: data.pendingToken,
-    email: data.email,
-    name: data.name,
-    provider: data.provider,
-  });
-  void navigate(ROUTES.ONBOARDING, { replace: true });
+  const pending = (inner?.pendingToken ? inner : raw) as OAuthPendingResult;
+  if (pending?.pendingToken) {
+    useOnboardingStore.getState().startOAuth({
+      pendingToken: pending.pendingToken,
+      email: pending.email,
+      name: pending.name,
+      provider: pending.provider,
+    });
+    void navigate(ROUTES.ONBOARDING, { replace: true });
+  }
 }
 
 export function useOAuthLogin() {
@@ -75,7 +95,7 @@ export function useOAuthLogin() {
     const config = PROVIDER_CONFIG[provider];
     if (!config.clientId) {
       setFeedback(
-        `${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`,
+        `${provider} OAuth is not configured: add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`,
       );
       return;
     }
@@ -114,7 +134,7 @@ export function useOAuthSignup() {
     const config = PROVIDER_CONFIG[provider];
     if (!config.clientId) {
       setFeedback(
-        `${provider} OAuth is not configured — add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`,
+        `${provider} OAuth is not configured: add VITE_${provider.toUpperCase()}_CLIENT_ID to .env`,
       );
       return;
     }
@@ -145,8 +165,8 @@ export function useOAuthComplete() {
   return useMutation<LoginResponse, ApiError, OAuthCompleteCredentials>({
     mutationFn: (credentials) => authService.oauthComplete(credentials),
     onSuccess: (data) => {
-      resetOnboarding();
       setSession(data);
+      resetOnboarding();
       void navigate(ROUTES.DASHBOARD, { replace: true });
     },
   });

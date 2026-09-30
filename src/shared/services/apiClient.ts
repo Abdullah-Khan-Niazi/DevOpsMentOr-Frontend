@@ -82,8 +82,13 @@ async function rotateAccessToken(): Promise<string | null> {
 }
 
 function toApiError(error: AxiosError<ApiError>): ApiError {
+  const backendErrors = error.response?.data?.errors as Array<{ path: string; message: string }> | undefined;
+  const detailMsg = Array.isArray(backendErrors) && backendErrors.length > 0
+    ? backendErrors.map((e) => e.message).join(' ')
+    : undefined;
+
   return {
-    message: error.response?.data?.message ?? error.message ?? 'An unexpected error occurred',
+    message: detailMsg ?? error.response?.data?.message ?? error.message ?? 'An unexpected error occurred',
     statusCode: error.response?.status,
     errors: error.response?.data?.errors,
   };

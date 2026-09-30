@@ -17,11 +17,12 @@ export function useSessionValidator() {
 
       setUser({
         userId: user?.userId ?? me.userId,
-        username: user?.username ?? '',
+        username: me.username || user?.username || '',
         email: me.email,
         fullName: me.fullName,
-        status: user?.status ?? 'active',
-        isVerified: user?.isVerified ?? false,
+        status: me.status || user?.status || 'active',
+        isVerified: me.isVerified,
+        twoFactorEnabled: me.twoFactorEnabled,
         roles: me.roles,
         permissions: me.permissions,
       });

@@ -16,8 +16,8 @@ import type {
   SignupCredentials,
 } from '../../types';
 
-// Must match backend env.OTP_TTL_MINUTES (currently 2 minutes).
-const OTP_TTL_SECONDS = 120;
+// Must match backend env.OTP_TTL_MINUTES (default 15 minutes).
+const OTP_TTL_SECONDS = 15 * 60;
 
 const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
@@ -30,7 +30,7 @@ function slugify(value: string): string {
 }
 
 export interface StepProps {
-  onNext: () => void;
+  onNext?: () => void;
   onBack?: () => void;
   onDone?: () => void;
   onVerified?: (data: LoginResponse) => void;
@@ -147,7 +147,11 @@ export function CredentialsStep({ onNext, password = '', onPasswordChange }: Ste
 
   const submit = () => {
     const next: Record<string, string> = {};
-    if (username.trim().length < 3) next.username = 'Username must be at least 3 characters.';
+    if (username.trim().length < 3) {
+      next.username = 'Username must be at least 3 characters.';
+    } else if (!/^[a-zA-Z0-9_.-]+$/.test(username.trim())) {
+      next.username = 'Username can only contain letters, numbers, underscores, periods, and hyphens.';
+    }
     if (fullName.trim().length < 2) next.fullName = 'Full name is required.';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()))
       next.email = 'Enter a valid email address.';
@@ -349,7 +353,7 @@ export function InvitationStep({ onNext }: StepProps) {
   );
 }
 
-export function VerifyEmailStep({ onVerified, password = '' }: StepProps) {
+export function VerifyEmailStep({ onVerified, password = '', onBack }: StepProps) {
   const email = useOnboardingStore((s) => s.email) ?? '';
   const username = useOnboardingStore((s) => s.username) ?? '';
   const fullName = useOnboardingStore((s) => s.fullName) ?? '';
@@ -371,28 +375,50 @@ export function VerifyEmailStep({ onVerified, password = '' }: StepProps) {
     onSuccess: () => {
       setInfo(null);
       setExpiresAt(Date.now() + OTP_TTL_SECONDS * 1000);
+      setRemaining(OTP_TTL_SECONDS);
     },
-    onError: () => {
-      // Account may already exist (e.g. the user went back). Deliver a fresh code.
-      resend.mutate(
-        { email },
-        { onSuccess: () => setInfo(null), onError: (err) => setInfo(err.message) },
-      );
+    onError: (err) => {
+      // Do NOT auto-resend: the error could be 409 (email taken), meaning
+      // the user should go back and correct their details instead of receiving
+      // OTP codes for an unregistered address.
+      setInfo(err.message);
     },
   });
 
   useEffect(() => {
     if (started.current || !email || !password) return;
     started.current = true;
-    signup.mutate({
-      username,
-      email,
-      password,
-      fullName,
-      accountType,
-      organization: organization ?? undefined,
-      invitationCode: invitationCode ?? undefined,
-    });
+
+    let payload: SignupCredentials;
+    if (accountType === 'organization' && organization) {
+      payload = {
+        username: username.trim(),
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+        accountType: 'organization',
+        organization,
+      };
+    } else if (accountType === 'member' && invitationCode) {
+      payload = {
+        username: username.trim(),
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+        accountType: 'member',
+        invitationCode: invitationCode.trim(),
+      };
+    } else {
+      payload = {
+        username: username.trim(),
+        email: email.trim(),
+        password,
+        fullName: fullName.trim(),
+        accountType: 'individual',
+      };
+    }
+
+    signup.mutate(payload);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -428,9 +454,11 @@ export function VerifyEmailStep({ onVerified, password = '' }: StepProps) {
       { email },
       {
         onSuccess: () => {
-          setCooldown(30);
+          setCooldown(60);
           setExpiresAt(Date.now() + OTP_TTL_SECONDS * 1000);
-          toast.success('Verification code sent.');
+          setRemaining(OTP_TTL_SECONDS);
+          setInfo(null);
+          toast.success('A fresh verification code has been sent.');
         },
         onError: (err) => toast.error(err.message),
       },
@@ -441,30 +469,43 @@ export function VerifyEmailStep({ onVerified, password = '' }: StepProps) {
   const seconds = remaining % 60;
   const clock = `${minutes}:${seconds.toString().padStart(2, '0')}`;
 
+  const isExpired = remaining === 0;
+  const showTimer = remaining > 0;
+
   return (
     <div className="flex flex-col gap-4">
-      {signup.isPending ? (
-        <p className="auth-status">Creating your account…</p>
-      ) : null}
+      {signup.isPending ? <p className="auth-status">Creating your account...</p> : null}
       {info ? (
         <p className="auth-alert auth-alert--error" role="alert">
           {info}
         </p>
       ) : null}
-      <p className="auth-account-slug-preview">
-        We sent a 6-digit code to {email || 'your email'}.
-      </p>
-      <OtpInputGroup value={code} onChange={setCode} autoFocus />
-      <p className="auth-otp-timer" role="status">
-        {remaining > 0
-          ? `This code expires in ${clock}.`
-          : 'This code has expired. Request a new one below.'}
-      </p>
+      {!signup.isPending && !signup.isError ? (
+        <p className="auth-account-slug-preview">
+          We sent a 6-digit code to {email || 'your email'}.
+        </p>
+      ) : null}
+      <OtpInputGroup
+        value={code}
+        onChange={setCode}
+        autoFocus
+        disabled={verify.isPending || isExpired}
+      />
+      {showTimer ? (
+        <p className="auth-otp-timer" role="status">
+          {`Code expires in ${clock}.`}
+        </p>
+      ) : null}
+      {isExpired ? (
+        <p className="auth-otp-timer auth-alert--error" role="alert">
+          This code has expired. Request a new one below.
+        </p>
+      ) : null}
       <Button
         type="button"
         className="w-full"
         isLoading={verify.isPending}
-        disabled={code.length < 6}
+        disabled={code.length < 6 || isExpired}
         onClick={submitCode}
       >
         Verify email
@@ -473,10 +514,11 @@ export function VerifyEmailStep({ onVerified, password = '' }: StepProps) {
         type="button"
         className="auth-link auth-link--end"
         onClick={resendCode}
-        disabled={cooldown > 0}
+        disabled={cooldown > 0 || resend.isPending}
       >
         {cooldown > 0 ? `Resend in ${cooldown}s` : 'Resend code'}
       </button>
+      {null}
     </div>
   );
 }

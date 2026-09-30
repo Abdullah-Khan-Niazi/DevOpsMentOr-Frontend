@@ -1,5 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -17,10 +17,28 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
-// TWO_FACTOR_REQUIRED — backend demands a TOTP code: 403 with the exact
-// error code as message. The form switches to the 6-digit step and resubmits
-// credentials + code (single login call, no pending-token ceremony).
+// TWO_FACTOR_REQUIRED: backend returns 403 with this exact message when the
+// user has 2FA enabled but no TOTP code was supplied. The form switches to a
+// separate 6-digit step and re-submits credentials + code.
 const TWO_FACTOR_CODE = 'TWO_FACTOR_REQUIRED';
+
+/** Map backend error codes to user-facing messages. */
+function friendlyError(raw: string): string {
+  switch (raw) {
+    case 'INCORRECT_PASSWORD':
+      return 'Incorrect password. Please try again.';
+    case 'ACCOUNT_BANNED':
+      return 'Your account has been suspended. Contact support for help.';
+    case 'ACCOUNT_INACTIVE':
+      return 'Your account is inactive. Contact support to reactivate it.';
+    case 'ACCOUNT_NOT_VERIFIED':
+      return 'Please verify your email before signing in.';
+    case TWO_FACTOR_CODE:
+      return ''; // handled by the TOTP step — no inline error
+    default:
+      return raw;
+  }
+}
 
 export function LoginForm() {
   const navigate = useNavigate();
@@ -33,6 +51,15 @@ export function LoginForm() {
   const [totpCode, setTotpCode] = useState('');
   const [verifyCode, setVerifyCode] = useState('');
   const [credentials, setCredentials] = useState<LoginFormValues | null>(null);
+  // Capture email from the form so we still have it when login returns 403 NOT_VERIFIED
+  const [submittedEmail, setSubmittedEmail] = useState('');
+  const [resendCooldown, setResendCooldown] = useState(0);
+
+  useEffect(() => {
+    if (resendCooldown <= 0) return;
+    const id = setTimeout(() => setResendCooldown((c) => c - 1), 1000);
+    return () => clearTimeout(id);
+  }, [resendCooldown]);
 
   const {
     register,
@@ -50,10 +77,20 @@ export function LoginForm() {
   };
 
   const twoFactorRequired = isError && error.message === TWO_FACTOR_CODE;
-  const needsVerification = isSuccess && data ? !data.data.user.isVerified : false;
+
+  // Verification needed when login succeeded but the user is not yet verified,
+  // OR when the backend blocked login with ACCOUNT_NOT_VERIFIED (403).
+  const needsVerification =
+    (isSuccess && data ? !data.data.user.isVerified : false) ||
+    (isError && error.message === 'ACCOUNT_NOT_VERIFIED');
+
+  // Use the user email from the response when available, fall back to the
+  // submitted email so we can show the prompt even for the 403 case.
+  const emailForVerify = data?.data.user.email || submittedEmail;
 
   const onSubmit = (values: LoginFormValues) => {
     setCredentials(values);
+    setSubmittedEmail(values.email);
     doLogin(values);
   };
 
@@ -63,15 +100,21 @@ export function LoginForm() {
   };
 
   const submitVerification = () => {
-    if (verifyCode.length < 6 || !data) return;
+    if (verifyCode.length < 6 || !emailForVerify) return;
     verify.mutate(
-      { email: data.data.user.email, code: verifyCode },
+      { email: emailForVerify, code: verifyCode },
       {
         onSuccess: (response) => {
           setSession(response);
-          void navigate(redirectTo(), { replace: true });
+          const perms = response.data.user.permissions ?? [];
+          const redirect = redirectTo();
+          if (perms.includes('platform.admin.access') && redirect === ROUTES.DASHBOARD) {
+            void navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
+          } else {
+            void navigate(redirect, { replace: true });
+          }
         },
-        onError: (err) => toast.error(err.message),
+        onError: (err) => toast.error(friendlyError(err.message)),
       },
     );
   };
@@ -82,24 +125,26 @@ export function LoginForm() {
   };
 
   const resendLoginCode = () => {
-    if (!data) return;
+    if (!emailForVerify || resendCooldown > 0) return;
     resend.mutate(
-      { email: data.data.user.email },
+      { email: emailForVerify },
       {
-        onSuccess: () => toast.success('Verification code sent.'),
+        onSuccess: () => {
+          setResendCooldown(60);
+          toast.success('A fresh verification code has been sent.');
+        },
         onError: (err) => toast.error(err.message),
       },
     );
   };
 
-  const showTotp = twoFactorRequired;
-
-  if (needsVerification && data) {
+  // ── Unverified email step ────────────────────────────────────────────────
+  if (needsVerification) {
     return (
       <div className="flex flex-col gap-6">
         <p className="auth-sub">
           Verify your email to secure your account. We sent a 6-digit code to{' '}
-          {data.data.user.email}.
+          <strong>{emailForVerify}</strong>.
         </p>
 
         <div className="flex flex-col gap-4">
@@ -112,7 +157,7 @@ export function LoginForm() {
 
           {verify.isError ? (
             <p className="auth-alert auth-alert--error" role="alert">
-              {verify.error.message}
+              {friendlyError(verify.error.message)}
             </p>
           ) : null}
 
@@ -128,27 +173,31 @@ export function LoginForm() {
 
           <button
             type="button"
-            className="auth-link auth-link--end"
-            onClick={() => void navigate(redirectTo(), { replace: true })}
-            disabled={verify.isPending}
+            className="auth-link"
+            onClick={resendLoginCode}
+            disabled={verify.isPending || resend.isPending || resendCooldown > 0}
           >
-            Verify later
+            {resendCooldown > 0 ? `Resend in ${resendCooldown}s` : 'Resend code'}
           </button>
 
           <button
             type="button"
-            className="auth-link"
-            onClick={resendLoginCode}
-            disabled={verify.isPending || resend.isPending}
+            className="auth-link auth-link--end"
+            onClick={() => {
+              setVerifyCode('');
+              reset();
+            }}
+            disabled={verify.isPending}
           >
-            Resend code
+            Back to sign in
           </button>
         </div>
       </div>
     );
   }
 
-  if (showTotp && credentials) {
+  // ── Two-factor step ──────────────────────────────────────────────────────
+  if (twoFactorRequired && credentials) {
     return (
       <div className="flex flex-col gap-6">
         <p className="auth-sub">Enter the 6-digit code from your authenticator app.</p>
@@ -163,7 +212,7 @@ export function LoginForm() {
 
           {isError && !twoFactorRequired ? (
             <p className="auth-alert auth-alert--error" role="alert">
-              {error.message}
+              {friendlyError(error.message)}
             </p>
           ) : null}
 
@@ -190,6 +239,7 @@ export function LoginForm() {
     );
   }
 
+  // ── Main credential form ─────────────────────────────────────────────────
   return (
     <div className="flex flex-col gap-6">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
@@ -215,9 +265,9 @@ export function LoginForm() {
           </Link>
         </div>
 
-        {isError ? (
+        {isError && !twoFactorRequired && !needsVerification ? (
           <p className="auth-alert auth-alert--error" role="alert">
-            {error.message}
+            {friendlyError(error.message)}
           </p>
         ) : null}
 
