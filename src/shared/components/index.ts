@@ -1,7 +1,7 @@
 export { Button, type ButtonProps } from './Button';
 export { Card, type CardProps } from './Card';
 export { Logo, SiteLogo } from './Logo';
-export { Icon, iconNames, type IconName } from './Icon';
+export { Icon, iconNames, type IconName, GoogleIcon, GitHubIcon } from './Icon';
 export { Input, type InputProps } from './Input';
 export { PasswordInput, type PasswordInputProps } from './PasswordInput';
 export { Modal } from './Modal';

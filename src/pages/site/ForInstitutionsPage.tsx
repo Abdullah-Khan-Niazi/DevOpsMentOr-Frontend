@@ -10,15 +10,27 @@ import './ForInstitutionsPage.css';
 const OPERATIONAL_PILLARS: SiteSpineItem[] = [
   {
     label: 'Tenant isolation',
-    description: 'Dedicated namespace, database schema segmentation, independent resource caps',
+    description: 'Dedicated Kubernetes namespace, database schema segmentation, and independent cgroup resource caps per cohort.',
   },
   {
-    label: 'Instructor tooling',
-    description: 'Progress dashboards, assertion pass rates, common error trend analytics',
+    label: 'Instructor telemetry',
+    description: 'Real-time progress dashboards, automated assertion pass rates, common error diagnostics, and stuck student alerts.',
+  },
+  {
+    label: 'LMS gradebook sync',
+    description: 'Turnkey Canvas, Blackboard, and Moodle LTI 1.3 integration with automated, objective grade sync upon lab completion.',
+  },
+  {
+    label: 'Cheating prevention',
+    description: 'Live kernel socket, filesystem, and syscall evaluation replaces static text checking, preventing copy-paste script abuse.',
   },
   {
     label: 'Curriculum control',
-    description: 'Shared module repository with institution-specific assignment tracking',
+    description: '15 production modules ready to deploy, with full support for department-specific assignments and custom track sequencing.',
+  },
+  {
+    label: 'Fixed academic pricing',
+    description: 'Predictable semester-based billing with zero cloud surcharge or AWS bill shock. Labs run entirely in modern web browsers.',
   },
 ];
 
@@ -160,10 +172,12 @@ export default function ForInstitutionsPage() {
           <section className="inst-header-section" aria-labelledby="inst-headline">
             <div className="site-container">
               <div className="site-reveal" ref={headerRevealRef}>
-                <p className="inst-eyebrow">FOR UNIVERSITY PROGRAMS</p>
                 <h1 id="inst-headline" className="inst-headline">
                   Standardized DevOps labs, without the infrastructure overhead.
                 </h1>
+                <p className="inst-subhead">
+                  Eliminate &ldquo;works on my machine&rdquo; during lab sessions. Enable faculty to run browser-based Linux, Docker, and Kubernetes environments with automated grading and live cohort telemetry.
+                </p>
               </div>
             </div>
           </section>
@@ -178,7 +192,7 @@ export default function ForInstitutionsPage() {
           </section>
         </div>
 
-        {/* ── §5.7.3 Three Operational Pillars (--color-bg-base) ──────────── */}
+        {/* ── §5.7.3 Operational Pillars (--color-bg-base) ────────────────── */}
         <section
           className="inst-pillars-section site-section--base"
           aria-label="Operational pillars"
@@ -197,11 +211,10 @@ export default function ForInstitutionsPage() {
         >
           <div className="site-container inst-cta-inner">
             <div className="site-reveal" ref={ctaRevealRef}>
-              {/* Standalone CTA per correction #1 — restraint suits the decision-maker audience */}
               <Link
                 to={`${ROUTES.CONTACT}?inquiry=institution`}
                 className="inst-cta-link"
-                aria-label="Discuss institutional access — opens contact form pre-filled for institutions"
+                aria-label="Discuss institutional access: opens contact form pre-filled for institutions"
               >
                 <Button variant="primary" withArrow size="md">
                   Discuss institutional access

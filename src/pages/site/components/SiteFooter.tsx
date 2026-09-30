@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLogo } from '@/shared/components/Logo';
+import { GitHubIcon } from '@/shared/components';
 import './SiteFooter.css';
 
 // §3.2 — Grounded Footer
@@ -92,9 +93,10 @@ export function SiteFooter() {
             target="_blank"
             rel="noopener noreferrer"
             className="site-footer__social-link"
-            aria-label="GitHub"
+            aria-label="GitHub repository"
+            title="GitHub"
           >
-            GH
+            <GitHubIcon width={18} height={18} />
           </a>
         </div>
       </div>

@@ -138,17 +138,17 @@
 }
 
 .site-footer__social-link {
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   color: var(--color-text-tertiary);
   text-decoration: none;
-  letter-spacing: var(--tracking-wide);
-  transition: color var(--duration-fast) var(--ease-standard);
+  transition: color var(--duration-fast) var(--ease-standard), transform var(--duration-fast) var(--ease-standard);
 }
 
 .site-footer__social-link:hover {
-  color: var(--color-accent-500);
+  color: var(--ink);
+  transform: translateY(-1px);
 }
 
 /* ─── Responsive ──────────────────────────────────────────────────────────── */
