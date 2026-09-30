@@ -1,5 +1,5 @@
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Button, Input, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth';

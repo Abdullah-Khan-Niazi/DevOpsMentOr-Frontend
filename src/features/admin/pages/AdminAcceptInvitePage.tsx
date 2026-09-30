@@ -96,9 +96,9 @@ export default function AdminAcceptInvitePage() {
           <Button
             type="button"
             className="w-full"
-            onClick={() => void navigate(ROUTES.ADMIN_LOGIN)}
+            onClick={() => void navigate(ROUTES.LOGIN)}
           >
-            Go to admin sign in
+            Go to sign in
           </Button>
         </div>
       </AuthLayout>
