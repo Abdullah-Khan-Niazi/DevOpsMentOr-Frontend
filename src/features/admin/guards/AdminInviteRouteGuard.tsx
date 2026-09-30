@@ -22,7 +22,7 @@ export function AdminInviteRouteGuard() {
   const user = useAuthStore((state) => state.user);
 
   if (!isAuthenticated) {
-    return <Navigate to={ROUTES.ADMIN_LOGIN} replace />;
+    return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   if (!user?.permissions) {

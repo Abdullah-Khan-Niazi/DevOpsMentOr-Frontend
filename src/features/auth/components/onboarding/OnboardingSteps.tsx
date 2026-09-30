@@ -81,7 +81,7 @@ export function AccountTypeStep({ onNext }: StepProps) {
 
   const submit = () => {
     setAccountType(value);
-    onNext();
+    onNext?.();
   };
 
   return (
@@ -161,7 +161,7 @@ export function CredentialsStep({ onNext, password = '', onPasswordChange }: Ste
     if (Object.keys(next).length > 0) return;
 
     setCredentials(email.trim(), username.trim(), fullName.trim());
-    onNext();
+    onNext?.();
   };
 
   return (
@@ -263,7 +263,7 @@ export function OrganizationStep({ onNext }: StepProps) {
       billingEmail: billing.trim() || undefined,
     };
     setOrganization(organization);
-    onNext();
+    onNext?.();
   };
 
   return (
@@ -330,7 +330,7 @@ export function InvitationStep({ onNext }: StepProps) {
       return;
     }
     setInvitationCode(code.trim());
-    onNext();
+    onNext?.();
   };
 
   return (
@@ -353,7 +353,7 @@ export function InvitationStep({ onNext }: StepProps) {
   );
 }
 
-export function VerifyEmailStep({ onVerified, password = '', onBack }: StepProps) {
+export function VerifyEmailStep({ onVerified, password = '', onBack: _onBack }: StepProps) {
   const email = useOnboardingStore((s) => s.email) ?? '';
   const username = useOnboardingStore((s) => s.username) ?? '';
   const fullName = useOnboardingStore((s) => s.fullName) ?? '';
