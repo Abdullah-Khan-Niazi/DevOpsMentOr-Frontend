@@ -41,7 +41,7 @@ const REFERENCE = [
   {
     title: 'Module catalog',
     meta: 'All 15 modules, indexed',
-    to: ROUTES.MODULE_CATALOG,
+    to: ROUTES.CURRICULUM,
     label: 'Browse',
   },
   {

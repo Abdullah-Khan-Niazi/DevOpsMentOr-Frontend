@@ -7,7 +7,7 @@ import { ProductFrame } from './components/ProductFrame';
 import './HowItWorksPage.css';
 
 // ─── §6.2 useScrollSpy ────────────────────────────────────────────────────────
-// Custom IntersectionObserver hook — no library.
+// Custom IntersectionObserver hook: no third-party library dependencies.
 // Returns the 0-based index of the step currently most visible in the viewport.
 // Fires once per crossing threshold; does not replay on re-entry of the same element.
 function useScrollSpy(stepRefs: React.RefObject<HTMLElement | null>[]): number {
@@ -30,7 +30,7 @@ function useScrollSpy(stepRefs: React.RefObject<HTMLElement | null>[]): number {
         });
         if (found !== -1) setActiveIndex(found);
       },
-      // rootMargin: top 10% and bottom 40% dead zones — active step tracks
+      // rootMargin: top 10% and bottom 40% dead zones: active step tracks
       // what's in the readable center of the viewport, not just any intersection.
       { threshold: 0.5, rootMargin: '-10% 0px -40% 0px' },
     );
@@ -47,57 +47,57 @@ function useScrollSpy(stepRefs: React.RefObject<HTMLElement | null>[]): number {
 }
 
 // ─── Step data ────────────────────────────────────────────────────────────────
-// Mechanism-focused copy per §2.3 — each headline states a mechanism; each body
+// Mechanism-focused copy per §2.3: each headline states a mechanism; each body
 // adds one fact. No filler.
 const STEPS = [
   {
     id: 'step-01',
     num: '01',
-    eyebrow: 'AUTHENTICATE',
+    phase: 'Authentication',
     heading: 'Your session is verified before any lab resource is allocated.',
     body: 'JWT tokens are validated by the API Gateway before a request reaches the lab provisioner, ensuring isolated billing and audit trails per user.',
   },
   {
     id: 'step-02',
     num: '02',
-    eyebrow: 'PROVISION',
+    phase: 'Provisioning',
     heading: 'A dedicated namespace is created on the shared cluster in under 90 seconds.',
     body: 'The Lab Provisioner Service applies a tenant-scoped Kubernetes manifest, spinning up ephemeral pods with non-root privileges and resource caps.',
   },
   {
     id: 'step-03',
     num: '03',
-    eyebrow: 'CONNECT',
+    phase: 'Connection',
     heading: 'A terminal session is opened directly in your browser.',
-    body: 'WebSocket tunnels your input to the running container — no local Docker installation, no port forwarding, no dependency conflicts.',
+    body: 'WebSocket tunnels your input to the running container: no local Docker installation, no port forwarding, no dependency conflicts.',
   },
   {
     id: 'step-04',
     num: '04',
-    eyebrow: 'PERSIST',
+    phase: 'Persistence',
     heading: 'Lab state is backed by a dedicated database schema and Redis session cache.',
     body: 'Each tenant writes to an isolated schema; Redis holds active session state so reconnections resume without data loss.',
   },
   {
     id: 'step-05',
     num: '05',
-    eyebrow: 'EXECUTE',
+    phase: 'Execution',
     heading: 'Your commands run against real Kubernetes primitives, not a simulator.',
-    body: 'Deployments, services, config maps, and RBAC policies behave exactly as they do in production clusters — the same APIs, the same error messages.',
+    body: 'Deployments, services, config maps, and RBAC policies behave exactly as they do in production clusters: the same APIs, the same error messages.',
   },
   {
     id: 'step-06',
     num: '06',
-    eyebrow: 'EVALUATE',
-    heading: 'Assertions run the moment you act — no waiting for manual grading.',
+    phase: 'Evaluation',
+    heading: 'Assertions run the moment you act, with zero waiting for manual grading.',
     body: 'The Grading Service subscribes to lab events and evaluates assertions against the live cluster state, returning pass/fail within seconds.',
   },
   {
     id: 'step-07',
     num: '07',
-    eyebrow: 'GUIDE',
+    phase: 'Guidance',
     heading: 'If an assertion fails, the AI Mentor pipeline produces a guardrailed hint.',
-    body: 'Telemetry, context, and guardrails feed a constrained LLM prompt that returns directional guidance — never the answer itself.',
+    body: 'Telemetry, context, and guardrails feed a constrained LLM prompt that returns directional guidance: never the answer itself.',
   },
 ] as const;
 
@@ -190,7 +190,7 @@ function AuthApiVisual() {
 
 // Step 3: Browser → WebSocket relay → Container node diagram.
 // RULING (v6 §8 checklist): the app-window Product Frame (terminal) is
-// restricted to exactly two canonical locations sitewide — the Product
+// restricted to exactly two canonical locations sitewide: the Product
 // Showcase Lab Terminal tab (§5.1.3) and the AI Mentor callout (§5.3.3).
 // Step 3 therefore renders in the §3.5 node-graph language, NOT Product
 // Frame chrome. Mirrors the auth visual (source accent, dimmed destinations,
@@ -205,7 +205,7 @@ function ConnectVisual() {
       role="img"
       aria-label="Browser to container WebSocket connection diagram"
     >
-      {/* Browser node — source, accent */}
+      {/* Browser node: source, accent */}
       <circle
         cx="56"
         cy="80"
@@ -226,7 +226,7 @@ function ConnectVisual() {
         Browser
       </text>
 
-      {/* WS relay node — centre, dimmed */}
+      {/* WS relay node: centre, dimmed */}
       <circle
         cx="160"
         cy="80"
@@ -247,7 +247,7 @@ function ConnectVisual() {
         WS
       </text>
 
-      {/* Container node — destination, dimmed */}
+      {/* Container node: destination, dimmed */}
       <circle
         cx="264"
         cy="80"
@@ -324,7 +324,7 @@ function ConnectVisual() {
   );
 }
 
-// Step 4: DB/cache node pair — rect-style nodes to differentiate from auth circles.
+// Step 4: DB/cache node pair: rect-style nodes to differentiate from auth circles.
 function DbCacheVisual() {
   return (
     <svg
@@ -395,7 +395,7 @@ function DbCacheVisual() {
   );
 }
 
-// Step 5: Hexagon cluster motif — static, one node highlighted, others dimmed.
+// Step 5: Hexagon cluster motif: static, one node highlighted, others dimmed.
 // Shared visual language with Curriculum page hexagon cluster (§5.2.2 background texture).
 function HexClusterVisual() {
   const hexPoints = (cx: number, cy: number, r: number) => {
@@ -462,7 +462,7 @@ function HexClusterVisual() {
 }
 
 // Steps 6–7: 5-node horizontal AI Mentor flow.
-// ASSUMPTION: step 6 highlights 'guardrails', step 7 highlights 'response' — not explicitly
+// ASSUMPTION: step 6 highlights 'guardrails', step 7 highlights 'response' (not explicitly
 // specified in contract. Chosen to show the guardrail check (step 6 = evaluation) then
 // the final response delivery (step 7 = guide). Revise if team lead specifies otherwise.
 const AI_FLOW_NODES = ['Telemetry', 'Context', 'Guardrails', 'LLM', 'Response'] as const;
@@ -479,7 +479,7 @@ function AiMentorFlowVisual({ activeNode }: { activeNode: AiNode }) {
       xmlns="http://www.w3.org/2000/svg"
       className="hiw-step-svg"
       role="img"
-      aria-label={`AI Mentor pipeline flow — active node: ${activeNode}`}
+      aria-label={`AI Mentor pipeline flow: active node: ${activeNode}`}
     >
       {AI_FLOW_NODES.map((node, i) => {
         const cx = 20 + i * nodeSpacing;
@@ -541,10 +541,10 @@ function StepVisual({ stepIndex }: { stepIndex: number }) {
     case 4:
       return <HexClusterVisual />;
     case 5:
-      // ASSUMPTION: step 6 highlights 'guardrails' — see AiMentorFlowVisual comment above.
+      // ASSUMPTION: step 6 highlights 'guardrails': see AiMentorFlowVisual comment above.
       return <AiMentorFlowVisual activeNode="Guardrails" />;
     case 6:
-      // ASSUMPTION: step 7 highlights 'response' — see AiMentorFlowVisual comment above.
+      // ASSUMPTION: step 7 highlights 'response': see AiMentorFlowVisual comment above.
       return <AiMentorFlowVisual activeNode="Response" />;
     default:
       return null;
@@ -599,7 +599,7 @@ function TerminalHint() {
 export default function HowItWorksPage() {
   const isDesktop = useMediaQuery('(min-width: 1024px)');
 
-  // 7 step refs declared individually — hooks must not be called inside loops.
+  // 7 step refs declared individually: hooks must not be called inside loops.
   // One ref per step, collected into an array for useScrollSpy.
   const stepRef0 = useRef<HTMLElement | null>(null);
   const stepRef1 = useRef<HTMLElement | null>(null);
@@ -648,7 +648,7 @@ export default function HowItWorksPage() {
           >
             {/* LEFT: Scrollable step list */}
             <div className="hiw-step-list" role="list">
-              {/* Vertical flow line — drawn progressively per activeStep */}
+              {/* Vertical flow line: drawn progressively per activeStep */}
               {isDesktop && (
                 <div className="hiw-flow-line" aria-hidden="true">
                   <div className="hiw-flow-line__track" />
@@ -668,9 +668,9 @@ export default function HowItWorksPage() {
                   role="listitem"
                 >
                   <p className="hiw-step__eyebrow">
-                    <span className="hiw-step__num">{step.num}</span>
-                    {' — '}
-                    {step.eyebrow}
+                    <span className="hiw-step__num">Step {step.num}</span>
+                    <span className="hiw-step__sep">:</span>
+                    <span className="hiw-step__phase">{step.phase}</span>
                   </p>
                   <h2 className="hiw-step__heading">{step.heading}</h2>
                   <p className="hiw-step__body">{step.body}</p>
@@ -712,23 +712,22 @@ export default function HowItWorksPage() {
         >
           <div className="site-container">
             <div className="site-reveal" ref={guardRailsRevealRef}>
-              <p className="hiw-guardrails-eyebrow">GUARDRAILS</p>
               <h2 id="hiw-guardrails-headline" className="hiw-guardrails-headline">
                 Hints, not answers.
               </h2>
               <p className="hiw-guardrails-body">
                 When an assertion fails, the AI Mentor pipeline receives your terminal output, lab
                 context, and a guardrail ruleset that prohibits direct solutions. The resulting hint
-                is directional — it names the mechanism, not the fix — so understanding transfers to
-                production work, not just this exercise.
+                is directional: it names the mechanism rather than dictating the fix, ensuring
+                understanding transfers directly to production work.
               </p>
 
-              {/* ProductFrame — error state → hint state on hover */}
+              {/* ProductFrame: error state -> hint state on hover */}
               <div
                 className="hiw-guardrails-frame-wrapper"
                 onMouseEnter={() => setGuardHovered(true)}
                 onMouseLeave={() => setGuardHovered(false)}
-                aria-label="AI Mentor terminal demo — hover to see guardrailed hint"
+                aria-label="AI Mentor terminal demo: hover to see guardrailed hint"
               >
                 {/* Error state */}
                 <div
@@ -736,7 +735,7 @@ export default function HowItWorksPage() {
                     guardHovered ? 'hiw-guardrails-frame-state--hidden' : ''
                   }`}
                 >
-                  <ProductFrame label="bash — devopsmentor">
+                  <ProductFrame label="bash: devopsmentor">
                     <TerminalError />
                   </ProductFrame>
                 </div>
@@ -748,7 +747,7 @@ export default function HowItWorksPage() {
                   }`}
                   aria-live="polite"
                 >
-                  <ProductFrame label="bash — devopsmentor">
+                  <ProductFrame label="bash: devopsmentor">
                     <TerminalHint />
                   </ProductFrame>
                 </div>
@@ -767,7 +766,7 @@ export default function HowItWorksPage() {
               <Link
                 to="/curriculum"
                 className="hiw-cta-link"
-                aria-label="Explore the curriculum — opens curriculum page"
+                aria-label="Explore the curriculum"
               >
                 <Button variant="primary" withArrow size="lg">
                   Explore the curriculum

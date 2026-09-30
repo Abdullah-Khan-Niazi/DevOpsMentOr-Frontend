@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { Route, Routes } from 'react-router-dom';
+import { Route, Routes, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/features/auth';
 import { AdminShell, AppShell, LoadingState } from '@/shared/components';
 import { PermissionRouteGuard } from '@/shared/guards';
@@ -145,8 +145,6 @@ const NotFoundPage = lazy(() => import('@/pages/site/NotFoundPage'));
 // ─── Secondary site pages (footer destinations) ──────────────────────────────
 const CareersPage = lazy(() => import('@/pages/site/CareersPage'));
 const DocumentationPage = lazy(() => import('@/pages/site/DocumentationPage'));
-const ModuleCatalogPage = lazy(() => import('@/pages/site/ModuleCatalogPage'));
-const LearningPathPage = lazy(() => import('@/pages/site/LearningPathPage'));
 const InstructorToolsPage = lazy(() => import('@/pages/site/InstructorToolsPage'));
 const PrivacyPage = lazy(() => import('@/pages/site/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/site/TermsPage'));
@@ -1172,19 +1170,11 @@ export function AppRoutes() {
       />
       <Route
         path={ROUTES.MODULE_CATALOG}
-        element={
-          <LazyPage>
-            <ModuleCatalogPage />
-          </LazyPage>
-        }
+        element={<Navigate to={ROUTES.CURRICULUM} replace />}
       />
       <Route
         path={ROUTES.LEARNING_PATH}
-        element={
-          <LazyPage>
-            <LearningPathPage />
-          </LazyPage>
-        }
+        element={<Navigate to={ROUTES.CURRICULUM} replace />}
       />
       <Route
         path={ROUTES.INSTRUCTOR_TOOLS}

@@ -1,564 +1,754 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
-import { Button } from '@/shared/components';
-import { ProductFrame } from './components/ProductFrame';
-import { SiteAccordion } from './components/SiteAccordion';
-import { FAQ_CATEGORIES, MODULES } from './siteData';
+import { Button, GoogleIcon, GitHubIcon } from '@/shared/components';
 import {
   useInView,
-  useMediaQuery,
-  useParallaxPlane,
   useReducedMotion,
   useScrollReveal,
 } from './hooks';
 import './HomePage.css';
+import loopSvg from '@/assets/hero/loop.svg';
+import serverSvg from '@/assets/hero/server.svg';
+import terminalSvg from '@/assets/hero/terminal.svg';
+import containersSvg from '@/assets/hero/containers.svg';
+import k8Svg from '@/assets/hero/k8.svg';
+import cloud1Svg from '@/assets/hero/cloud-1.svg';
+import cloud2Svg from '@/assets/hero/cloud-2.svg';
+import cloud3Svg from '@/assets/hero/cloud-3.svg';
 
-// ─── Data ──────────────────────────────────────────────────────────────────────
-// Canonical 15-module curriculum lives in ./siteData (shared with Curriculum).
+// 3D Isometric Module Icons
+import linux3d from '@/assets/3D-icons/linux.svg';
+import git3d from '@/assets/3D-icons/git.svg';
+import apt3d from '@/assets/3D-icons/apt.svg';
+import droplet3d from '@/assets/3D-icons/droplet.svg';
+import repo3d from '@/assets/3D-icons/repository-manager.svg';
+import docker3d from '@/assets/3D-icons/docker.svg';
+import jenkins3d from '@/assets/3D-icons/jenkins.svg';
+import aws3d from '@/assets/3D-icons/aws.svg';
+import k8s3d from '@/assets/3D-icons/kubernetes.svg';
+import eks3d from '@/assets/3D-icons/eks.svg';
+import terraform3d from '@/assets/3D-icons/terraform.svg';
+import python3d from '@/assets/3D-icons/python.svg';
+import pythonAuto3d from '@/assets/3D-icons/automation-with-python.svg';
+import ansible3d from '@/assets/3D-icons/ansible.svg';
+import prometheus3d from '@/assets/3D-icons/prometheus.svg';
 
-const HERO_LABS = ['Pod Affinity Rules', 'ConfigMap Injection', 'Ingress Rules'] as const;
-
-// ─── §5.1.1 live lab loop ─────────────────────────────────────────────────────
-// 9-second seamless loop: running lab's assertion ticks 2/5 → 4/5 → 5/5, flips to
-// Complete with a 600ms accent underline sweep, then cross-fades (400ms) to the
-// next queued lab becoming running. Pauses on prefers-reduced-motion → static
-// final state (everything Complete except the last queued lab).
-const LOOP_TOTAL_MS = 9000;
-type LoopPhase = 'count-2' | 'count-4' | 'count-5' | 'sweep' | 'hold' | 'crossfade' | 'settle';
-type LabStatus = 'running' | 'complete' | 'queued';
-
-function phaseAt(t: number): LoopPhase {
-  if (t < 2000) return 'count-2';
-  if (t < 4000) return 'count-4';
-  if (t < 5500) return 'count-5';
-  if (t < 6100) return 'sweep';
-  if (t < 7600) return 'hold';
-  if (t < 8000) return 'crossfade';
-  return 'settle';
-}
-
-interface LabLoopState {
-  phase: LoopPhase;
-  statuses: LabStatus[];
-  hints: number;
-}
-
-function useLabLoop(labCount: number, enabled: boolean, startDelay = 0): LabLoopState {
-  const reduced = useReducedMotion();
-  const [phase, setPhase] = useState<LoopPhase>(() => (reduced ? 'hold' : 'count-2'));
-  const [statuses, setStatuses] = useState<LabStatus[]>(() =>
-    Array.from({ length: labCount }, (_, i) => {
-      if (reduced) return i < labCount - 1 ? 'complete' : 'queued';
-      if (i === 0) return 'running';
-      if (i === 1) return 'complete';
-      return 'queued';
-    }),
-  );
-  const [hints, setHints] = useState(2);
-  const runningRef = useRef(0);
-  // Phase applied on the last tick — guards one-shot transitions so they fire
-  // exactly once per loop cycle (updaters must stay pure: React dev-mode
-  // StrictMode double-invokes them).
-  const lastPhaseRef = useRef<LoopPhase>('count-2');
-
-  useEffect(() => {
-    if (reduced || !enabled) return;
-
-    const intervalId: { current: number | null } = { current: null };
-    const delayId = window.setTimeout(() => {
-      const start = performance.now();
-      intervalId.current = window.setInterval(() => {
-        const t = (performance.now() - start) % LOOP_TOTAL_MS;
-        const next = phaseAt(t);
-
-        if (lastPhaseRef.current !== next) {
-          if (next === 'sweep') {
-            const idx = runningRef.current;
-            setStatuses((s) => s.map((st, i) => (i === idx ? 'complete' : st)));
-            setHints((h) => h + 1);
-          } else if (next === 'crossfade') {
-            const nxt = (runningRef.current + 1) % labCount;
-            runningRef.current = nxt;
-            setStatuses((s) => s.map((st, i) => (i === nxt ? 'running' : st)));
-          }
-          lastPhaseRef.current = next;
-        }
-
-        setPhase((prev) => (prev === next ? prev : next));
-      }, 150);
-    }, startDelay);
-
-    return () => {
-      window.clearTimeout(delayId);
-      if (intervalId.current !== null) window.clearInterval(intervalId.current);
-    };
-  }, [reduced, enabled, labCount, startDelay]);
-
-  return { phase, statuses, hints };
-}
-
-function assertionFor(phase: LoopPhase): number {
-  if (phase === 'count-4') return 4;
-  if (phase === 'count-5' || phase === 'sweep' || phase === 'hold') return 5;
-  return 2;
-}
-
-// ─── Dashboard building blocks ─────────────────────────────────────────────────
-
-function DashboardRow({
-  name,
-  status,
-  subline,
-  sweeping,
-  entering,
-}: {
+// ─── 15 Module Roadmap Checkpoints (3-Row Serpentine Path) ───────────────────
+export interface RoadmapModule {
+  num: string;
   name: string;
-  status: LabStatus;
-  subline?: string;
-  sweeping?: boolean;
-  entering?: boolean;
-}) {
-  return (
-    <div
-      className={[
-        'hp-dash-row',
-        `hp-dash-row--${status}`,
-        sweeping ? 'hp-dash-row--sweeping' : '',
-        entering ? 'hp-dash-row--entering' : '',
-      ]
-        .filter(Boolean)
-        .join(' ')}
-    >
-      <span className="hp-dash-row__name">{name}</span>
-      <span className="hp-dash-row__status">{status}</span>
-      {subline && <span className="hp-dash-row__sub">{subline}</span>}
-      {sweeping && <span className="hp-dash-row__sweep" key={name} />}
-    </div>
-  );
+  condensedName: string;
+  icon: string;
+  slide: number;
+  xPct: number;
+  yPct: number;
 }
 
-function ModuleProgressHeader() {
-  return (
-    <div className="hp-dash__header">
-      <div className="hp-dash__title-row">
-        <span className="hp-dash__module">Module 09 — Kubernetes</span>
-        <span className="hp-dash__pct">73%</span>
-      </div>
-      <div className="hp-dash__bar" aria-hidden="true">
-        <span className="hp-dash__bar-fill" />
-      </div>
-    </div>
-  );
-}
+export const ROADMAP_MODULES: RoadmapModule[] = [
+  // Row 1: Left -> Right (y = 16.67%)
+  { num: '01', name: 'Operating Systems and Linux Fundamentals', condensedName: 'Linux', icon: linux3d, slide: 1, xPct: 10.71, yPct: 16.67 },
+  { num: '02', name: 'Version Control Systems and Git', condensedName: 'Git', icon: git3d, slide: 2, xPct: 29.17, yPct: 16.67 },
+  { num: '03', name: 'Build Tools and Package Managers', condensedName: 'Package Managers', icon: apt3d, slide: 3, xPct: 47.62, yPct: 16.67 },
+  { num: '04', name: 'Artifact Repository Management', condensedName: 'Repo Manager', icon: repo3d, slide: 4, xPct: 66.07, yPct: 16.67 },
+  { num: '05', name: 'Cloud Computing and IaaS', condensedName: 'DigitalOcean', icon: droplet3d, slide: 5, xPct: 84.52, yPct: 16.67 },
 
-// The live lab queue — hero (3 rows) and Product Showcase (with rail + footer).
-function LabQueue({
-  loop,
-  staticRows = [],
-  showFooter = false,
-  showRail = false,
-}: {
-  loop: LabLoopState;
-  staticRows?: Array<{ name: string; status: LabStatus }>;
-  showFooter?: boolean;
-  showRail?: boolean;
-}) {
-  const { phase, statuses } = loop;
-  const runningAssertion = assertionFor(phase);
-  const completing = phase === 'sweep' || phase === 'hold';
+  // Row 2: Right -> Left (y = 50.00%)
+  { num: '06', name: 'Containers with Docker', condensedName: 'Docker', icon: docker3d, slide: 6, xPct: 84.52, yPct: 50.00 },
+  { num: '07', name: 'Jenkins Pipelines and Build Automation', condensedName: 'Jenkins', icon: jenkins3d, slide: 7, xPct: 66.07, yPct: 50.00 },
+  { num: '08', name: 'AWS Services', condensedName: 'AWS Services', icon: aws3d, slide: 8, xPct: 47.62, yPct: 50.00 },
+  { num: '09', name: 'Core Kubernetes Container Orchestration', condensedName: 'Kubernetes', icon: k8s3d, slide: 9, xPct: 29.17, yPct: 50.00 },
+  { num: '10', name: 'Kubernetes on AWS (EKS)', condensedName: 'AWS EKS', icon: eks3d, slide: 10, xPct: 10.71, yPct: 50.00 },
 
-  return (
-    <div className="hp-dash">
-      {showRail && <ModuleRail />}
-      <div className="hp-dash__main">
-        <ModuleProgressHeader />
-        <div className="hp-dash__rows">
-          {HERO_LABS.map((lab, i) => {
-            const status = statuses[i];
-            const isRunning = status === 'running';
-            const isCompleting = completing && status === 'complete' && runningAssertion === 5;
-            return (
-              <DashboardRow
-                key={lab}
-                name={lab}
-                status={status}
-                subline={
-                  isRunning
-                    ? `assertion ${runningAssertion}/5 passed · retrying…`
-                    : isCompleting
-                      ? 'assertion 5/5 passed'
-                      : undefined
-                }
-                sweeping={isCompleting && phase === 'sweep'}
-                entering={phase === 'crossfade' && isRunning}
-              />
-            );
-          })}
-          {staticRows.map((row) => (
-            <DashboardRow key={row.name} name={row.name} status={row.status} />
-          ))}
-        </div>
-        {showFooter && (
-          <div className="hp-dash__footer">
-            <span className="hp-dash__rate">Assertion pass rate — 93% this week</span>
-            <Link to={ROUTES.CURRICULUM} className="hp-dash__continue">
-              Continue Module 09
-            </Link>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+  // Row 3: Left -> Right (y = 83.33%)
+  { num: '11', name: 'Infrastructure as Code with Terraform', condensedName: 'Terraform', icon: terraform3d, slide: 11, xPct: 10.71, yPct: 83.33 },
+  { num: '12', name: 'Programming with Python', condensedName: 'Python', icon: python3d, slide: 12, xPct: 29.17, yPct: 83.33 },
+  { num: '13', name: 'Python Automation', condensedName: 'Automation', icon: pythonAuto3d, slide: 13, xPct: 47.62, yPct: 83.33 },
+  { num: '14', name: 'Configuration Management with Ansible', condensedName: 'Ansible', icon: ansible3d, slide: 14, xPct: 66.07, yPct: 83.33 },
+  { num: '15', name: 'Enterprise Observability with Prometheus', condensedName: 'Observability', icon: prometheus3d, slide: 15, xPct: 84.52, yPct: 83.33 },
+];
 
-function ModuleRail() {
-  return (
-    <div className="hp-rail" aria-hidden="true">
-      {MODULES.map((m) => (
-        <span
-          key={m.num}
-          className={`hp-rail__item ${m.num === '09' ? 'hp-rail__item--current' : ''}`}
-        >
-          {m.num}
-        </span>
-      ))}
-    </div>
-  );
-}
+// Module 01 Lab 00: Linux "Hello There!" Simulation Data
+const LINUX_SUDO_CMD = 'sudo';
+const LINUX_SUDO_INTRO =
+  'We trust you have received the usual lecture from the local System Administrator. It usually boils down to these three things:';
+const LINUX_SUDO_RULES = [
+  '#1) Respect the privacy of others.',
+  '#2) Think before you type.',
+  '#3) With great power comes great responsibility.',
+];
+const LINUX_SUDO_AUTH = '[sudo] password for mentor: [authorized: uid=0(root) gid=0(root)]';
 
-// ─── Section 2: Hero — Dominant Product Canvas ────────────────────────────────
+const OB1_MENTOR_HINT =
+  'You have taken your first step into a larger world. But remember: with root privilege, the line between configuring a cluster and vaporizing it is remarkably thin. Think before you type.';
+
+// ─── Section 1: Hero: Isometric Illustrated Canvas ──────────────────────────
 function HeroSection() {
-  const reduced = useReducedMotion();
-  const isDesktop = useMediaQuery('(min-width: 768px)');
-  const loop = useLabLoop(HERO_LABS.length, true, reduced ? 0 : 1300);
-  const atmoRef = useParallaxPlane<HTMLDivElement>(0.4, isDesktop && !reduced);
-  const frameRef = useParallaxPlane<HTMLDivElement>(1.15, isDesktop && !reduced);
+  const [hoveredAsset, setHoveredAsset] = useState<string | null>(null);
+  const [clickedAsset, setClickedAsset] = useState<string | null>(null);
+
+  const triggerClick = (id: string) => {
+    setClickedAsset(id);
+    setTimeout(() => setClickedAsset(null), 350);
+  };
 
   return (
-    <section className="hp-hero site-section--void" aria-labelledby="hp-hero-title">
-      {/* Atmosphere — fixed feel, slow 12s breathing pulse (homepage only) */}
-      <div className="hp-hero__atmosphere" aria-hidden="true" ref={atmoRef} />
-
-      <div className="site-container">
+    <section className="hp-hero" aria-labelledby="hp-hero-title">
+      <div className="hp-hero__inner">
+        {/* Left Column: Headlines, copy, CTAs */}
         <div className="hp-hero__text">
-          <p className="hp-hero__eyebrow">FOR UNIVERSITY DEVOPS PROGRAMS</p>
           <h1 id="hp-hero-title" className="hp-hero__title">
-            Real containers. Real clusters.
-            <br />
-            Zero local setup.
+            <span className="hp-hero__title-line">Master DevOps</span>
+            <span className="hp-hero__title-line">Interactively.</span>
           </h1>
           <p className="hp-hero__sub">
-            Launch isolated Docker and Kubernetes labs in your browser, graded automatically,
-            debugged with guardrailed AI hints.
+            Hands-on labs. Real environments. Build your DevOps skills, step by step.
           </p>
           <div className="hp-hero__ctas">
             <Link to={ROUTES.SIGNUP} className="hp-hero__cta-link">
-              <Button variant="primary" size="lg" withArrow>
-                Start free
+              <Button variant="primary" size="lg">
+                Start Learning
               </Button>
             </Link>
-            <Link to={ROUTES.HOW_IT_WORKS} className="hp-hero__cta-link">
-              <Button variant="ghost" size="lg">
-                See how it works
+            <Link to={ROUTES.CURRICULUM} className="hp-hero__cta-link">
+              <Button variant="secondary" size="lg">
+                Explore Labs
               </Button>
             </Link>
           </div>
         </div>
-      </div>
 
-      {/* Dominant product canvas — wider than the text above it */}
-      <div className="hp-hero__frame-wrap" ref={frameRef}>
-        <div className="hp-hero__frame-enter">
-          <ProductFrame variant="browser" url="app.devopsmentor.io/dashboard">
-            <LabQueue loop={loop} />
-          </ProductFrame>
-          <div className="hp-hero__capsule" aria-live="polite">
-            <span className="hp-hero__capsule-label">AI Mentor:</span> {loop.hints} hints given this
-            session
+        {/* Right Column: Isometric visual cluster */}
+        <div className="hp-hero__visual">
+          <div className="hp-hero__stage">
+            {/* Ambient Floor Shadows */}
+            <div className="hp-hero__shadows" aria-hidden="true">
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--cloud-3 ${
+                  hoveredAsset === 'cloud-3' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--cloud-1 ${
+                  hoveredAsset === 'cloud-1' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--cloud-2 ${
+                  hoveredAsset === 'cloud-2' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--server ${
+                  hoveredAsset === 'server' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--loop-dev ${
+                  hoveredAsset === 'loop' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--loop-ops ${
+                  hoveredAsset === 'loop' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--terminal ${
+                  hoveredAsset === 'terminal' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--k8 ${
+                  hoveredAsset === 'k8' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+              <div
+                className={`hp-hero__shadow hp-hero__shadow--containers ${
+                  hoveredAsset === 'containers' ? 'hp-hero__shadow--active' : ''
+                }`}
+              />
+            </div>
+
+            {/* Cloud 3: Top Left */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--cloud-3 ${
+                hoveredAsset === 'cloud-3' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'cloud-3' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('cloud-3')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('cloud-3')}
+              role="button"
+              tabIndex={0}
+              aria-label="Multi-Cloud Infrastructure"
+            >
+              <img src={cloud3Svg} alt="" className="hp-hero__drift hp-hero__drift--cloud-3" />
+            </div>
+
+            {/* Cloud 1: Top Right (Above Server) */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--cloud-1 ${
+                hoveredAsset === 'cloud-1' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'cloud-1' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('cloud-1')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('cloud-1')}
+              role="button"
+              tabIndex={0}
+              aria-label="Edge Mesh Infrastructure"
+            >
+              <img src={cloud1Svg} alt="" className="hp-hero__drift hp-hero__drift--cloud-1" />
+            </div>
+
+            {/* Cloud 2: Mid Right */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--cloud-2 ${
+                hoveredAsset === 'cloud-2' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'cloud-2' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('cloud-2')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('cloud-2')}
+              role="button"
+              tabIndex={0}
+              aria-label="Serverless Cloud"
+            >
+              <img src={cloud2Svg} alt="" className="hp-hero__drift hp-hero__drift--cloud-2" />
+            </div>
+
+            {/* Server Rack: Upper Right behind Loop */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--server ${
+                hoveredAsset === 'server' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'server' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('server')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('server')}
+              role="button"
+              tabIndex={0}
+              aria-label="Production Bare-Metal Server Cluster"
+            >
+              <img src={serverSvg} alt="" className="hp-hero__drift hp-hero__drift--server" />
+            </div>
+
+            {/* DEV/OPS Infinity Loop: Center Anchor */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--loop ${
+                hoveredAsset === 'loop' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'loop' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('loop')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('loop')}
+              role="button"
+              tabIndex={0}
+              aria-label="Continuous DevOps Delivery Loop"
+            >
+              <img src={loopSvg} alt="" className="hp-hero__drift hp-hero__drift--loop" />
+            </div>
+
+            {/* Terminal Panel: Lower Left in front of Loop */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--terminal ${
+                hoveredAsset === 'terminal' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'terminal' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('terminal')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('terminal')}
+              role="button"
+              tabIndex={0}
+              aria-label="Interactive Kubernetes Terminal Lab"
+            >
+              <img src={terminalSvg} alt="" className="hp-hero__drift hp-hero__drift--terminal" />
+            </div>
+
+            {/* Containers Plinth: Lower Right */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--containers ${
+                hoveredAsset === 'containers' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'containers' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('containers')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('containers')}
+              role="button"
+              tabIndex={0}
+              aria-label="Docker Containerized Microservices"
+            >
+              <img src={containersSvg} alt="" className="hp-hero__drift hp-hero__drift--containers" />
+            </div>
+
+            {/* Kubernetes Pedestal: Lower Center */}
+            <div
+              className={`hp-hero__asset hp-hero__asset--k8 ${
+                hoveredAsset === 'k8' ? 'hp-hero__asset--hovered' : ''
+              } ${clickedAsset === 'k8' ? 'hp-hero__asset--active' : ''}`}
+              onMouseEnter={() => setHoveredAsset('k8')}
+              onMouseLeave={() => setHoveredAsset(null)}
+              onClick={() => triggerClick('k8')}
+              role="button"
+              tabIndex={0}
+              aria-label="Kubernetes Cluster Control Plane"
+            >
+              <img src={k8Svg} alt="" className="hp-hero__drift hp-hero__drift--k8" />
+            </div>
           </div>
-          <div className="hp-hero__glow" aria-hidden="true" />
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Section 3: Trust Bar ──────────────────────────────────────────────────────
-function TrustBar() {
-  return (
-    <div className="hp-trust">
-      <p className="hp-trust__line">
-        Built on the same infrastructure primitives used in production:{' '}
-        <span className="hp-trust__tech">Docker · Kubernetes · MySQL · Redis</span>
-      </p>
-    </div>
-  );
-}
-
-// ─── Section 4: Product Showcase — "One dashboard. Three views." ──────────────
-type ShowcaseTab = 'dashboard' | 'terminal' | 'analytics';
-const SHOWCASE_TABS: Array<{ id: ShowcaseTab; label: string }> = [
-  { id: 'dashboard', label: 'Student Dashboard' },
-  { id: 'terminal', label: 'Lab Terminal' },
-  { id: 'analytics', label: 'Instructor Analytics' },
-];
-
-const ANALYTICS_DATA = [
-  { module: '05', pct: 87 },
-  { module: '06', pct: 81 },
-  { module: '07', pct: 74 },
-  { module: '08', pct: 68 },
-  { module: '09', pct: 61 },
-] as const;
-
-function ShowcaseAnalyticsChart({ active }: { active: boolean }) {
-  return (
-    <div className="hp-analytics">
-      <svg
-        viewBox="0 0 360 150"
-        className="hp-analytics__chart"
-        role="img"
-        aria-label="Cohort completion by module — 5 module window"
-      >
-        <line className="hp-analytics__baseline" x1="24" y1="130" x2="336" y2="130" />
-        {ANALYTICS_DATA.map((d, i) => {
-          const x = 36 + i * 66;
-          const h = (d.pct / 100) * 104;
-          return (
-            <g key={d.module}>
-              <rect
-                className={`hp-analytics__bar ${active ? 'hp-analytics__bar--active' : ''}`}
-                x={x}
-                y={130 - h}
-                width="34"
-                height={h}
-                rx="2"
-              />
-              <text className="hp-analytics__label" x={x + 17} y="146">
-                {d.module}
-              </text>
-              <text className="hp-analytics__pct" x={x + 17} y={130 - h - 6}>
-                {d.pct}%
-              </text>
-            </g>
-          );
-        })}
-      </svg>
-      <p className="hp-analytics__error">
-        common error —{' '}
-        <span className="hp-analytics__error-code">
-          23% of students fail on `kubectl apply` namespace mismatch
-        </span>
-      </p>
-    </div>
-  );
-}
-
-function ShowcaseTerminalPane() {
-  return (
-    <div className="hp-terminal">
-      <p className="hp-terminal__line">
-        <span className="hp-terminal__prompt">$</span> kubectl apply -f pod-affinity.yaml
-      </p>
-      <p className="hp-terminal__line hp-terminal__output">
-        deployment.apps/pod-affinity-demo created
-      </p>
-      <p className="hp-terminal__line">
-        <span className="hp-terminal__prompt">$</span> kubectl rollout status
-        deploy/pod-affinity-demo
-      </p>
-      <p className="hp-terminal__line hp-terminal__output">
-        deployment &quot;pod-affinity-demo&quot; successfully rolled out
-      </p>
-      <p className="hp-terminal__line hp-terminal__pass">✓ assertion 5/5 passed</p>
-      <p className="hp-terminal__line">
-        <span className="hp-terminal__prompt">$</span> devopsmentor hint
-      </p>
-      <p className="hp-terminal__line hp-terminal__hint">
-        hint — check spec.scheduling.podAffinity: the demo pod must be co-located with the gateway.
-      </p>
-    </div>
-  );
-}
-
-function ProductShowcaseSection() {
-  const [activeTab, setActiveTab] = useState<ShowcaseTab>('dashboard');
-  const { ref, inView } = useInView<HTMLDivElement>(0.2);
+// ─── Section 2: Your Learning Dashboard (Module 01 Lab 00 Linux Mockup) ───────
+function LearningDashboardSection() {
+  const { ref, inView } = useInView<HTMLDivElement>(0.05);
   const revealRef = useScrollReveal<HTMLDivElement>();
-  const loop = useLabLoop(HERO_LABS.length, inView && activeTab === 'dashboard');
+  const reduced = useReducedMotion();
 
-  // §5.1.3: Student Dashboard is default-active on every scroll-into-view.
-  // Adjusted during render (React's documented pattern), not via an effect.
-  const [wasInView, setWasInView] = useState(inView);
-  if (wasInView !== inView) {
-    setWasInView(inView);
-    if (inView) setActiveTab('dashboard');
-  }
+  // Collapsible panel states
+  const [rightRailCollapsed, setRightRailCollapsed] = useState(false);
+  const [aiMentorCollapsed, setAiMentorCollapsed] = useState(false);
 
-  const activeIndex = SHOWCASE_TABS.findIndex((t) => t.id === activeTab);
-  const frameVariant = activeTab === 'terminal' ? 'app' : 'browser';
-  const frameUrl =
-    activeTab === 'analytics' ? 'app.devopsmentor.io/analytics' : 'app.devopsmentor.io/dashboard';
+  // Animation playback state: 0 = typing sudo, 1 = lecture output, 2 = mentor hint stream
+  const [animStep, setAnimStep] = useState(0);
+  const [charIndex, setCharIndex] = useState(0);
+
+  useEffect(() => {
+    if (!inView) return;
+    if (reduced) {
+      setAnimStep(2);
+      setCharIndex(OB1_MENTOR_HINT.length);
+      return;
+    }
+
+    let timer: number;
+    if (animStep === 0) {
+      // Type 'sudo' with slower, deliberate pace
+      if (charIndex < LINUX_SUDO_CMD.length) {
+        timer = window.setTimeout(() => setCharIndex((c) => c + 1), 140);
+      } else {
+        timer = window.setTimeout(() => {
+          setAnimStep(1);
+          setCharIndex(0);
+        }, 500);
+      }
+    } else if (animStep === 1) {
+      // Display classic lecture, pause, then stream OB-1 mentor guidance
+      timer = window.setTimeout(() => {
+        setAnimStep(2);
+        setCharIndex(0);
+      }, 750);
+    } else if (animStep === 2) {
+      // Stream mentor hint tokens
+      if (charIndex < OB1_MENTOR_HINT.length) {
+        timer = window.setTimeout(() => setCharIndex((c) => c + 2), 18);
+      } else {
+        // Automatically replay every 5 seconds
+        timer = window.setTimeout(() => {
+          setAnimStep(0);
+          setCharIndex(0);
+        }, 5000);
+      }
+    }
+
+    return () => window.clearTimeout(timer);
+  }, [inView, animStep, charIndex, reduced]);
 
   return (
-    <section
-      className="hp-showcase site-section--base"
-      aria-labelledby="hp-showcase-title"
-      ref={ref}
-    >
+    <section className="hp-ld site-section--dim" id="dashboard" aria-labelledby="hp-ld-title" ref={ref}>
       <div className="site-container">
         <div className="site-reveal" ref={revealRef}>
-          <h2 id="hp-showcase-title" className="hp-showcase__title">
-            One dashboard. Three views.
-          </h2>
-          <p className="hp-showcase__sub">
-            What students, instructors, and the mentor pipeline each see from the same lab session.
-          </p>
+          <div className="hp-ld__heading-wrap">
+            <h2 id="hp-ld-title" className="hp-ld__title">
+              Your Learning Dashboard.
+            </h2>
+          </div>
 
-          <div className="hp-tabs" role="tablist" aria-label="Product surfaces">
-            {SHOWCASE_TABS.map((tab) => (
-              <button
-                key={tab.id}
-                type="button"
-                role="tab"
-                id={`hp-tab-${tab.id}`}
-                aria-selected={activeTab === tab.id}
-                aria-controls={`hp-pane-${tab.id}`}
-                className={`hp-tabs__item ${activeTab === tab.id ? 'hp-tabs__item--active' : ''}`}
-                onClick={() => setActiveTab(tab.id)}
+          {/* Authentic Browser Window Mockup */}
+          <div className="hp-ld__browser">
+            {/* Browser Window Titlebar (Three dots + Address Bar) */}
+            <div className="hp-ld__browser-bar">
+              <div className="hp-ld__browser-dots">
+                <span className="hp-ld__browser-dot hp-ld__browser-dot--red" />
+                <span className="hp-ld__browser-dot hp-ld__browser-dot--yellow" />
+                <span className="hp-ld__browser-dot hp-ld__browser-dot--green" />
+              </div>
+              <div className="hp-ld__browser-address">
+                <span className="hp-ld__browser-sec">https://</span>app.devopsmentor.io/labs/linux/00
+              </div>
+              <div className="hp-ld__browser-actions" aria-hidden="true" />
+            </div>
+
+            {/* Main Window Body: 3-column Architecture */}
+            <div className={`hp-ld__layout ${rightRailCollapsed ? 'hp-ld__layout--right-collapsed' : ''}`}>
+              {/* Left Column: Clean Specs (Separated through whitespace and color, no pills) */}
+              <aside className="hp-ld__col hp-ld__col--left">
+                <div className="hp-ld__left-inner">
+                  {/* Lab Identity (Rendered once, no repetition) */}
+                  <div className="hp-ld__left-header">
+                    <h3 className="hp-ld__left-title">Lab 00: Hello There!</h3>
+                    <p className="hp-ld__left-sub">Module 01: Linux Fundamentals</p>
+                  </div>
+
+                  {/* Objective */}
+                  <div className="hp-ld__left-group">
+                    <span className="hp-ld__group-label">Objective</span>
+                    <p className="hp-ld__group-text">
+                      Initialize superuser privileges and acknowledge administrative security boundaries in an isolated sandbox.
+                    </p>
+                  </div>
+
+                  {/* Scenario */}
+                  <div className="hp-ld__left-group">
+                    <span className="hp-ld__group-label">Scenario</span>
+                    <p className="hp-ld__group-text">
+                      Inspect system administrator access policy on a provisioned Ubuntu node before executing elevated tasks.
+                    </p>
+                  </div>
+
+                  {/* Core Commands */}
+                  <div className="hp-ld__left-group">
+                    <span className="hp-ld__group-label">Core Commands</span>
+                    <div className="hp-ld__cmd-rows">
+                      <div className="hp-ld__cmd-row">
+                        <code>sudo</code>
+                        <span>execute as superuser</span>
+                      </div>
+                      <div className="hp-ld__cmd-row">
+                        <code>whoami</code>
+                        <span>print effective UID</span>
+                      </div>
+                      <div className="hp-ld__cmd-row">
+                        <code>id</code>
+                        <span>display user groups</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Live Assertions */}
+                  <div className="hp-ld__left-group hp-ld__left-group--assertions">
+                    <div className="hp-ld__assertion-head">
+                      <span className="hp-ld__group-label">Assertions</span>
+                      <span className="hp-ld__assertion-status">
+                        {animStep >= 1 ? '2 of 2 Passed' : '0 of 2'}
+                      </span>
+                    </div>
+                    <div className="hp-ld__assertion-list">
+                      <div className={`hp-ld__assertion-item ${animStep >= 1 ? 'hp-ld__assertion-item--pass' : ''}`}>
+                        <span className="hp-ld__assertion-icon">{animStep >= 1 ? '✓' : '○'}</span>
+                        <span>Invoke superuser elevation (sudo)</span>
+                      </div>
+                      <div className={`hp-ld__assertion-item ${animStep >= 1 ? 'hp-ld__assertion-item--pass' : ''}`}>
+                        <span className="hp-ld__assertion-icon">{animStep >= 1 ? '✓' : '○'}</span>
+                        <span>Acknowledge security lecture triad</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
+
+              {/* Center Column: Frosted Glass Terminal + OB-1 Systems Mentor */}
+              <main className="hp-ld__col hp-ld__col--center">
+                {/* Frosted Glass Terminal Pane */}
+                <div className="hp-ld__terminal">
+                  <div className="hp-ld__term-header">
+                    <span className="hp-ld__term-title">mentor@lab-vm:~/workspace</span>
+                    {rightRailCollapsed && (
+                      <button
+                        type="button"
+                        className="hp-ld__expand-companion-btn"
+                        onClick={() => setRightRailCollapsed(false)}
+                        title="Open slides and walkthrough companion"
+                      >
+                        ⇤ Companion
+                      </button>
+                    )}
+                  </div>
+
+                  <div
+                    className="hp-ld__term-body"
+                    role="region"
+                    aria-label="Simulated Linux terminal output"
+                  >
+                    {/* Command: sudo with Word Smash Drop animation */}
+                    <div className="hp-ld__term-block">
+                      <p className="hp-ld__term-prompt-line">
+                        <span className="hp-ld__term-user">mentor@lab</span>
+                        <span className="hp-ld__term-sep">:</span>
+                        <span className="hp-ld__term-path">~</span>
+                        <span className="hp-ld__term-sym">$</span>{' '}
+                        <span className="hp-ld__term-cmd">
+                          {animStep === 0
+                            ? LINUX_SUDO_CMD.slice(0, charIndex).split('').map((ch, idx) => (
+                                <span key={idx} className="hp-ld__char-drop">{ch}</span>
+                              ))
+                            : LINUX_SUDO_CMD}
+                        </span>
+                        {animStep === 0 && <span className="hp-ld__term-cursor">█</span>}
+                      </p>
+                      {animStep >= 1 && (
+                        <div className="hp-ld__term-output">
+                          <p className="hp-ld__term-lecture-text">{LINUX_SUDO_INTRO}</p>
+                          <div className="hp-ld__term-lecture-rules">
+                            {LINUX_SUDO_RULES.map((rule, idx) => (
+                              <p key={idx} className="hp-ld__term-lecture-rule">
+                                &nbsp;&nbsp;{rule}
+                              </p>
+                            ))}
+                          </div>
+                          <p className="hp-ld__term-auth">{LINUX_SUDO_AUTH}</p>
+                          <p className="hp-ld__term-pass">
+                            ✓ assertion 2/2 passed: superuser security boundary verified
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* OB-1 Systems Mentor Panel */}
+                <div
+                  className={`hp-ld__mentor ${aiMentorCollapsed ? 'hp-ld__mentor--collapsed' : ''}`}
+                >
+                  <div className="hp-ld__mentor-head">
+                    <div className="hp-ld__mentor-identity">
+                      <span className="hp-ld__mentor-name">OB-1</span>
+                      <span className="hp-ld__mentor-role">AI Mentor</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="hp-ld__panel-toggle"
+                      onClick={() => setAiMentorCollapsed(!aiMentorCollapsed)}
+                      aria-label={aiMentorCollapsed ? 'Expand mentor panel' : 'Collapse mentor panel'}
+                    >
+                      {aiMentorCollapsed ? '▲' : '▼'}
+                    </button>
+                  </div>
+                  {!aiMentorCollapsed && (
+                    <div className="hp-ld__mentor-body">
+                      <p className="hp-ld__mentor-text">
+                        {animStep >= 2
+                          ? OB1_MENTOR_HINT.slice(0, charIndex)
+                          : reduced
+                            ? OB1_MENTOR_HINT
+                            : 'Awaiting command execution...'}
+                        {animStep === 2 && charIndex < OB1_MENTOR_HINT.length && (
+                          <span className="hp-ld__term-cursor">█</span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </main>
+
+              {/* Right Column: Slide (Upper) & Walkthrough (Lower) */}
+              <aside
+                className={`hp-ld__col hp-ld__col--right ${
+                  rightRailCollapsed ? 'hp-ld__col--right-collapsed' : ''
+                }`}
               >
-                {tab.label}
-              </button>
-            ))}
-            <span
-              className="hp-tabs__underline"
-              style={{ transform: `translateX(${activeIndex * 100}%)` }}
-            />
+                <div className="hp-ld__right-header">
+                  <span className="hp-ld__side-title">Lab Companion</span>
+                  <button
+                    type="button"
+                    className="hp-ld__collapse-btn"
+                    onClick={() => setRightRailCollapsed(true)}
+                    title="Collapse companion panel to the right"
+                  >
+                    Collapse ⇥
+                  </button>
+                </div>
+
+                <div className="hp-ld__right-content">
+                  {/* Upper Portion: Slide */}
+                  <div className="hp-ld__slide-section">
+                    <span className="hp-ld__group-label">Slide 01/04: Privilege Model</span>
+                    <div className="hp-ld__priv-model">
+                      <div className="hp-ld__priv-node">
+                        <span className="hp-ld__priv-title">mentor</span>
+                        <span className="hp-ld__priv-sub">UID 1000</span>
+                      </div>
+                      <div className="hp-ld__priv-arrow">
+                        <span className="hp-ld__priv-arrow-line" />
+                        <span className="hp-ld__priv-gate">sudoers</span>
+                        <span className="hp-ld__priv-arrow-line" />
+                      </div>
+                      <div className="hp-ld__priv-node hp-ld__priv-node--root">
+                        <span className="hp-ld__priv-title">root</span>
+                        <span className="hp-ld__priv-sub">UID 0</span>
+                      </div>
+                    </div>
+                    <p className="hp-ld__priv-note">
+                      <strong>Least Privilege:</strong> Processes run restricted until elevated via the sudoers gate.
+                    </p>
+                  </div>
+
+                  {/* Lower Portion: Walkthrough Step-by-Step Guide */}
+                  <div className="hp-ld__walkthrough-section">
+                    <span className="hp-ld__group-label">Step-by-Step Walkthrough</span>
+                    <ol className="hp-ld__walkthrough-list">
+                      <li className="hp-ld__walkthrough-item hp-ld__walkthrough-item--done">
+                        <span className="hp-ld__step-badge">1</span>
+                        <div className="hp-ld__step-text">
+                          <span className="hp-ld__step-title">Inspect Session</span>
+                          <span className="hp-ld__step-desc">Identify unprivileged UID 1000 context</span>
+                        </div>
+                      </li>
+                      <li className={`hp-ld__walkthrough-item ${animStep >= 1 ? 'hp-ld__walkthrough-item--done' : 'hp-ld__walkthrough-item--active'}`}>
+                        <span className="hp-ld__step-badge">2</span>
+                        <div className="hp-ld__step-text">
+                          <span className="hp-ld__step-title">Request Elevation</span>
+                          <span className="hp-ld__step-desc">Execute <code>sudo</code> to invoke policy</span>
+                        </div>
+                      </li>
+                      <li className={`hp-ld__walkthrough-item ${animStep >= 1 ? 'hp-ld__walkthrough-item--done' : ''}`}>
+                        <span className="hp-ld__step-badge">3</span>
+                        <div className="hp-ld__step-text">
+                          <span className="hp-ld__step-title">Confirm Access</span>
+                          <span className="hp-ld__step-desc">Acknowledge triad to obtain UID 0</span>
+                        </div>
+                      </li>
+                    </ol>
+                  </div>
+                </div>
+              </aside>
+            </div>
           </div>
-        </div>
-      </div>
 
-      {/* Full-bleed frame, chrome switches with the tab */}
-      <div className="hp-showcase__frame-wrap">
-        <ProductFrame variant={frameVariant} url={frameUrl} label="bash — devopsmentor">
-          <div className="hp-showcase__panes">
-            <div
-              id="hp-pane-dashboard"
-              role="tabpanel"
-              aria-labelledby="hp-tab-dashboard"
-              className={`hp-showcase__pane ${activeTab === 'dashboard' ? 'hp-showcase__pane--active' : ''}`}
-            >
-              <LabQueue
-                loop={loop}
-                showRail
-                showFooter
-                staticRows={[
-                  { name: 'Resource Quotas', status: 'complete' },
-                  { name: 'Horizontal Pod Autoscaling', status: 'complete' },
-                  { name: 'Network Policies', status: 'queued' },
-                ]}
-              />
-            </div>
-            <div
-              id="hp-pane-terminal"
-              role="tabpanel"
-              aria-labelledby="hp-tab-terminal"
-              className={`hp-showcase__pane ${activeTab === 'terminal' ? 'hp-showcase__pane--active' : ''}`}
-            >
-              <ShowcaseTerminalPane />
-            </div>
-            <div
-              id="hp-pane-analytics"
-              role="tabpanel"
-              aria-labelledby="hp-tab-analytics"
-              className={`hp-showcase__pane ${activeTab === 'analytics' ? 'hp-showcase__pane--active' : ''}`}
-            >
-              <ShowcaseAnalyticsChart active={activeTab === 'analytics'} />
-            </div>
+          {/* CTA beneath Mockup */}
+          <div className="hp-ld__cta-wrap">
+            <Link to={ROUTES.CURRICULUM} className="hp-ld__cta-link">
+              <Button variant="primary" size="lg">
+                Open the Learning Dashboard →
+              </Button>
+            </Link>
           </div>
-        </ProductFrame>
-      </div>
-    </section>
-  );
-}
-
-// ─── Sections 5–6: Feature Modules (zig-zag) ─────────────────────────────────
-function FeatureGradingSection() {
-  const textRef = useScrollReveal<HTMLDivElement>();
-  const visualRef = useScrollReveal<HTMLDivElement>();
-
-  return (
-    <section className="hp-fm site-section--void" aria-labelledby="hp-fm1-title">
-      <div className="site-container hp-fm__grid">
-        <div className="site-reveal hp-fm__text hp-fm__text--left" ref={textRef}>
-          <h2 id="hp-fm1-title" className="hp-fm__title">
-            Every lab is graded, not just run.
-          </h2>
-          <p className="hp-fm__body">
-            Each lab ships with a grading sidecar that watches the real container — not a review
-            queue. Assertions evaluate live cluster state as you work, so a lab passes or fails
-            within seconds of your action. Nothing waits for a round of manual checks.
-          </p>
-        </div>
-        <div className="site-reveal hp-fm__visual hp-fm__visual--right" ref={visualRef}>
-          <ProductFrame variant="app" label="bash — devopsmentor">
-            <div className="hp-terminal">
-              <p className="hp-terminal__line">
-                <span className="hp-terminal__prompt">$</span> kubectl apply -f pod-affinity.yaml
-              </p>
-              <p className="hp-terminal__line hp-terminal__output">
-                deployment.apps/pod-affinity-demo created
-              </p>
-              <p className="hp-terminal__line">
-                <span className="hp-terminal__prompt">$</span> kubectl rollout status
-                deploy/pod-affinity-demo
-              </p>
-              <p className="hp-terminal__line hp-terminal__output">
-                deployment &quot;pod-affinity-demo&quot; successfully rolled out
-              </p>
-              <p className="hp-terminal__line hp-terminal__pass">✓ assertion 5/5 passed</p>
-            </div>
-          </ProductFrame>
         </div>
       </div>
     </section>
   );
 }
 
-function FeatureCurriculumSection() {
-  const textRef = useScrollReveal<HTMLDivElement>();
-  const visualRef = useScrollReveal<HTMLDivElement>();
-  const preview = MODULES.slice(0, 4);
+// ─── Section 3: Module Catalog & Serpentine Learning Path ────────────────────
+function ModuleCatalogTeaserSection() {
+  const revealRef = useScrollReveal<HTMLDivElement>();
 
   return (
-    <section className="hp-fm site-section--base" aria-labelledby="hp-fm2-title">
-      <div className="site-container hp-fm__grid hp-fm__grid--flip">
-        <div className="site-reveal hp-fm__text hp-fm__text--right" ref={textRef}>
-          <h2 id="hp-fm2-title" className="hp-fm__title">
-            Built from a fixed curriculum, not ad-hoc content.
-          </h2>
-          <p className="hp-fm__body">
-            Fifteen modules run the same sequence for every student — Foundations through Automate
-            &amp; Observe. A Module 09 lab can assume everything from Modules 01–08, because every
-            cohort worked the same path. Instructors configure cohorts, not course content.
-          </p>
-        </div>
-        <div className="site-reveal hp-fm__visual hp-fm__visual--left" ref={visualRef}>
-          <div className="hp-fm__grid-wrap">
-            <div className="hp-module-grid">
-              {preview.map((m) => (
-                <ModuleCard key={m.num} num={m.num} title={m.title} focus={m.focus} />
+    <section className="hp-catalog-teaser site-section--paper" aria-labelledby="hp-cat-title">
+      <div className="site-container">
+        <div className="site-reveal hp-catalog-teaser__grid" ref={revealRef}>
+          {/* Left Column: Headlines, concise copy, CTA */}
+          <div className="hp-catalog-teaser__text">
+            <h2 id="hp-cat-title" className="hp-catalog-teaser__title">
+              End-to-End DevOps Mastery
+            </h2>
+            <p className="hp-catalog-teaser__sub">
+              Follow a verified, structured learning path engineered for end-to-end DevOps mastery. Progress seamlessly from Linux fundamentals to multi-cluster orchestration with evaluated live infrastructure in browser sandboxes for a hassle-free learning experience.
+            </p>
+            <div className="hp-catalog-teaser__cta">
+              <Link to={ROUTES.CURRICULUM}>
+                <Button variant="primary" size="md">
+                  Explore the Curriculum →
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          {/* Right Column: Serpentine Road with Numbered Platforms and Floating 3D Icons */}
+          <div className="hp-catalog-teaser__road-stage" aria-label="Winding learning path with checkpoints">
+            <div className="hp-road-grid-wrap">
+              <svg
+                className="hp-road-svg"
+                viewBox="0 0 840 540"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                preserveAspectRatio="xMidYMid meet"
+                aria-hidden="true"
+              >
+                {/* Outer roadway underlay */}
+                <path
+                  d="M 90 90 L 710 90 C 815 90, 815 270, 710 270 L 90 270 C -15 270, -15 450, 90 450 L 710 450"
+                  className="hp-road__bed"
+                />
+                {/* Road surface */}
+                <path
+                  d="M 90 90 L 710 90 C 815 90, 815 270, 710 270 L 90 270 C -15 270, -15 450, 90 450 L 710 450"
+                  className="hp-road__surface"
+                />
+                {/* Centerline track */}
+                <path
+                  d="M 90 90 L 710 90 C 815 90, 815 270, 710 270 L 90 270 C -15 270, -15 450, 90 450 L 710 450"
+                  className="hp-road__divider"
+                />
+              </svg>
+
+              {/* Checkpoint Nodes: Floating 3D Icons over Numbered Platforms */}
+              <div className="hp-road-nodes" role="list">
+                {ROADMAP_MODULES.map((mod, idx) => (
+                  <Link
+                    key={mod.num}
+                    to={`${ROUTES.CURRICULUM}?slide=${mod.slide}`}
+                    className="hp-road-node"
+                    style={{
+                      left: `${mod.xPct}%`,
+                      top: `${mod.yPct}%`,
+                      '--i': idx,
+                    } as React.CSSProperties}
+                    title={`Module ${mod.num}: ${mod.name} (View in Module Catalog)`}
+                    aria-label={`Module ${mod.num}: ${mod.name}`}
+                    role="listitem"
+                  >
+                    {/* Floating 3D Icon above Platform */}
+                    <div className="hp-road-node__icon-wrap">
+                      <img
+                        src={mod.icon}
+                        alt={mod.condensedName}
+                        className="hp-road-node__img"
+                        loading="lazy"
+                      />
+                    </div>
+
+                    {/* Numbered Platform ON the road */}
+                    <div className="hp-road-node__platform">
+                      <span className="hp-road-node__platform-num">{mod.num}</span>
+                    </div>
+
+                    {/* Module Name below Platform */}
+                    <div className="hp-road-node__meta">
+                      <span className="hp-road-node__name">{mod.condensedName}</span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            </div>
+
+            {/* Mobile Fallback: Vertical Timeline */}
+            <div className="hp-road-mobile" aria-label="Mobile module path">
+              <div className="hp-road-mobile__spine" aria-hidden="true" />
+              {ROADMAP_MODULES.map((mod, idx) => (
+                <Link
+                  key={mod.num}
+                  to={`${ROUTES.CURRICULUM}?slide=${mod.slide}`}
+                  className="hp-road-mobile__item"
+                  style={{ '--i': idx } as React.CSSProperties}
+                  title={`Module ${mod.num}: ${mod.name}`}
+                >
+                  <div className="hp-road-mobile__platform">
+                    <span className="hp-road-mobile__platform-num">{mod.num}</span>
+                  </div>
+                  <div className="hp-road-mobile__icon-wrap">
+                    <img
+                      src={mod.icon}
+                      alt={mod.condensedName}
+                      className="hp-road-mobile__img"
+                      loading="lazy"
+                    />
+                  </div>
+                  <div className="hp-road-mobile__info">
+                    <span className="hp-road-mobile__badge">MODULE {mod.num}</span>
+                    <span className="hp-road-mobile__name">{mod.condensedName}</span>
+                  </div>
+                </Link>
               ))}
             </div>
-            <Link
-              to={ROUTES.CURRICULUM}
-              className="hp-fm__nav-arrow"
-              aria-label="View the full curriculum"
-            >
-              <span aria-hidden="true">→</span>
-            </Link>
           </div>
         </div>
       </div>
@@ -566,136 +756,649 @@ function FeatureCurriculumSection() {
   );
 }
 
-// ─── Section 7: Stat Strip ────────────────────────────────────────────────────
-const STATS = [
-  { value: '90 sec', label: 'Pod provisioning' },
-  { value: '15', label: 'DevOps modules' },
-  { value: '3', label: 'Isolated tenant roles' },
-] as const;
-
-function StatStripSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-  return (
-    <section className="hp-stats site-section--void" aria-label="Platform statistics">
-      <div className="site-container">
-        <div className="site-reveal hp-stats__row" ref={revealRef}>
-          {STATS.map((stat, i) => (
-            <div
-              key={stat.label}
-              className={`hp-stats__item ${i > 0 ? 'hp-stats__item--divided' : ''}`}
-            >
-              <span className="hp-stats__value">{stat.value}</span>
-              <span className="hp-stats__label">{stat.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
+// ─── Section 4: Live Lab Grading & AI Mentorship (§5.4) ───────────────────────
+interface EvaluatorAssertion {
+  label: string;
+  failDetail: string;
+  passDetail: string;
+  passedDuringError?: boolean;
 }
 
-// ─── Section 8: Services Bento Grid ───────────────────────────────────────────
-function DockerfileFragment() {
-  return (
-    <div className="hp-bento__code" aria-hidden="true">
-      <span className="hp-bento__code-line">
-        <span className="hp-bento__code-kw">FROM</span> node:20-alpine
-      </span>
-      <span className="hp-bento__code-line">
-        <span className="hp-bento__code-kw">COPY</span> . /app
-      </span>
-      <span className="hp-bento__code-line">
-        <span className="hp-bento__code-kw">RUN</span> npm ci --omit=dev
-      </span>
-      <span className="hp-bento__code-line">
-        <span className="hp-bento__code-kw">CMD</span> [&quot;node&quot;, &quot;serve.js&quot;]
-      </span>
-    </div>
-  );
+interface EvaluatorScenario {
+  id: string;
+  badCommand: string;
+  badOutput: string[];
+  assertions: EvaluatorAssertion[];
+  ob1ErrorText: string;
+  fixCommand: string;
+  fixOutput: string[];
+  passNote: string;
+  ob1FixText: string;
 }
 
-const BENTO_TILES = [
+const EVALUATOR_SCENARIOS: EvaluatorScenario[] = [
   {
-    title: 'Container Labs',
-    body: 'Isolated Docker and Kubernetes environments on demand.',
+    id: 'fork-bomb',
+    badCommand: ':(){ :|:& };:',
+    badOutput: [
+      'bash: fork: retry: Resource temporarily unavailable',
+      'bash: fork: retry: Resource temporarily unavailable',
+      '[kernel] cgroups: pids.max ceiling hit (256/256)',
+    ],
+    assertions: [
+      {
+        label: 'cgroups: pids.max ceiling',
+        failDetail: '256/256 saturated',
+        passDetail: '14 active (healthy)',
+      },
+      {
+        label: 'worker.service responsiveness',
+        failDetail: 'timed out',
+        passDetail: 'listening on :5000',
+      },
+    ],
+    ob1ErrorText:
+      "A classic fork bomb. Process table saturated in 42 milliseconds. That wasn't on the lab syllabus, but congratulations on discovering exponential PID exhaustion. Hint: let cgroups isolate the rogue forks, then reload worker.service to restore responsiveness.",
+    fixCommand: 'systemctl restart worker.service',
+    fixOutput: [
+      'worker.service: Unit reloaded successfully.',
+      '[cgroups] Active tasks: 14. PID limit restored.',
+    ],
+    passNote: '2 of 2 assertions passed: cgroups healthy',
+    ob1FixText:
+      "Worker service reloaded and cgroups stabilized at 14 tasks. See? Order restored without setting the entire node on fire.",
   },
   {
-    title: 'AI Mentor',
-    body: 'Guardrailed hints generated from real terminal output.',
+    id: 'rm-rf',
+    badCommand: 'sudo rm -rf /etc/nginx/',
+    badOutput: [
+      'rm: removing /etc/nginx/sites-available',
+      'rm: removing /etc/nginx/nginx.conf',
+      '[inotify] inode deletion on /etc/nginx/nginx.conf',
+    ],
+    assertions: [
+      {
+        label: '/etc/nginx/nginx.conf exists',
+        failDetail: 'missing inode (ENOENT)',
+        passDetail: 'verified (mode 0644)',
+      },
+      {
+        label: 'nginx configuration syntax',
+        failDetail: 'test failed (exit 1)',
+        passDetail: 'syntax ok (test successful)',
+      },
+    ],
+    ob1ErrorText:
+      "If you're going to obliterate critical configuration, at least pass --no-preserve-root and do it with conviction. Sandbox snapshot restored in 18ms. Hint: discard your destructive changes with git checkout /etc/nginx, then run nginx -t to verify the syntax.",
+    fixCommand: 'git checkout /etc/nginx && nginx -t',
+    fixOutput: [
+      'nginx: the configuration file /etc/nginx/nginx.conf syntax is ok',
+      'nginx: configuration file /etc/nginx/nginx.conf test is successful',
+    ],
+    passNote: '2 of 2 assertions passed: configuration verified',
+    ob1FixText:
+      "Configuration restored and syntax test successful. It's almost as if configuration files exist for a reason.",
   },
   {
-    title: 'Automated Assessment',
-    body: 'Assertions verify the state of your live containers.',
+    id: 'chained-commands',
+    badCommand: 'service nginx stop && killall -9 nginx && /usr/sbin/nginx &',
+    badOutput: [
+      '[warn] Terminated active TCP connections',
+      '[error] Detached background PID 3192 ignoring cgroups',
+      '[evaluator] Port 80 connection dropped during hard kill',
+    ],
+    assertions: [
+      {
+        label: 'zero-downtime reload',
+        failDetail: 'dropped active TCP sockets',
+        passDetail: '0 dropped packets (verified)',
+      },
+      {
+        label: 'systemd service ownership',
+        failDetail: 'orphaned PID detached',
+        passDetail: 'managed by systemd unit',
+      },
+    ],
+    ob1ErrorText:
+      "You must unlearn what you have learned. Chaining legacy SysV scripts and killall is not how modern Linux services are managed. Hint: do this instead - use systemctl reload to gracefully update the service without dropping active connections.",
+    fixCommand: 'systemctl reload nginx && systemctl status nginx',
+    fixOutput: [
+      'nginx.service: Reloaded active (running).',
+      '[evaluator] Graceful reload verified. Zero dropped connections.',
+    ],
+    passNote: '2 of 2 assertions passed: zero-downtime verified',
+    ob1FixText:
+      "Clean reload executed. The unit reloaded gracefully with zero dropped packets. That is the modern way.",
   },
   {
-    title: 'Multi-Tenancy',
-    body: 'A namespace isolates every tenant on one shared cluster.',
+    id: 'loopback-trap',
+    badCommand: 'python3 -m http.server 8080 --bind 127.0.0.1',
+    badOutput: [
+      'Serving HTTP on 127.0.0.1 port 8080 (http://127.0.0.1:8080/) ...',
+      '[probe] GET http://172.17.0.2:8080 -> Connection refused',
+    ],
+    assertions: [
+      {
+        label: 'python3 daemon running',
+        failDetail: 'running (PID 2841)',
+        passDetail: 'running (PID 2841)',
+        passedDuringError: true,
+      },
+      {
+        label: 'external ingress reachability',
+        failDetail: 'connection refused on eth0:8080',
+        passDetail: '200 OK (latency 3ms)',
+      },
+    ],
+    ob1ErrorText:
+      "Your daemon is happily listening to itself on loopback. Too bad external traffic routed through the ingress bridge can't reach 127.0.0.1, unless your deployment target is an audience of one. Hint: rebind your socket to 0.0.0.0 so the container bridge can forward ingress traffic to port 8080.",
+    fixCommand: 'python3 -m http.server 8080 --bind 0.0.0.0',
+    fixOutput: [
+      'Serving HTTP on 0.0.0.0 port 8080 (http://0.0.0.0:8080/) ...',
+      '[probe] Ingress healthcheck 200 OK from bridge 172.17.0.1',
+    ],
+    passNote: '2 of 2 assertions passed: live ingress verified',
+    ob1FixText:
+      "Socket bound to 0.0.0.0 and ingress probe responding 200 OK. Welcome to the public network.",
   },
-  {
-    title: 'Instructor Analytics',
-    body: 'Cohort completion trends and common-error signals.',
-  },
-  {
-    title: 'Institution & Admin',
-    body: 'Cohort, course, and access administration in one place.',
-  },
-] as const;
+];
 
-function BentoSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-  const [large, ...small] = BENTO_TILES;
+function FeatureGradingSection() {
+  const { ref: containerRef, inView } = useInView<HTMLElement>(0.1);
+  const textRef = useScrollReveal<HTMLDivElement>();
+  const visualRef = useScrollReveal<HTMLDivElement>();
+  const reduced = useReducedMotion();
+
+  const [activeScenarioIdx, setActiveScenarioIdx] = useState(0);
+  // step: 0=typing bad cmd, 1=bad cmd executed, 2=ob1 error streaming, 3=typing fix cmd, 4=fix cmd executed, 5=ob1 fix streaming, 6=pause before next
+  const [animStep, setAnimStep] = useState(0);
+  const [badCharIdx, setBadCharIdx] = useState(0);
+  const [ob1ErrorIdx, setOb1ErrorIdx] = useState(0);
+  const [fixCharIdx, setFixCharIdx] = useState(0);
+  const [ob1FixIdx, setOb1FixIdx] = useState(0);
+
+  const sc = EVALUATOR_SCENARIOS[activeScenarioIdx];
+
+  useEffect(() => {
+    if (!inView) return;
+
+    if (reduced) {
+      setAnimStep(5);
+      setBadCharIdx(sc.badCommand.length);
+      setFixCharIdx(sc.fixCommand.length);
+      setOb1ErrorIdx(sc.ob1ErrorText.length);
+      setOb1FixIdx(sc.ob1FixText.length);
+      return;
+    }
+
+    let timer: number;
+
+    if (animStep === 0) {
+      // Slow deliberate typing for bad command with word smash drop
+      if (badCharIdx < sc.badCommand.length) {
+        timer = window.setTimeout(() => {
+          setBadCharIdx((c) => c + 1);
+        }, 130);
+      } else {
+        timer = window.setTimeout(() => {
+          setAnimStep(1);
+        }, 500);
+      }
+    } else if (animStep === 1) {
+      // Display error output, then stream OB-1 error remark
+      timer = window.setTimeout(() => {
+        setAnimStep(2);
+        setOb1ErrorIdx(0);
+      }, 700);
+    } else if (animStep === 2) {
+      // Stream OB-1 diagnosis with context-aware hint
+      if (ob1ErrorIdx < sc.ob1ErrorText.length) {
+        timer = window.setTimeout(() => {
+          setOb1ErrorIdx((c) => Math.min(c + 2, sc.ob1ErrorText.length));
+        }, 18);
+      } else {
+        // Pause after OB-1 finishes, then begin typing fix command
+        timer = window.setTimeout(() => {
+          setAnimStep(3);
+          setFixCharIdx(0);
+        }, 1800);
+      }
+    } else if (animStep === 3) {
+      // Slow deliberate typing for fix command with word smash drop
+      if (fixCharIdx < sc.fixCommand.length) {
+        timer = window.setTimeout(() => {
+          setFixCharIdx((c) => c + 1);
+        }, 120);
+      } else {
+        timer = window.setTimeout(() => {
+          setAnimStep(4);
+        }, 500);
+      }
+    } else if (animStep === 4) {
+      // Fix output executed, assertions pass, stream OB-1 fix remark
+      timer = window.setTimeout(() => {
+        setAnimStep(5);
+        setOb1FixIdx(0);
+      }, 600);
+    } else if (animStep === 5) {
+      // Stream OB-1 fix remark
+      if (ob1FixIdx < sc.ob1FixText.length) {
+        timer = window.setTimeout(() => {
+          setOb1FixIdx((c) => Math.min(c + 2, sc.ob1FixText.length));
+        }, 18);
+      } else {
+        // Hold final state for 4.5 seconds, then advance to next scenario
+        timer = window.setTimeout(() => {
+          setActiveScenarioIdx((prev) => (prev + 1) % EVALUATOR_SCENARIOS.length);
+          setAnimStep(0);
+          setBadCharIdx(0);
+          setOb1ErrorIdx(0);
+          setFixCharIdx(0);
+          setOb1FixIdx(0);
+        }, 4500);
+      }
+    }
+
+    return () => window.clearTimeout(timer);
+  }, [
+    inView,
+    reduced,
+    activeScenarioIdx,
+    animStep,
+    badCharIdx,
+    ob1ErrorIdx,
+    fixCharIdx,
+    ob1FixIdx,
+    sc.badCommand.length,
+    sc.ob1ErrorText.length,
+    sc.fixCommand.length,
+    sc.ob1FixText.length,
+  ]);
 
   return (
-    <section className="hp-bento site-section--void" aria-labelledby="hp-bento-title">
-      <div className="site-container">
-        <div className="site-reveal" ref={revealRef}>
-          <h2 id="hp-bento-title" className="hp-bento__title">
-            Architectural Toolkit
+    <section className="hp-fm hp-eval site-section--dim" aria-labelledby="hp-eval-title" ref={containerRef}>
+      <div className="site-container hp-eval__grid">
+        {/* Left Column: Punchy Header & Subtitle */}
+        <div className="site-reveal hp-eval__text hp-eval__text--left" ref={textRef}>
+          <h2 id="hp-eval-title" className="hp-eval__title">
+            Live lab grading with context-aware AI mentorship.
           </h2>
-          <div className="hp-bento__grid">
-            <div className="hp-bento__tile hp-bento__tile--large">
-              <h3 className="hp-bento__tile-title">{large.title}</h3>
-              <p className="hp-bento__tile-body">{large.body}</p>
-              <DockerfileFragment />
-            </div>
-            {small.map((tile) => (
-              <div key={tile.title} className="hp-bento__tile">
-                <h3 className="hp-bento__tile-title">{tile.title}</h3>
-                <p className="hp-bento__tile-body">{tile.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Section 9: Curriculum Teaser ─────────────────────────────────────────────
-function CurriculumTeaserSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-  const preview = MODULES.slice(0, 5);
-
-  return (
-    <section className="hp-teaser site-section--base" aria-labelledby="hp-teaser-title">
-      <div className="site-container">
-        <div className="site-reveal" ref={revealRef}>
-          <h2 id="hp-teaser-title" className="hp-teaser__title">
-            The curriculum, in order.
-          </h2>
-          <p className="hp-teaser__sub">
-            Fifteen modules, the same sequence for every cohort — Foundations through Automate &amp;
-            Observe.
+          <p className="hp-eval__body">
+            Every hands-on lab evaluates your live container and kernel state in real time, while AI Mentor(OB-1) provides context-aware hints and troubleshooting the moment something breaks. Verify real infrastructure and pass within seconds with zero review queue.
           </p>
-          <div className="hp-teaser__row">
-            {preview.map((m) => (
-              <ModuleCard key={m.num} num={m.num} title={m.title} focus={m.focus} />
+        </div>
+
+        {/* Right Column: Rounded Live Evaluator Frame with Soft Shadows */}
+        <div className="site-reveal hp-eval__visual hp-eval__visual--right" ref={visualRef}>
+          <div className="hp-eval-frame">
+            {/* Window Bar: Three Traffic Dots (Red, Yellow, Green) */}
+            <div className="hp-eval-frame__bar">
+              <div className="hp-eval-dots" aria-hidden="true">
+                <span className="hp-eval-dot hp-eval-dot--red" />
+                <span className="hp-eval-dot hp-eval-dot--yellow" />
+                <span className="hp-eval-dot hp-eval-dot--green" />
+              </div>
+              <div className="hp-eval-frame__address">
+                <span className="hp-eval-frame__sec">https://</span>app.devopsmentor.io/evaluator
+              </div>
+              <div className="hp-eval-frame__actions" aria-hidden="true" />
+            </div>
+
+            {/* Terminal Window */}
+            <div className="hp-eval-term">
+              <div className="hp-eval-term__header">
+                <span className="hp-eval-term__title">mentor@lab-vm:~/workspace</span>
+              </div>
+              <div className="hp-eval-term__body">
+                {/* Bad Command Prompt Line (with Word Smash Drop & Preserved Spaces) */}
+                <p className="hp-eval-term__line hp-eval-term__prompt-line">
+                  <span className="hp-eval-term__user">mentor@lab</span>
+                  <span className="hp-eval-term__sep">:</span>
+                  <span className="hp-eval-term__path">~</span>
+                  <span className="hp-eval-term__sym">$</span>{' '}
+                  <span className="hp-eval-term__cmd">
+                    {animStep === 0
+                      ? sc.badCommand.slice(0, badCharIdx).split('').map((ch, idx) => (
+                          <span key={idx} className="hp-ld__char-drop">
+                            {ch === ' ' ? '\u00A0' : ch}
+                          </span>
+                        ))
+                      : sc.badCommand}
+                  </span>
+                  {animStep === 0 && <span className="hp-eval-term__cursor">█</span>}
+                </p>
+
+                {/* Error Output */}
+                {animStep >= 1 && (
+                  <div className="hp-eval-term__output-block">
+                    {sc.badOutput.map((line, lIdx) => (
+                      <p key={lIdx} className="hp-eval-term__err-line">
+                        {line}
+                      </p>
+                    ))}
+                  </div>
+                )}
+
+                {/* Fix Command Line (with Word Smash Drop & Preserved Spaces) */}
+                {animStep >= 3 && (
+                  <div className="hp-eval-term__fix-block">
+                    <p className="hp-eval-term__prompt-line hp-eval-term__prompt-line--fix">
+                      <span className="hp-eval-term__user">mentor@lab</span>
+                      <span className="hp-eval-term__sep">:</span>
+                      <span className="hp-eval-term__path">~</span>
+                      <span className="hp-eval-term__sym">$</span>{' '}
+                      <span className="hp-eval-term__cmd">
+                        {animStep === 3
+                          ? sc.fixCommand.slice(0, fixCharIdx).split('').map((ch, idx) => (
+                              <span key={idx} className="hp-ld__char-drop">
+                                {ch === ' ' ? '\u00A0' : ch}
+                              </span>
+                            ))
+                          : sc.fixCommand}
+                      </span>
+                      {animStep === 3 && <span className="hp-eval-term__cursor">█</span>}
+                    </p>
+
+                    {/* Fix Output & Passed State */}
+                    {animStep >= 4 && (
+                      <>
+                        {sc.fixOutput.map((fLine, fIdx) => (
+                          <p key={fIdx} className="hp-eval-term__fix-line">
+                            {fLine}
+                          </p>
+                        ))}
+                        <p className="hp-eval-term__pass-line">
+                          ✓ {sc.passNote}
+                        </p>
+                      </>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Telemetry Deck: Assertions + OB-1 Mentor */}
+            <div className="hp-eval-telemetry">
+              {/* Panel 1: Live Assertions (No dividers, pure whitespace & soft tone) */}
+              <div className="hp-eval-assertions">
+                <div className="hp-eval-assertions__head">
+                  <span className="hp-eval-assertions__title">Assertions</span>
+                  <span className="hp-eval-assertions__status">
+                    {animStep >= 1
+                      ? `${
+                          animStep >= 4
+                            ? sc.assertions.length
+                            : sc.assertions.filter((a) => a.passedDuringError).length
+                        } of ${sc.assertions.length} Passed`
+                      : 'Awaiting execution...'}
+                  </span>
+                </div>
+
+                <div className="hp-eval-assertions__list">
+                  {sc.assertions.map((ast, aIdx) => {
+                    const isPassed =
+                      animStep >= 4 || (animStep >= 1 && Boolean(ast.passedDuringError));
+                    return (
+                      <div
+                        key={aIdx}
+                        className={`hp-eval-assertion-row ${
+                          isPassed ? 'hp-eval-assertion-row--pass' : 'hp-eval-assertion-row--fail'
+                        }`}
+                      >
+                        <div className="hp-eval-assertion-row__left">
+                          <span className="hp-eval-assertion-icon">{isPassed ? '✓' : '○'}</span>
+                          <span className="hp-eval-assertion-label">{ast.label}</span>
+                        </div>
+                        <span className="hp-eval-assertion-detail">
+                          {isPassed ? ast.passDetail : ast.failDetail}
+                        </span>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Panel 2: OB-1 AI Mentor */}
+              <div className="hp-eval-ob1">
+                <div className="hp-eval-ob1__head">
+                  <div className="hp-eval-ob1__id">
+                    <span className="hp-eval-ob1__name">OB-1</span>
+                    <span className="hp-eval-ob1__role">AI Mentor</span>
+                  </div>
+                </div>
+
+                <div className="hp-eval-ob1__body">
+                  <p className="hp-eval-ob1__text">
+                    {animStep < 2 ? (
+                      <span className="hp-eval-ob1__idle">Awaiting command execution...</span>
+                    ) : animStep < 4 ? (
+                      <>
+                        {sc.ob1ErrorText.slice(0, ob1ErrorIdx)}
+                        {animStep === 2 && ob1ErrorIdx < sc.ob1ErrorText.length && (
+                          <span className="hp-eval-term__cursor">█</span>
+                        )}
+                      </>
+                    ) : (
+                      <>
+                        {sc.ob1FixText.slice(0, ob1FixIdx)}
+                        {animStep === 5 && ob1FixIdx < sc.ob1FixText.length && (
+                          <span className="hp-eval-term__cursor">█</span>
+                        )}
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+
+
+// ─── Section 5: Target Audiences Matrix ───────────────────────────────────────
+interface AudienceItem {
+  id: string;
+  badge: string;
+  title: string;
+  body: string;
+  highlights: string[];
+  linkTo: string;
+  linkLabel: string;
+}
+
+const TARGET_AUDIENCES: AudienceItem[] = [
+  {
+    id: 'learners',
+    badge: 'Independent Learners',
+    title: 'Real Infrastructure. Zero Cloud Bills.',
+    body: 'Master Linux systems, Docker containerization, and Kubernetes orchestration by interacting directly with live container kernels. Context-aware AI mentorship guides you through root-cause troubleshooting without manual virtual machine overhead.',
+    highlights: [
+      'Instant browser-based terminal with zero local setup',
+      'OB-1 AI diagnostics inspect live sockets and processes',
+      'Deterministic pass/fail grading on active infrastructure',
+    ],
+    linkTo: ROUTES.CURRICULUM,
+    linkLabel: 'Explore curriculum roadmap',
+  },
+  {
+    id: 'universities',
+    badge: 'University & College Programs',
+    title: 'Eliminate "Works on My Machine" in Lab Sections.',
+    body: 'Provide engineering students with deterministic, pre-configured sandbox environments in one click. Automated evaluation sidecars grade practical assignments on live telemetry, eliminating manual TA review bottlenecks.',
+    highlights: [
+      'Dedicated Kubernetes namespace isolation per student',
+      'Zero hypervisor, Docker Desktop, or driver issues',
+      'Automated roster and gradebook sync with Canvas and LMS',
+    ],
+    linkTo: ROUTES.FOR_INSTITUTIONS,
+    linkLabel: 'Explore institutional access',
+  },
+  {
+    id: 'teams',
+    badge: 'Engineering Teams & Tech Leads',
+    title: 'Deterministic Onboarding for Junior SREs.',
+    body: 'Validate practical operational skills before granting production cluster credentials. Run real incident break-fix scenarios including OOMKilled pods, port conflicts, and DNS outages in safe, isolated sandboxes with zero blast radius.',
+    highlights: [
+      'Production-grade incident reproduction drills',
+      'Objective assertion rubrics evaluate actual fixes',
+      'Zero risk of staging or production environment drift',
+    ],
+    linkTo: ROUTES.HOW_IT_WORKS,
+    linkLabel: 'How the evaluation engine works',
+  },
+];
+
+function TargetAudiencesSection() {
+  const revealRef = useScrollReveal<HTMLDivElement>();
+  return (
+    <section className="hp-audiences site-section--paper" aria-labelledby="hp-audiences-title">
+      <div className="site-container">
+        <div className="site-reveal" ref={revealRef}>
+          <div className="hp-audiences__header">
+            <h2 id="hp-audiences-title" className="hp-audiences__title">
+              Engineered for every stage of DevOps engineering.
+            </h2>
+            <p className="hp-audiences__sub">
+              Whether you are mastering container internals independently, managing university lab sections, or standardizing team incident response.
+            </p>
+          </div>
+
+          <div className="hp-audiences__grid">
+            {TARGET_AUDIENCES.map((item) => (
+              <div key={item.id} className="hp-audiences-card">
+                <div className="hp-audiences-card__top">
+                  <span className="hp-audiences-card__badge">{item.badge}</span>
+                  <h3 className="hp-audiences-card__title">{item.title}</h3>
+                  <p className="hp-audiences-card__body">{item.body}</p>
+
+                  <ul className="hp-audiences-card__list" aria-label={`Key capabilities for ${item.badge}`}>
+                    {item.highlights.map((highlight, idx) => (
+                      <li key={idx} className="hp-audiences-card__item">
+                        <span className="hp-audiences-card__check" aria-hidden="true">✓</span>
+                        <span>{highlight}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                <div className="hp-audiences-card__bottom">
+                  <Link to={item.linkTo} className="hp-audiences-card__link">
+                    <span>{item.linkLabel}</span>
+                    <span aria-hidden="true">→</span>
+                  </Link>
+                </div>
+              </div>
             ))}
-            <Link to={ROUTES.CURRICULUM} className="hp-teaser__all">
-              <span className="hp-teaser__all-label">View all 15 modules</span>
-              <span className="hp-teaser__all-arrow" aria-hidden="true">
-                →
-              </span>
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ─── Section 6: Educator Spotlight ───────────────────────────────────────────
+interface EducatorStat {
+  value: string;
+  label: string;
+  description: string;
+}
+
+const EDUCATOR_STATS: EducatorStat[] = [
+  {
+    value: '0 min',
+    label: 'Setup Overhead',
+    description: 'Instant browser-native terminal; students launch full Linux and Kubernetes sandboxes in one click.',
+  },
+  {
+    value: '100%',
+    label: 'Automated Grading',
+    description: 'Live sidecar assertions probe socket bindings and systemd states without manual grading queues.',
+  },
+  {
+    value: '1:1',
+    label: 'Namespace Isolation',
+    description: 'Every student executes in a dedicated Kubernetes namespace capped by strict cgroup limits.',
+  },
+  {
+    value: 'LMS',
+    label: 'Gradebook Sync',
+    description: 'Turnkey export to Canvas, Blackboard, and custom rosters with automated grade passback.',
+  },
+];
+
+function EducatorSpotlightSection() {
+  const revealRef = useScrollReveal<HTMLDivElement>();
+  return (
+    <section className="hp-educator site-section--dim" aria-labelledby="hp-educator-title">
+      <div className="site-container">
+        <div className="site-reveal" ref={revealRef}>
+          <div className="hp-educator__header">
+            <h2 id="hp-educator-title" className="hp-educator__title">
+              Are you an educator?
+            </h2>
+            <p className="hp-educator__sub">
+              DevOpsMentOr Classrooms provides zero-configuration cloud sandboxes and automated grading for your students.
+            </p>
+          </div>
+
+          <div className="hp-educator__grid">
+            {/* Left Column: 2x2 Grid of 4 Stat / Capability Cards */}
+            <div className="hp-educator__stats-grid">
+              {EDUCATOR_STATS.map((stat, idx) => (
+                <div key={idx} className="hp-educator-card">
+                  <span className="hp-educator-card__val">{stat.value}</span>
+                  <span className="hp-educator-card__label">{stat.label}</span>
+                  <p className="hp-educator-card__desc">{stat.description}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Right Column: Visual Showcase Card */}
+            <div className="hp-educator__visual-col">
+              <div className="hp-educator-panel">
+                <div className="hp-educator-panel__top">
+                  <div className="hp-educator-panel__meta">
+                    <span className="hp-educator-panel__dot" aria-hidden="true" />
+                    <span className="hp-educator-panel__tag">Academic Lab Environment</span>
+                  </div>
+                  <span className="hp-educator-panel__pill">CS 401: Cloud & DevOps</span>
+                </div>
+
+                <div className="hp-educator-panel__body">
+                  <div className="hp-educator-panel__quote-icon" aria-hidden="true">“</div>
+                  <p className="hp-educator-panel__quote">
+                    No more troubleshooting local Docker Desktop installations or broken virtual machine hypervisors during 50-minute lab sessions. Students write commands; Kubernetes evaluates them live.
+                  </p>
+                  <div className="hp-educator-panel__author">
+                    <span className="hp-educator-panel__author-name">Department of Computer Science</span>
+                    <span className="hp-educator-panel__author-role">University Cloud Infrastructure Courseware</span>
+                  </div>
+                </div>
+
+                <div className="hp-educator-panel__footer">
+                  <div className="hp-educator-panel__feature-pill">
+                    <span className="hp-educator-panel__feature-bullet" />
+                    <span>Per-Student Sandbox Namespaces</span>
+                  </div>
+                  <div className="hp-educator-panel__feature-pill">
+                    <span className="hp-educator-panel__feature-bullet" />
+                    <span>Real-Time Assertion Telemetry</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Action CTA Button */}
+          <div className="hp-educator__cta">
+            <Link to={ROUTES.FOR_INSTITUTIONS} className="hp-educator__cta-link">
+              <Button variant="secondary" size="lg">
+                Teach with DevOpsMentOr →
+              </Button>
             </Link>
           </div>
         </div>
@@ -704,199 +1407,103 @@ function CurriculumTeaserSection() {
   );
 }
 
-// ─── Section 10: How It Works (compressed) ────────────────────────────────────
-const HIW_STEPS = [
-  {
-    num: '01',
-    title: 'Launch a lab in your browser',
-    body: 'No local Docker, no port conflicts — provisioned in under 90 seconds.',
-  },
-  {
-    num: '02',
-    title: 'Work in a real terminal environment',
-    body: 'Every command runs against actual containers and cluster APIs.',
-  },
-  {
-    num: '03',
-    title: 'Get instant, guardrailed feedback',
-    body: 'Assertions grade your work live; the AI Mentor hints, never answers.',
-  },
-] as const;
-
-function HowItWorksSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-
-  return (
-    <section className="hp-hiw site-section--void" aria-labelledby="hp-hiw-title">
-      <div className="site-container">
-        <div className="site-reveal" ref={revealRef}>
-          <div className="hp-hiw__flow-wrap" aria-hidden="true">
-            <svg className="hp-hiw__flow" preserveAspectRatio="none" viewBox="0 0 100 2">
-              <line className="hp-hiw__flow-track" x1="0" y1="1" x2="100" y2="1" />
-              <line className="hp-hiw__flow-line" x1="0" y1="1" x2="100" y2="1" />
-            </svg>
-          </div>
-          <div className="hp-hiw__steps">
-            {HIW_STEPS.map((step) => (
-              <div key={step.num} className="hp-hiw__step">
-                <span className="hp-hiw__num">{step.num}</span>
-                <h3 className="hp-hiw__title">{step.title}</h3>
-                <p className="hp-hiw__body">{step.body}</p>
-              </div>
-            ))}
-          </div>
-          <div className="hp-hiw__link">
-            <Link to={ROUTES.HOW_IT_WORKS} className="hp-hiw__ghost-link">
-              See the full 7-step lifecycle
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Section 11: Mechanism block ──────────────────────────────────────────────
-const MECHANISMS = [
-  {
-    title: 'No local setup',
-    body: 'Every lab runs in the cloud. No dependency conflicts.',
-  },
-  {
-    title: 'Real infrastructure',
-    body: 'Docker and Kubernetes, not simulations. What you learn transfers to production tooling.',
-  },
-  {
-    title: 'Instant feedback',
-    body: 'Assertions run the moment you act — no waiting for manual grading.',
-  },
-] as const;
-
-function MechanismSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-  return (
-    <section className="hp-mech site-section--void" aria-labelledby="hp-mech-title">
-      <div className="site-container">
-        <div className="site-reveal" ref={revealRef}>
-          <h2 id="hp-mech-title" className="hp-mech__title">
-            Why we built this
-          </h2>
-          <div className="hp-mech__grid">
-            {MECHANISMS.map((m) => (
-              <div key={m.title} className="hp-mech__item">
-                <h3 className="hp-mech__item-title">{m.title}</h3>
-                <p className="hp-mech__item-body">{m.body}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Section 12: For Institutions teaser ──────────────────────────────────────
-function InstitutionsTeaserSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-  return (
-    <section className="hp-inst site-section--base" aria-labelledby="hp-inst-title">
-      <div className="site-container">
-        <div className="site-reveal hp-inst__inner" ref={revealRef}>
-          <h2 id="hp-inst-title" className="hp-inst__title">
-            Every cohort in its own namespace.
-          </h2>
-          <p className="hp-inst__body">
-            Cohorts run on one shared cluster, isolated by Kubernetes namespaces — no duplicated
-            infrastructure. Course teams manage students, labs, and access from a single admin
-            surface.
-          </p>
-          <Link to={ROUTES.FOR_INSTITUTIONS} className="hp-inst__link">
-            Explore institutional access
-            <span aria-hidden="true"> →</span>
-          </Link>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Section 13: Final CTA band ───────────────────────────────────────────────
+// ─── Section 7: Final CTA (§5.11) ───────────────────────────────────────────
 function FinalCtaSection() {
   const revealRef = useScrollReveal<HTMLDivElement>();
   return (
-    <section className="hp-final site-section--raised" aria-labelledby="hp-final-title">
+    <section className="hp-final" aria-labelledby="hp-final-title">
       <div className="site-container">
-        <div className="site-reveal hp-final__inner" ref={revealRef}>
-          <h2 id="hp-final-title" className="hp-final__title">
-            Run your first container lab in the next 90 seconds.
-          </h2>
-          <Link to={ROUTES.SIGNUP} className="hp-final__cta-link">
-            <Button variant="primary" size="lg">
-              Start free
-            </Button>
-          </Link>
+        <div className="site-reveal hp-final__grid" ref={revealRef}>
+          {/* Left Column: Heading only, zero garbage text */}
+          <div className="hp-final__headline-col">
+            <h2 id="hp-final-title" className="hp-final__title">
+              <span className="hp-final__title-line">Begin your</span>
+              <span className="hp-final__title-line">DevOps mastery.</span>
+            </h2>
+          </div>
+
+          {/* Right Column: Account Creation Card */}
+          <div className="hp-final__card-col">
+            <div className="hp-final-card">
+              <h3 className="hp-final-card__heading">Create Your Free Account</h3>
+
+              <div className="hp-final-card__actions">
+                <Link
+                  to={`${ROUTES.SIGNUP}?provider=google`}
+                  className="hp-final-card__btn hp-final-card__btn--google"
+                  aria-label="Continue with Google"
+                >
+                  <GoogleIcon className="hp-final-card__icon" width={18} height={18} />
+                  <span>Continue with Google</span>
+                </Link>
+
+                <Link
+                  to={`${ROUTES.SIGNUP}?provider=github`}
+                  className="hp-final-card__btn hp-final-card__btn--github"
+                  aria-label="Continue with GitHub"
+                >
+                  <GitHubIcon className="hp-final-card__icon" width={18} height={18} />
+                  <span>Continue with GitHub</span>
+                </Link>
+
+                <div className="hp-final-card__divider" aria-hidden="true">
+                  <span className="hp-final-card__divider-line" />
+                  <span className="hp-final-card__divider-text">or</span>
+                  <span className="hp-final-card__divider-line" />
+                </div>
+
+                <Link
+                  to={ROUTES.SIGNUP}
+                  className="hp-final-card__btn hp-final-card__btn--email"
+                  aria-label="Continue with Email"
+                >
+                  <svg
+                    className="hp-final-card__icon"
+                    width="18"
+                    height="18"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <rect width="20" height="16" x="2" y="4" rx="0" />
+                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                  </svg>
+                  <span>Continue with Email</span>
+                </Link>
+              </div>
+
+              <p className="hp-final-card__legal">
+                By continuing, you agree to our{' '}
+                <Link to={ROUTES.TERMS} className="hp-final-card__legal-link">
+                  Terms of Use
+                </Link>{' '}
+                and{' '}
+                <Link to={ROUTES.PRIVACY} className="hp-final-card__legal-link">
+                  Privacy Policy
+                </Link>.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   );
 }
 
-// ─── Section 13: FAQ — quick answers + link to the full FAQ page ───────────────
-const HOME_FAQ_ITEMS = FAQ_CATEGORIES.flatMap((cat) => cat.items).slice(0, 5);
-
-function FaqSection() {
-  const revealRef = useScrollReveal<HTMLDivElement>();
-  return (
-    <section className="hp-faq site-section--void" aria-labelledby="hp-faq-title">
-      <div className="site-container hp-faq__container">
-        <div className="site-reveal" ref={revealRef}>
-          <h2 id="hp-faq-title" className="hp-faq__title">
-            Frequently asked questions
-          </h2>
-          <p className="hp-faq__sub">
-            Quick answers on access, lab sessions, and institutional deployment.
-          </p>
-          <div className="hp-faq__accordion">
-            <SiteAccordion items={HOME_FAQ_ITEMS} allowMultiple={false} />
-          </div>
-          <div className="hp-faq__more">
-            <Link to={ROUTES.FAQ} className="hp-faq__link">
-              See all FAQs
-            </Link>
-          </div>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── Module card (Curriculum styling — reused in FM2 + teaser) ────────────────
-function ModuleCard({ num, title, focus }: { num: string; title: string; focus: string }) {
-  return (
-    <article className="hp-module-card">
-      <span className="hp-module-card__num">{num}</span>
-      <h3 className="hp-module-card__title">{title}</h3>
-      <p className="hp-module-card__focus">{focus}</p>
-    </article>
-  );
-}
-
-// ─── Page ──────────────────────────────────────────────────────────────────────
+// ─── Main Homepage Composition ────────────────────────────────────────────────
 export default function HomePage() {
   return (
     <SiteLayout>
       <HeroSection />
-      <TrustBar />
-      <ProductShowcaseSection />
+      <LearningDashboardSection />
+      <ModuleCatalogTeaserSection />
       <FeatureGradingSection />
-      <FeatureCurriculumSection />
-      <StatStripSection />
-      <BentoSection />
-      <CurriculumTeaserSection />
-      <HowItWorksSection />
-      <MechanismSection />
-      <InstitutionsTeaserSection />
-      <FaqSection />
+      <TargetAudiencesSection />
+      <EducatorSpotlightSection />
       <FinalCtaSection />
     </SiteLayout>
   );

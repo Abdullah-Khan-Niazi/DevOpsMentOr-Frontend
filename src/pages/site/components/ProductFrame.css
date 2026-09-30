@@ -1,10 +1,10 @@
-/* §3.6 ProductFrame — unified window chrome for all product mockups */
+/* Contract v8 ProductFrame — unified boxy window chrome for product mockups */
 
 .pf-frame {
-  background-color: var(--color-bg-sunken);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border-default);
-  box-shadow: var(--shadow-xl);
+  background-color: var(--pearl-100);
+  border-radius: 0px !important;
+  border: 1px solid var(--paper-line);
+  box-shadow: none !important;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -15,9 +15,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
-  background-color: var(--color-bg-raised);
+  padding: var(--space-2) var(--space-4);
+  border-bottom: 1px solid var(--paper-line);
+  background-color: var(--paper-dim);
   flex-shrink: 0;
 }
 
@@ -29,32 +29,31 @@
 
 .pf-dot {
   display: block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  /* Desaturated 60% per §3.6 — not cartoonish */
-  background-color: var(--color-border-strong);
+  width: 8px;
+  height: 8px;
+  border-radius: 0px !important;
+  background-color: var(--paper-line);
 }
 
-/* Label: right-aligned, mono, caption size, tertiary color (app-window style) */
+/* Label: right-aligned, mono, caption size, ink-faint color */
 .pf-label {
   font-family: var(--font-mono);
   font-size: var(--text-caption);
-  color: var(--color-text-tertiary);
+  color: var(--text-tertiary);
   letter-spacing: var(--tracking-normal);
   user-select: none;
 }
 
-/* URL bar: centered pill — the ONE sanctioned pill shape sitewide (§3.6) */
+/* URL bar: boxy, mono */
 .pf-urlbar {
   font-family: var(--font-mono);
   font-size: var(--text-caption);
-  color: var(--color-text-tertiary);
+  color: var(--text-secondary);
   letter-spacing: var(--tracking-normal);
-  background-color: var(--color-bg-sunken);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--radius-full);
-  padding: var(--space-1) var(--space-4);
+  background-color: var(--paper);
+  border: 1px solid var(--paper-line);
+  border-radius: 0px !important;
+  padding: 2px var(--space-3);
   max-width: 60%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -64,20 +63,18 @@
 
 /* ─── Frame body ──────────────────────────────────────────────────────────── */
 .pf-body {
-  padding: var(--space-6);
+  padding: var(--space-4);
   font-family: var(--font-mono);
   font-size: var(--text-mono-m);
-  color: var(--color-text-primary);
+  color: var(--ink);
   line-height: var(--leading-normal);
-  background-color: var(--color-bg-sunken);
+  background-color: var(--paper);
   flex: 1;
   overflow: auto;
 }
 
-/* Browser-style frame: body reads as "the page being shown" — real webpage
-   typography (sans), not terminal mono. App-window frames stay mono (terminal). */
 .pf-frame--browser .pf-body {
-  background-color: var(--color-bg-void);
+  background-color: var(--paper);
   font-family: var(--font-body);
   font-size: var(--text-body-m);
 }

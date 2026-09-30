@@ -156,10 +156,12 @@
   margin-bottom: var(--space-6);
 }
 
-/* ─── OAuth provider button mark (plain glyph, not a badge/pill) ─────────── */
+/* ─── OAuth provider button mark (SVG icon mark) ───────────────────────── */
 .auth-oauth__mark {
-  font-family: var(--font-mono);
-  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
   line-height: 1;
 }
 

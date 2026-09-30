@@ -21,14 +21,12 @@
 }
 
 /* ─── Scrolled state (>80px) ─────────────────────────────────────────────── */
-/* §2.2: Glassmorphism permitted ONLY here — the one sanctioned instance.      */
-/* --color-bg-base at 72% opacity via color-mix so it themes correctly.        */
 .site-header--scrolled {
   height: 64px;
-  background: color-mix(in srgb, var(--color-bg-base) 72%, transparent);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom-color: var(--color-border-subtle);
+  background: color-mix(in srgb, var(--paper) 88%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--paper-line);
 }
 
 /* ─── Hidden state (scroll-down past 600px) ──────────────────────────────── */
@@ -195,35 +193,41 @@
 }
 
 .site-header__login:focus-visible {
-  outline: 2px solid var(--color-accent-500);
+  outline: 2px solid var(--ink);
   outline-offset: 4px;
-  border-radius: var(--radius-xs);
 }
 
 .site-header__signup {
   display: inline-flex;
   align-items: center;
-  height: 32px;
+  height: 36px;
   padding: 0 var(--space-4);
-  background-color: var(--color-accent-500);
-  color: var(--color-text-on-accent);
+  background-color: var(--ink);
+  color: var(--pearl-100);
   font-family: var(--font-body);
   font-size: var(--text-body-s);
   font-weight: 500;
   text-decoration: none;
-  border-radius: var(--radius-xs);
-  transition:
-    background-color var(--duration-fast) var(--ease-standard),
-    box-shadow var(--duration-fast) var(--ease-standard);
+  border-radius: 0px !important;
+  border: 1px solid var(--ink);
+  transition: background-color 160ms var(--ease-standard), border-color 160ms var(--ease-standard), transform 160ms var(--ease-standard);
 }
 
 .site-header__signup:hover {
-  background-color: var(--color-accent-400);
-  box-shadow: var(--shadow-accent-glow);
+  background-color: var(--text-secondary);
+  border-color: var(--text-secondary);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.site-header__signup:active {
+  background-color: var(--ink);
+  border-color: var(--ink);
+  transform: translateY(0);
 }
 
 .site-header__signup:focus-visible {
-  outline: 2px solid var(--color-accent-500);
+  outline: 2px solid var(--ink);
   outline-offset: 2px;
 }
 
