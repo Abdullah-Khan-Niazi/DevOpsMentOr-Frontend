@@ -8,6 +8,7 @@ import { useVerifyEmail, useResendVerification } from '../../hooks/useVerifyEmai
 import { authService } from '../../services';
 import { OAuthButton } from '../OAuthButton';
 import { OtpInputGroup } from '../OtpInputGroup';
+import { extractInvitationToken } from '../../utils/invitation';
 import type {
   AccountType,
   LoginResponse,
@@ -321,29 +322,35 @@ export function OrganizationStep({ onNext }: StepProps) {
 
 export function InvitationStep({ onNext }: StepProps) {
   const setInvitationCode = useOnboardingStore((s) => s.setInvitationCode);
-  const [code, setCode] = useState('');
+  const existingCode = useOnboardingStore((s) => s.invitationCode);
+  const [code, setCode] = useState(existingCode ?? '');
   const [error, setError] = useState<string | null>(null);
 
   const submit = () => {
-    if (code.trim().length < 1) {
-      setError('Invitation code is required.');
+    const extracted = extractInvitationToken(code);
+    if (!extracted) {
+      setError('Invitation code or link is required.');
       return;
     }
-    setInvitationCode(code.trim());
+    setInvitationCode(extracted);
     onNext?.();
   };
 
   return (
     <div className="flex flex-col gap-4">
       <Input
-        label="Invitation code"
-        placeholder="Paste the code from your invitation email"
+        label="Invitation code or link"
+        placeholder="Paste invite link or enter 72h access code"
         value={code}
         error={error ?? undefined}
-        onChange={(event: ChangeEvent<HTMLInputElement>) => setCode(event.target.value)}
+        onChange={(event: ChangeEvent<HTMLInputElement>) => {
+          setError(null);
+          setCode(event.target.value);
+        }}
+        required
       />
       <p className="auth-account-slug-preview">
-        The invitation must match the email you use to sign up.
+        Invitations are valid for 72 hours from issuance and must match your email address.
       </p>
 
       <Button type="button" className="w-full" onClick={submit}>
@@ -389,6 +396,35 @@ export function VerifyEmailStep({ onVerified, password = '', onBack: _onBack }: 
     if (started.current || !email || !password) return;
     started.current = true;
 
+    const detectClientCountry = (): string | undefined => {
+      try {
+        const locale = new Intl.Locale(navigator.language);
+        if (locale.region && locale.region.length === 2) {
+          return locale.region.toUpperCase();
+        }
+      } catch {
+        // fallback
+      }
+      const match = navigator.language?.split('-')[1];
+      if (match && match.length === 2) {
+        return match.toUpperCase();
+      }
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
+      if (tz.includes('Karachi')) return 'PK';
+      if (tz.includes('New_York') || tz.includes('Chicago') || tz.includes('Los_Angeles') || tz.includes('Denver')) return 'US';
+      if (tz.includes('London')) return 'GB';
+      if (tz.includes('Toronto') || tz.includes('Vancouver')) return 'CA';
+      if (tz.includes('Sydney') || tz.includes('Melbourne')) return 'AU';
+      if (tz.includes('Berlin')) return 'DE';
+      if (tz.includes('Paris')) return 'FR';
+      if (tz.includes('Tokyo')) return 'JP';
+      if (tz.includes('Dubai')) return 'AE';
+      if (tz.includes('Kolkata') || tz.includes('Calcutta')) return 'IN';
+      return undefined;
+    };
+
+    const detectedCountry = detectClientCountry();
+
     let payload: SignupCredentials;
     if (accountType === 'organization' && organization) {
       payload = {
@@ -398,6 +434,7 @@ export function VerifyEmailStep({ onVerified, password = '', onBack: _onBack }: 
         fullName: fullName.trim(),
         accountType: 'organization',
         organization,
+        countryCode: detectedCountry,
       };
     } else if (accountType === 'member' && invitationCode) {
       payload = {
@@ -407,6 +444,7 @@ export function VerifyEmailStep({ onVerified, password = '', onBack: _onBack }: 
         fullName: fullName.trim(),
         accountType: 'member',
         invitationCode: invitationCode.trim(),
+        countryCode: detectedCountry,
       };
     } else {
       payload = {
@@ -415,6 +453,7 @@ export function VerifyEmailStep({ onVerified, password = '', onBack: _onBack }: 
         password,
         fullName: fullName.trim(),
         accountType: 'individual',
+        countryCode: detectedCountry,
       };
     }
 

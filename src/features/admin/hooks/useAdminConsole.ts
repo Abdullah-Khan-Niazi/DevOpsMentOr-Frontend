@@ -42,13 +42,22 @@ export function useAdminUserDetail(userId: number, enabled = true) {
     },
   });
 
-  return { query, ban, unban, remove };
+  const restore = useMutation({
+    mutationFn: () => adminService.restoreUser(userId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.admin.userDetail(userId) });
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'users'] });
+    },
+  });
+
+  return { query, ban, unban, remove, restore };
 }
 
-export function useAdminDashboard() {
+export function useAdminDashboard(options?: { refetchInterval?: number }) {
   return useQuery({
     queryKey: QUERY_KEYS.admin.dashboard,
     queryFn: () => adminService.getDashboard(),
+    ...options,
   });
 }
 

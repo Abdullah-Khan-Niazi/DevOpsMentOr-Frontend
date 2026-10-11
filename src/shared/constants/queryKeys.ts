@@ -45,6 +45,8 @@ export const QUERY_KEYS = {
     roster: (classId: string | number) => ['org', 'classes', String(classId), 'students'] as const,
     invitations: (classId: string | number) =>
       ['org', 'classes', String(classId), 'invitations'] as const,
+    users: ['org', 'users'] as const,
+    userDetail: (userId: string | number) => ['org', 'users', String(userId)] as const,
   },
   enrollment: {
     validate: (token: string) => ['enroll', 'validate', token] as const,
@@ -180,6 +182,7 @@ export const QUERY_KEYS = {
   adminAnalytics: {
     overview: ['admin', 'analytics', 'overview'] as const,
     activity: (days: number) => ['admin', 'analytics', 'activity', String(days)] as const,
+    detailed: ['admin', 'analytics', 'detailed'] as const,
   },
   // ─── F9 billing, subscriptions & payment methods ───────────────────────
   billing: {

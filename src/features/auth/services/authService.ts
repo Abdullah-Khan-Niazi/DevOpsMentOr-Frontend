@@ -57,6 +57,11 @@ export const authService = {
     return data;
   },
 
+  async setPassword(payload: { currentPassword?: string; newPassword: string }): Promise<MessageResponse> {
+    const { data } = await apiClient.post<MessageResponse>('/auth/set-password', payload);
+    return data;
+  },
+
   async oauthLogin(credentials: OAuthCredentials): Promise<OAuthLoginResult> {
     const { data } = await apiClient.post<OAuthLoginResult>('/auth/oauth/login', credentials);
     return data;

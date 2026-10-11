@@ -4,25 +4,23 @@ import { SiteLogo } from '@/shared/components/Logo';
 import { Icon } from '@/shared/components/Icon';
 import { useLogout } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import { useUiStore } from '@/shared/stores/uiStore';
+import { useUiStore } from '@/shared/stores';
 import { ROUTES } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import { AnnouncementBanner } from '@/features/notifications/components/AnnouncementBanner';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { usePublishedAnnouncements } from '@/features/notifications/hooks/useNotifications';
-import type { AppNavItem } from './navigation';
+import { buildNavItems, type AppNavItem } from './navigation';
 import './AppChrome.css';
 
-// Unified authenticated chrome — everything lives inside the sidebar:
-//   top: brand logo + collapse control (logo is mark-only when collapsed,
-//        full lockup when expanded)
-//   middle: navigation (icon + label when open, icon only when collapsed,
-//           grouped by section — labels only when multiple sections exist)
-//   bottom: profile + logout — the only home for both
-// There is no top header and nothing is duplicated anywhere else.
+// Unified authenticated chrome — clean sidebar layout:
+//   top: brand logo + collapse control
+//   middle: permission-gated & additive navigation (icon + label when open, icon only when collapsed)
+//   bottom: profile + logout
+// Zero intrusive banners, zero redundant switcher clutter.
 
 interface AppChromeProps {
-  navItems: AppNavItem[];
+  navItems?: AppNavItem[];
   logoTo?: string;
   children: ReactNode;
 }
@@ -50,7 +48,9 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
     ? ROUTES.PROFILE_VIEW.replace(':userId', String(user.userId))
     : ROUTES.PROFILE_EDIT;
 
-  const groups = navItems.reduce<Array<{ section: string; items: AppNavItem[] }>>((acc, item) => {
+  const currentNavItems = navItems ?? buildNavItems(user);
+
+  const groups = currentNavItems.reduce<Array<{ section: string; items: AppNavItem[] }>>((acc, item) => {
     const last = acc[acc.length - 1];
     if (last && last.section === item.section) {
       last.items.push(item);
@@ -81,7 +81,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
             />
           </button>
 
-          {canSeeNotifications ? <NotificationBell /> : null}
+          {isSidebarOpen && canSeeNotifications ? <NotificationBell /> : null}
         </div>
 
         <nav className="app-chrome__nav" aria-label="Primary">
@@ -108,24 +108,27 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
         </nav>
 
         <div className="app-chrome__footer">
-          <Link to={profileTo} className="app-chrome__profile">
+          <Link to={profileTo} className="app-chrome__profile" title={profileName}>
             <span className="app-chrome__avatar" aria-hidden="true">
               {userInitials(profileName)}
             </span>
-            <span className="app-chrome__profile-name">{profileName}</span>
+            {isSidebarOpen ? (
+              <span className="app-chrome__profile-name">{profileName}</span>
+            ) : null}
           </Link>
 
-          <button
-            type="button"
-            className="app-chrome__logout"
-            onClick={() => logout.mutate()}
-            disabled={logout.isPending}
-          >
-            <Icon name="logout" className="app-chrome__logout-icon" />
-            <span className="app-chrome__logout-label">
-              {logout.isPending ? 'Logging out…' : 'Log out'}
-            </span>
-          </button>
+          {isSidebarOpen ? (
+            <button
+              type="button"
+              className="app-chrome__logout"
+              onClick={() => logout.mutate()}
+              disabled={logout.isPending}
+              title={logout.isPending ? 'Logging out…' : 'Log out'}
+              aria-label="Log out"
+            >
+              <Icon name="logout" className="app-chrome__logout-icon" />
+            </button>
+          ) : null}
         </div>
       </aside>
 

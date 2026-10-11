@@ -141,12 +141,7 @@ export function AdminModuleEditorPage() {
     <div className="mx-auto max-w-5xl space-y-6">
       <PageHeader
         title={module.title}
-        description={`Module ${module.moduleOrder} of the canonical course.`}
-        actions={
-          <Button variant="ghost" onClick={() => navigate(ROUTES.ADMIN_CURRICULUM)}>
-            Back to curriculum
-          </Button>
-        }
+        backTo={ROUTES.ADMIN_CURRICULUM}
       />
 
       <Card className="p-6">

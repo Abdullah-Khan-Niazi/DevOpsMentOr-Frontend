@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button, PageHeader, Pagination } from '@/shared/components';
 import { useInvoiceDownload, useOrders } from '../hooks/useBilling';
 import { ROUTES } from '@/shared/constants';
-import { Link } from 'react-router-dom';
 import type { OrderStatus } from '../types';
 import './history.css';
 
@@ -56,15 +55,8 @@ export function BillingHistoryPage() {
   return (
     <div className="history-page">
       <PageHeader
-        title="Billing history"
-        description="Orders, receipts and invoices for your account."
-        actions={
-          <Link to={ROUTES.BILLING}>
-            <Button variant="ghost" size="sm">
-              Back to billing
-            </Button>
-          </Link>
-        }
+        title="Billing History"
+        backTo={ROUTES.BILLING}
       />
 
       {orders.isLoading ? <p className="history-page__hint">Loading…</p> : null}

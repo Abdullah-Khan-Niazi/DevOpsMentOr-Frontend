@@ -1,5 +1,5 @@
-import { useNavigate, useParams } from 'react-router-dom';
-import { Button, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
+import { useParams } from 'react-router-dom';
+import { ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { QuizBuilderPanel } from '../components/QuizBuilderPanel';
 import { useAdminQuizEditor } from '../hooks';
@@ -7,7 +7,6 @@ import { useAdminQuizEditor } from '../hooks';
 /** F4 SCR-F4-04: quiz builder with question and answer CRUD (F4-API-20..22). */
 export function AdminQuizBuilderPage() {
   const { quizId = '' } = useParams<{ quizId: string }>();
-  const navigate = useNavigate();
   const builder = useAdminQuizEditor(quizId);
 
   if (builder.query.isLoading) {
@@ -37,17 +36,7 @@ export function AdminQuizBuilderPage() {
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
         title={quiz.title}
-        description={`Module quiz · ${quiz.isPublished ? 'Published' : 'Draft'}`}
-        actions={
-          <Button
-            variant="ghost"
-            onClick={() =>
-              navigate(ROUTES.ADMIN_CURRICULUM_MODULE.replace(':moduleId', String(quiz.moduleId)))
-            }
-          >
-            Back to module
-          </Button>
-        }
+        backTo={ROUTES.ADMIN_CURRICULUM_MODULE.replace(':moduleId', String(quiz.moduleId))}
       />
 
       <QuizBuilderPanel

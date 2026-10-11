@@ -138,6 +138,17 @@ export const classService = {
     );
     return unwrap(data);
   },
+
+  /** Resend class invitation */
+  async resendInvitation(
+    classId: string | number,
+    invitationId: string | number,
+  ): Promise<{ success: boolean; email: string }> {
+    const { data } = await apiClient.post<{ data: { success: boolean; email: string } }>(
+      `/org/classes/${classId}/invitations/${invitationId}/resend`,
+    );
+    return unwrap(data);
+  },
 };
 
 export default classService;

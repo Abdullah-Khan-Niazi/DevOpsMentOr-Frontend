@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+import { Navigate } from 'react-router-dom';
 import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/shared/components';
+import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import {
   ContinueLearningCard,
@@ -78,8 +80,15 @@ function LearnerDashboard() {
   return (
     <div>
       <PageHeader
-        title={`Welcome back, ${user?.fullName ?? 'learner'}`}
-        description={`${streak} day learning streak`}
+        title={`Welcome back, ${user?.fullName ?? 'Learner'}`}
+        actions={
+          streak > 0 ? (
+            <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-card-foreground">
+              <span className="text-amber-500 font-bold">&#9733;</span>
+              <span>{streak} day streak</span>
+            </div>
+          ) : null
+        }
       />
 
       {!course.data ? (
@@ -111,10 +120,7 @@ function AdminStatsDashboard() {
 
   return (
     <div>
-      <PageHeader
-        title="Dashboard"
-        description="Overview of platform activity and system health."
-      />
+      <PageHeader title="Platform Dashboard" />
 
       {isLoading || isFetching ? <LoadingState label="Loading dashboard…" /> : null}
 
@@ -130,9 +136,26 @@ function AdminStatsDashboard() {
 }
 
 export default function DashboardPage() {
-  const hasProgressRead = useAuthStore((state) =>
-    (state.user?.permissions ?? []).includes('progress.self.read'),
-  );
+  const user = useAuthStore((state) => state.user);
+
+  if (user) {
+    const roles = new Set(user.roles ?? []);
+    const permissions = new Set(user.permissions ?? []);
+
+    if (roles.has('platform_admin') || permissions.has('platform.admin.access')) {
+      return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
+    }
+    if (
+      roles.has('org_admin') ||
+      permissions.has('org:manage') ||
+      roles.has('professor') ||
+      permissions.has('progress.org.read')
+    ) {
+      return <Navigate to={ROUTES.ORG_DASHBOARD} replace />;
+    }
+  }
+
+  const hasProgressRead = (user?.permissions ?? []).includes('progress.self.read');
 
   return hasProgressRead ? <LearnerDashboard /> : <AdminStatsDashboard />;
 }

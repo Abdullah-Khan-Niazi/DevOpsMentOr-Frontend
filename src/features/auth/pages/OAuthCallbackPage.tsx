@@ -6,6 +6,7 @@ import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useOnboardingStore } from '@/features/auth/stores/onboardingStore';
 import { authService } from '@/features/auth/services';
 import type { LoginResponse, OAuthPendingResult } from '@/features/auth/types';
+import { getDefaultRouteForUser } from '@/features/auth/utils/rbac';
 import '../styles/auth.css';
 
 function OAuthCallbackPage() {
@@ -60,7 +61,7 @@ function OAuthCallbackPage() {
                   },
                 };
           setSession(sessionPayload);
-          void navigate(ROUTES.DASHBOARD, { replace: true });
+          void navigate(getDefaultRouteForUser(inner.user), { replace: true });
           return;
         }
 

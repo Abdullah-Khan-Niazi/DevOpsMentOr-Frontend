@@ -38,4 +38,26 @@ export function useOrgProfessors() {
   return { query, invite };
 }
 
+export function useOrgUsers() {
+  return useQuery({
+    queryKey: QUERY_KEYS.org.users,
+    queryFn: () => orgService.listOrgUsers(),
+  });
+}
+
+export function useOrgUserDetail(userId: number | string | null, enabled = true) {
+  return useQuery({
+    queryKey: QUERY_KEYS.org.userDetail(userId ?? 0),
+    queryFn: () => orgService.getOrgUserDetail(userId!),
+    enabled: Boolean(userId) && enabled,
+  });
+}
+
+export function useMyOrgAnalytics() {
+  return useQuery({
+    queryKey: ['org', 'analytics'],
+    queryFn: () => orgService.getMyOrgAnalytics(),
+  });
+}
+
 export type { UpdateMyOrgPayload } from '../services';

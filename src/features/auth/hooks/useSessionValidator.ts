@@ -1,4 +1,5 @@
 import { useCallback, useEffect } from 'react';
+import { ROUTES } from '@/shared/constants';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 
@@ -35,4 +36,55 @@ export function useSessionValidator() {
     if (!isAuthenticated) return;
     void validate();
   }, [isAuthenticated, validate]);
+
+  // Back-Forward Cache (bfcache) and swipe-back popstate security guards
+  useEffect(() => {
+    const handlePageShow = (event: PageTransitionEvent) => {
+      const isAuth = useAuthStore.getState().isAuthenticated;
+      if (event.persisted && !isAuth) {
+        // Page was restored from bfcache while logged out. Force immediate redirect to login.
+        window.location.replace(ROUTES.LOGIN);
+      } else if (isAuth) {
+        void validate();
+      }
+    };
+
+    const handlePopState = () => {
+      const isAuth = useAuthStore.getState().isAuthenticated;
+      const pathname = window.location.pathname;
+
+      const publicPaths: string[] = [
+        ROUTES.HOME,
+        ROUTES.LOGIN,
+        ROUTES.SIGNUP,
+        ROUTES.VERIFY_EMAIL,
+        ROUTES.FORGOT_PASSWORD,
+        ROUTES.RESET_PASSWORD,
+        ROUTES.OAUTH_CALLBACK,
+        ROUTES.HOW_IT_WORKS,
+        ROUTES.CURRICULUM,
+        ROUTES.PRICING,
+        ROUTES.ABOUT,
+        ROUTES.CONTACT,
+        ROUTES.FOR_INSTITUTIONS,
+        ROUTES.FAQ,
+        ROUTES.DOCUMENTATION,
+        ROUTES.PRIVACY,
+        ROUTES.TERMS,
+      ];
+
+      const isPublic = publicPaths.includes(pathname);
+      if (!isAuth && !isPublic) {
+        // Unauthenticated navigation back into protected/admin space: kick back to login
+        window.location.replace(ROUTES.LOGIN);
+      }
+    };
+
+    window.addEventListener('pageshow', handlePageShow);
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('pageshow', handlePageShow);
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [validate]);
 }

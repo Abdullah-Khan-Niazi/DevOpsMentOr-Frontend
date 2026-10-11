@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/services';
-import type { ActivityTrendDto, AnalyticsOverviewDto } from '../types';
+import type { ActivityTrendDto, AnalyticsOverviewDto, DetailedAnalyticsDto } from '../types';
 
 function unwrap<T>(envelope: { data: T }): T {
   return envelope.data;
@@ -20,6 +20,14 @@ export const adminAnalyticsService = {
     const { data } = await apiClient.get<{ data: ActivityTrendDto }>('/admin/analytics/activity', {
       params: { days },
     });
+    return unwrap(data);
+  },
+
+  /** Granular platform analytics deep dive. */
+  async getDetailedAnalytics(): Promise<DetailedAnalyticsDto> {
+    const { data } = await apiClient.get<{ data: DetailedAnalyticsDto }>(
+      '/admin/analytics/detailed',
+    );
     return unwrap(data);
   },
 };

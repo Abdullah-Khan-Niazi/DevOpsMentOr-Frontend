@@ -148,3 +148,58 @@ export interface OrgCreatedDto {
   slug: string;
   createdAt: string;
 }
+
+/** ORG member / user view */
+export interface OrgUserDto {
+  userId: number;
+  email: string;
+  fullName: string | null;
+  username: string;
+  status: string;
+  role: 'org_admin' | 'professor' | 'org_student';
+  classes: Array<{ classId: number; className: string }>;
+  enrolledAt: string;
+  completedModules: number;
+}
+
+export interface OrgUserDetailDto extends OrgUserDto {
+  countryCode: string | null;
+  quizzesPassed: number;
+  labHours: number;
+}
+
+export interface OrgAnalyticsDto {
+  revenue: {
+    totalRevenue: number;
+    paidOrdersCount: number;
+    activeSubscriptions: number;
+    subscriptionPlan: string;
+  };
+  members: {
+    totalMembers: number;
+    studentsCount: number;
+    professorsCount: number;
+    adminsCount: number;
+  };
+  progress: {
+    avgModuleCompletionRate: number;
+    avgLabCompletionRate: number;
+    totalModuleCompletions: number;
+    totalLabCompletions: number;
+  };
+  compute: {
+    activePods: number;
+    minCpu: number;
+    avgCpu: number;
+    maxCpu: number;
+    minRam: number;
+    avgRam: number;
+    maxRam: number;
+  };
+  dau: {
+    minDau: number;
+    maxDau: number;
+    avgDau: number;
+    dailyTrend: Array<{ date: string; activeUsers: number; labCompletions: number }>;
+  };
+}

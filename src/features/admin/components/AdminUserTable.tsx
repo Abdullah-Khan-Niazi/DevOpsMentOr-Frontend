@@ -1,8 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { ROUTES } from '@/shared/constants';
 import type { AdminUserListItem } from '../types';
 
 function formatDate(value: string | null): string {
-  if (!value) return '—';
+  if (!value) return '-';
   return new Date(value).toLocaleDateString(undefined, {
     year: 'numeric',
     month: 'short',
@@ -10,12 +11,11 @@ function formatDate(value: string | null): string {
   });
 }
 
-/** Status text only — no pill badges (§10 DO NOT CREATE UserStatusPill). */
-function statusText(user: AdminUserListItem): string {
-  if (user.deletedAt) return 'Deleted';
-  if (user.isBanned) return 'Banned';
-  if (!user.isActive) return 'Inactive';
-  return 'Active';
+function formatRolesText(roles: string[]): string {
+  if (!roles || roles.length === 0) return '-';
+  return roles
+    .map((r) => r.replace('_', ' '))
+    .join(', ');
 }
 
 interface AdminUserTableProps {
@@ -24,6 +24,8 @@ interface AdminUserTableProps {
 }
 
 export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
+  const navigate = useNavigate();
+
   if (isLoading) {
     return <p className="py-6 text-sm text-muted">Loading users…</p>;
   }
@@ -33,47 +35,51 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
   }
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead>
-        <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-          <th className="px-3 py-2 font-medium">User</th>
-          <th className="px-3 py-2 font-medium">Roles</th>
-          <th className="px-3 py-2 font-medium">Status</th>
-          <th className="px-3 py-2 font-medium">Joined</th>
-          <th className="px-3 py-2 font-medium">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        {users.map((user) => (
-          <tr
-            key={user.userId}
-            className="border-b border-border/60 last:border-0 hover:bg-surface/60"
-          >
-            <td className="px-3 py-2.5">
-              <div className="font-medium text-card-foreground">
-                {user.fullName ?? user.username}
-              </div>
-              <div className="text-xs text-muted">
-                @{user.username} · {user.email}
-              </div>
-            </td>
-            <td className="px-3 py-2.5 text-muted-foreground">
-              {user.roles.length === 0 ? '—' : user.roles.join(', ')}
-            </td>
-            <td className="px-3 py-2.5 text-muted-foreground">{statusText(user)}</td>
-            <td className="px-3 py-2.5 text-muted-foreground">{formatDate(user.createdAt)}</td>
-            <td className="px-3 py-2.5">
-              <Link
-                to={`/admin/users/${user.userId}`}
-                className="inline-block rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50"
-              >
-                View
-              </Link>
-            </td>
+    <div className="overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+            <th className="px-3 py-2 font-medium">User</th>
+            <th className="px-3 py-2 font-medium">Roles</th>
+            <th className="px-3 py-2 font-medium">Organization</th>
+            <th className="px-3 py-2 font-medium">Country</th>
+            <th className="px-3 py-2 font-medium text-right">Joined</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {users.map((user) => (
+            <tr
+              key={user.userId}
+              onClick={() =>
+                navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(user.userId)))
+              }
+              className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
+            >
+              <td className="px-3 py-3">
+                <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
+                  {user.fullName ?? user.username}
+                </div>
+                <div className="text-xs text-muted">
+                  @{user.username} · {user.email}
+                </div>
+              </td>
+              <td className="px-3 py-3 text-card-foreground text-xs font-normal">
+                {formatRolesText(user.roles)}
+              </td>
+              <td className="px-3 py-3 text-card-foreground text-xs font-normal">
+                {user.organizationName ?? '-'}
+              </td>
+              <td className="px-3 py-3 text-xs text-muted-foreground">
+                {user.country ?? '-'}
+              </td>
+              <td className="px-3 py-3 text-muted-foreground text-right text-xs tabular-nums">
+                {formatDate(user.createdAt)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

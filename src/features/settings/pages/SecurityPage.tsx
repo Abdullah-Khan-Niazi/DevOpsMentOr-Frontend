@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Button, Card, toast } from '@/shared/components';
 import { use2fa } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
+import { authService } from '@/features/auth/services';
 import { OtpInputGroup } from '@/features/auth/components/OtpInputGroup';
 import { QRCodeDisplay } from '@/features/auth/components/QRCodeDisplay';
 import '@/shared/styles/app.css';
@@ -237,7 +238,112 @@ export default function SecurityPage() {
             )}
           </Card>
         ) : null}
+
+        <PasswordManagementCard />
       </div>
     </div>
+  );
+}
+
+function PasswordManagementCard() {
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+
+    if (newPassword.length < 8) {
+      setErrorMsg('New password must be at least 8 characters long.');
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      setErrorMsg('Passwords do not match.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      await authService.setPassword({
+        currentPassword: currentPassword.trim() ? currentPassword : undefined,
+        newPassword,
+      });
+      toast.success('Password saved successfully.');
+      setCurrentPassword('');
+      setNewPassword('');
+      setConfirmPassword('');
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Failed to update password.';
+      setErrorMsg(msg);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Card className="settings-card">
+      <h2 className="settings-card__title">Account Password</h2>
+      <p className="settings-card__body">
+        Set or update your account password. If you signed in with Google or GitHub, setting a password allows you to sign in using your email and password as well.
+      </p>
+
+      <form onSubmit={handleSubmit} className="space-y-4 max-w-md pt-2">
+        {errorMsg && (
+          <div className="p-2.5 text-xs font-mono bg-destructive/10 text-destructive border border-destructive/20 rounded-none">
+            {errorMsg}
+          </div>
+        )}
+
+        <div>
+          <label className="block text-xs font-mono text-muted mb-1">
+            Current Password <span className="text-[10px] text-muted/60">(leave blank if you registered via OAuth)</span>
+          </label>
+          <input
+            type="password"
+            autoComplete="current-password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            className="input-field w-full rounded-none font-mono text-xs"
+            placeholder="••••••••••••"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-mono text-muted mb-1">New Password</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            required
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            className="input-field w-full rounded-none font-mono text-xs"
+            placeholder="Min 8 characters"
+          />
+        </div>
+
+        <div>
+          <label className="block text-xs font-mono text-muted mb-1">Confirm New Password</label>
+          <input
+            type="password"
+            autoComplete="new-password"
+            required
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            className="input-field w-full rounded-none font-mono text-xs"
+            placeholder="Re-enter new password"
+          />
+        </div>
+
+        <div>
+          <Button type="submit" isLoading={isSubmitting} className="rounded-none">
+            Save Password
+          </Button>
+        </div>
+      </form>
+    </Card>
   );
 }

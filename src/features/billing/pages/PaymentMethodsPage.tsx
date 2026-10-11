@@ -1,5 +1,4 @@
 import { Button, EmptyState, PageHeader } from '@/shared/components';
-import { Link } from 'react-router-dom';
 import { usePaymentMethods } from '../hooks/useBilling';
 import { ROUTES } from '@/shared/constants';
 import { PaymentMethodCard } from '../components/PaymentMethodCard';
@@ -16,18 +15,13 @@ export function PaymentMethodsPage() {
   return (
     <div className="payment-methods-page">
       <PageHeader
-        title="Payment methods"
-        description="Saved cards and billing accounts used for subscription payments."
+        title="Payment Methods"
+        backTo={ROUTES.BILLING}
         actions={
           <div className="payment-methods-page__actions">
             <Button variant="primary" size="sm" onClick={() => setAdding(true)}>
               Add payment method
             </Button>
-            <Link to={ROUTES.BILLING}>
-              <Button variant="ghost" size="sm">
-                Back to billing
-              </Button>
-            </Link>
           </div>
         }
       />

@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Card, ErrorState, LoadingState, PageHeader } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { StudentProgressTable, type SortKey } from '../components/StudentProgressTable';
@@ -57,18 +57,10 @@ export function ProfessorClassProgressPage() {
     [classQuery.data, sort],
   );
 
-  const averageProgress = useMemo(() => {
-    const students = classQuery.data?.students ?? [];
-    if (students.length === 0) return 0;
-    return Math.round(
-      students.reduce((sum, student) => sum + student.progressPercentage, 0) / students.length,
-    );
-  }, [classQuery.data]);
-
   if (classQuery.isError) {
     return (
       <div>
-        <PageHeader title="Class progress" />
+        <PageHeader title="Class Progress" />
         <ErrorState
           message={classQuery.error?.message ?? 'Unable to load class progress.'}
           onRetry={() => void classQuery.refetch()}
@@ -77,23 +69,14 @@ export function ProfessorClassProgressPage() {
     );
   }
 
-  const className = classQuery.data?.className ?? 'Class';
-  const students = classQuery.data?.students ?? [];
+  const className = classQuery.data?.className ?? 'Class Progress';
   const moduleAverages = classQuery.data?.moduleAverages ?? [];
 
   return (
     <div>
       <PageHeader
-        title="Class progress"
-        description={`${className} · ${students.length} student${students.length === 1 ? '' : 's'} · ${averageProgress}% average`}
-        actions={
-          <Link
-            to={ROUTES.ORG_CLASSES}
-            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
-          >
-            ← Back to classes
-          </Link>
-        }
+        title={className}
+        backTo={ROUTES.ORG_CLASSES}
       />
 
       <ModuleProgressSummaryRow modules={moduleAverages ?? []} isLoading={classQuery.isLoading} />

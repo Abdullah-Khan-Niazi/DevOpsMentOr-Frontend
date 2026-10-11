@@ -1,12 +1,11 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useState, useMemo } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Button,
   Card,
   EmptyState,
   ErrorState,
   Input,
-  Modal,
   PageHeader,
   Pagination,
   toast,
@@ -28,10 +27,13 @@ const EMPTY_FORM: CreateOrgPayload = {
 
 /** F3 contract §09 SCR-F3-01: platform-admin organization management (ORG-01/02). */
 export function AdminOrganizationsPage() {
+  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [draft, setDraft] = useState('');
   const [search, setSearch] = useState('');
+  const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [page, setPage] = useState(1);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(() => searchParams.get('create') === 'true');
   const create = useCreateOrganization();
   const [form, setForm] = useState<CreateOrgPayload>(EMPTY_FORM);
 
@@ -52,9 +54,18 @@ export function AdminOrganizationsPage() {
     void refetch();
   };
 
-  const openModal = () => {
+  const openCreateDrawer = () => {
     setForm(EMPTY_FORM);
-    setModalOpen(true);
+    setIsDrawerOpen(true);
+  };
+
+  const closeCreateDrawer = () => {
+    setIsDrawerOpen(false);
+    if (searchParams.get('create')) {
+      const next = new URLSearchParams(searchParams);
+      next.delete('create');
+      setSearchParams(next, { replace: true });
+    }
   };
 
   const submitCreate = () => {
@@ -75,7 +86,7 @@ export function AdminOrganizationsPage() {
       {
         onSuccess: () => {
           toast.success('Organization created.');
-          setModalOpen(false);
+          closeCreateDrawer();
           setPage(1);
           void refetch();
         },
@@ -84,12 +95,32 @@ export function AdminOrganizationsPage() {
     );
   };
 
+  // Filter organizations client-side if industry filter is active
+  const filteredOrgs = useMemo(() => {
+    if (!data?.data) return [];
+    if (selectedIndustry === 'all') return data.data;
+    return data.data.filter((org) => org.industry?.toLowerCase() === selectedIndustry.toLowerCase());
+  }, [data?.data, selectedIndustry]);
+
+  // Unique industries for filter dropdown
+  const availableIndustries = useMemo(() => {
+    if (!data?.data) return [];
+    const set = new Set<string>();
+    data.data.forEach((org) => {
+      if (org.industry) set.add(org.industry);
+    });
+    return Array.from(set);
+  }, [data?.data]);
+
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Organizations"
-        description="All organizations on the platform. Create new ones and manage their admins."
-        actions={<Button onClick={openModal}>Create organization</Button>}
+        actions={
+          <Button variant="primary" size="sm" onClick={openCreateDrawer}>
+            + New Organization
+          </Button>
+        }
       />
 
       <Card>
@@ -109,13 +140,43 @@ export function AdminOrganizationsPage() {
               }}
             />
           </div>
-          <button
-            type="button"
-            onClick={applySearch}
-            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-brand-700"
-          >
+
+          <div>
+            <label htmlFor="org-industry-filter" className="input-label">
+              Industry
+            </label>
+            <select
+              id="org-industry-filter"
+              className="input-field"
+              value={selectedIndustry}
+              onChange={(e) => setSelectedIndustry(e.target.value)}
+            >
+              <option value="all">All Industries</option>
+              {availableIndustries.map((ind) => (
+                <option key={ind} value={ind}>
+                  {ind}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <Button variant="primary" size="sm" onClick={applySearch}>
             Apply
-          </button>
+          </Button>
+          {(search || selectedIndustry !== 'all') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setDraft('');
+                setSearch('');
+                setSelectedIndustry('all');
+                setPage(1);
+              }}
+            >
+              Reset
+            </Button>
+          )}
         </div>
 
         {isError ? (
@@ -125,15 +186,15 @@ export function AdminOrganizationsPage() {
           />
         ) : isLoading ? (
           <p className="py-6 text-sm text-muted">Loading organizations…</p>
-        ) : data && data.data.length === 0 ? (
+        ) : filteredOrgs.length === 0 ? (
           <EmptyState
-            title={search ? 'No matching organizations' : 'No organizations yet'}
+            title={search || selectedIndustry !== 'all' ? 'No matching organizations' : 'No organizations yet'}
             description={
-              search
-                ? 'Try a different search term.'
+              search || selectedIndustry !== 'all'
+                ? 'Try a different search term or filter.'
                 : 'Create the first organization to get started.'
             }
-            action={!search ? <Button onClick={openModal}>Create organization</Button> : undefined}
+            action={!search && selectedIndustry === 'all' ? <Button onClick={openCreateDrawer}>New organization</Button> : undefined}
           />
         ) : (
           <>
@@ -143,37 +204,35 @@ export function AdminOrganizationsPage() {
                   <th className="px-3 py-2 font-medium">Organization</th>
                   <th className="px-3 py-2 font-medium">Slug</th>
                   <th className="px-3 py-2 font-medium">Industry</th>
-                  <th className="px-3 py-2 font-medium">Created</th>
-                  <th className="px-3 py-2 font-medium">Actions</th>
+                  <th className="px-3 py-2 font-medium text-right">Created</th>
                 </tr>
               </thead>
               <tbody>
-                {data?.data.map((org) => (
+                {filteredOrgs.map((org) => (
                   <tr
                     key={org.organizationId}
-                    className="border-b border-border/60 last:border-0 hover:bg-surface/60"
+                    onClick={() =>
+                      navigate(
+                        ROUTES.ADMIN_ORGANIZATION_DETAIL.replace(
+                          ':orgId',
+                          String(org.organizationId),
+                        ),
+                      )
+                    }
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
                   >
-                    <td className="px-3 py-2.5">
-                      <div className="font-medium text-card-foreground">{org.name}</div>
+                    <td className="px-3 py-3">
+                      <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
+                        {org.name}
+                      </div>
                       {org.billingEmail ? (
                         <div className="text-xs text-muted">{org.billingEmail}</div>
                       ) : null}
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{org.slug}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">{org.industry ?? '—'}</td>
-                    <td className="px-3 py-2.5 text-muted-foreground">
+                    <td className="px-3 py-3 font-mono text-xs text-muted-foreground">{org.slug}</td>
+                    <td className="px-3 py-3 text-muted-foreground">{org.industry ?? '-'}</td>
+                    <td className="px-3 py-3 text-muted-foreground text-right tabular-nums">
                       {new Date(org.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-3 py-2.5">
-                      <Link
-                        to={ROUTES.ADMIN_ORGANIZATION_DETAIL.replace(
-                          ':orgId',
-                          String(org.organizationId),
-                        )}
-                        className="inline-block rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50"
-                      >
-                        Manage
-                      </Link>
                     </td>
                   </tr>
                 ))}
@@ -192,61 +251,115 @@ export function AdminOrganizationsPage() {
         )}
       </Card>
 
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)} title="Create organization">
-        <div className="space-y-4">
-          <Input
-            label="Name"
-            value={form.name}
-            onChange={(e) => setForm({ ...form, name: e.target.value })}
-            required
+      {/* Right Slide-Over Drawer for New Organization */}
+      {isDrawerOpen && (
+        <div className="fixed inset-0 z-50 overflow-hidden">
+          {/* Backdrop */}
+          <div
+            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
+            onClick={closeCreateDrawer}
           />
-          <Input
-            label="Slug"
-            value={form.slug}
-            onChange={(e) => setForm({ ...form, slug: e.target.value })}
-            hint="Lowercase letters, digits and hyphens. Used in URLs."
-            required
-          />
-          <div>
-            <label htmlFor="org-create-desc" className="input-label">
-              Description
-            </label>
-            <textarea
-              id="org-create-desc"
-              rows={3}
-              className="input-field w-full"
-              value={form.description ?? ''}
-              onChange={(e) => setForm({ ...form, description: e.target.value })}
-            />
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input
-              label="Website"
-              value={form.website ?? ''}
-              onChange={(e) => setForm({ ...form, website: e.target.value })}
-            />
-            <Input
-              label="Industry"
-              value={form.industry ?? ''}
-              onChange={(e) => setForm({ ...form, industry: e.target.value })}
-            />
-          </div>
-          <Input
-            label="Billing email"
-            type="email"
-            value={form.billingEmail ?? ''}
-            onChange={(e) => setForm({ ...form, billingEmail: e.target.value })}
-          />
-          <div className="modal-panel__actions">
-            <Button variant="ghost" onClick={() => setModalOpen(false)}>
-              Cancel
-            </Button>
-            <Button onClick={submitCreate} isLoading={create.isPending}>
-              Create
-            </Button>
+
+          {/* Drawer Container */}
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200">
+              <div className="space-y-6">
+                <div className="flex items-center justify-between border-b border-border pb-4">
+                  <div>
+                    <h2 className="text-lg font-bold text-card-foreground">New Organization</h2>
+                    <p className="text-xs text-muted mt-0.5">
+                      Provision a new institutional tenant workspace.
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={closeCreateDrawer}
+                    className="p-1.5 text-muted hover:text-card-foreground transition-colors"
+                    aria-label="Close drawer"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+
+                <div className="space-y-4">
+                  <Input
+                    label="Organization name"
+                    placeholder="e.g. Acme University"
+                    value={form.name}
+                    onChange={(e) => {
+                      const name = e.target.value;
+                      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                      setForm({
+                        ...form,
+                        name,
+                        slug:
+                          form.slug === '' ||
+                          form.slug === form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                            ? slug
+                            : form.slug,
+                      });
+                    }}
+                    required
+                  />
+                  <Input
+                    label="URL slug"
+                    placeholder="e.g. acme-university"
+                    value={form.slug}
+                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    hint="Unique lowercase identifier used in platform workspaces."
+                    required
+                  />
+                  <div>
+                    <label htmlFor="drawer-org-desc" className="input-label">
+                      Description
+                    </label>
+                    <textarea
+                      id="drawer-org-desc"
+                      rows={3}
+                      className="input-field w-full"
+                      placeholder="Brief description of the tenant or department…"
+                      value={form.description ?? ''}
+                      onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    />
+                  </div>
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <Input
+                      label="Website"
+                      placeholder="https://acme.edu"
+                      value={form.website ?? ''}
+                      onChange={(e) => setForm({ ...form, website: e.target.value })}
+                    />
+                    <Input
+                      label="Industry"
+                      placeholder="Higher Education, Enterprise"
+                      value={form.industry ?? ''}
+                      onChange={(e) => setForm({ ...form, industry: e.target.value })}
+                    />
+                  </div>
+                  <Input
+                    label="Billing email"
+                    type="email"
+                    placeholder="finance@acme.edu"
+                    value={form.billingEmail ?? ''}
+                    onChange={(e) => setForm({ ...form, billingEmail: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border mt-6">
+                <Button variant="secondary" onClick={closeCreateDrawer}>
+                  Cancel
+                </Button>
+                <Button onClick={submitCreate} isLoading={create.isPending}>
+                  Create organization
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
-      </Modal>
+      )}
     </div>
   );
 }

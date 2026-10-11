@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Card, ErrorState, PageHeader, Pagination } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { ActivityLogTable } from '../components/ActivityLogTable';
@@ -39,16 +39,8 @@ export function AdminUserProgressPage() {
   return (
     <div>
       <PageHeader
-        title={user.fullName ?? user.username}
-        description={`${user.email} · @${user.username}`}
-        actions={
-          <Link
-            to={ROUTES.ADMIN_USERS}
-            className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
-          >
-            ← Back to users
-          </Link>
-        }
+        title={user.fullName ?? user.username ?? 'User Progress'}
+        backTo={ROUTES.ADMIN_USERS}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">

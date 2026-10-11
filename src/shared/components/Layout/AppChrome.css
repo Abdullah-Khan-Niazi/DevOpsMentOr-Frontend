@@ -39,7 +39,6 @@
   flex-shrink: 0;
   height: 64px;
   padding: 0 var(--space-3);
-  border-bottom: 1px solid var(--color-border-subtle);
 }
 
 /* Brand — full lockup when expanded, mark only when collapsed. Sized down so
@@ -157,6 +156,50 @@
   padding: var(--space-3);
   overflow-y: auto;
   overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  transition: scrollbar-color var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__sidebar:hover .app-chrome__nav {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-subtle) transparent;
+}
+
+.app-chrome__nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.app-chrome__nav::-webkit-scrollbar-button,
+.app-chrome__nav::-webkit-scrollbar-button:single-button,
+.app-chrome__nav::-webkit-scrollbar-button:vertical:decrement,
+.app-chrome__nav::-webkit-scrollbar-button:vertical:increment,
+.app-chrome__nav::-webkit-scrollbar-button:start:decrement,
+.app-chrome__nav::-webkit-scrollbar-button:end:increment,
+.app-chrome__nav::-webkit-scrollbar-button:start,
+.app-chrome__nav::-webkit-scrollbar-button:end {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  -webkit-appearance: none !important;
+}
+
+.app-chrome__nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.app-chrome__nav::-webkit-scrollbar-thumb {
+  background: transparent;
+  border-radius: var(--radius-full);
+  transition: background-color var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__sidebar:hover .app-chrome__nav::-webkit-scrollbar-thumb {
+  background: var(--color-border-subtle);
+}
+
+.app-chrome__sidebar:hover .app-chrome__nav::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border-strong);
 }
 
 .app-chrome__nav-group {
@@ -268,7 +311,13 @@
   gap: var(--space-1);
   flex-shrink: 0;
   padding: var(--space-3);
-  border-top: 1px solid var(--color-border-subtle);
+}
+
+.app-chrome__sidebar--open .app-chrome__footer {
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
 }
 
 .app-chrome__profile,
@@ -291,6 +340,21 @@
   transition:
     color var(--duration-fast) var(--ease-standard),
     background-color var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__sidebar--open .app-chrome__profile {
+  flex: 1;
+  min-width: 0;
+  padding: 0 var(--space-2);
+  gap: var(--space-2);
+}
+
+.app-chrome__sidebar--open .app-chrome__logout {
+  flex-shrink: 0;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
 }
 
 .app-chrome__profile:hover,
@@ -340,20 +404,19 @@
   font-weight: 500;
 }
 
-/* Collapsed footer: icon-only, centered (labels also collapsed to zero
-   width so the avatar/logout icons sit dead-center) */
-.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile,
-.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout {
+/* Collapsed footer: icon-only, centered avatar; logout & notification hidden */
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile {
   justify-content: center;
   gap: 0;
   padding: 0;
 }
 
-.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile-name,
-.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout-label {
-  opacity: 0;
-  width: 0;
-  overflow: hidden;
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout {
+  display: none !important;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__top .notification-bell {
+  display: none !important;
 }
 
 /* ─── Content ─────────────────────────────────────────────────────────────── */

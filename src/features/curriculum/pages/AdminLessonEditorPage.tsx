@@ -147,13 +147,8 @@ export function AdminLessonEditorPage() {
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader
-        title={isEditing ? 'Lesson editor' : 'New lesson'}
-        description={isEditing ? lesson?.title : 'Fill in the lesson details.'}
-        actions={
-          <Button variant="ghost" onClick={() => navigate(backPath)}>
-            Back to module
-          </Button>
-        }
+        title={isEditing ? (lesson?.title ?? 'Lesson Editor') : 'New Lesson'}
+        backTo={backPath}
       />
 
       <Card className="space-y-4 p-6">
