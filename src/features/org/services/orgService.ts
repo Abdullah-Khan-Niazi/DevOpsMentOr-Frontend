@@ -1,5 +1,5 @@
 import { apiClient } from '@/shared/services';
-import type { MyOrgDto, ProfessorDto } from '../types';
+import type { MyOrgDto, OrgAnalyticsDto, OrgUserDetailDto, OrgUserDto, ProfessorDto } from '../types';
 
 function unwrap<T>(envelope: { data: T }): T {
   return envelope.data;
@@ -52,6 +52,24 @@ export const orgService = {
       '/org/professors/invite',
       payload,
     );
+    return unwrap(data);
+  },
+
+  /** ORG members list */
+  async listOrgUsers(): Promise<OrgUserDto[]> {
+    const { data } = await apiClient.get<{ data: OrgUserDto[] }>('/org/users');
+    return unwrap(data);
+  },
+
+  /** ORG member detail */
+  async getOrgUserDetail(userId: number | string): Promise<OrgUserDetailDto> {
+    const { data } = await apiClient.get<{ data: OrgUserDetailDto }>(`/org/users/${userId}`);
+    return unwrap(data);
+  },
+
+  /** ORG tenant analytics */
+  async getMyOrgAnalytics(): Promise<OrgAnalyticsDto> {
+    const { data } = await apiClient.get<{ data: OrgAnalyticsDto }>('/org/analytics');
     return unwrap(data);
   },
 };

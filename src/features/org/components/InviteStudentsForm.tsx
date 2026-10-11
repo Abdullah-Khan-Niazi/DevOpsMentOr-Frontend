@@ -27,7 +27,7 @@ export function InviteStudentsForm({ submitting, onSubmit }: InviteStudentsFormP
     <div className="space-y-3">
       <div>
         <label htmlFor="invite-emails" className="input-label">
-          Student emails
+          Student emails <span className="ml-1 font-bold text-red-500" aria-hidden="true">*</span>
         </label>
         <textarea
           id="invite-emails"

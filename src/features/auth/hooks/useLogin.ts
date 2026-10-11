@@ -6,6 +6,8 @@ import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 import type { LoginCredentials, LoginResponse } from '../types';
 
+import { getDefaultRouteForUser } from '../utils/rbac';
+
 export function useLogin() {
   const navigate = useNavigate();
   const location = useLocation();
@@ -16,16 +18,14 @@ export function useLogin() {
     onSuccess: (data) => {
       setSession(data);
       if (data.data.user.isVerified) {
-        const perms = data.data.user.permissions ?? [];
+        const defaultRoute = getDefaultRouteForUser(data.data.user);
         const params = new URLSearchParams(location.search);
         const redirect = params.get('redirect');
 
-        if (redirect && redirect.startsWith('/')) {
+        if (redirect && redirect.startsWith('/') && redirect !== ROUTES.DASHBOARD) {
           void navigate(redirect, { replace: true });
-        } else if (perms.includes('platform.admin.access')) {
-          void navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
         } else {
-          void navigate(ROUTES.DASHBOARD, { replace: true });
+          void navigate(defaultRoute, { replace: true });
         }
       }
       // If not verified, LoginForm handles the email verification step.

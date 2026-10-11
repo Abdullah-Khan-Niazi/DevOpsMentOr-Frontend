@@ -88,6 +88,7 @@ export interface SignupCredentials {
   accountType: AccountType;
   organization?: OrganizationInput;
   invitationCode?: string;
+  countryCode?: string;
 }
 
 export interface VerifyEmailPayload {

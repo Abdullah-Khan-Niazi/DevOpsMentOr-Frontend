@@ -17,6 +17,11 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
         {label ? (
           <label htmlFor={inputId} className="input-label">
             {label}
+            {props.required ? (
+              <span className="ml-1 font-bold text-red-500" aria-hidden="true">
+                *
+              </span>
+            ) : null}
           </label>
         ) : null}
         <input

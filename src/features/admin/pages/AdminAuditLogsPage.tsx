@@ -57,10 +57,7 @@ export function AdminAuditLogsPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Audit logs"
-        description="Every administrative action on the platform, with before/after changes."
-      />
+      <PageHeader title="Audit Logs" />
 
       <Card>
         <div className="mb-4 flex flex-wrap items-end gap-3">
@@ -150,17 +147,17 @@ export function AdminAuditLogsPage() {
                   <td className="px-3 py-2">{log.adminFullName ?? log.adminEmail}</td>
                   <td className="px-3 py-2 text-muted-foreground">{log.action}</td>
                   <td className="px-3 py-2 text-muted-foreground">
-                    {log.targetType ?? '—'}
+                    {log.targetType ?? '-'}
                     {log.targetId ? ` #${log.targetId}` : ''}
                   </td>
-                  <td className="px-3 py-2 text-muted-foreground">{log.ipAddress ?? '—'}</td>
+                  <td className="px-3 py-2 text-muted-foreground">{log.ipAddress ?? '-'}</td>
                   <td className="px-3 py-2">
                     {log.changes ? (
                       <code className="text-xs text-muted-foreground">
                         {JSON.stringify(log.changes)}
                       </code>
                     ) : (
-                      '—'
+                      '-'
                     )}
                   </td>
                 </tr>

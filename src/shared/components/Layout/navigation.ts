@@ -2,18 +2,18 @@ import type { IconName } from '@/shared/components/Icon';
 import { ROUTES } from '@/shared/constants';
 import type { AuthUser } from '@/features/auth/types';
 
-// Single source of truth for the authenticated sidebar. Every shell renders
-// this same list, so the navigation NEVER morphs when switching areas.
-// Items are strictly permission-gated (§04 RBAC surface control: unauthorized
-// nav is completely unrendered) AND endpoint-gated — only pages the backend
-// actually serves are listed. Member Reports/Settings endpoints do not exist
-// server-side yet, so those items are intentionally omitted until they do.
+// Single source of truth for the authenticated sidebar.
+// Items are strictly permission-gated (§04 RBAC surface control):
+// unauthorized nav is completely unrendered.
 //
-// Platform admins get ONLY the Administration console: their member-side
-// items (Dashboard/Users/Organization/…) duplicate the admin surfaces and
-// their org/enrollment endpoints 403/404 anyway since they hold no
-// organization membership. Keeping the two worlds separate also removes
-// duplicate nav labels.
+// Role & Capability Design:
+// - platform_admin: complete platform administration, system settings & account governance.
+// - org_admin: organization governance, classes, professors & student progress.
+//   Also includes curriculum and labs so an admin/lead who wants to learn or teach
+//   can access learning resources directly without artificial restrictions.
+// - professor: class rosters, student progression, curriculum and lab sessions.
+// - org_student: cohort syllabus, class progress, curriculum and labs.
+// - individual_learner: personal dashboard, tracks, labs, progress and personal billing.
 
 export type NavSection = 'Workspace' | 'Administration';
 
@@ -25,10 +25,14 @@ export interface AppNavItem {
 }
 
 export function buildNavItems(user: AuthUser | null): AppNavItem[] {
-  const permissions = new Set(user?.permissions ?? []);
-  const isPlatformAdmin = user?.roles.includes('platform_admin');
+  if (!user) return [];
+
+  const permissions = new Set(user.permissions ?? []);
+  const roles = new Set(user.roles ?? []);
+  const isPlatformAdmin = roles.has('platform_admin');
   const items: AppNavItem[] = [];
 
+  // ─── Platform Administration ──────────────────────────────────────────────
   if (isPlatformAdmin) {
     items.push(
       {
@@ -46,7 +50,7 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       },
       {
         to: ROUTES.ADMIN_SETTINGS,
-        label: 'System settings',
+        label: 'Settings',
         icon: 'settings',
         section: 'Administration',
       },
@@ -69,6 +73,7 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         section: 'Administration',
       },
     );
+
     if (permissions.has('platform.labs.manage')) {
       items.push(
         { to: ROUTES.ADMIN_LABS, label: 'Labs', icon: 'lab', section: 'Administration' },
@@ -101,8 +106,6 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         { to: ROUTES.ADMIN_SEASONS, label: 'Seasons', icon: 'track', section: 'Administration' },
       );
     }
-    // ─── F8 analytics, notifications & platform operations (§04 surface
-    //      control — every item below is permission-gated) ─────────────
     if (permissions.has('platform.content.moderate')) {
       items.push(
         {
@@ -153,10 +156,199 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         section: 'Administration',
       });
     }
+    // Platform admin account preferences and security
+    items.push({
+      to: ROUTES.SETTINGS,
+      label: 'Account settings',
+      icon: 'settings',
+      section: 'Administration',
+    });
     return items;
   }
 
-  if (permissions.has('dashboard:read')) {
+  // ─── Organization Administration & Management ─────────────────────────────
+  if (roles.has('org_admin')) {
+    items.push({
+      to: ROUTES.ORG_DASHBOARD,
+      label: 'Overview',
+      icon: 'organization',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ORG_CLASSES,
+      label: 'Cohorts',
+      icon: 'classes',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ORG_PROFESSORS,
+      label: 'Professors',
+      icon: 'professors',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ORG_STUDENTS_PROGRESS,
+      label: 'Student progress',
+      icon: 'reports',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ORG_SETTINGS,
+      label: 'Settings',
+      icon: 'settings',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.BILLING,
+      label: 'Billing & seats',
+      icon: 'card',
+      section: 'Workspace',
+    });
+
+    // An Org Admin who also teaches or learns has full access to curriculum & labs
+    items.push({
+      to: ROUTES.LEARN,
+      label: 'Curriculum',
+      icon: 'roles',
+      section: 'Workspace',
+    });
+    items.push(
+      { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
+      { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
+    );
+    items.push({
+      to: ROUTES.ACHIEVEMENTS,
+      label: 'Achievements',
+      icon: 'award',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.LEADERBOARD,
+      label: 'Leaderboard',
+      icon: 'leaderboard',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.EVENTS,
+      label: 'Events',
+      icon: 'calendar',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ANNOUNCEMENTS,
+      label: 'Announcements',
+      icon: 'megaphone',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.SETTINGS,
+      label: 'Account settings',
+      icon: 'settings',
+      section: 'Workspace',
+    });
+    return items;
+  }
+
+  // ─── Professor / Faculty ──────────────────────────────────────────────────
+  if (roles.has('professor')) {
+    items.push({
+      to: ROUTES.ORG_CLASSES,
+      label: 'My cohorts',
+      icon: 'classes',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ORG_STUDENTS_PROGRESS,
+      label: 'Student progress',
+      icon: 'reports',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.LEARN,
+      label: 'Curriculum',
+      icon: 'roles',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.LABS,
+      label: 'Labs',
+      icon: 'lab',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.EVENTS,
+      label: 'Events',
+      icon: 'calendar',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ANNOUNCEMENTS,
+      label: 'Announcements',
+      icon: 'megaphone',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.SETTINGS,
+      label: 'Settings',
+      icon: 'settings',
+      section: 'Workspace',
+    });
+    return items;
+  }
+
+  // ─── Org Student ──────────────────────────────────────────────────────────
+  if (roles.has('org_student')) {
+    items.push({
+      to: ROUTES.STUDENT_MY_CLASS,
+      label: 'My class',
+      icon: 'my-class',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.LEARN,
+      label: 'Learn',
+      icon: 'roles',
+      section: 'Workspace',
+    });
+    items.push(
+      { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
+      { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
+    );
+    items.push({
+      to: ROUTES.ACHIEVEMENTS,
+      label: 'Achievements',
+      icon: 'award',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.LEADERBOARD,
+      label: 'Leaderboard',
+      icon: 'leaderboard',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.EVENTS,
+      label: 'Events',
+      icon: 'calendar',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ANNOUNCEMENTS,
+      label: 'Announcements',
+      icon: 'megaphone',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.SETTINGS,
+      label: 'Settings',
+      icon: 'settings',
+      section: 'Workspace',
+    });
+    return items;
+  }
+
+  // ─── Individual Learner (Default Member Navigation) ───────────────────────
+  if (permissions.has('dashboard:read') || roles.has('individual_learner')) {
     items.push({
       to: ROUTES.DASHBOARD,
       label: 'Dashboard',
@@ -164,107 +356,47 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       section: 'Workspace',
     });
   }
-  if (permissions.has('users:read')) {
-    items.push({ to: ROUTES.USERS, label: 'Users', icon: 'users', section: 'Workspace' });
-  }
-  if (permissions.has('roles:read')) {
-    items.push({ to: ROUTES.ROLES, label: 'Roles', icon: 'roles', section: 'Workspace' });
-  }
-  if (permissions.has('org:read')) {
-    items.push({
-      to: ROUTES.ORG_DASHBOARD,
-      label: 'Organization',
-      icon: 'organization',
-      section: 'Workspace',
-    });
-    items.push({ to: ROUTES.ORG_CLASSES, label: 'Classes', icon: 'classes', section: 'Workspace' });
-  }
-  if (permissions.has('org:professors:invite')) {
-    items.push({
-      to: ROUTES.ORG_PROFESSORS,
-      label: 'Professors',
-      icon: 'professors',
-      section: 'Workspace',
-    });
-  }
-  if (permissions.has('org:manage')) {
-    items.push({
-      to: ROUTES.ORG_SETTINGS,
-      label: 'Settings',
-      icon: 'settings',
-      section: 'Workspace',
-    });
-  }
-  if (permissions.has('enrollment:read')) {
-    items.push({
-      to: ROUTES.STUDENT_MY_CLASS,
-      label: 'My class',
-      icon: 'my-class',
-      section: 'Workspace',
-    });
-  }
-  if (permissions.has('curriculum:read')) {
-    items.push({
-      to: ROUTES.LEARN,
-      label: 'Learn',
-      icon: 'roles',
-      section: 'Workspace',
-    });
-  }
-  if (permissions.has('progress.org.read')) {
-    items.push({
-      to: ROUTES.ORG_STUDENTS_PROGRESS,
-      label: 'Student progress',
-      icon: 'professors',
-      section: 'Workspace',
-    });
-  }
-  if (permissions.has('labs:instance:read')) {
-    items.push(
-      { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
-      { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
-    );
-  }
-  // ─── F7 achievements & leaderboards (§04 surface control) ──────────────
-  if (permissions.has('gamification:profile:read')) {
-    items.push({
-      to: ROUTES.ACHIEVEMENTS,
-      label: 'Achievements',
-      icon: 'award',
-      section: 'Workspace',
-    });
-  }
+  items.push({
+    to: ROUTES.LEARN,
+    label: 'Learn',
+    icon: 'roles',
+    section: 'Workspace',
+  });
+  items.push(
+    { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
+    { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
+  );
+  items.push({
+    to: ROUTES.ACHIEVEMENTS,
+    label: 'Achievements',
+    icon: 'award',
+    section: 'Workspace',
+  });
   items.push({
     to: ROUTES.LEADERBOARD,
     label: 'Leaderboard',
     icon: 'leaderboard',
     section: 'Workspace',
   });
-  // ─── F8 events (public surface, no permission gate) ──────────────────
   items.push({
     to: ROUTES.EVENTS,
     label: 'Events',
     icon: 'calendar',
     section: 'Workspace',
   });
-  // ─── F8 announcements (public surface, no permission gate) ────────────
   items.push({
     to: ROUTES.ANNOUNCEMENTS,
     label: 'Announcements',
     icon: 'megaphone',
     section: 'Workspace',
   });
-  // ─── F8 notification preferences (§04 surface control) ────────────────
-  if (permissions.has('notifications:preferences:write')) {
-    items.push({
-      to: ROUTES.NOTIFICATION_PREFERENCES,
-      label: 'Notification settings',
-      icon: 'settings',
-      section: 'Workspace',
-    });
-  }
-  // ─── F9 billing (§04 surface control) ─────────────────────────────────
-  if (permissions.has('billing:subscription:read')) {
+  items.push({
+    to: ROUTES.SETTINGS,
+    label: 'Settings',
+    icon: 'settings',
+    section: 'Workspace',
+  });
+  if (permissions.has('billing:subscription:read') || roles.has('individual_learner')) {
     items.push({
       to: ROUTES.BILLING,
       label: 'Billing',

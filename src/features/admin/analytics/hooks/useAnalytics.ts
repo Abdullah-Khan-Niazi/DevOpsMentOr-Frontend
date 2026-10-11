@@ -17,3 +17,11 @@ export function useActivityTrend(days = 14) {
     retry: false,
   });
 }
+
+export function useDetailedAnalytics() {
+  return useQuery({
+    queryKey: QUERY_KEYS.adminAnalytics.detailed,
+    queryFn: () => adminAnalyticsService.getDetailedAnalytics(),
+    retry: false,
+  });
+}

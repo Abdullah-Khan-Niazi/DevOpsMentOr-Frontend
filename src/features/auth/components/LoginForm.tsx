@@ -7,6 +7,7 @@ import { Button, Input, PasswordInput, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '../stores/authStore';
 import { useLogin, useOAuthLogin, useVerifyEmail, useResendVerification } from '../hooks';
+import { getDefaultRouteForUser } from '../utils/rbac';
 import { OAuthButton } from './OAuthButton';
 import { OtpInputGroup } from './OtpInputGroup';
 
@@ -106,12 +107,12 @@ export function LoginForm() {
       {
         onSuccess: (response) => {
           setSession(response);
-          const perms = response.data.user.permissions ?? [];
+          const defaultRoute = getDefaultRouteForUser(response.data.user);
           const redirect = redirectTo();
-          if (perms.includes('platform.admin.access') && redirect === ROUTES.DASHBOARD) {
-            void navigate(ROUTES.ADMIN_DASHBOARD, { replace: true });
-          } else {
+          if (redirect && redirect !== ROUTES.DASHBOARD) {
             void navigate(redirect, { replace: true });
+          } else {
+            void navigate(defaultRoute, { replace: true });
           }
         },
         onError: (err) => toast.error(friendlyError(err.message)),

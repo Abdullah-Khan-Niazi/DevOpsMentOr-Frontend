@@ -1,4 +1,6 @@
+import { Link } from 'react-router-dom';
 import { SiteLogo } from '@/shared/components';
+import { ROUTES } from '@/shared/constants';
 
 const FACTS = [
   '15 modules: Containers to GitOps',
@@ -10,7 +12,13 @@ export function AuthContextPanel() {
   return (
     <aside className="auth-context">
       <div className="auth-context__inner">
-        <SiteLogo />
+        <Link
+          to={ROUTES.HOME}
+          className="auth-context__logo-link block hover:opacity-80 transition-opacity"
+          title="Return to DevOpsMentOr Homepage"
+        >
+          <SiteLogo />
+        </Link>
         <div className="auth-context__statement">
           <p className="auth-context__headline">
             Practice where it counts: on real infrastructure.

@@ -1,102 +1,105 @@
-import { useState } from 'react';
-import { Button, Card, ErrorState, Input, PageHeader, toast } from '@/shared/components';
+import { useSearchParams } from 'react-router-dom';
+import { Button, Card, ErrorState, PageHeader } from '@/shared/components';
+import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useOrgProfessors } from '../hooks';
+import { OrgInviteDrawer } from '../components';
 
-/** F3 contract §09 SCR-F3-04: professors list (ORG-10) + invite (ORG-09). */
+/** F3 contract §09 SCR-F3-04: professors list (ORG-10) + invite drawer. */
 export function OrgProfessorsPage() {
+  const [searchParams, setSearchParams] = useSearchParams();
   const canInvite = useAuthStore((state) =>
     (state.user?.permissions ?? []).includes('org:professors:invite'),
   );
-  const { query, invite } = useOrgProfessors();
-  const [email, setEmail] = useState('');
+  const { query } = useOrgProfessors();
 
-  const handleInvite = () => {
-    const trimmed = email.trim();
-    if (!trimmed) {
-      toast.error('A professor email is required.');
-      return;
-    }
-    invite.mutate(trimmed, {
-      onSuccess: () => {
-        toast.success('Professor invited.');
-        setEmail('');
-      },
-      onError: (error) => toast.error(error.message),
+  const isDrawerOpen = searchParams.get('drawer') === 'invite';
+
+  const openDrawer = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('drawer', 'invite');
+      return next;
+    });
+  };
+
+  const closeDrawer = () => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.delete('drawer');
+      return next;
     });
   };
 
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
-        title="Professors"
-        description="Professors in your organization and their class assignments."
+        title="Faculty &amp; Professors"
+        backTo={ROUTES.ORG_DASHBOARD}
+        actions={
+          canInvite ? (
+            <Button variant="primary" size="sm" onClick={openDrawer}>
+              + Invite Professor
+            </Button>
+          ) : undefined
+        }
       />
 
-      <div className="grid gap-4 lg:grid-cols-3">
-        <Card className="space-y-4 p-5 lg:col-span-2">
-          <h3 className="font-medium text-card-foreground">Current professors</h3>
-          {query.isError ? (
-            <ErrorState
-              message={query.error?.message ?? 'Unable to load professors.'}
-              onRetry={() => void query.refetch()}
-            />
-          ) : query.isLoading ? (
-            <p className="py-6 text-sm text-muted">Loading professors…</p>
-          ) : query.data && query.data.length === 0 ? (
-            <p className="py-6 text-sm text-muted">No professors yet in this organization.</p>
-          ) : (
-            <table className="w-full text-left text-sm">
+      <Card className="p-6 space-y-4">
+        <div>
+          <h3 className="text-base font-semibold text-card-foreground">Current Faculty Members</h3>
+          <p className="mt-0.5 text-xs text-muted">
+            Professors and instructors assigned to lead organization cohorts.
+          </p>
+        </div>
+
+        {query.isError ? (
+          <ErrorState
+            message={query.error?.message ?? 'Unable to load professors.'}
+            onRetry={() => void query.refetch()}
+          />
+        ) : query.isLoading ? (
+          <p className="py-8 text-center text-xs text-muted font-mono">Loading professors…</p>
+        ) : query.data && query.data.length === 0 ? (
+          <p className="py-8 text-center text-xs text-muted font-mono">
+            No professors registered yet in this organization.
+          </p>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-                  <th className="px-3 py-2 font-medium">Professor</th>
-                  <th className="px-3 py-2 font-medium">Assigned classes</th>
+                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+                  <th className="px-4 py-3 font-medium">Professor</th>
+                  <th className="px-4 py-3 font-medium">Assigned Cohorts</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-border/60">
                 {query.data?.map((professor) => (
-                  <tr
-                    key={professor.userId}
-                    className="border-b border-border/60 last:border-0 hover:bg-surface/60"
-                  >
-                    <td className="px-3 py-2.5">
-                      <div className="font-medium text-card-foreground">
-                        {professor.fullName ?? '—'}
+                  <tr key={professor.userId} className="hover:bg-surface/60 transition-colors">
+                    <td className="px-4 py-3">
+                      <div className="font-semibold text-card-foreground text-sm">
+                        {professor.fullName ?? '-'}
                       </div>
-                      <div className="text-xs text-muted">{professor.email}</div>
+                      <div className="text-xs text-muted font-mono">{professor.email}</div>
                     </td>
-                    <td className="px-3 py-2.5 text-muted-foreground">
-                      {professor.assignedClassCount}
+                    <td className="px-4 py-3 text-xs text-card-foreground font-mono">
+                      {professor.assignedClassCount}{' '}
+                      {professor.assignedClassCount === 1 ? 'cohort' : 'cohorts'}
                     </td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          )}
-        </Card>
+          </div>
+        )}
+      </Card>
 
-        {canInvite ? (
-          <Card className="h-fit space-y-4 p-5">
-            <h3 className="font-medium text-card-foreground">Invite a professor</h3>
-            <p className="text-sm text-muted">
-              The professor receives an email invitation to join your organization.
-            </p>
-            <Input
-              label="Email"
-              type="email"
-              placeholder="professor@example.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleInvite();
-              }}
-            />
-            <Button className="w-full" onClick={handleInvite} isLoading={invite.isPending}>
-              Send invitation
-            </Button>
-          </Card>
-        ) : null}
-      </div>
+      <OrgInviteDrawer
+        isOpen={isDrawerOpen}
+        onClose={closeDrawer}
+        defaultRole="professor"
+        onSuccess={() => void query.refetch()}
+      />
     </div>
   );
 }

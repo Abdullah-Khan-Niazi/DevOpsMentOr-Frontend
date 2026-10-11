@@ -1,4 +1,4 @@
-export { useMyOrg, useOrgProfessors } from './useOrg';
+export { useMyOrg, useOrgProfessors, useOrgUsers, useOrgUserDetail, useMyOrgAnalytics } from './useOrg';
 export {
   useClassDetail,
   useClassInvitations,
@@ -7,5 +7,6 @@ export {
   useImportStudents,
   useInviteStudents,
   useOrgClasses,
+  useResendInvitation,
   useWithdrawStudent,
 } from './useClasses';

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { Button, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useQueryClient } from '@tanstack/react-query';
@@ -137,15 +137,7 @@ function QuizAttemptView({ quizId }: { quizId: string }) {
       <div className="mx-auto max-w-3xl">
         <PageHeader
           title={meta.data.title}
-          description={`Passing score: ${meta.data.passingScore}%`}
-          actions={
-            <Link
-              to={ROUTES.LEARN}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
-            >
-              ← Back to curriculum
-            </Link>
-          }
+          backTo={ROUTES.LEARN}
         />
         <QuizResultPanel
           result={result}
@@ -174,10 +166,10 @@ function QuizAttemptView({ quizId }: { quizId: string }) {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title={meta.data.title}
-        description={`Question ${current + 1} of ${total} · Passing score: ${meta.data.passingScore}%`}
+        backTo={ROUTES.LEARN}
         actions={
-          <div className="flex items-center gap-3">
-            {timeLimitSeconds !== null ? (
+          timeLimitSeconds !== null ? (
+            <div className="flex items-center gap-3">
               <span
                 className={`text-sm font-semibold tabular-nums ${
                   isExpired ? 'text-destructive' : 'text-muted-foreground'
@@ -185,14 +177,8 @@ function QuizAttemptView({ quizId }: { quizId: string }) {
               >
                 Time remaining: {formatRemaining(timeLeftSeconds ?? 0)}
               </span>
-            ) : null}
-            <Link
-              to={ROUTES.LEARN}
-              className="rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary"
-            >
-              ← Back to curriculum
-            </Link>
-          </div>
+            </div>
+          ) : null
         }
       />
 

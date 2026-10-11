@@ -47,10 +47,7 @@ export function AdminSettingsPage() {
 
   return (
     <div>
-      <PageHeader
-        title="System settings"
-        description="Platform-wide configuration. Changes are recorded in the audit log."
-      />
+      <PageHeader title="System Settings" />
 
       {query.isLoading ? (
         <div className="space-y-2">
@@ -91,9 +88,9 @@ export function AdminSettingsPage() {
                   <td className="px-3 py-2.5 font-mono text-xs text-muted-foreground">
                     {displayValue(setting.settingValue)}
                   </td>
-                  <td className="px-3 py-2.5 text-muted-foreground">{setting.groupName ?? '—'}</td>
+                  <td className="px-3 py-2.5 text-muted-foreground">{setting.groupName ?? '-'}</td>
                   <td className="px-3 py-2.5 text-muted-foreground">
-                    {setting.updatedAt ? new Date(setting.updatedAt).toLocaleDateString() : '—'}
+                    {setting.updatedAt ? new Date(setting.updatedAt).toLocaleDateString() : '-'}
                   </td>
                   <td className="px-3 py-2.5">
                     {setting.isEditable ? (

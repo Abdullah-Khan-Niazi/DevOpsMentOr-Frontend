@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth';
+import { extractInvitationToken } from '../utils/invitation';
 import { useOnboardingStore, getStepOrder } from '../stores/onboardingStore';
 import { useOAuthComplete } from '../hooks/useOAuth';
 import { AuthLayout } from '../components/AuthLayout';
@@ -180,10 +181,25 @@ export default function OnboardingPage() {
   const setStep = useOnboardingStore((s) => s.setStep);
   const reset = useOnboardingStore((s) => s.reset);
   const complete = useOAuthComplete();
+  const [searchParams] = useSearchParams();
   const [password, setPassword] = useState('');
 
   const order = getStepOrder(flow ?? 'email', accountType ?? 'individual');
   const currentIndex = Math.max(0, order.indexOf(step));
+
+  useEffect(() => {
+    const rawInvite =
+      searchParams.get('token') ||
+      searchParams.get('code') ||
+      searchParams.get('invite');
+    if (rawInvite) {
+      const extracted = extractInvitationToken(rawInvite);
+      if (extracted) {
+        useOnboardingStore.getState().setAccountType('member');
+        useOnboardingStore.getState().setInvitationCode(extracted);
+      }
+    }
+  }, [searchParams]);
 
   useEffect(() => {
     if (isAuthenticated) {

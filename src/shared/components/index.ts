@@ -11,7 +11,7 @@ export { Spinner } from './Spinner';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
-export { PageHeader } from './PageHeader';
+export { PageHeader, type BreadcrumbItem, type PageHeaderProps } from './PageHeader';
 export { AppShell, AdminShell, AppChrome, buildNavItems, type AppNavItem } from './Layout';
 export { Pagination, type PaginationProps } from './Pagination';
 export { TabRow, type TabItem } from './TabRow';

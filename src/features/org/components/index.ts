@@ -6,3 +6,6 @@ export { InvitationStatusTable } from './InvitationStatusTable';
 export { InviteStudentsForm } from './InviteStudentsForm';
 export { BulkImportPanel } from './BulkImportPanel';
 export { ProfessorAssignmentSelector } from './ProfessorAssignmentSelector';
+export { NewCohortDrawer } from './NewCohortDrawer';
+export { OrgInviteDrawer } from './OrgInviteDrawer';
+export { OrgMemberDetailDrawer } from './OrgMemberDetailDrawer';

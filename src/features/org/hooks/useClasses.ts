@@ -105,3 +105,14 @@ export function useWithdrawStudent(classId: string | number) {
     },
   });
 }
+
+export function useResendInvitation(classId: string | number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string | number) =>
+      classService.resendInvitation(classId, invitationId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.invitations(classId) });
+    },
+  });
+}

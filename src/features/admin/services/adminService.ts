@@ -8,6 +8,7 @@ import type {
   AuditLogItem,
   AuditLogQuery,
   DashboardData,
+  InviteUserPayload,
   PlatformAdminItem,
   SystemSetting,
 } from '../types';
@@ -29,8 +30,20 @@ export const adminService = {
           ...(query.role ? { role: query.role } : {}),
           ...(query.isBanned ? { isBanned: query.isBanned } : {}),
           ...(query.isActive ? { isActive: query.isActive } : {}),
+          ...(query.isDeleted ? { isDeleted: query.isDeleted } : {}),
+          ...(query.organizationId ? { organizationId: query.organizationId } : {}),
+          ...(query.country ? { country: query.country } : {}),
         },
       },
+    );
+    return unwrap(data);
+  },
+
+  /** Invite users (single or bulk, individual learner or organization) */
+  async inviteUsers(payload: InviteUserPayload): Promise<{ sent: number; failed: number }> {
+    const { data } = await apiClient.post<{ data: { sent: number; failed: number } }>(
+      '/admin/users/invite',
+      payload,
     );
     return unwrap(data);
   },
@@ -58,6 +71,12 @@ export const adminService = {
   /** ADM-05 */
   async deleteUser(userId: number): Promise<ActionMessage> {
     const { data } = await apiClient.delete<{ data: ActionMessage }>(`/admin/users/${userId}`);
+    return unwrap(data);
+  },
+
+  /** Restore soft-deleted user */
+  async restoreUser(userId: number): Promise<ActionMessage> {
+    const { data } = await apiClient.post<{ data: ActionMessage }>(`/admin/users/${userId}/restore`);
     return unwrap(data);
   },
 
