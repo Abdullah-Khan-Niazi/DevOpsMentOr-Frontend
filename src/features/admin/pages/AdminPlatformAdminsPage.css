@@ -17,6 +17,8 @@
 
 .admin-table-card {
   padding: var(--space-6) 0 0;
+  overflow-x: auto;
+  max-width: 100%;
 }
 
 .admin-table {

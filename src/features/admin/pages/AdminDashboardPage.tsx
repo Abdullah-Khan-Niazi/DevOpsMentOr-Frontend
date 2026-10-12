@@ -113,7 +113,7 @@ export function AdminDashboardPage() {
   const totalAuditPages = Math.max(1, Math.ceil(filteredAuditLogs.length / AUDIT_PAGE_SIZE));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Platform Dashboard"
         actions={
@@ -165,7 +165,7 @@ export function AdminDashboardPage() {
       {data ? (
         <>
           {/* Executive Vitals Strip with DB-Driven NothingOS Sparklines & Context Tooltips */}
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-stretch">
+          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 items-stretch w-full min-w-0 max-w-full">
             {/* Total Registered Userbase */}
             <NothingKpiCard
               label="Registered Userbase"
@@ -174,19 +174,17 @@ export function AdminDashboardPage() {
               href={ROUTES.ADMIN_USERS}
               sparklineLevels={data.kpis.sparklines?.userbase ?? [1, 2, 3, 2, 4]}
               tooltipContext="Total learner and administrator accounts registered across all tenants."
-              sourceTable="users, user_roles, roles"
             />
 
-            {/* Live Active Pods (from pwnbox_instances table) */}
+            {/* Live Active Pods */}
             <NothingKpiCard
-              label="Live Pods (Pwnbox)"
+              label="Live Sandbox Pods"
               value={data.kpis.pwnbox?.activePods ?? 0}
               subtext={`${data.kpis.pwnbox?.pendingPods ?? 0} queued in buffer • ${data.kpis.pwnbox?.errorPods ?? 0} errors`}
               href={ROUTES.ADMIN_ANALYTICS}
               sparklineLevels={data.kpis.sparklines?.pods ?? [1, 2, 3, 2, 4]}
               accentValue="ACTIVE"
-              tooltipContext="Live interactive browser sandboxes currently running in Docker/K8s orchestrator."
-              sourceTable="pwnbox_instances (status = 'running')"
+              tooltipContext="Live interactive browser sandboxes currently running in container orchestrator."
             />
 
             {/* Live Compute Allocation */}
@@ -197,7 +195,6 @@ export function AdminDashboardPage() {
               href={ROUTES.ADMIN_ANALYTICS}
               sparklineLevels={data.kpis.sparklines?.compute ?? [1, 2, 3, 2, 4]}
               tooltipContext="Dedicated memory and processor cores actively assigned to learner sandboxes."
-              sourceTable="pwnbox_instances (SUM ram_gb, cpu_cores)"
             />
 
             {/* Active Learners Past 30 Days */}
@@ -208,7 +205,6 @@ export function AdminDashboardPage() {
               href={ROUTES.ADMIN_USERS}
               sparklineLevels={data.kpis.sparklines?.learners ?? [1, 2, 3, 2, 4]}
               tooltipContext="Unique individual learners who logged in or completed lessons in the past 30 days."
-              sourceTable="users, activity_logs"
             />
           </div>
 
@@ -222,20 +218,16 @@ export function AdminDashboardPage() {
             request={data.kpis.requestTelemetry}
             session={data.kpis.sessionTelemetry}
             telemetry={data.kpis.telemetry}
-            peakHour={data.kpis.peakActivity?.peakHour}
           />
 
           {/* Visual Centerpiece: Progression Funnel & Userbase Segmentation (Images 2 & 3) */}
-          <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+          <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
             {/* Left: Fluid Progression Funnel */}
-            <Card className="flex flex-col justify-between p-5" style={{ borderRadius: 0 }}>
+            <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-1">
+                <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-4">
                   Learner Progression Funnel
                 </h2>
-                <p className="text-xs text-muted mb-4">
-                  Fluid conversion curve across platform engagement milestones
-                </p>
                 <FluidFunnelChart
                   stages={data.kpis.funnel ?? []}
                   headlineGrowth="+0.4% vs prior 30 days"
@@ -244,14 +236,11 @@ export function AdminDashboardPage() {
             </Card>
 
             {/* Right: Hatched User Segmentation Pie Chart */}
-            <Card className="flex flex-col justify-between p-5" style={{ borderRadius: 0 }}>
+            <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
               <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-1">
+                <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-4">
                   User Role Distribution
                 </h2>
-                <p className="text-xs text-muted mb-4">
-                  Platform demographic composition with SVG hatched patterns
-                </p>
                 <HatchedPieChart
                   data={(data.kpis.userSegmentation ?? []).map((u) => ({
                     label: u.segment,
@@ -267,48 +256,31 @@ export function AdminDashboardPage() {
           </div>
 
           {/* Main Dual-Column Operational Grid: Line Chart on Left, Audit Stream on Right */}
-          <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+          <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
             {/* Left Column: Activity Trends (Multi-Series Line Chart + 24h PKT curve) */}
-            <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 w-full min-w-0 max-w-full">
               {/* Daily Activity Multi-Series Line Chart with Visible Labeled Axes */}
-              <Card className="flex flex-col justify-between p-5" style={{ borderRadius: 0 }}>
+              <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
                 <ActivityLineChart
                   data={lineChartData}
                   height={250}
                   days={trendDays}
                   onDaysChange={setTrendDays}
                 />
-
-                <div className="mt-3 flex items-center justify-between text-[11px] font-mono text-muted pt-2 border-t border-border/60">
-                  <span>Data source: activity_logs & users</span>
-                  <Link
-                    to={ROUTES.ADMIN_ANALYTICS}
-                    className="hover:text-card-foreground transition-colors"
-                  >
-                    Deep analytics &rarr;
-                  </Link>
-                </div>
               </Card>
 
               {/* Traffic Density Curve in PKT (Day / 7D / Month) */}
-              <Card className="flex flex-col justify-between p-5" style={{ borderRadius: 0 }}>
-                <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                  <div>
-                    <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
-                      {trafficWindow === 'day' && '24-Hour Traffic Curve (PKT)'}
-                      {trafficWindow === '7d' && '7-Day Traffic Trajectory (PKT)'}
-                      {trafficWindow === 'month' && '30-Day Traffic Trajectory (PKT)'}
-                    </h2>
-                    <p className="mt-0.5 text-xs text-muted">
-                      {trafficWindow === 'day' && 'Hourly login & sandbox session density in Pakistani Standard Time'}
-                      {trafficWindow === '7d' && 'Daily login & platform activity volume over the last 7 days'}
-                      {trafficWindow === 'month' && 'Daily login & platform activity volume over the last 30 days'}
-                    </p>
-                  </div>
+              <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+                  <h2 className="text-[11px] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
+                    {trafficWindow === 'day' && '24-Hour Traffic Curve (PKT)'}
+                    {trafficWindow === '7d' && '7-Day Traffic Trajectory (PKT)'}
+                    {trafficWindow === 'month' && '30-Day Traffic Trajectory (PKT)'}
+                  </h2>
 
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5">
                     {/* Time Horizon Selector (Day / Last 7D / Month) */}
-                    <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[10px] font-mono">
+                    <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[9px] font-mono shrink-0">
                       {(
                         [
                           { key: 'day', label: 'Day' },
@@ -320,9 +292,9 @@ export function AdminDashboardPage() {
                           key={w.key}
                           type="button"
                           onClick={() => setTrafficWindow(w.key)}
-                          className={`px-2 py-0.5 transition-colors cursor-pointer ${
+                          className={`px-1.5 py-0.5 transition-colors cursor-pointer ${
                             trafficWindow === w.key
-                              ? 'bg-accent text-card-foreground font-bold'
+                              ? 'bg-accent text-accent-foreground font-bold'
                               : 'text-muted hover:text-card-foreground'
                           }`}
                           style={{ borderRadius: 0 }}
@@ -332,13 +304,18 @@ export function AdminDashboardPage() {
                       ))}
                     </div>
 
-                    <span className="text-xs font-mono text-accent">
-                      Peak: {data.kpis.peakActivity?.peakHour ?? '07:00 PM PKT'}
-                    </span>
+                    {data.kpis.peakActivity?.peakHour && (
+                      <div className="flex items-center gap-1 text-muted text-[10px] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap">
+                        <span className="text-[9px] uppercase">PEAK:</span>
+                        <span className="font-bold text-card-foreground">
+                          {data.kpis.peakActivity.peakHour}
+                        </span>
+                      </div>
+                    )}
                   </div>
                 </div>
 
-                <div className="h-44 w-full">
+                <div className="h-44 w-full min-w-0 max-w-full overflow-hidden">
                   <PixelatedBarChart
                     data={trafficChartData}
                     height={170}
@@ -350,16 +327,13 @@ export function AdminDashboardPage() {
             </div>
 
             {/* Right Column: Single Column Administrative Audit Trail */}
-            <Card className="flex flex-col justify-between p-5 h-full" style={{ borderRadius: 0 }}>
+            <Card className="flex flex-col justify-between p-5 h-full min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
                       Administrative Audit Stream
                     </h2>
-                    <p className="mt-0.5 text-xs text-muted">
-                      Single-column live platform governance feed (12h PKT)
-                    </p>
                   </div>
                   <Link
                     to={ROUTES.ADMIN_AUDIT_LOGS}
@@ -418,27 +392,22 @@ export function AdminDashboardPage() {
                     paginatedLogs.map((log) => (
                       <div
                         key={log.logId}
-                        className="py-3 flex flex-col gap-1 hover:bg-surface/40 transition-colors"
+                        className="py-2.5 px-2 border-b border-border/40 last:border-b-0 hover:bg-surface/50 transition-colors font-mono space-y-1"
                       >
-                        <div className="flex items-center justify-between text-xs">
-                          <span className="font-mono font-medium text-card-foreground truncate max-w-[200px]">
-                            {log.adminFullName ?? log.adminEmail}
+                        <div className="flex items-center justify-between gap-3 text-xs">
+                          <span className="font-bold text-accent uppercase tracking-wide truncate">
+                            {log.action}
                           </span>
-                          <span className="text-[11px] font-mono text-muted whitespace-nowrap">
+                          <span className="text-[10px] text-muted whitespace-nowrap shrink-0">
                             {formatPktDate(log.createdAt)}
                           </span>
                         </div>
-
-                        <div className="flex items-center gap-2 text-xs">
-                          <span
-                            className="font-mono text-[10px] uppercase px-1.5 py-0.5 border border-border bg-surface text-accent font-semibold"
-                            style={{ borderRadius: 0 }}
-                          >
-                            {log.action}
+                        <div className="flex items-center justify-between gap-2 text-[11px] text-muted">
+                          <span className="text-card-foreground truncate">
+                            {log.adminFullName ?? log.adminEmail}
                           </span>
-                          <span className="text-xs text-muted truncate">
-                            Target: {log.targetType ?? 'system'}
-                            {log.targetId ? ` #${log.targetId}` : ''}
+                          <span className="text-[11px] text-muted/80 whitespace-nowrap shrink-0">
+                            &rarr; {log.targetType ?? 'system'}{log.targetId ? ` #${log.targetId}` : ''}
                           </span>
                         </div>
                       </div>
@@ -498,7 +467,6 @@ function NothingKpiCard({
   sparklineLevels?: number[];
   accentValue?: string;
   tooltipContext?: string;
-  sourceTable?: string;
 }) {
   const cardContent = (
     <Card

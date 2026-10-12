@@ -102,6 +102,24 @@ export function useWithdrawStudent(classId: string | number) {
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.roster(classId) });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classDetail(classId) });
       void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+      void queryClient.invalidateQueries({ queryKey: ['org', 'analytics'] });
+    },
+  });
+}
+
+export function useEnrollStudent(classId: string | number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (userId: string | number) => classService.enrollStudent(classId, userId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.roster(classId) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classDetail(classId) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+      void queryClient.invalidateQueries({ queryKey: ['org', 'analytics'] });
     },
   });
 }

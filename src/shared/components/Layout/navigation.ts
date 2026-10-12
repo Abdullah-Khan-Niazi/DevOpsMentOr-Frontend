@@ -41,6 +41,12 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         icon: 'dashboard',
         section: 'Administration',
       },
+      {
+        to: ROUTES.ADMIN_ANALYTICS,
+        label: 'Analytics',
+        icon: 'chart',
+        section: 'Administration',
+      },
       { to: ROUTES.ADMIN_USERS, label: 'Users', icon: 'users', section: 'Administration' },
       {
         to: ROUTES.ADMIN_ORGANIZATIONS,
@@ -139,14 +145,6 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
         },
         { to: ROUTES.ADMIN_FILES, label: 'Files', icon: 'file', section: 'Administration' },
       );
-    }
-    if (permissions.has('platform.analytics.read')) {
-      items.push({
-        to: ROUTES.ADMIN_ANALYTICS,
-        label: 'Analytics',
-        icon: 'chart',
-        section: 'Administration',
-      });
     }
     if (permissions.has('platform.billing.manage')) {
       items.push({

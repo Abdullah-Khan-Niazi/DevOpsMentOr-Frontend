@@ -306,7 +306,7 @@ export function OrgDetailForm({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title={org.name}
         backTo={ROUTES.ADMIN_ORGANIZATIONS}
@@ -376,7 +376,7 @@ export function OrgDetailForm({
                     <p className="font-medium text-card-foreground">{org.adminEmail}</p>
                     <p className="text-xs text-muted">Platform User #{org.adminUserId}</p>
                   </div>
-                  <span className="border border-emerald-300 bg-emerald-50 px-2.5 py-1 text-xs font-medium text-emerald-700 rounded-none">
+                  <span className="border border-border-strong bg-accent/10 px-2.5 py-1 text-xs font-medium text-card-foreground rounded-none">
                     Active Org Admin
                   </span>
                 </div>
@@ -402,9 +402,6 @@ export function OrgDetailForm({
               <h3 className="text-base font-semibold text-card-foreground">
                 {org.adminUserId ? 'Reassign / Transfer Admin' : 'Assign Organization Admin'}
               </h3>
-              <p className="text-sm text-muted mt-1">
-                Select an active platform user or enter an email address. An invitation email is sent with a confirmation link; once clicked, the recipient becomes the Organization Admin.
-              </p>
             </div>
 
             {/* Mode Selector */}
@@ -700,7 +697,7 @@ export function OrgDetailForm({
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.activePods}
                       </p>
-                      <p className="text-xs text-muted mt-1">Live pwnbox containers</p>
+                      <p className="text-xs text-muted mt-1">Live sandbox containers</p>
                     </Card>
 
                     <Card className="p-4 rounded-none">
@@ -843,9 +840,6 @@ export function OrgDetailForm({
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4">
               <div>
                 <h3 className="text-base font-semibold text-card-foreground">Workspaces & Class Rosters</h3>
-                <p className="text-xs text-muted mt-0.5">
-                  Active classes and learning cohorts assigned to this organization. Click any row to view cohort telemetry, students, and leaderboard.
-                </p>
               </div>
             </div>
 
@@ -1034,11 +1028,6 @@ export function OrgDetailForm({
                       </p>
                     </div>
                   </div>
-
-                  <div className="border border-border p-3 bg-surface/60 rounded-none text-xs text-muted">
-                    <span className="font-semibold text-card-foreground">Allocated Compute: </span>
-                    Resources are dynamically scheduled across the Kubernetes cluster based on student lab executions.
-                  </div>
                 </Card>
               </div>
 
@@ -1047,7 +1036,6 @@ export function OrgDetailForm({
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-sm font-semibold text-card-foreground">14-Day Daily Active Learners</h3>
-                    <p className="text-xs text-muted mt-0.5">Distinct learners active on the platform per day</p>
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => setIsInviteDrawerOpen(true)}>
                     + Invite More Learners
@@ -1085,15 +1073,12 @@ export function OrgDetailForm({
             onClick={() => setIsInviteDrawerOpen(false)}
           />
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
+          <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
             <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-none">
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-card-foreground">Invite to {org.name}</h2>
-                    <p className="text-xs text-muted mt-0.5">
-                      Send invitations to join this organization directly.
-                    </p>
                   </div>
                   <button
                     type="button"
@@ -1173,7 +1158,7 @@ export function OrgDetailForm({
                         Accepts format: <span className="font-mono text-card-foreground">email,role,fullName</span> (roles: student, professor, admin) or plain list of emails.
                       </div>
                       {drawerCsvParsedCount !== null && (
-                        <div className="mt-1.5 text-xs text-emerald-600 font-medium">
+                        <div className="mt-1.5 text-xs text-card-foreground font-mono font-medium">
                           ✓ Imported {drawerCsvParsedCount} email(s) from CSV
                         </div>
                       )}
@@ -1188,13 +1173,10 @@ export function OrgDetailForm({
                       id="drawer-org-emails"
                       rows={5}
                       className="input-field w-full mt-1 font-mono text-xs rounded-none"
-                      placeholder="student1@acme.edu&#10;student2@acme.edu, professor@acme.edu"
+                      placeholder={'student1@acme.edu\nstudent2@acme.edu, professor@acme.edu'}
                       value={drawerEmails}
                       onChange={(e) => setDrawerEmails(e.target.value)}
                     />
-                    <p className="mt-1 text-xs text-muted">
-                      Separate multiple emails with commas or line breaks.
-                    </p>
                   </div>
                 </div>
               </div>

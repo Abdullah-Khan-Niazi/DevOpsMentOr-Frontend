@@ -1,5 +1,4 @@
-import '../styles/labs.css';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button, Card, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
@@ -61,12 +60,32 @@ export function AdminTracksPage() {
       .finally(() => setSaving(false));
   };
 
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const filteredTracks = useMemo(() => {
+    if (!data) return [];
+    return data.filter((track) => {
+      if (statusFilter === 'published' && !track.isActive) return false;
+      if (statusFilter === 'draft' && track.isActive) return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        if (!track.trackName.toLowerCase().includes(q) && !track.slug.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [data, search, statusFilter]);
+
   return (
-    <div>
-      <PageHeader title="Tracks" description="Create and edit learning tracks." />
-      <div className="mb-4 flex justify-end">
-        <Button onClick={openCreate}>New track</Button>
-      </div>
+    <div className="space-y-6 w-full min-w-0 max-w-full">
+      <PageHeader
+        title="Tracks"
+        actions={
+          <Button variant="primary" size="sm" onClick={openCreate}>
+            + New Track
+          </Button>
+        }
+      />
 
       {isLoading ? (
         <LoadingState />
@@ -77,36 +96,79 @@ export function AdminTracksPage() {
           onRetry={() => void refetch()}
         />
       ) : (
-        <Card>
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Track</th>
-                <th>Hours</th>
-                <th>Difficulty</th>
-                <th>Status</th>
-                <th aria-label="actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {(data ?? []).map((track) => (
-                <tr key={track.trackId}>
-                  <td>
-                    <strong>{track.trackName}</strong>
-                    <span className="admin-table__muted">/{track.slug}</span>
-                  </td>
-                  <td>{track.estimatedHours} hrs</td>
-                  <td>{track.difficultyName ?? 'Any'}</td>
-                  <td>{track.isActive ? 'Published' : 'Draft'}</td>
-                  <td>
-                    <Button variant="secondary" size="sm" onClick={() => openEdit(track)}>
-                      Edit
-                    </Button>
-                  </td>
+        <Card style={{ borderRadius: 0 }}>
+          {/* Single-line filter toolbar */}
+          <div className="mb-4 flex items-center gap-1.5 w-full">
+            <input
+              id="tracks-search"
+              className="filter-input flex-1 min-w-0 transition-colors focus:border-accent"
+              placeholder="Search track name or slug…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <select
+              id="tracks-status-filter"
+              className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+
+            {(search || statusFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearch('');
+                  setStatusFilter('all');
+                }}
+                className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+                style={{ borderRadius: 0 }}
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+
+          <div className="w-full max-w-full overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead>
+                <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                  <th className="px-3 py-2 font-medium">Track</th>
+                  <th className="px-3 py-2 font-medium">Hours</th>
+                  <th className="px-3 py-2 font-medium">Difficulty</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-2 font-medium text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredTracks.map((track) => (
+                  <tr key={track.trackId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
+                    <td className="px-3 py-2.5">
+                      <div className="font-semibold text-card-foreground">{track.trackName}</div>
+                      <div className="text-[11px] text-muted font-mono">/{track.slug}</div>
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{track.estimatedHours} hrs</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{track.difficultyName ?? 'Any'}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap font-mono text-xs">
+                      <span className={track.isActive ? 'font-semibold text-card-foreground' : 'text-muted'}>
+                        {track.isActive ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-right">
+                      <Button variant="secondary" size="sm" onClick={() => openEdit(track)} style={{ borderRadius: 0 }}>
+                        Edit
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 

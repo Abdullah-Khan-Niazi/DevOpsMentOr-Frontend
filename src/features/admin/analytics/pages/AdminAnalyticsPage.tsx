@@ -95,78 +95,71 @@ export function AdminAnalyticsPage() {
       label: 'Active Users (7d)',
       value: overview.data?.activeUsers7d ?? 0,
       spark: getSliceLevels('activeUsers'),
-      context: 'Unique authenticated learner accounts generating interaction records in activity_logs over the past 7 days.',
-      sourceTable: 'activity_logs',
+      context: 'Active learner accounts generating interaction records over the past 7 days.',
+      subtext: 'Unique active learner sessions',
     },
     {
       label: 'New Signups (30d)',
       value: overview.data?.newSignups30d ?? 0,
       spark: getSliceLevels('newSignups'),
-      context: 'New student and practitioner profiles created and verified in the users table during the past 30 days.',
-      sourceTable: 'users',
+      context: 'New student and practitioner profiles created and verified during the past 30 days.',
+      subtext: 'Verified account onboarding',
     },
     {
       label: 'Certifications (30d)',
       value: overview.data?.courseCompletions30d ?? 0,
       spark: getSliceLevels('courseCompletions'),
-      context: 'Officially accredited course graduation certificates recorded in certificates table in the last 30 days.',
-      sourceTable: 'certificates',
+      context: 'Officially accredited course graduation certificates recorded in the last 30 days.',
+      subtext: 'Accredited certificates issued',
     },
     {
       label: 'Points Awarded (7d)',
       value: overview.data?.pointsAwarded7d ?? 0,
       spark: [2, 4, 5, 3, 4],
-      context: 'Total gamified knowledge experience points accrued across lab exercises and quizzes in points_history.',
-      sourceTable: 'points_history',
+      context: 'Total gamified knowledge experience points accrued across lab exercises and quizzes.',
+      subtext: 'Knowledge XP points earned',
     },
     {
       label: 'Active Subscriptions',
       value: overview.data?.activeSubscriptions ?? 0,
       spark: [3, 4, 4, 5, 5],
-      context: 'Current unexpired recurring billing records in subscriptions table across individual and enterprise plans.',
-      sourceTable: 'subscriptions',
+      context: 'Current unexpired recurring billing records across individual and enterprise plans.',
+      subtext: 'Enterprise & Pro memberships',
     },
     {
       label: 'System Notifications (7d)',
       value: overview.data?.notificationsSent7d ?? 0,
       spark: [1, 3, 2, 4, 3],
-      context: 'Operational alerts, verification emails, and achievement messages dispatched in notifications table.',
-      sourceTable: 'notifications',
+      context: 'Operational alerts, verification emails, and achievement messages dispatched.',
+      subtext: 'Alerts & emails dispatched',
     },
     {
       label: 'Pending Moderation',
       value: overview.data?.pendingReports ?? 0,
       spark: [1, 1, 2, 1, 0],
-      context: 'Open user and content violation reports in reports table awaiting administrative resolution.',
-      sourceTable: 'reports',
+      context: 'Open user and content violation reports awaiting administrative resolution.',
+      subtext: 'Flagged reports in queue',
     },
     {
       label: 'Learner Reviews (7d)',
       value: overview.data?.newReviews7d ?? 0,
       spark: [2, 3, 4, 3, 4],
-      context: 'Curriculum evaluation ratings and written module reviews submitted in the reviews table.',
-      sourceTable: 'reviews',
+      context: 'Curriculum evaluation ratings and written module reviews submitted.',
+      subtext: 'Course ratings & feedback',
     },
   ];
 
   const sessionStats = detailed.data?.sessionStats ?? dashboardData?.kpis.sessionTelemetry;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <PageHeader title="Platform Analytics" />
-          <p className="text-xs text-muted font-mono mt-0.5">
-            Deep granular intelligence: hardware telemetry, learner retention, geographic dispersion, and multi-metric matrices
-          </p>
         </div>
 
         {/* Global Live Sync Indicator & Range Switcher */}
         <div className="flex items-center gap-3">
-          <div className="hidden sm:flex items-center gap-2 border border-border px-2.5 py-1 bg-surface font-mono text-[11px] text-muted">
-            <span className="w-2 h-2 rounded-none bg-success animate-pulse" />
-            <span>Live Stream (8s interval)</span>
-          </div>
 
           <div className="flex items-center gap-1 border border-border p-0.5 bg-surface font-mono text-xs">
             {TREND_RANGES.map((val) => (
@@ -176,7 +169,7 @@ export function AdminAnalyticsPage() {
                 onClick={() => setDays(val)}
                 className={`px-2.5 py-1 transition-colors cursor-pointer ${
                   days === val
-                    ? 'bg-accent text-card-foreground font-bold'
+                    ? 'bg-accent text-accent-foreground font-bold'
                     : 'text-muted hover:text-card-foreground'
                 }`}
                 style={{ borderRadius: 0 }}
@@ -199,9 +192,9 @@ export function AdminAnalyticsPage() {
       {sessionStats && (
         <Card className="p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs" style={{ borderRadius: 0 }}>
           <div className="flex items-center gap-3">
-            <span className="w-2.5 h-2.5 bg-success animate-pulse" />
+            <span className="w-2 h-2 bg-signal animate-pulse rounded-none" />
             <span className="text-muted text-[10px] uppercase">CONCURRENT LEARNERS ONLINE:</span>
-            <span className="font-bold text-accent text-sm">
+            <span className="font-bold text-card-foreground text-sm">
               {sessionStats.currentlyActiveUsers} LEARNERS ACTIVE
             </span>
             <span className="text-muted text-[11px]">
@@ -269,10 +262,6 @@ export function AdminAnalyticsPage() {
           ranges={TREND_RANGES}
           onDaysChange={setDays}
         />
-        <div className="flex items-center justify-between text-[11px] font-mono text-muted pt-2 border-t border-border/60">
-          <span>Continuous multi-series trend curve with Cartesian grid and baseline averages</span>
-          <span>Source: activity_logs, users & certificates</span>
-        </div>
       </Card>
 
       {/* Multi-Metric Contribution & Activity Heatmap (5 modes: Activity, Logins, Labs, Signups, Orgs) */}
@@ -282,9 +271,6 @@ export function AdminAnalyticsPage() {
             <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
               Platform Interaction & Growth Heatmap
             </h2>
-            <p className="text-xs text-muted">
-              12-week daily interaction density across user sessions, sandbox labs, and onboarding
-            </p>
           </div>
           <span className="text-xs font-mono text-accent">Active Matrix</span>
         </div>
@@ -299,9 +285,9 @@ export function AdminAnalyticsPage() {
       </Card>
 
       {/* Conversion Funnel & Subscription Tiers (Hatched Pie Chart) */}
-      <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+      <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
         {/* Left: Stepped Fluid Conversion Funnel */}
-        <Card className="p-5 flex flex-col justify-between" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
           <div>
             <div className="mb-2">
               <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
@@ -324,16 +310,14 @@ export function AdminAnalyticsPage() {
         </Card>
 
         {/* Right: Subscription Tiers Hatched Pie Chart */}
-        <Card className="p-5 flex flex-col justify-between" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
           <div>
             <div className="flex items-center justify-between mb-2">
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
                   Subscription Tier Distribution
                 </h2>
-                <p className="text-xs text-muted">Active memberships by billing plan type</p>
               </div>
-              <span className="text-xs font-mono text-accent">Revenue Mix</span>
             </div>
 
             <HatchedPieChart
@@ -346,10 +330,6 @@ export function AdminAnalyticsPage() {
               headlineGrowth="+1.2% vs prior 30 days"
             />
           </div>
-          <div className="mt-4 pt-2 border-t border-border/60 text-[11px] font-mono text-muted flex justify-between">
-            <span>Billing cycle: Stripe & Platform invoices</span>
-            <span>Status: Verified Active</span>
-          </div>
         </Card>
       </div>
 
@@ -360,38 +340,27 @@ export function AdminAnalyticsPage() {
             <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
               Regional Userbase Demographics Map
             </h2>
-            <p className="text-xs text-muted">
-              Global geographic distribution of registered platform learners with choropleth shading
-            </p>
           </div>
-          <span className="text-xs font-mono text-accent">Real Vector Geometries</span>
         </div>
 
         <RegionalMap countries={detailed.data?.countries ?? []} />
       </Card>
 
-      {/* Dual Deep Dive Columns: 24-Hour Traffic Curve (PKT) & Pwnbox Infrastructure Telemetry */}
-      <div className="grid gap-6 lg:grid-cols-2 items-stretch">
+      {/* Dual Deep Dive Columns: 24-Hour Traffic Curve (PKT) & Container Sandbox Infrastructure Telemetry */}
+      <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
         {/* Peak Activity Traffic Density Curve in PKT (Day / 7D / Month) */}
-        <Card className="p-5 flex flex-col justify-between" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
           <div>
-            <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
-                  {trafficWindow === 'day' && '24-Hour Traffic Density Curve (PKT)'}
-                  {trafficWindow === '7d' && '7-Day Traffic Trajectory (PKT)'}
-                  {trafficWindow === 'month' && '30-Day Traffic Trajectory (PKT)'}
-                </h2>
-                <p className="mt-0.5 text-xs text-muted">
-                  {trafficWindow === 'day' && 'Hourly login and lab execution density in Pakistani Standard Time (UTC+5)'}
-                  {trafficWindow === '7d' && 'Daily login and platform activity density across the last 7 days'}
-                  {trafficWindow === 'month' && 'Daily login and platform activity density across the last 30 days'}
-                </p>
-              </div>
+            <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
+              <h2 className="text-[11px] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
+                {trafficWindow === 'day' && '24-Hour Traffic Density Curve (PKT)'}
+                {trafficWindow === '7d' && '7-Day Traffic Trajectory (PKT)'}
+                {trafficWindow === 'month' && '30-Day Traffic Trajectory (PKT)'}
+              </h2>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {/* Time Horizon Selector (Day / Last 7D / Month) */}
-                <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[10px] font-mono">
+                <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[9px] font-mono shrink-0">
                   {(
                     [
                       { key: 'day', label: 'Day' },
@@ -403,9 +372,9 @@ export function AdminAnalyticsPage() {
                       key={w.key}
                       type="button"
                       onClick={() => setTrafficWindow(w.key)}
-                      className={`px-2 py-0.5 transition-colors cursor-pointer ${
+                      className={`px-1.5 py-0.5 transition-colors cursor-pointer ${
                         trafficWindow === w.key
-                          ? 'bg-accent text-card-foreground font-bold'
+                          ? 'bg-accent text-accent-foreground font-bold'
                           : 'text-muted hover:text-card-foreground'
                       }`}
                       style={{ borderRadius: 0 }}
@@ -415,13 +384,18 @@ export function AdminAnalyticsPage() {
                   ))}
                 </div>
 
-                <span className="text-xs font-mono text-accent">
-                  Peak: {dashboardData?.kpis.peakActivity?.peakHour ?? '07:00 PM PKT'}
-                </span>
+                {dashboardData?.kpis.peakActivity?.peakHour && (
+                  <div className="flex items-center gap-1 text-muted text-[10px] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap">
+                    <span className="text-[9px] uppercase">PEAK:</span>
+                    <span className="font-bold text-card-foreground">
+                      {dashboardData.kpis.peakActivity.peakHour}
+                    </span>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="h-48 w-full">
+            <div className="h-48 w-full min-w-0 max-w-full overflow-hidden">
               <PixelatedBarChart
                 data={trafficChartData}
                 height={180}
@@ -430,38 +404,23 @@ export function AdminAnalyticsPage() {
               />
             </div>
           </div>
-
-          <div className="mt-4 pt-3 border-t border-border/60 text-[11px] font-mono text-muted flex justify-between">
-            <span>
-              {trafficWindow === 'day' && 'Aggregated hourly logins in Pakistani Standard Time'}
-              {trafficWindow === '7d' && 'Past 7 days database login history'}
-              {trafficWindow === 'month' && 'Past 30 days database login history'}
-            </span>
-            <span>Timezone: PKT (12-hour format)</span>
-          </div>
         </Card>
 
-        {/* Pwnbox Compute & Container Pod Lifecycle Telemetry */}
-        <Card className="p-5 flex flex-col justify-between" style={{ borderRadius: 0 }}>
+        {/* Container Sandbox Compute & Pod Lifecycle Telemetry */}
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
-                  Pwnbox Sandbox Infrastructure Telemetry
+                  Container Sandbox Infrastructure Telemetry
                 </h2>
-                <p className="text-xs text-muted">
-                  Live interactive sandbox pod lifecycle, compute provisioning, and duration metrics
-                </p>
               </div>
-              <span className="text-xs font-mono text-accent">
-                {detailed.data?.pwnbox?.activeInstances ?? 0} RUNNING PODS
-              </span>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 text-xs font-mono">
               <div className="p-3 border border-border bg-surface/50" style={{ borderRadius: 0 }}>
                 <span className="text-muted block text-[10px] uppercase">Active Pods</span>
-                <span className="text-xl font-bold text-success">
+                <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.activeInstances ?? 0}
                 </span>
                 <span className="text-[10px] text-muted block mt-0.5">
@@ -498,11 +457,6 @@ export function AdminAnalyticsPage() {
               </div>
             </div>
           </div>
-
-          <div className="mt-4 pt-3 border-t border-border/60 text-[11px] font-mono text-muted flex justify-between">
-            <span>Container Engine: Docker/K8s Pwnbox</span>
-            <span>Status: Provisioned Healthy</span>
-          </div>
         </Card>
       </div>
     </div>
@@ -517,61 +471,31 @@ function AnalyticsKpiCard({
     value: number;
     spark: number[];
     context: string;
-    sourceTable: string;
+    subtext: string;
   };
 }) {
-  const [showTooltip, setShowTooltip] = useState(false);
-
   return (
     <Card
-      className="relative flex flex-col justify-between p-3.5 transition-all duration-150 hover:-translate-y-1 hover:border-accent hover:shadow-lg cursor-pointer"
+      tabIndex={0}
+      className="group relative flex flex-col justify-between p-3.5 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-0.5 hover:border-accent hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer select-none"
       style={{ borderRadius: 0 }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
     >
       <div className="flex items-start justify-between">
-        <span className="text-[10px] font-mono uppercase tracking-wider text-muted truncate">
+        <span className="text-[10px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors truncate">
           {kpi.label}
         </span>
-        <div className="flex items-center gap-1.5">
-          <span
-            className="text-[10px] font-mono text-muted/60 hover:text-accent cursor-help"
-            title={kpi.context}
-          >
-            [i]
-          </span>
-          <PixelatedMiniSparkline levels={kpi.spark} />
-        </div>
+        <PixelatedMiniSparkline levels={kpi.spark} />
       </div>
 
       <div className="mt-2">
-        <span className="text-xl font-bold font-mono tracking-tight text-card-foreground">
+        <span className="text-xl font-bold font-mono tracking-tight text-card-foreground group-hover:text-accent transition-colors">
           {kpi.value.toLocaleString()}
         </span>
       </div>
 
-      {/* Source Table pill at bottom of card */}
-      <div className="mt-2 pt-1.5 border-t border-border/40 text-[10px] font-mono text-muted flex items-center justify-between">
-        <span>Source</span>
-        <span className="text-accent">{kpi.sourceTable}</span>
-      </div>
-
-      {/* Floating High-Contrast Context Tooltip */}
-      {showTooltip && (
-        <div
-          className="absolute bottom-full left-0 mb-2 w-64 p-3 bg-surface border border-accent shadow-2xl font-mono text-xs z-30 pointer-events-none"
-          style={{ borderRadius: 0 }}
-        >
-          <div className="font-bold text-card-foreground mb-1 text-[11px] uppercase">
-            {kpi.label}
-          </div>
-          <p className="text-muted text-[11px] leading-relaxed mb-2 font-sans">{kpi.context}</p>
-          <div className="text-[10px] text-accent pt-1.5 border-t border-border/50 flex items-center justify-between">
-            <span>Database Table:</span>
-            <span className="font-bold text-card-foreground">{kpi.sourceTable}</span>
-          </div>
-        </div>
-      )}
+      <p className="mt-2 pt-1.5 border-t border-border/40 text-[11px] font-mono text-muted group-hover:text-card-foreground/80 transition-colors truncate">
+        {kpi.subtext}
+      </p>
     </Card>
   );
 }

@@ -1,5 +1,4 @@
-import '../styles/labs.css';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button, Card, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
@@ -100,12 +99,34 @@ export function AdminLabsPage() {
       });
   };
 
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
+
+  const filteredLabs = useMemo(() => {
+    if (!data) return [];
+    return data.filter((lab) => {
+      if (typeFilter !== 'all' && lab.labType !== typeFilter) return false;
+      if (statusFilter === 'published' && !lab.isActive) return false;
+      if (statusFilter === 'draft' && lab.isActive) return false;
+      if (search.trim()) {
+        const q = search.toLowerCase();
+        if (!lab.labName.toLowerCase().includes(q) && !lab.slug.toLowerCase().includes(q)) return false;
+      }
+      return true;
+    });
+  }, [data, search, typeFilter, statusFilter]);
+
   return (
-    <div>
-      <PageHeader title="Labs" description="Create, edit and publish hands-on lab environments." />
-      <div className="mb-4 flex justify-end">
-        <Button onClick={openCreate}>New lab</Button>
-      </div>
+    <div className="space-y-6 w-full min-w-0 max-w-full">
+      <PageHeader
+        title="Labs"
+        actions={
+          <Button variant="primary" size="sm" onClick={openCreate}>
+            + New Lab
+          </Button>
+        }
+      />
 
       {isLoading ? (
         <LoadingState />
@@ -116,43 +137,105 @@ export function AdminLabsPage() {
           onRetry={() => void refetch()}
         />
       ) : (
-        <Card>
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Lab</th>
-                <th>Type</th>
-                <th>Difficulty</th>
-                <th>Premium</th>
-                <th>Status</th>
-                <th aria-label="actions" />
-              </tr>
-            </thead>
-            <tbody>
-              {(data ?? []).map((lab) => (
-                <tr key={lab.labId}>
-                  <td>
-                    <strong>{lab.labName}</strong>
-                    <span className="admin-table__muted">/{lab.slug}</span>
-                  </td>
-                  <td>{lab.labType.replace('_', ' ')}</td>
-                  <td>{lab.difficultyName ?? 'Unknown'}</td>
-                  <td>{lab.isPremium ? 'Yes' : 'No'}</td>
-                  <td>{lab.isActive ? 'Published' : 'Draft'}</td>
-                  <td>
-                    <div className="admin-table__actions">
-                      <Button variant="secondary" size="sm" onClick={() => openEdit(lab)}>
-                        Edit
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => togglePublish(lab)}>
-                        {lab.isActive ? 'Unpublish' : 'Publish'}
-                      </Button>
-                    </div>
-                  </td>
+        <Card style={{ borderRadius: 0 }}>
+          {/* Single-line filter toolbar */}
+          <div className="mb-4 flex items-center gap-1.5 w-full">
+            <input
+              id="labs-search"
+              className="filter-input flex-1 min-w-0 transition-colors focus:border-accent"
+              placeholder="Search lab name or slug…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+
+            <select
+              id="labs-type-filter"
+              className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+              value={typeFilter}
+              onChange={(e) => setTypeFilter(e.target.value)}
+            >
+              <option value="all">All Lab Types</option>
+              <option value="pro_lab">Pro Lab</option>
+              <option value="vip_lab">VIP Lab</option>
+              <option value="sherlock">Diagnostic Assessment</option>
+            </select>
+
+            <select
+              id="labs-status-filter"
+              className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+            >
+              <option value="all">All Statuses</option>
+              <option value="published">Published</option>
+              <option value="draft">Draft</option>
+            </select>
+
+            {(search || typeFilter !== 'all' || statusFilter !== 'all') && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => {
+                  setSearch('');
+                  setTypeFilter('all');
+                  setStatusFilter('all');
+                }}
+                className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+                style={{ borderRadius: 0 }}
+              >
+                Reset
+              </Button>
+            )}
+          </div>
+
+          <div className="w-full max-w-full overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead>
+                <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                  <th className="px-3 py-2 font-medium">Lab</th>
+                  <th className="px-3 py-2 font-medium">Type</th>
+                  <th className="px-3 py-2 font-medium">Difficulty</th>
+                  <th className="px-3 py-2 font-medium">Premium</th>
+                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th className="px-3 py-2 font-medium text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {filteredLabs.map((lab) => (
+                  <tr key={lab.labId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
+                    <td className="px-3 py-2.5">
+                      <div className="font-semibold text-card-foreground">{lab.labName}</div>
+                      <div className="text-[11px] text-muted font-mono">/{lab.slug}</div>
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground uppercase text-[11px]">
+                      {lab.labType === 'sherlock' ? 'Diagnostic' : lab.labType.replace('_', ' ')}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                      {lab.difficultyName ?? '—'}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                      {lab.isPremium ? 'Yes' : 'No'}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap font-mono text-xs">
+                      <span className={lab.isActive ? 'font-semibold text-card-foreground' : 'text-muted'}>
+                        {lab.isActive ? 'Published' : 'Draft'}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-1.5">
+                        <Button variant="secondary" size="sm" onClick={() => openEdit(lab)} style={{ borderRadius: 0 }}>
+                          Edit
+                        </Button>
+                        <Button variant="ghost" size="sm" onClick={() => togglePublish(lab)} style={{ borderRadius: 0 }}>
+                          {lab.isActive ? 'Unpublish' : 'Publish'}
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </Card>
       )}
 
@@ -300,7 +383,7 @@ export function AdminLabsPage() {
 
             {draft.labType === 'sherlock' && (
               <fieldset className="lab-admin-form__section">
-                <legend>Sherlock configuration</legend>
+                <legend>Diagnostic assessment configuration</legend>
                 <label className="input-label">
                   Evidence file URL
                   <input

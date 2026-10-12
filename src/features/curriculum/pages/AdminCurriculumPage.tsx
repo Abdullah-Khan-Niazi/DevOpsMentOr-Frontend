@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Card, PageHeader, toast } from '@/shared/components';
+import { Button, Card, PageHeader, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { CourseMetaCard } from '../components/CourseMetaCard';
 import { ModuleForm } from '../components/ModuleForm';
@@ -64,24 +64,28 @@ export function AdminCurriculumPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Curriculum"
-        description="Canonical course, modules, lessons and quizzes."
+        actions={
+          <Button variant="primary" size="sm" onClick={() => setCreating(true)}>
+            + New Module
+          </Button>
+        }
       />
 
       {course.query.isLoading ? (
-        <Card className="space-y-3 p-6">
-          <div className="h-6 w-1/3 rounded bg-border" />
-          <div className="h-4 w-2/3 rounded bg-border" />
+        <Card className="space-y-3 p-6" style={{ borderRadius: 0 }}>
+          <div className="h-6 w-1/3 bg-border" />
+          <div className="h-4 w-2/3 bg-border" />
           <div className="grid grid-cols-3 gap-4 pt-2">
-            <div className="h-16 rounded-lg bg-border" />
-            <div className="h-16 rounded-lg bg-border" />
-            <div className="h-16 rounded-lg bg-border" />
+            <div className="h-16 bg-border" />
+            <div className="h-16 bg-border" />
+            <div className="h-16 bg-border" />
           </div>
         </Card>
       ) : course.query.isError || !course.query.data ? (
-        <Card className="p-6">
+        <Card className="p-6" style={{ borderRadius: 0 }}>
           <p className="text-sm text-muted">
             {course.query.error?.message ?? 'Unable to load the course.'}
           </p>
@@ -101,20 +105,20 @@ export function AdminCurriculumPage() {
         />
       )}
 
-      <Card className="flex items-center gap-3 p-4">
-        <label htmlFor="module-publish-filter" className="text-sm text-muted">
-          Publish state
-        </label>
-        <select
-          id="module-publish-filter"
-          className="input-field w-40"
-          value={publishFilter}
-          onChange={(e) => setPublishFilter(e.target.value as 'all' | 'true' | 'false')}
-        >
-          <option value="all">All</option>
-          <option value="true">Published</option>
-          <option value="false">Draft</option>
-        </select>
+      <Card className="p-3" style={{ borderRadius: 0 }}>
+        <div className="flex items-center gap-2 text-xs font-mono w-full">
+          <span className="text-[10px] text-muted uppercase shrink-0">Publish state:</span>
+          <select
+            id="module-publish-filter"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={publishFilter}
+            onChange={(e) => setPublishFilter(e.target.value as 'all' | 'true' | 'false')}
+          >
+            <option value="all">All States</option>
+            <option value="true">Published</option>
+            <option value="false">Draft</option>
+          </select>
+        </div>
       </Card>
 
       {creating ? (

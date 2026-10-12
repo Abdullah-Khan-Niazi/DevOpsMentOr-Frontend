@@ -10,26 +10,28 @@ interface ActivityLogTableProps {
 export function ActivityLogTable({ items, isLoading }: ActivityLogTableProps) {
   if (isLoading) {
     return (
-      <table className="w-full text-left text-sm" aria-label="Activity log">
-        <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-            <th className="px-3 py-2 font-medium">Event</th>
-            <th className="px-3 py-2 font-medium">When</th>
-          </tr>
-        </thead>
-        <tbody>
-          {Array.from({ length: 3 }, (_, index) => (
-            <tr key={index} className="border-b border-border/60 last:border-0">
-              <td className="px-3 py-3">
-                <div className="h-3 w-2/3 rounded bg-border" />
-              </td>
-              <td className="px-3 py-3">
-                <div className="h-3 w-24 rounded bg-border" />
-              </td>
+      <div className="w-full max-w-full overflow-x-auto">
+        <table className="w-full text-left text-sm" aria-label="Activity log">
+          <thead>
+            <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+              <th className="px-3 py-2 font-medium">Event</th>
+              <th className="px-3 py-2 font-medium">When</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {Array.from({ length: 3 }, (_, index) => (
+              <tr key={index} className="border-b border-border/60 last:border-0">
+                <td className="px-3 py-3">
+                  <div className="h-3 w-2/3 rounded bg-border" />
+                </td>
+                <td className="px-3 py-3">
+                  <div className="h-3 w-24 rounded bg-border" />
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     );
   }
 
@@ -38,26 +40,28 @@ export function ActivityLogTable({ items, isLoading }: ActivityLogTableProps) {
   }
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead>
-        <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-          <th className="px-3 py-2 font-medium">Event</th>
-          <th className="px-3 py-2 font-medium">When</th>
-        </tr>
-      </thead>
-      <tbody>
-        {items.map((item) => (
-          <tr key={item.logId} className="border-b border-border/60 last:border-0">
-            <td className="px-3 py-2.5 text-card-foreground">
-              {ACTIVITY_LABELS[item.activityType] ?? item.activityType}
-            </td>
-            <td className="px-3 py-2.5 tabular-nums text-muted-foreground">
-              {formatDateTime(item.createdAt)}
-            </td>
+    <div className="w-full max-w-full overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+            <th className="px-3 py-2 font-medium">Event</th>
+            <th className="px-3 py-2 font-medium">When</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {items.map((item) => (
+            <tr key={item.logId} className="border-b border-border/60 last:border-0">
+              <td className="px-3 py-2.5 text-card-foreground">
+                {ACTIVITY_LABELS[item.activityType] ?? item.activityType}
+              </td>
+              <td className="px-3 py-2.5 tabular-nums text-muted-foreground">
+                {formatDateTime(item.createdAt)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

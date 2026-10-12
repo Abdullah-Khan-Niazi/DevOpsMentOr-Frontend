@@ -10,6 +10,7 @@ import {
 } from '@/shared/components';
 import type { MyOrgDto } from '../types';
 import { useMyOrg } from '../hooks';
+import { ROUTES } from '@/shared/constants';
 
 interface FormHelpers {
   onSuccess: () => void;
@@ -80,8 +81,8 @@ function OrgSettingsForm({
   };
 
   return (
-    <div className="max-w-2xl">
-      <PageHeader title="Settings" description="Organization profile and invitation policy." />
+    <div className="max-w-2xl w-full min-w-0">
+      <PageHeader title="Organization Settings" backTo={ROUTES.ORG_DASHBOARD} />
 
       <Card className="space-y-4 p-6">
         <h3 className="font-medium text-card-foreground">Organization details</h3>

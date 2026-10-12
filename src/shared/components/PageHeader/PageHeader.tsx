@@ -72,7 +72,7 @@ export function PageHeader({
           {resolvedTitle}
         </h1>
       </div>
-      {actions ? <div className="flex items-center gap-2 shrink-0">{actions}</div> : null}
+      {actions ? <div className="flex flex-wrap items-center gap-2">{actions}</div> : null}
     </div>
   );
 }

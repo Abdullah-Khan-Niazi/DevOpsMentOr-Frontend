@@ -24,7 +24,7 @@ export function QuizResultPanel({ result, onRetry }: QuizResultPanelProps) {
           <div
             className={
               result.isPassed
-                ? 'text-sm font-medium text-green-700'
+                ? 'text-sm font-mono font-bold text-card-foreground'
                 : 'text-sm font-medium text-red-700'
             }
           >
@@ -39,7 +39,7 @@ export function QuizResultPanel({ result, onRetry }: QuizResultPanelProps) {
             <span className="truncate text-muted-foreground">
               Question {item.questionId}{' '}
               {item.isCorrect ? (
-                <span className="text-green-700">· correct</span>
+                <span className="font-mono text-card-foreground font-semibold">· correct</span>
               ) : (
                 <span className="text-red-700">· incorrect</span>
               )}

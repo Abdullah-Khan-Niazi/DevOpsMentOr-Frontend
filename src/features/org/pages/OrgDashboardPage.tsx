@@ -99,9 +99,8 @@ export function OrgDashboardPage() {
 
   // Member search and role filtering state
   const [memberSearch, setMemberSearch] = useState('');
-  const [memberRoleFilter, setMemberRoleFilter] = useState<
-    'all' | 'org_student' | 'professor' | 'org_admin'
-  >('all');
+  type MemberRoleFilter = 'all' | 'org_student' | 'professor' | 'org_admin';
+  const [memberRoleFilter, setMemberRoleFilter] = useState<MemberRoleFilter>('all');
 
   const cohorts = useMemo<ClassDto[]>(
     () => classesQuery.data?.data ?? [],
@@ -153,7 +152,7 @@ export function OrgDashboardPage() {
   const org = query.data;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Organization Dashboard"
         actions={
@@ -269,9 +268,6 @@ export function OrgDashboardPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4">
             <div>
               <h3 className="text-base font-semibold text-card-foreground">Cohorts</h3>
-              <p className="mt-0.5 text-xs text-muted font-mono">
-                Live roster telemetry and enrollment quotas. Click any cohort to open details.
-              </p>
             </div>
             <Link to={ROUTES.ORG_CLASSES}>
               <Button variant="secondary" size="sm">
@@ -290,7 +286,7 @@ export function OrgDashboardPage() {
               description="Create your first cohort using the button on top to start inviting students and tracking lab telemetry."
             />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
@@ -368,9 +364,6 @@ export function OrgDashboardPage() {
         <Card className="p-6 space-y-4">
           <div className="border-b border-border pb-4">
             <h3 className="text-base font-semibold text-card-foreground">Organization Members</h3>
-            <p className="mt-0.5 text-xs text-muted font-mono">
-              Faculty, students, and administration registered under this organization tenant.
-            </p>
           </div>
 
           {/* Member Search and Role Filter Bar */}
@@ -384,28 +377,18 @@ export function OrgDashboardPage() {
                 onChange={(e) => setMemberSearch(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
-              {(
-                [
-                  { id: 'all', label: 'All Roles' },
-                  { id: 'org_student', label: 'Students' },
-                  { id: 'professor', label: 'Professors' },
-                  { id: 'org_admin', label: 'Admins' },
-                ] as const
-              ).map((tab) => (
-                <button
-                  key={tab.id}
-                  type="button"
-                  onClick={() => setMemberRoleFilter(tab.id)}
-                  className={`px-3 py-1.5 text-xs font-mono transition-colors border ${
-                    memberRoleFilter === tab.id
-                      ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
-                      : 'border-border bg-surface text-muted hover:text-card-foreground'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              ))}
+            <div>
+              <select
+                aria-label="Filter by role"
+                className="input-field text-xs font-mono h-9 min-w-[130px]"
+                value={memberRoleFilter}
+                onChange={(e) => setMemberRoleFilter(e.target.value as MemberRoleFilter)}
+              >
+                <option value="all">All Roles</option>
+                <option value="org_student">Students</option>
+                <option value="professor">Professors</option>
+                <option value="org_admin">Admins</option>
+              </select>
             </div>
           </div>
 
@@ -423,7 +406,7 @@ export function OrgDashboardPage() {
               }
             />
           ) : (
-            <div className="overflow-x-auto">
+            <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
                   <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">

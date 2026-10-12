@@ -16,7 +16,6 @@ interface MetricTabConfig {
   nounSingle: string;
   nounPlural: string;
   description: string;
-  sourceTable: string;
 }
 
 const METRIC_TABS: MetricTabConfig[] = [
@@ -26,7 +25,6 @@ const METRIC_TABS: MetricTabConfig[] = [
     nounSingle: 'interaction event',
     nounPlural: 'interaction events',
     description: 'Daily learning actions, lesson views, and quiz evaluations',
-    sourceTable: 'activity_logs',
   },
   {
     key: 'logins',
@@ -34,15 +32,13 @@ const METRIC_TABS: MetricTabConfig[] = [
     nounSingle: 'learner login',
     nounPlural: 'learner logins',
     description: 'Successful authenticated sessions and portal accesses',
-    sourceTable: 'login_history',
   },
   {
     key: 'labs',
     label: 'Labs Completed',
     nounSingle: 'sandbox lab session',
     nounPlural: 'sandbox lab sessions',
-    description: 'Active Docker/K8s Pwnbox browser instances started',
-    sourceTable: 'pwnbox_instances',
+    description: 'Active Docker/K8s sandbox browser instances started',
   },
   {
     key: 'signups',
@@ -50,7 +46,6 @@ const METRIC_TABS: MetricTabConfig[] = [
     nounSingle: 'new account',
     nounPlural: 'new accounts',
     description: 'New learner and educator profile registrations',
-    sourceTable: 'users',
   },
   {
     key: 'orgs',
@@ -58,7 +53,6 @@ const METRIC_TABS: MetricTabConfig[] = [
     nounSingle: 'organization tenant',
     nounPlural: 'organization tenants',
     description: 'New university and enterprise workspace onboardings',
-    sourceTable: 'organizations',
   },
 ];
 
@@ -161,19 +155,19 @@ export function ContributionHeatmap({
   };
 
   return (
-    <div className={`flex flex-col gap-4 w-full ${className}`}>
+    <div className={`flex flex-col gap-4 w-full min-w-0 max-w-full overflow-hidden ${className}`}>
       {/* Metric Selector Tabs with Explanations & Source Table badges */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-        <div className="flex items-center gap-1 border border-border p-0.5 bg-surface font-mono text-xs">
+        <div className="flex flex-wrap items-center gap-1 border border-border p-0.5 bg-surface font-mono text-xs">
           {METRIC_TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveMetric(tab.key)}
-              title={`${tab.description} (source: ${tab.sourceTable})`}
+              title={tab.description}
               className={`px-2.5 py-1 transition-colors cursor-pointer ${
                 activeMetric === tab.key
-                  ? 'bg-accent text-card-foreground font-bold'
+                  ? 'bg-accent text-accent-foreground font-bold'
                   : 'text-muted hover:text-card-foreground'
               }`}
               style={{ borderRadius: 0 }}
@@ -199,70 +193,72 @@ export function ContributionHeatmap({
         </div>
       </div>
 
-      {/* Month Headers */}
-      <div className="flex items-center text-[11px] font-mono text-muted pl-8 gap-2">
-        {monthLabels.map((m, idx) => (
-          <span
-            key={idx}
-            className="flex-1 truncate"
-            style={{ minWidth: '32px' }}
-          >
-            {m.label}
-          </span>
-        ))}
-      </div>
+      {/* Scrollable Matrix Canvas */}
+      <div className="w-full max-w-full overflow-x-auto pb-1">
+        <div className="min-w-[620px]">
+          {/* Month Headers */}
+          <div className="flex items-center text-[11px] font-mono text-muted pl-8 gap-2 mb-1">
+            {monthLabels.map((m, idx) => (
+              <span
+                key={idx}
+                className="flex-1 truncate"
+                style={{ minWidth: '32px' }}
+              >
+                {m.label}
+              </span>
+            ))}
+          </div>
 
-      {/* Grid Canvas with Day of Week Axis */}
-      <div className="flex items-start gap-2">
-        {/* Day of Week Labels (Mon, Wed, Fri) */}
-        <div className="flex flex-col justify-between h-[106px] text-[10px] font-mono text-muted py-0.5 select-none">
-          <span className="leading-none">Mon</span>
-          <span className="leading-none">Wed</span>
-          <span className="leading-none">Fri</span>
-        </div>
-
-        {/* Matrix Columns */}
-        <div className="relative flex gap-[3px] flex-1 overflow-x-auto pb-1">
-          {weeks.map((week, wIdx) => (
-            <div key={wIdx} className="flex flex-col gap-[3px]">
-              {week.map((cell) => {
-                const isHovered = hoveredDay?.date === cell.date;
-                return (
-                  <div
-                    key={cell.date}
-                    className={`relative w-[12px] h-[12px] transition-transform duration-75 cursor-pointer hover:scale-125 hover:z-20 ${
-                      isHovered ? 'scale-125 z-20 ring-1 ring-accent' : ''
-                    }`}
-                    style={{
-                      backgroundColor: getCellColor(cell.level),
-                      borderRadius: 0,
-                    }}
-                    onMouseEnter={() => setHoveredDay({ date: cell.date, count: cell.count })}
-                    onMouseLeave={() => setHoveredDay(null)}
-                  />
-                );
-              })}
+          {/* Grid Canvas with Day of Week Axis */}
+          <div className="flex items-start gap-2">
+            {/* Day of Week Labels (Mon, Wed, Fri) */}
+            <div className="flex flex-col justify-between h-[106px] text-[10px] font-mono text-muted py-0.5 select-none shrink-0">
+              <span className="leading-none">Mon</span>
+              <span className="leading-none">Wed</span>
+              <span className="leading-none">Fri</span>
             </div>
-          ))}
 
-          {/* Floating High-Precision Tooltip */}
-          {hoveredDay && (
-            <div
-              className="absolute top-0 right-0 z-50 pointer-events-none px-3 py-2 text-[11px] font-mono border border-accent bg-surface text-card-foreground shadow-2xl"
-              style={{ borderRadius: 0 }}
-            >
-              <div className="font-bold text-card-foreground">
-                {hoveredDay.count.toLocaleString()}{' '}
-                {hoveredDay.count === 1 ? currentTab.nounSingle : currentTab.nounPlural}
-              </div>
-              <div className="text-[10px] text-muted mt-0.5">
-                {formatReadableDate(hoveredDay.date)}
-              </div>
-              <div className="text-[9px] text-accent mt-1 pt-1 border-t border-border/50">
-                Source: {currentTab.sourceTable}
-              </div>
+            {/* Matrix Columns */}
+            <div className="relative flex gap-[3px] flex-1">
+              {weeks.map((week, wIdx) => (
+                <div key={wIdx} className="flex flex-col gap-[3px]">
+                  {week.map((cell) => {
+                    const isHovered = hoveredDay?.date === cell.date;
+                    return (
+                      <div
+                        key={cell.date}
+                        className={`relative w-[12px] h-[12px] transition-transform duration-75 cursor-pointer hover:scale-125 hover:z-20 ${
+                          isHovered ? 'scale-125 z-20 ring-1 ring-accent' : ''
+                        }`}
+                        style={{
+                          backgroundColor: getCellColor(cell.level),
+                          borderRadius: 0,
+                        }}
+                        onMouseEnter={() => setHoveredDay({ date: cell.date, count: cell.count })}
+                        onMouseLeave={() => setHoveredDay(null)}
+                      />
+                    );
+                  })}
+                </div>
+              ))}
+
+              {/* Floating High-Precision Tooltip */}
+              {hoveredDay && (
+                <div
+                  className="absolute top-0 right-0 z-50 pointer-events-none px-3 py-2 text-[11px] font-mono border border-accent bg-surface text-card-foreground shadow-2xl"
+                  style={{ borderRadius: 0 }}
+                >
+                  <div className="font-bold text-card-foreground">
+                    {hoveredDay.count.toLocaleString()}{' '}
+                    {hoveredDay.count === 1 ? currentTab.nounSingle : currentTab.nounPlural}
+                  </div>
+                  <div className="text-[10px] text-muted mt-0.5">
+                    {formatReadableDate(hoveredDay.date)}
+                  </div>
+                </div>
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
 
@@ -270,7 +266,6 @@ export function ContributionHeatmap({
       <div className="flex flex-wrap items-center justify-between text-[11px] font-mono text-muted pt-2 border-t border-border/60">
         <div className="flex items-center gap-2">
           <span>{currentTab.description}</span>
-          <span className="text-[10px] text-muted/60">({currentTab.sourceTable})</span>
         </div>
         <div className="flex items-center gap-1.5">
           <span>Less</span>

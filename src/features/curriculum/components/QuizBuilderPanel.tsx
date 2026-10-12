@@ -413,16 +413,16 @@ export function QuizBuilderPanel({
                   <li key={answer.answerId} className="flex items-center gap-2 text-sm">
                     <span
                       className={`h-2 w-2 rounded-full ${
-                        answer.isCorrect ? 'bg-green-600' : 'bg-border'
+                        answer.isCorrect ? 'bg-accent' : 'bg-border'
                       }`}
                       aria-hidden="true"
                     />
-                    <span className={answer.isCorrect ? 'text-card-foreground' : 'text-muted'}>
+                    <span className={answer.isCorrect ? 'text-card-foreground font-medium' : 'text-muted'}>
                       {answer.answerText}
                     </span>
                     {answer.isCorrect ? (
-                      <span className="text-xs uppercase tracking-wide text-green-700">
-                        Correct
+                      <span className="text-xs font-mono font-bold uppercase tracking-wide text-card-foreground">
+                        ✓ Correct
                       </span>
                     ) : null}
                   </li>

@@ -27,7 +27,9 @@ import {
   useClassDetail,
   useClassInvitations,
   useClassRoster,
+  useEnrollStudent,
   useOrgProfessors,
+  useOrgUsers,
   useResendInvitation,
   useWithdrawStudent,
 } from '../hooks';
@@ -187,6 +189,17 @@ export function OrgClassDetailPage() {
     activeTab === 'students',
   );
   const withdraw = useWithdrawStudent(classId);
+  const enrollStudent = useEnrollStudent(classId);
+  const [selectedStudentToEnroll, setSelectedStudentToEnroll] = useState('');
+  const orgUsersQuery = useOrgUsers();
+
+  const eligibleOrgStudents = useMemo(() => {
+    if (!orgUsersQuery.data) return [];
+    const currentMemberIds = new Set((roster.data?.data ?? []).map((s) => s.userId));
+    return orgUsersQuery.data.filter(
+      (u) => u.role === 'org_student' && !currentMemberIds.has(u.userId),
+    );
+  }, [orgUsersQuery.data, roster.data]);
 
   // Invitations tab state & hooks
   const [invitesPage, setInvitesPage] = useState(1);
@@ -384,6 +397,48 @@ export function OrgClassDetailPage() {
                 </Button>
               </div>
             </div>
+
+            {canInvite && (
+              <div className="flex flex-wrap items-center gap-2">
+                {eligibleOrgStudents.length > 0 && (
+                  <div className="flex items-center gap-1.5">
+                    <select
+                      className="input-field text-xs font-mono h-9"
+                      value={selectedStudentToEnroll}
+                      onChange={(e) => setSelectedStudentToEnroll(e.target.value)}
+                    >
+                      <option value="">Enroll existing student…</option>
+                      {eligibleOrgStudents.map((s) => (
+                        <option key={s.userId} value={String(s.userId)}>
+                          {s.fullName ? `${s.fullName} (${s.email})` : s.email}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      disabled={!selectedStudentToEnroll || enrollStudent.isPending}
+                      isLoading={enrollStudent.isPending}
+                      onClick={() => {
+                        if (!selectedStudentToEnroll) return;
+                        enrollStudent.mutate(Number(selectedStudentToEnroll), {
+                          onSuccess: () => {
+                            toast.success('Student enrolled in cohort.');
+                            setSelectedStudentToEnroll('');
+                          },
+                          onError: (err) => toast.error(err.message),
+                        });
+                      }}
+                    >
+                      Enroll
+                    </Button>
+                  </div>
+                )}
+                <Button variant="primary" size="sm" onClick={openInviteDrawer}>
+                  + Invite New
+                </Button>
+              </div>
+            )}
           </div>
 
           {roster.isError ? (
@@ -511,9 +566,6 @@ export function OrgClassDetailPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
               <div>
                 <h3 className="text-base font-semibold text-card-foreground">Cohort Invitations</h3>
-                <p className="mt-0.5 text-xs text-muted font-mono">
-                  Active enrollment invitations, delivery telemetry, and access tokens for this cohort.
-                </p>
               </div>
               <div className="flex items-center gap-2">
                 {canInvite && (
@@ -560,9 +612,6 @@ export function OrgClassDetailPage() {
           <Card className="p-6 space-y-5">
             <div className="border-b border-border pb-4">
               <h3 className="text-base font-semibold text-card-foreground">Cohort Settings</h3>
-              <p className="mt-0.5 text-xs text-muted font-mono">
-                General configuration, capacity limits, and descriptions for {klass.className}.
-              </p>
             </div>
 
             {canManage ? (

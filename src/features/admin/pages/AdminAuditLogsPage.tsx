@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Card, ErrorState, PageHeader, Pagination, toast } from '@/shared/components';
-import { useAdminAuditLogs } from '../hooks';
+import { useState, useEffect } from 'react';
+import { Button, Card, ErrorState, PageHeader, Pagination } from '@/shared/components';
+import { useAdminAuditLogs, useAdminAuditMetadata } from '../hooks';
 
 const PAGE_SIZE = 25;
 
@@ -14,105 +14,149 @@ function formatDate(value: string): string {
   });
 }
 
-const ACTION_OPTIONS = ['ban_user', 'unban_user', 'delete_user', 'update_setting'] as const;
-
 interface AppliedFilters {
   page: number;
+  search: string;
   action: string;
+  targetType: string;
   from: string;
   to: string;
 }
 
 export function AdminAuditLogsPage() {
-  const [draft, setDraft] = useState<AppliedFilters>({ page: 1, action: '', from: '', to: '' });
-  const [filters, setFilters] = useState<AppliedFilters>({ page: 1, action: '', from: '', to: '' });
+  const [draftSearch, setDraftSearch] = useState('');
+  const [filters, setFilters] = useState<AppliedFilters>({
+    page: 1,
+    search: '',
+    action: '',
+    targetType: '',
+    from: '',
+    to: '',
+  });
+
+  const { data: metadata } = useAdminAuditMetadata();
+
+  // Debounced search input
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = draftSearch.trim();
+      if (trimmed !== filters.search) {
+        setFilters((prev) => ({ ...prev, search: trimmed, page: 1 }));
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [draftSearch, filters.search]);
 
   const { data, isLoading, isError, error, refetch } = useAdminAuditLogs({
     page: filters.page,
     pageSize: PAGE_SIZE,
+    search: filters.search || undefined,
     action: filters.action || undefined,
+    targetType: filters.targetType || undefined,
     from: filters.from || undefined,
     to: filters.to || undefined,
   });
 
-  const applyFilters = (next: Partial<AppliedFilters>) => {
-    const candidate = { ...draft, ...next };
-    if (candidate.from && candidate.to && new Date(candidate.from) > new Date(candidate.to)) {
-      toast.error('"From" must be before "To" (max 90-day range).');
-      return;
-    }
-    if (candidate.from && candidate.to) {
-      const rangeDays =
-        (new Date(candidate.to).getTime() - new Date(candidate.from).getTime()) / 86_400_000;
-      if (rangeDays > 90) {
-        toast.error('Date range is limited to 90 days.');
-        return;
-      }
-    }
-    setFilters(candidate);
-    void refetch();
+  const updateFilter = (patch: Partial<AppliedFilters>) => {
+    setFilters((prev) => ({ ...prev, ...patch, page: patch.page ?? 1 }));
   };
 
-  const applySearch = () => applyFilters({ page: 1 });
+  const resetFilters = () => {
+    setDraftSearch('');
+    setFilters({
+      page: 1,
+      search: '',
+      action: '',
+      targetType: '',
+      from: '',
+      to: '',
+    });
+  };
+
+  const hasActiveFilters = Boolean(
+    filters.search ||
+    filters.action ||
+    filters.targetType ||
+    filters.from ||
+    filters.to
+  );
 
   return (
-    <div>
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader title="Audit Logs" />
 
-      <Card>
-        <div className="mb-4 flex flex-wrap items-end gap-3">
-          <div>
-            <label htmlFor="audit-action" className="input-label">
-              Action
-            </label>
-            <select
-              id="audit-action"
-              className="input-field"
-              value={draft.action}
-              onChange={(e) => setDraft((prev) => ({ ...prev, action: e.target.value }))}
-            >
-              <option value="">All actions</option>
-              {ACTION_OPTIONS.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </div>
+      <Card style={{ borderRadius: 0 }}>
+        {/* Single Responsive Filter Toolbar — No Apply Button */}
+        <div className="mb-4 flex items-center gap-1.5 w-full">
+          <input
+            id="audit-search"
+            className="filter-input flex-1 min-w-0 transition-colors focus:border-accent"
+            placeholder="Search admin, action, IP…"
+            value={draftSearch}
+            onChange={(e) => setDraftSearch(e.target.value)}
+          />
 
-          <div>
-            <label htmlFor="audit-from" className="input-label">
-              From
-            </label>
+          <select
+            id="audit-action"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={filters.action}
+            onChange={(e) => updateFilter({ action: e.target.value })}
+          >
+            <option value="">All actions</option>
+            {metadata?.actions.map((act) => (
+              <option key={act} value={act}>
+                {act}
+              </option>
+            ))}
+          </select>
+
+          <select
+            id="audit-target-type"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={filters.targetType}
+            onChange={(e) => updateFilter({ targetType: e.target.value })}
+          >
+            <option value="">All targets</option>
+            {metadata?.targetTypes.map((tt) => (
+              <option key={tt} value={tt}>
+                {tt}
+              </option>
+            ))}
+          </select>
+
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[10px] text-muted uppercase shrink-0">From:</span>
             <input
               id="audit-from"
               type="date"
-              className="input-field"
-              value={draft.from}
-              onChange={(e) => setDraft((prev) => ({ ...prev, from: e.target.value }))}
+              className="filter-input w-24 transition-colors focus:border-accent"
+              value={filters.from}
+              onChange={(e) => updateFilter({ from: e.target.value })}
             />
           </div>
 
-          <div>
-            <label htmlFor="audit-to" className="input-label">
-              To
-            </label>
+          <div className="flex items-center gap-1 shrink-0">
+            <span className="text-[10px] text-muted uppercase shrink-0">To:</span>
             <input
               id="audit-to"
               type="date"
-              className="input-field"
-              value={draft.to}
-              onChange={(e) => setDraft((prev) => ({ ...prev, to: e.target.value }))}
+              className="filter-input w-24 transition-colors focus:border-accent"
+              value={filters.to}
+              onChange={(e) => updateFilter({ to: e.target.value })}
             />
           </div>
 
-          <button
-            type="button"
-            onClick={applySearch}
-            className="rounded-md bg-brand-600 px-3 py-2 text-sm font-medium text-card-foreground transition-colors hover:bg-brand-700"
-          >
-            Apply
-          </button>
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+              style={{ borderRadius: 0 }}
+            >
+              Reset
+            </Button>
+          )}
         </div>
 
         {isError ? (
@@ -123,58 +167,83 @@ export function AdminAuditLogsPage() {
         ) : isLoading ? (
           <div className="space-y-2 py-1">
             {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-10 animate-pulse rounded-md bg-secondary" />
+              <div key={i} className="h-10 animate-pulse bg-secondary" style={{ borderRadius: 0 }} />
             ))}
           </div>
         ) : data && data.data.length === 0 ? (
-          <p className="py-6 text-sm text-muted">No audit logs found.</p>
+          <p className="py-6 text-sm text-muted font-mono">No audit logs found matching criteria.</p>
         ) : data ? (
-          <table className="w-full text-left text-sm">
-            <thead>
-              <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-                <th className="px-3 py-2 font-medium">Date</th>
-                <th className="px-3 py-2 font-medium">Admin</th>
-                <th className="px-3 py-2 font-medium">Action</th>
-                <th className="px-3 py-2 font-medium">Target</th>
-                <th className="px-3 py-2 font-medium">IP</th>
-                <th className="px-3 py-2 font-medium">Changes</th>
-              </tr>
-            </thead>
-            <tbody>
-              {data.data.map((log) => (
-                <tr key={log.logId} className="border-b border-border/60 last:border-0">
-                  <td className="px-3 py-2">{formatDate(log.createdAt)}</td>
-                  <td className="px-3 py-2">{log.adminFullName ?? log.adminEmail}</td>
-                  <td className="px-3 py-2 text-muted-foreground">{log.action}</td>
-                  <td className="px-3 py-2 text-muted-foreground">
-                    {log.targetType ?? '-'}
-                    {log.targetId ? ` #${log.targetId}` : ''}
-                  </td>
-                  <td className="px-3 py-2 text-muted-foreground">{log.ipAddress ?? '-'}</td>
-                  <td className="px-3 py-2">
-                    {log.changes ? (
-                      <code className="text-xs text-muted-foreground">
-                        {JSON.stringify(log.changes)}
-                      </code>
-                    ) : (
-                      '-'
-                    )}
-                  </td>
+          <div className="w-full max-w-full overflow-x-auto">
+            <table className="w-full text-left text-xs font-mono">
+              <thead>
+                <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                  <th className="px-3 py-2 font-medium">Timestamp</th>
+                  <th className="px-3 py-2 font-medium">Actor</th>
+                  <th className="px-3 py-2 font-medium">Action</th>
+                  <th className="px-3 py-2 font-medium">Target</th>
+                  <th className="px-3 py-2 font-medium">IP Address</th>
+                  <th className="px-3 py-2 font-medium">Changes Payload</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {data.data.map((log) => (
+                  <tr key={log.logId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                      {formatDate(log.createdAt)}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <div className="font-semibold text-card-foreground">
+                        {log.adminFullName ?? log.adminEmail}
+                      </div>
+                      {log.adminFullName && log.adminEmail && (
+                        <div className="text-[10px] text-muted">{log.adminEmail}</div>
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap">
+                      <span className="font-semibold text-card-foreground text-xs">
+                        {log.action}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                      {log.targetType ? (
+                        <span>
+                          {log.targetType}
+                          {log.targetId ? ` #${log.targetId}` : ''}
+                        </span>
+                      ) : (
+                        '—'
+                      )}
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted">
+                      {log.ipAddress ?? '—'}
+                    </td>
+                    <td className="px-3 py-2.5 max-w-xs truncate">
+                      {log.changes ? (
+                        <span className="text-xs text-muted-foreground truncate block max-w-sm font-mono">
+                          {typeof log.changes === 'string' ? log.changes : JSON.stringify(log.changes)}
+                        </span>
+                      ) : (
+                        <span className="text-muted">—</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         ) : null}
 
-        {data ? (
-          <Pagination
-            page={data.page}
-            pageSize={data.pageSize}
-            total={data.total}
-            totalPages={data.totalPages}
-            onPageChange={(next) => applyFilters({ page: next })}
-          />
-        ) : null}
+        {data && data.totalPages > 1 && (
+          <div className="mt-4 pt-3 border-t border-border/60">
+            <Pagination
+              page={data.page}
+              pageSize={data.pageSize}
+              total={data.total}
+              totalPages={data.totalPages}
+              onPageChange={(next) => updateFilter({ page: next })}
+            />
+          </div>
+        )}
       </Card>
     </div>
   );

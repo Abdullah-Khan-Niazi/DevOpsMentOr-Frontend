@@ -9,4 +9,5 @@ export {
   useOrgClasses,
   useResendInvitation,
   useWithdrawStudent,
+  useEnrollStudent,
 } from './useClasses';

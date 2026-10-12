@@ -171,10 +171,10 @@ export function FluidFunnelChart({
       </div>
 
       {/* SVG Fluid Horizontal Funnel Canvas */}
-      <div className="w-full relative">
+      <div className="w-full min-w-0 max-w-full overflow-hidden relative">
         <svg
           viewBox={`0 0 ${totalWidth} ${totalHeight}`}
-          className="w-full h-auto overflow-visible select-none"
+          className="w-full h-auto overflow-hidden select-none"
           aria-label="Fluid Conversion Funnel Chart"
         >
           {/* Outer Layer: Translucent Ribbon */}

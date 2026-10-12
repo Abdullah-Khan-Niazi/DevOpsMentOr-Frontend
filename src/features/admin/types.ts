@@ -110,8 +110,15 @@ export interface AuditLogQuery {
   page: number;
   pageSize: number;
   action?: string;
+  targetType?: string;
+  search?: string;
   from?: string;
   to?: string;
+}
+
+export interface AuditMetadata {
+  actions: string[];
+  targetTypes: string[];
 }
 
 export interface SystemSetting {

@@ -107,9 +107,6 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
                 <h2 className="text-lg font-bold text-card-foreground">New Class Cohort</h2>
-                <p className="text-xs text-muted mt-0.5">
-                  Provision an academic cohort workspace for students and faculty.
-                </p>
               </div>
               <button
                 type="button"
@@ -142,7 +139,6 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
                 placeholder="e.g. cs-101-systems"
                 value={slug}
                 onChange={(e) => setSlug(e.target.value)}
-                hint="Machine-friendly identifier for the cohort URL."
                 required
               />
 
@@ -189,13 +185,6 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
                     ))}
                   </select>
                 </div>
-              </div>
-
-              <div className="border border-border/80 bg-surface/50 p-3">
-                <p className="text-xs text-muted leading-relaxed font-mono">
-                  Enrolled students will have access to the curriculum modules, assigned labs, and
-                  telemetry progress reports provisioned under this cohort.
-                </p>
               </div>
             </form>
           </div>
