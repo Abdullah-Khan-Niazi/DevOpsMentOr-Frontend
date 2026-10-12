@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { TELEMETRY_TOKENS } from '@/shared/constants';
 
 export interface ActivityTrendPoint {
   date: string;
@@ -39,11 +40,6 @@ export function ActivityLineChart({
     courseCompletions: true,
   });
 
-  const avgActiveUsers = useMemo(() => {
-    if (!data || data.length === 0) return 0;
-    const sum = data.reduce((acc, d) => acc + d.activeUsers, 0);
-    return Math.round((sum / data.length) * 10) / 10;
-  }, [data]);
 
   const maxVal = useMemo(() => {
     if (!data || data.length === 0) return 10;
@@ -72,9 +68,6 @@ export function ActivityLineChart({
           <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
             Platform Activity Trajectory
           </h2>
-          <p className="text-xs text-muted">
-            Continuous trend showing active learners, registrations, and completions
-          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -87,7 +80,7 @@ export function ActivityLineChart({
                   onClick={() => onDaysChange(d)}
                   className={`px-2 py-0.5 transition-colors cursor-pointer ${
                     days === d
-                      ? 'bg-accent text-card-foreground font-bold'
+                      ? 'bg-accent text-accent-foreground font-bold'
                       : 'text-muted hover:text-card-foreground'
                   }`}
                   style={{ borderRadius: 0 }}
@@ -111,7 +104,7 @@ export function ActivityLineChart({
             visibleSeries.activeUsers ? 'opacity-100' : 'opacity-40 line-through'
           }`}
         >
-          <span className="w-2.5 h-2.5 bg-accent" style={{ shapeRendering: 'crispEdges' }} />
+          <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners, shapeRendering: 'crispEdges' }} />
           <span className="text-card-foreground font-medium">Active Learners</span>
         </button>
 
@@ -124,7 +117,7 @@ export function ActivityLineChart({
             visibleSeries.newSignups ? 'opacity-100' : 'opacity-40 line-through'
           }`}
         >
-          <span className="w-2.5 h-2.5 bg-info" style={{ shapeRendering: 'crispEdges' }} />
+          <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.newSignups, shapeRendering: 'crispEdges' }} />
           <span className="text-card-foreground font-medium">New Signups</span>
         </button>
 
@@ -141,18 +134,14 @@ export function ActivityLineChart({
               visibleSeries.courseCompletions ? 'opacity-100' : 'opacity-40 line-through'
             }`}
           >
-            <span className="w-2.5 h-2.5 bg-warning" style={{ shapeRendering: 'crispEdges' }} />
+            <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.completions, shapeRendering: 'crispEdges' }} />
             <span className="text-card-foreground font-medium">Completions</span>
           </button>
         )}
-
-        <span className="text-muted text-[11px] ml-auto">
-          Baseline Avg: <span className="font-bold text-card-foreground">{avgActiveUsers}</span>
-        </span>
       </div>
 
       {/* Main Pixelated Line Chart Canvas */}
-      <div className="w-full" style={{ height }}>
+      <div className="w-full min-w-0 max-w-full overflow-hidden" style={{ height }}>
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
             {/* LED Matrix Dotted Grid Lines */}
@@ -202,10 +191,6 @@ export function ActivityLineChart({
                           </span>
                         </div>
                       ))}
-                      <div className="flex items-center justify-between gap-4 text-[10px] text-muted pt-1 border-t border-border/40">
-                        <span>Window Avg:</span>
-                        <span>{avgActiveUsers}</span>
-                      </div>
                     </div>
                   </div>
                 );
@@ -217,10 +202,10 @@ export function ActivityLineChart({
                 type="monotone"
                 dataKey="activeUsers"
                 name="Active Learners"
-                stroke="var(--color-accent-500)"
+                stroke={TELEMETRY_TOKENS.activeLearners}
                 strokeWidth={2}
-                dot={{ r: 2.5, strokeWidth: 1.5 }}
-                activeDot={{ r: 5, strokeWidth: 2, fill: 'var(--color-bg-surface, #12141a)' }}
+                dot={{ r: 2.5, strokeWidth: 1.5, fill: TELEMETRY_TOKENS.activeLearners, stroke: TELEMETRY_TOKENS.activeLearners }}
+                activeDot={{ r: 5, strokeWidth: 2, fill: TELEMETRY_TOKENS.activeLearners, stroke: 'var(--color-bg-surface, #FAF9F6)' }}
               />
             )}
 
@@ -229,10 +214,10 @@ export function ActivityLineChart({
                 type="monotone"
                 dataKey="newSignups"
                 name="New Signups"
-                stroke="var(--color-info)"
+                stroke={TELEMETRY_TOKENS.newSignups}
                 strokeWidth={1.75}
-                dot={{ r: 2.5, strokeWidth: 1.5 }}
-                activeDot={{ r: 5, strokeWidth: 2, fill: 'var(--color-bg-surface, #12141a)' }}
+                dot={{ r: 2.5, strokeWidth: 1.5, fill: TELEMETRY_TOKENS.newSignups, stroke: TELEMETRY_TOKENS.newSignups }}
+                activeDot={{ r: 5, strokeWidth: 2, fill: TELEMETRY_TOKENS.newSignups, stroke: 'var(--color-bg-surface, #FAF9F6)' }}
               />
             )}
 
@@ -241,10 +226,10 @@ export function ActivityLineChart({
                 type="monotone"
                 dataKey="courseCompletions"
                 name="Completions"
-                stroke="var(--color-warning)"
+                stroke={TELEMETRY_TOKENS.completions}
                 strokeWidth={1.75}
-                dot={{ r: 2.5, strokeWidth: 1.5 }}
-                activeDot={{ r: 5, strokeWidth: 2, fill: 'var(--color-bg-surface, #12141a)' }}
+                dot={{ r: 2.5, strokeWidth: 1.5, fill: TELEMETRY_TOKENS.completions, stroke: TELEMETRY_TOKENS.completions }}
+                activeDot={{ r: 5, strokeWidth: 2, fill: TELEMETRY_TOKENS.completions, stroke: 'var(--color-bg-surface, #FAF9F6)' }}
               />
             )}
           </LineChart>

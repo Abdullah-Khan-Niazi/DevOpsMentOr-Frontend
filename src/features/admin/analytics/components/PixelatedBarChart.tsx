@@ -42,9 +42,9 @@ export function PixelatedBarChart({
   );
 
   return (
-    <div className="flex flex-col justify-end w-full" style={{ height }}>
+    <div className="flex flex-col justify-end w-full min-w-0 max-w-full overflow-hidden" style={{ height }}>
       {/* Chart Canvas */}
-      <div className="relative flex items-end justify-between gap-1 sm:gap-2 flex-1 pb-2">
+      <div className="relative flex items-end justify-between gap-0.5 sm:gap-2 flex-1 pb-2 w-full min-w-0">
         {data.map((point, idx) => {
           const totalVal = point.secondaryValue ? point.value + point.secondaryValue : point.value;
           const filledTotalSegments = Math.round((totalVal / maxValue) * segments);
@@ -54,7 +54,7 @@ export function PixelatedBarChart({
           return (
             <div
               key={`${point.label}-${idx}`}
-              className="relative flex flex-col items-center flex-1 h-full justify-end cursor-pointer group"
+              className="relative flex flex-col items-center flex-1 min-w-0 h-full justify-end cursor-pointer group"
               onMouseEnter={() => setHoveredIdx(idx)}
               onMouseLeave={() => setHoveredIdx(null)}
             >
@@ -106,17 +106,20 @@ export function PixelatedBarChart({
       </div>
 
       {/* Monospace X-Axis Labels */}
-      <div className="flex items-center justify-between border-t border-border pt-2 text-[10px] font-mono text-muted uppercase tracking-wider">
-        {data.map((point, idx) => (
-          <span
-            key={`${point.label}-lbl-${idx}`}
-            className={`flex-1 text-center truncate ${
-              hoveredIdx === idx ? 'text-card-foreground font-semibold' : ''
-            }`}
-          >
-            {point.label}
-          </span>
-        ))}
+      <div className="flex items-center justify-between border-t border-border pt-2 text-[10px] font-mono text-muted uppercase tracking-wider w-full min-w-0 overflow-hidden">
+        {data.map((point, idx) => {
+          const showOnMobile = data.length <= 10 || idx === 0 || idx === data.length - 1 || idx % 4 === 0;
+          return (
+            <span
+              key={`${point.label}-lbl-${idx}`}
+              className={`flex-1 min-w-0 text-center truncate ${
+                hoveredIdx === idx ? 'text-card-foreground font-semibold' : ''
+              } ${showOnMobile ? 'block' : 'hidden sm:block'}`}
+            >
+              {point.label}
+            </span>
+          );
+        })}
       </div>
     </div>
   );

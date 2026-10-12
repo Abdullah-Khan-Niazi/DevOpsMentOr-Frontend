@@ -144,7 +144,7 @@ export function ModuleListPanel({
                     <circle cx="15" cy="18" r="1" />
                   </svg>
                 </button>
-                <div className="flex flex-col gap-1">
+                <div className="flex flex-col gap-1 min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <button
                       type="button"

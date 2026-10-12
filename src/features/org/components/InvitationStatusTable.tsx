@@ -37,7 +37,7 @@ export function InvitationStatusTable({
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm border-collapse">
         <thead>
           <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
@@ -61,7 +61,7 @@ export function InvitationStatusTable({
                 <span
                   className={`inline-block px-2 py-0.5 border text-[10px] font-mono font-semibold uppercase tracking-wider ${
                     invite.status === 'accepted'
-                      ? 'border-green-600/50 bg-green-500/10 text-green-700'
+                      ? 'border-border-strong bg-accent/10 text-card-foreground'
                       : invite.status === 'pending'
                         ? 'border-amber-600/50 bg-amber-500/10 text-amber-700'
                         : 'border-border bg-surface text-muted'

@@ -30,7 +30,7 @@ export function TabRow({ items, activeId, onChange }: TabRowProps) {
   }, [activeId, items]);
 
   return (
-    <div ref={rowRef} className="relative flex border-b border-border">
+    <div ref={rowRef} className="relative flex border-b border-border overflow-x-auto max-w-full">
       {items.map((item) => (
         <button
           key={item.id}
@@ -40,7 +40,7 @@ export function TabRow({ items, activeId, onChange }: TabRowProps) {
           aria-selected={item.id === activeId}
           role="tab"
           className={cn(
-            'rounded-t-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-card-foreground',
+            'shrink-0 whitespace-nowrap rounded-t-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-card-foreground',
             item.id === activeId && 'text-brand-700',
           )}
         >

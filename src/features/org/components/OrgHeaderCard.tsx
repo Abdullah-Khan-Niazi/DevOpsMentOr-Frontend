@@ -21,7 +21,7 @@ export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-semibold text-card-foreground">{org.name}</h2>
             {org.isVerified ? (
-              <span className="text-xs font-medium uppercase tracking-wide text-green-700">
+              <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-card-foreground border border-border-strong px-2 py-0.5 bg-accent/10 rounded-none">
                 Verified
               </span>
             ) : null}
@@ -37,7 +37,7 @@ export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
         </div>
       </div>
 
-      <dl className="mt-6 grid grid-cols-3 gap-4 items-stretch">
+      <dl className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 items-stretch">
         <div className="flex flex-col rounded-lg border border-border bg-surface/50 p-4">
           <dt className="text-sm text-muted">Classes</dt>
           <dd className="mt-auto text-2xl font-semibold text-card-foreground">

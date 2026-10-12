@@ -63,7 +63,7 @@ export function OrgMemberDetailDrawer({
         await classService.assignProfessor(cohortId, member.userId);
         toast.success('Professor assigned to cohort successfully.');
       } else {
-        await classService.inviteStudents(cohortId, { emails: [member.email] });
+        await classService.enrollStudent(cohortId, member.userId);
         toast.success('Student enrolled in cohort successfully.');
       }
       setSelectedCohortToAdd('');

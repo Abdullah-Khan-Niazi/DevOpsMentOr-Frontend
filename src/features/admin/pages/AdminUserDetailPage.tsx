@@ -154,7 +154,7 @@ export function AdminUserDetailPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title={user.fullName ?? user.username}
         breadcrumbs={[
@@ -257,9 +257,6 @@ export function AdminUserDetailPage() {
               <p className="text-sm text-muted">User is deleted. Restore account before banning.</p>
             ) : (
               <div className="space-y-3">
-                <p className="text-sm text-muted">
-                  Banning restricts account access across all platform services and records an audit log.
-                </p>
                 <div>
                   <label htmlFor="ban-reason" className="input-label">
                     Ban reason (minimum 10 characters)
@@ -309,7 +306,7 @@ export function AdminUserDetailPage() {
                       <td className="px-3 py-2">{login.ipAddress ?? '-'}</td>
                       <td className="px-3 py-2 text-muted-foreground">
                         {login.isSuccessful ? (
-                          <span className="text-emerald-600 font-medium">Success</span>
+                          <span className="font-mono text-card-foreground font-medium">Success</span>
                         ) : (
                           <span className="text-red-600 font-medium">
                             Failed {login.failureReason ? `(${login.failureReason})` : ''}
@@ -381,7 +378,7 @@ export function AdminUserDetailPage() {
                           <span className="text-card-foreground font-medium">Attempt #{attempt.attemptNumber}</span>
                           <span className="tabular-nums text-xs">
                             <span className="font-bold">{attempt.score}%</span> ·{' '}
-                            <span className={attempt.isPassed ? 'text-emerald-600 font-medium' : 'text-red-500 font-medium'}>
+                            <span className={attempt.isPassed ? 'font-mono text-card-foreground font-bold' : 'text-red-500 font-medium'}>
                               {attempt.isPassed ? 'Passed' : 'Failed'}
                             </span>
                           </span>
@@ -423,10 +420,7 @@ export function AdminUserDetailPage() {
 
       {activeTab === 'governance' ? (
         <Card className="border-red-200 p-6">
-          <h2 className="mb-2 text-base font-semibold text-card-foreground">Danger Zone</h2>
-          <p className="mb-6 text-sm text-muted">
-            Administrative actions that directly change account lifecycle or revoke access.
-          </p>
+          <h2 className="mb-4 text-base font-semibold text-card-foreground">Danger Zone</h2>
 
           {user.deletedAt ? (
             <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
@@ -439,9 +433,10 @@ export function AdminUserDetailPage() {
                 </div>
                 <Button
                   type="button"
+                  variant="primary"
                   onClick={handleRestore}
                   isLoading={restore.isPending}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
+                  className="shrink-0"
                 >
                   Restore user account
                 </Button>

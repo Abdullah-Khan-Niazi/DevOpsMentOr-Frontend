@@ -71,10 +71,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
         <div className="flex items-center gap-2">
           <span className="w-2 h-2 rounded-none bg-accent animate-pulse" />
           <span className="font-semibold text-card-foreground uppercase text-[11px]">
-            Geographic Choropleth Map (ISO 3166-1)
-          </span>
-          <span className="text-muted text-[10px]">
-            ({countries.length} active country nodes • {totalUsers.toLocaleString()} enrolled learners)
+            Regional Distribution
           </span>
         </div>
 
@@ -87,7 +84,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
               onClick={() => setSelectedRegion(reg)}
               className={`px-2 py-0.5 transition-colors cursor-pointer ${
                 selectedRegion === reg
-                  ? 'bg-accent text-card-foreground font-bold'
+                  ? 'bg-accent text-accent-foreground font-bold'
                   : 'text-muted hover:text-card-foreground'
               }`}
               style={{ borderRadius: 0 }}
@@ -227,7 +224,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
               }}
             >
               <div className="flex items-center gap-2 mb-1.5 pb-1 border-b border-border/60">
-                <span className="px-1.5 py-0.5 bg-accent text-card-foreground font-bold text-[10px]">
+                <span className="px-1.5 py-0.5 bg-accent text-accent-foreground font-bold text-[10px]">
                   {hoveredCountry.countryCode}
                 </span>
                 <span className="font-semibold text-card-foreground">

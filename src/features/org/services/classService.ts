@@ -127,6 +127,16 @@ export const classService = {
     return unwrap(data);
   },
 
+  /** Direct student enrollment into cohort */
+  async enrollStudent(
+    classId: string | number,
+    studentUserId: string | number,
+  ): Promise<void> {
+    await apiClient.post(`/org/classes/${classId}/students/enroll`, {
+      studentUserId: Number(studentUserId),
+    });
+  },
+
   /** Class invitations (informational aggregation). */
   async listInvitations(
     classId: string | number,

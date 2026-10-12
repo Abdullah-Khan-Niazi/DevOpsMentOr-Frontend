@@ -73,7 +73,7 @@ export function OrgClassesPage() {
   const cohorts = useMemo<ClassDto[]>(() => data?.data ?? [], [data?.data]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Cohorts"
         backTo={ROUTES.ORG_DASHBOARD}
@@ -128,7 +128,7 @@ export function OrgClassesPage() {
             }
           />
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">

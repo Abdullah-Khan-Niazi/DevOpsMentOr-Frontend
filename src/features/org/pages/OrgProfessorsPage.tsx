@@ -32,7 +32,7 @@ export function OrgProfessorsPage() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Faculty &amp; Professors"
         backTo={ROUTES.ORG_DASHBOARD}
@@ -48,9 +48,6 @@ export function OrgProfessorsPage() {
       <Card className="p-6 space-y-4">
         <div>
           <h3 className="text-base font-semibold text-card-foreground">Current Faculty Members</h3>
-          <p className="mt-0.5 text-xs text-muted">
-            Professors and instructors assigned to lead organization cohorts.
-          </p>
         </div>
 
         {query.isError ? (
@@ -65,7 +62,7 @@ export function OrgProfessorsPage() {
             No professors registered yet in this organization.
           </p>
         ) : (
-          <div className="overflow-x-auto">
+          <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">

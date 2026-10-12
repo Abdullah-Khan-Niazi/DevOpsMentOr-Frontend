@@ -41,13 +41,9 @@ export default function AdminPlatformAdminsPage() {
   };
 
   return (
-    <div>
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <header className="app-page-header">
         <h1 className="app-page-header__title">Platform administrators</h1>
-        <p className="app-page-header__description">
-          Invite administrators and manage pending invitations. Admin accounts can only be created
-          through this invitation flow.
-        </p>
       </header>
 
       <div className="admin-stack">

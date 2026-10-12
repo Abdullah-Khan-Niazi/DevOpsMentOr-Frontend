@@ -95,10 +95,19 @@ export const adminService = {
           page: query.page,
           pageSize: query.pageSize,
           ...(query.action ? { action: query.action } : {}),
+          ...(query.targetType ? { targetType: query.targetType } : {}),
+          ...(query.search ? { search: query.search } : {}),
           ...(query.from ? { from: query.from } : {}),
           ...(query.to ? { to: query.to } : {}),
         },
       },
+    );
+    return unwrap(data);
+  },
+
+  async getAuditMetadata(): Promise<{ actions: string[]; targetTypes: string[] }> {
+    const { data } = await apiClient.get<{ data: { actions: string[]; targetTypes: string[] } }>(
+      '/admin/audit-logs/metadata',
     );
     return unwrap(data);
   },

@@ -101,18 +101,20 @@ export function StudentProgressTable({
 }: StudentProgressTableProps) {
   if (isLoading) {
     return (
-      <table className="w-full text-left text-sm" aria-label="Student progress">
-        <thead>
-          <tr className="border-b border-border text-xs text-muted">
-            <th className="px-3 py-2 font-medium">Student</th>
-            <th className="px-3 py-2 font-medium">Progress</th>
-            <th className="px-3 py-2 font-medium">Labs</th>
-            <th className="px-3 py-2 font-medium">Last active</th>
-            <th className="px-3 py-2 font-medium">Status</th>
-          </tr>
-        </thead>
-        <SkeletonRows />
-      </table>
+      <div className="w-full max-w-full overflow-x-auto">
+        <table className="w-full text-left text-sm" aria-label="Student progress">
+          <thead>
+            <tr className="border-b border-border text-xs text-muted">
+              <th className="px-3 py-2 font-medium">Student</th>
+              <th className="px-3 py-2 font-medium">Progress</th>
+              <th className="px-3 py-2 font-medium">Labs</th>
+              <th className="px-3 py-2 font-medium">Last active</th>
+              <th className="px-3 py-2 font-medium">Status</th>
+            </tr>
+          </thead>
+          <SkeletonRows />
+        </table>
+      </div>
     );
   }
 
@@ -121,85 +123,87 @@ export function StudentProgressTable({
   }
 
   return (
-    <table className="w-full text-left text-sm">
-      <thead>
-        <tr className="border-b border-border text-xs text-muted">
-          <SortableHeader
-            label="Student"
-            column="fullName"
-            sort={sort}
-            onSortChange={onSortChange}
-          />
-          <SortableHeader
-            label="Progress"
-            column="progressPercentage"
-            sort={sort}
-            onSortChange={onSortChange}
-          />
-          <SortableHeader
-            label="Labs"
-            column="labsCompleted"
-            sort={sort}
-            onSortChange={onSortChange}
-          />
-          <SortableHeader
-            label="Last active"
-            column="lastActiveAt"
-            sort={sort}
-            onSortChange={onSortChange}
-          />
-          <SortableHeader label="Status" column="status" sort={sort} onSortChange={onSortChange} />
-          {onSelectStudent ? <th className="px-3 py-2 font-medium">Actions</th> : null}
-        </tr>
-      </thead>
-      <tbody>
-        {students.map((student) => (
-          <tr
-            key={student.userId}
-            className="border-b border-border/60 last:border-0 hover:bg-surface/60"
-          >
-            <td className="px-3 py-2.5">
-              <div className="font-medium text-card-foreground">
-                {student.fullName ?? 'Unnamed student'}
-              </div>
-              <div className="text-xs text-muted">{student.email}</div>
-            </td>
-            <td className="px-3 py-2.5">
-              <div className="flex items-center gap-2">
-                <div className="w-28">
-                  <ProgressBar
-                    percentage={student.progressPercentage}
-                    label={`Progress for ${student.fullName ?? 'student'}`}
-                    size="sm"
-                  />
-                </div>
-                <span className="shrink-0 tabular-nums text-muted-foreground">
-                  {student.progressPercentage}%
-                </span>
-              </div>
-            </td>
-            <td className="px-3 py-2.5 tabular-nums text-muted-foreground">
-              {student.labsCompleted} lab{student.labsCompleted === 1 ? '' : 's'}
-            </td>
-            <td className="px-3 py-2.5 text-muted-foreground">
-              {formatDate(student.lastActiveAt)}
-            </td>
-            <td className="px-3 py-2.5 text-muted-foreground">{studentStatus(student)}</td>
-            {onSelectStudent ? (
-              <td className="px-3 py-2.5">
-                <button
-                  type="button"
-                  onClick={() => onSelectStudent(student.userId)}
-                  className="inline-block rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50"
-                >
-                  View detail
-                </button>
-              </td>
-            ) : null}
+    <div className="w-full max-w-full overflow-x-auto">
+      <table className="w-full text-left text-sm">
+        <thead>
+          <tr className="border-b border-border text-xs text-muted">
+            <SortableHeader
+              label="Student"
+              column="fullName"
+              sort={sort}
+              onSortChange={onSortChange}
+            />
+            <SortableHeader
+              label="Progress"
+              column="progressPercentage"
+              sort={sort}
+              onSortChange={onSortChange}
+            />
+            <SortableHeader
+              label="Labs"
+              column="labsCompleted"
+              sort={sort}
+              onSortChange={onSortChange}
+            />
+            <SortableHeader
+              label="Last active"
+              column="lastActiveAt"
+              sort={sort}
+              onSortChange={onSortChange}
+            />
+            <SortableHeader label="Status" column="status" sort={sort} onSortChange={onSortChange} />
+            {onSelectStudent ? <th className="px-3 py-2 font-medium">Actions</th> : null}
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          {students.map((student) => (
+            <tr
+              key={student.userId}
+              className="border-b border-border/60 last:border-0 hover:bg-surface/60"
+            >
+              <td className="px-3 py-2.5">
+                <div className="font-medium text-card-foreground">
+                  {student.fullName ?? 'Unnamed student'}
+                </div>
+                <div className="text-xs text-muted">{student.email}</div>
+              </td>
+              <td className="px-3 py-2.5">
+                <div className="flex items-center gap-2">
+                  <div className="w-28">
+                    <ProgressBar
+                      percentage={student.progressPercentage}
+                      label={`Progress for ${student.fullName ?? 'student'}`}
+                      size="sm"
+                    />
+                  </div>
+                  <span className="shrink-0 tabular-nums text-muted-foreground">
+                    {student.progressPercentage}%
+                  </span>
+                </div>
+              </td>
+              <td className="px-3 py-2.5 tabular-nums text-muted-foreground">
+                {student.labsCompleted} lab{student.labsCompleted === 1 ? '' : 's'}
+              </td>
+              <td className="px-3 py-2.5 text-muted-foreground">
+                {formatDate(student.lastActiveAt)}
+              </td>
+              <td className="px-3 py-2.5 text-muted-foreground">{studentStatus(student)}</td>
+              {onSelectStudent ? (
+                <td className="px-3 py-2.5">
+                  <button
+                    type="button"
+                    onClick={() => onSelectStudent(student.userId)}
+                    className="inline-block rounded-md px-2 py-1 text-xs font-medium text-brand-700 hover:bg-brand-50"
+                  >
+                    View detail
+                  </button>
+                </td>
+              ) : null}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
 }
 

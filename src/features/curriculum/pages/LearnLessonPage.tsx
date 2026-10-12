@@ -123,7 +123,7 @@ export function LearnLessonPage() {
         {canWriteProgress ? (
           <div className="mt-8 flex items-center justify-end gap-3">
             {isCompleted ? (
-              <p className="text-sm font-medium text-green-700">✓ Lesson completed</p>
+              <p className="text-sm font-mono font-bold text-card-foreground">✓ Lesson completed</p>
             ) : (
               <Button type="button" onClick={handleComplete} isLoading={completeLesson.isPending}>
                 Mark complete

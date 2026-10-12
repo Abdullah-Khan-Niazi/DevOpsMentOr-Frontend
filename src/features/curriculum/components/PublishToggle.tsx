@@ -40,7 +40,7 @@ export function PublishToggle({
         disabled={busy}
         onClick={handleToggle}
         className={`relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors ${
-          isPublished ? 'bg-green-600' : 'bg-border'
+          isPublished ? 'bg-accent' : 'bg-border'
         }`}
       >
         <span

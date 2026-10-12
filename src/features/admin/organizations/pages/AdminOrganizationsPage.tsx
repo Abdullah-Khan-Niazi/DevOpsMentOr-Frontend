@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   Button,
@@ -32,27 +32,30 @@ export function AdminOrganizationsPage() {
   const [draft, setDraft] = useState('');
   const [search, setSearch] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
+  const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name_asc' | 'name_desc'>('newest');
+  const [billingFilter, setBillingFilter] = useState<'all' | 'with_billing' | 'without_billing'>('all');
+  const [timeFilter, setTimeFilter] = useState<'all' | '30d' | '90d' | '1y'>('all');
   const [page, setPage] = useState(1);
   const [isDrawerOpen, setIsDrawerOpen] = useState(() => searchParams.get('create') === 'true');
   const create = useCreateOrganization();
   const [form, setForm] = useState<CreateOrgPayload>(EMPTY_FORM);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      const trimmed = draft.trim();
+      if (trimmed !== search && (trimmed.length === 0 || trimmed.length >= 2)) {
+        setSearch(trimmed);
+        setPage(1);
+      }
+    }, 350);
+    return () => clearTimeout(timer);
+  }, [draft, search]);
 
   const { data, isLoading, isError, error, refetch } = useAdminOrganizations({
     search: search || undefined,
     page,
     pageSize: PAGE_SIZE,
   });
-
-  const applySearch = () => {
-    const term = draft.trim();
-    if (term.length === 1) {
-      toast.info('Search needs at least 2 characters.');
-      return;
-    }
-    setSearch(term);
-    setPage(1);
-    void refetch();
-  };
 
   const openCreateDrawer = () => {
     setForm(EMPTY_FORM);
@@ -95,12 +98,38 @@ export function AdminOrganizationsPage() {
     );
   };
 
-  // Filter organizations client-side if industry filter is active
+  // Filter organizations client-side with rich multi-criteria and sorting
   const filteredOrgs = useMemo(() => {
     if (!data?.data) return [];
-    if (selectedIndustry === 'all') return data.data;
-    return data.data.filter((org) => org.industry?.toLowerCase() === selectedIndustry.toLowerCase());
-  }, [data?.data, selectedIndustry]);
+    let list = [...data.data];
+
+    if (selectedIndustry !== 'all') {
+      list = list.filter((org) => org.industry?.toLowerCase() === selectedIndustry.toLowerCase());
+    }
+
+    if (billingFilter === 'with_billing') {
+      list = list.filter((org) => !!org.billingEmail && org.billingEmail.trim().length > 0);
+    } else if (billingFilter === 'without_billing') {
+      list = list.filter((org) => !org.billingEmail || org.billingEmail.trim().length === 0);
+    }
+
+    if (timeFilter !== 'all') {
+      const now = Date.now();
+      const cutoffDays = timeFilter === '30d' ? 30 : timeFilter === '90d' ? 90 : 365;
+      const cutoffTime = now - cutoffDays * 86_400_000;
+      list = list.filter((org) => new Date(org.createdAt).getTime() >= cutoffTime);
+    }
+
+    list.sort((a, b) => {
+      if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === 'name_asc') return a.name.localeCompare(b.name);
+      if (sortBy === 'name_desc') return b.name.localeCompare(a.name);
+      return 0;
+    });
+
+    return list;
+  }, [data?.data, selectedIndustry, billingFilter, timeFilter, sortBy]);
 
   // Unique industries for filter dropdown
   const availableIndustries = useMemo(() => {
@@ -113,7 +142,7 @@ export function AdminOrganizationsPage() {
   }, [data?.data]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Organizations"
         actions={
@@ -124,53 +153,77 @@ export function AdminOrganizationsPage() {
       />
 
       <Card>
-        <div className="mb-4 flex flex-wrap items-end gap-3">
-          <div>
-            <label htmlFor="org-search" className="input-label">
-              Search
-            </label>
-            <input
-              id="org-search"
-              className="input-field w-64"
-              placeholder="Name or slug…"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') applySearch();
-              }}
-            />
-          </div>
+        <div className="mb-4 flex items-center gap-1.5 w-full">
+          <input
+            id="org-search"
+            className="filter-input flex-1 min-w-0 transition-colors focus:border-accent"
+            placeholder="Search name or slug…"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+          />
 
-          <div>
-            <label htmlFor="org-industry-filter" className="input-label">
-              Industry
-            </label>
-            <select
-              id="org-industry-filter"
-              className="input-field"
-              value={selectedIndustry}
-              onChange={(e) => setSelectedIndustry(e.target.value)}
-            >
-              <option value="all">All Industries</option>
-              {availableIndustries.map((ind) => (
-                <option key={ind} value={ind}>
-                  {ind}
-                </option>
-              ))}
-            </select>
-          </div>
+          <select
+            id="org-industry-filter"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={selectedIndustry}
+            onChange={(e) => setSelectedIndustry(e.target.value)}
+          >
+            <option value="all">All Industries</option>
+            {availableIndustries.map((ind) => (
+              <option key={ind} value={ind}>
+                {ind}
+              </option>
+            ))}
+          </select>
 
-          <Button variant="primary" size="sm" onClick={applySearch}>
-            Apply
-          </Button>
-          {(search || selectedIndustry !== 'all') && (
+          <select
+            id="org-sort-filter"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value as any)}
+          >
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="name_asc">Name (A-Z)</option>
+            <option value="name_desc">Name (Z-A)</option>
+          </select>
+
+          <select
+            id="org-billing-filter"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={billingFilter}
+            onChange={(e) => setBillingFilter(e.target.value as any)}
+          >
+            <option value="all">All Contacts</option>
+            <option value="with_billing">Has Billing</option>
+            <option value="without_billing">No Billing</option>
+          </select>
+
+          <select
+            id="org-time-filter"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={timeFilter}
+            onChange={(e) => setTimeFilter(e.target.value as any)}
+          >
+            <option value="all">All Time</option>
+            <option value="30d">Past 30D</option>
+            <option value="90d">Past 90D</option>
+            <option value="1y">Past 1Y</option>
+          </select>
+
+          {(draft || search || selectedIndustry !== 'all' || sortBy !== 'newest' || billingFilter !== 'all' || timeFilter !== 'all') && (
             <Button
               variant="ghost"
               size="sm"
+              className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+              style={{ borderRadius: 0 }}
               onClick={() => {
                 setDraft('');
                 setSearch('');
                 setSelectedIndustry('all');
+                setSortBy('newest');
+                setBillingFilter('all');
+                setTimeFilter('all');
                 setPage(1);
               }}
             >
@@ -198,7 +251,8 @@ export function AdminOrganizationsPage() {
           />
         ) : (
           <>
-            <table className="w-full text-left text-sm">
+            <div className="w-full max-w-full overflow-x-auto">
+              <table className="w-full text-left text-sm">
               <thead>
                 <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Organization</th>
@@ -219,7 +273,7 @@ export function AdminOrganizationsPage() {
                         ),
                       )
                     }
-                    className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/80 active:bg-surface-hover/60 cursor-pointer transition-colors group"
                   >
                     <td className="px-3 py-3">
                       <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
@@ -238,6 +292,7 @@ export function AdminOrganizationsPage() {
                 ))}
               </tbody>
             </table>
+            </div>
             {data ? (
               <Pagination
                 page={data.page}
@@ -267,9 +322,6 @@ export function AdminOrganizationsPage() {
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-card-foreground">New Organization</h2>
-                    <p className="text-xs text-muted mt-0.5">
-                      Provision a new institutional tenant workspace.
-                    </p>
                   </div>
                   <button
                     type="button"

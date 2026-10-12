@@ -230,11 +230,6 @@ export function OrgInviteDrawer({
                 <h2 className="text-lg font-bold text-card-foreground">
                   {role === 'professor' ? 'Invite a Professor' : 'Invite Students'}
                 </h2>
-                <p className="text-xs text-muted mt-0.5">
-                  {role === 'professor'
-                    ? 'The professor receives an email invitation to join your organization.'
-                    : 'Dispatch cohort onboarding invitations to student learners.'}
-                </p>
               </div>
               <button
                 type="button"
@@ -268,9 +263,6 @@ export function OrgInviteDrawer({
                     }`}
                   >
                     <div className="text-sm font-medium">Student Learner</div>
-                    <div className="text-xs text-muted mt-0.5 font-mono">
-                      Enrolls in cohort &amp; labs
-                    </div>
                   </button>
 
                   <button
@@ -283,9 +275,6 @@ export function OrgInviteDrawer({
                     }`}
                   >
                     <div className="text-sm font-medium">Faculty / Professor</div>
-                    <div className="text-xs text-muted mt-0.5 font-mono">
-                      Instructs cohorts &amp; rosters
-                    </div>
                   </button>
                 </div>
               </div>
@@ -382,7 +371,7 @@ export function OrgInviteDrawer({
                   placeholder={
                     role === 'professor'
                       ? 'professor@example.com'
-                      : 'alice@university.edu&#10;bob@university.edu'
+                      : 'alice@university.edu\nbob@university.edu'
                   }
                   value={emailsInput}
                   onChange={(e) => setEmailsInput(e.target.value)}

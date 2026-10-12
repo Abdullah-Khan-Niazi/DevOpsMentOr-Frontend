@@ -70,6 +70,14 @@ export function useAdminAuditLogs(query: AuditLogQuery, enabled = true) {
   });
 }
 
+export function useAdminAuditMetadata() {
+  return useQuery({
+    queryKey: ['admin', 'audit-logs', 'metadata'],
+    queryFn: () => adminService.getAuditMetadata(),
+    staleTime: 60_000,
+  });
+}
+
 export function useAdminSystemSettings() {
   const queryClient = useQueryClient();
   const query = useQuery({

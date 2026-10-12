@@ -31,6 +31,7 @@
   --color-muted-foreground:   var(--text-tertiary);
   --color-accent:             var(--accent);
   --color-accent-foreground:  var(--pearl-100);
+  --color-signal:             var(--accent-signal);
   --color-input:              var(--paper-line);
   --color-ring:               var(--ink);
 }
@@ -40,9 +41,18 @@
 }
 
 html,
-body,
+body {
+  min-height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
+}
+
 #root {
   min-height: 100%;
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: clip;
 }
 
 body {
@@ -75,9 +85,29 @@ body {
   --text-secondary:#5B5B54;
   --text-tertiary: #8A897F;
 
-  /* ---- Functional accent — used sparingly, for live/status states only ---- */
-  --accent:        #1F6E4A;   /* muted, desaturated green — status/success only, never decorative */
+  /* ---- Functional accent — Paper & Ink primary color family ---- */
+  --accent:        var(--ink);   /* ink — primary accent, replaces legacy green role */
+  --accent-signal: #D71921;   /* NothingOS red — live signal & pulse dots only */
   --accent-warn:   #9C5B12;   /* muted amber — pending/retry states only */
+
+  /* ---- Telemetry & Observability Design Tokens ---- */
+  --telemetry-host-cpu:        #D71921;
+  --telemetry-cpu-max-spike:   #FB7185;
+  --telemetry-host-ram:        #2563EB;
+  --telemetry-used-ram:        #8B5CF6;
+  --telemetry-process-heap:    #06B6D4;
+  --telemetry-active-pods:     #0D9488;
+  --telemetry-queued-pods:     #D97706;
+  --telemetry-allocated-cores: #38BDF8;
+  --telemetry-redis-memory:    #E11D48;
+  --telemetry-cache-hit-ratio: #0D9488;
+  --telemetry-mysql-queries:   #2563EB;
+  --telemetry-ai-tokens:       #A855F7;
+  --telemetry-web-requests:    #EC4899;
+  --telemetry-active-learners: #0D9488;
+  --telemetry-active-sessions: #A855F7;
+  --telemetry-new-signups:     #2563EB;
+  --telemetry-completions:     #D97706;
 
   /* ---- Fonts ---- */
   --font-display:  "Geist", "Geist Fallback", system-ui, -apple-system, sans-serif;

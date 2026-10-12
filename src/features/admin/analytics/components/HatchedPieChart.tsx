@@ -121,12 +121,12 @@ export function HatchedPieChart({
       )}
 
       {/* Main Visualization Canvas: SVG Pie on Left, Tabular Legend on Right */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 w-full">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6 w-full min-w-0 max-w-full overflow-hidden">
         {/* SVG Circular Pie Canvas */}
-        <div className="relative shrink-0" style={{ width: size, height: size }}>
+        <div className="relative shrink-0 overflow-hidden" style={{ width: size, height: size }}>
           <svg
             viewBox="0 0 200 200"
-            className="w-full h-full overflow-visible"
+            className="w-full h-full overflow-hidden"
             aria-label="Hatched Segmentation Pie Chart"
           >
             <defs>

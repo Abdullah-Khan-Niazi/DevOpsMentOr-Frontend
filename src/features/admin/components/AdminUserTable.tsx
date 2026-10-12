@@ -35,7 +35,7 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
   }
 
   return (
-    <div className="overflow-x-auto">
+    <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
           <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
@@ -53,7 +53,7 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
               onClick={() =>
                 navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(user.userId)))
               }
-              className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
+              className="border-b border-border/60 last:border-0 hover:bg-surface/80 active:bg-surface-hover/60 cursor-pointer transition-colors group"
             >
               <td className="px-3 py-3">
                 <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">

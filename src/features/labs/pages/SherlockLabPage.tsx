@@ -23,7 +23,7 @@ export function SherlockLabPage() {
     return (
       <ErrorState
         title="Diagnostic unavailable"
-        message="This lab does not offer a Sherlock diagnostic."
+        message="This lab does not offer a diagnostic assessment."
         onRetry={() => void detail.refetch()}
       />
     );
@@ -33,18 +33,15 @@ export function SherlockLabPage() {
     return (
       <ErrorState
         title="Diagnostic unavailable"
-        message="This lab does not offer a Sherlock diagnostic."
+        message="This lab does not offer a diagnostic assessment."
         onRetry={() => void detail.refetch()}
       />
     );
   }
 
   return (
-    <div className="sherlock-page">
-      <PageHeader
-        title={`${lab.labName} — Diagnostic`}
-        description="Answer the evidence questions below. No lab instance is required."
-      />
+    <div className="sherlock-page space-y-6">
+      <PageHeader title={`${lab.labName} — Diagnostic`} />
       <Card>
         <div className="sherlock-page__meta">
           <span>{sherlock.questions.length} questions</span>

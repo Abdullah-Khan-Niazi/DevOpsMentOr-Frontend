@@ -53,53 +53,62 @@ export function AdminLabInstancesPage() {
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
   return (
-    <div>
+    <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
-        title="Lab instances"
-        description="Every provisioned environment across the platform."
+        title="Lab Instances"
+        actions={
+          <Button variant="secondary" size="sm" onClick={() => void refetch()} style={{ borderRadius: 0 }}>
+            Refresh Fleet
+          </Button>
+        }
       />
 
-      <Card>
-        <div className="mb-4 flex flex-wrap items-end gap-3">
-          <div>
-            <label className="input-label" htmlFor="instance-status">
-              Status
-            </label>
-            <select
-              id="instance-status"
-              className="input-field"
-              value={status}
-              onChange={(e) => {
-                setStatus(e.target.value);
+      <Card style={{ borderRadius: 0 }}>
+        {/* Single-line responsive filter toolbar */}
+        <div className="mb-4 flex items-center gap-1.5 w-full">
+          <input
+            id="instance-search"
+            className="filter-input flex-1 min-w-0 transition-colors focus:border-accent"
+            placeholder="Search lab name or username…"
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
+            }}
+          />
+
+          <select
+            id="instance-status"
+            className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
+            value={status}
+            onChange={(e) => {
+              setStatus(e.target.value);
+              setPage(1);
+            }}
+          >
+            <option value="">All Statuses</option>
+            <option value="running">running</option>
+            <option value="pending">pending</option>
+            <option value="stopped">stopped</option>
+            <option value="terminated">terminated</option>
+            <option value="error">error</option>
+          </select>
+
+          {(search || status) && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setSearch('');
+                setStatus('');
                 setPage(1);
               }}
+              className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+              style={{ borderRadius: 0 }}
             >
-              <option value="">All</option>
-              <option value="pending">pending</option>
-              <option value="running">running</option>
-              <option value="stopped">stopped</option>
-              <option value="terminated">terminated</option>
-              <option value="error">error</option>
-            </select>
-          </div>
-          <div>
-            <label className="input-label" htmlFor="instance-search">
-              Search
-            </label>
-            <input
-              id="instance-search"
-              className="input-field w-64"
-              placeholder="Lab name or username…"
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value);
-                setPage(1);
-              }}
-            />
-          </div>
-          <Button variant="secondary" onClick={() => void refetch()}>
-            Refresh
-          </Button>
+              Reset
+            </Button>
+          )}
         </div>
 
         {isLoading ? (
@@ -112,45 +121,56 @@ export function AdminLabInstancesPage() {
           />
         ) : (
           <>
-            <table className="admin-table">
-              <thead>
-                <tr>
-                  <th>Instance</th>
-                  <th>User</th>
-                  <th>Lab</th>
-                  <th>Status</th>
-                  <th>IP</th>
-                  <th>Expires</th>
-                  <th aria-label="actions" />
-                </tr>
-              </thead>
-              <tbody>
-                {instances.map((instance) => (
-                  <tr key={instance.instanceId}>
-                    <td>#{instance.instanceId}</td>
-                    <td>{instance.username ?? `user#${instance.userId}`}</td>
-                    <td>{instance.labName ?? `lab#${instance.labId ?? '?'}`}</td>
-                    <td>{instance.status}</td>
-                    <td>{instance.assignedIp ?? '—'}</td>
-                    <td>
-                      {instance.expiresAt ? new Date(instance.expiresAt).toLocaleString() : '—'}
-                    </td>
-                    <td>
-                      {instance.status !== 'terminated' && (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => terminate(instance.instanceId)}
-                        >
-                          Terminate
-                        </Button>
-                      )}
-                    </td>
+            <div className="w-full max-w-full overflow-x-auto">
+              <table className="w-full text-left text-xs font-mono">
+                <thead>
+                  <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                    <th className="px-3 py-2 font-medium">Instance ID</th>
+                    <th className="px-3 py-2 font-medium">Learner</th>
+                    <th className="px-3 py-2 font-medium">Lab</th>
+                    <th className="px-3 py-2 font-medium">Status</th>
+                    <th className="px-3 py-2 font-medium">Assigned IP</th>
+                    <th className="px-3 py-2 font-medium">Expires</th>
+                    <th className="px-3 py-2 font-medium text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="mt-4 flex justify-end">
+                </thead>
+                <tbody>
+                  {instances.map((instance) => (
+                    <tr key={instance.instanceId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">#{instance.instanceId}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap font-semibold text-card-foreground">
+                        {instance.username ?? `user#${instance.userId}`}
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                        {instance.labName ?? `lab#${instance.labId ?? '?'}`}
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap font-mono text-xs">
+                        <span className={instance.status === 'running' ? 'font-semibold text-card-foreground uppercase' : 'text-muted uppercase'}>
+                          {instance.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted">{instance.assignedIp ?? '—'}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted">
+                        {instance.expiresAt ? new Date(instance.expiresAt).toLocaleString() : '—'}
+                      </td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-right">
+                        {instance.status !== 'terminated' && (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => terminate(instance.instanceId)}
+                            style={{ borderRadius: 0 }}
+                          >
+                            Terminate
+                          </Button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mt-4 pt-3 border-t border-border/60 flex justify-end">
               <Pagination
                 page={page}
                 pageSize={PAGE_SIZE}
