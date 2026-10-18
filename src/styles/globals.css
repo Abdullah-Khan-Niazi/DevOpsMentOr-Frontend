@@ -6,6 +6,18 @@
   --font-body: 'Geist', 'Geist Fallback', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', monospace;
 
+  --color-ink:          var(--ink);
+  --color-ink-soft:     var(--ink-soft);
+  --color-ink-faint:    var(--ink-faint);
+
+  --color-paper:        var(--paper);
+  --color-paper-dim:    var(--paper-dim);
+  --color-paper-line:   var(--paper-line);
+
+  --color-pearl-100:    var(--pearl-100);
+  --color-pearl-200:    var(--pearl-200);
+  --color-pearl-300:    var(--pearl-300);
+
   --color-surface:      var(--pearl-100);
   --color-muted:        var(--text-secondary);
   --color-border:       var(--paper-line);
@@ -34,10 +46,125 @@
   --color-signal:             var(--accent-signal);
   --color-input:              var(--paper-line);
   --color-ring:               var(--ink);
+
+  --radius-xs:   3px;
+  --radius-sm:   4px;
+  --radius-md:   6px;
+  --radius-lg:   10px;
+  --radius-xl:   14px;
+  --radius:      6px;
+
+  --shadow-xs: 0 1px 2px rgba(20, 20, 15, 0.04);
+  --shadow-sm: 0 1px 3px rgba(20, 20, 15, 0.06), 0 1px 2px rgba(20, 20, 15, 0.04);
+  --shadow-md: 0 4px 6px -1px rgba(20, 20, 15, 0.07), 0 2px 4px -2px rgba(20, 20, 15, 0.05);
+  --shadow-lg: 0 10px 15px -3px rgba(20, 20, 15, 0.08), 0 4px 6px -4px rgba(20, 20, 15, 0.04);
+  --shadow-xl: 0 20px 25px -5px rgba(20, 20, 15, 0.10), 0 8px 10px -6px rgba(20, 20, 15, 0.04);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 * {
   box-sizing: border-box;
+  scrollbar-width: thin;
+  scrollbar-color: var(--paper-line) transparent;
+}
+
+/* Global buttery smooth scrollbar */
+*::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--paper-line);
+  border-radius: var(--radius-sm, 4px);
+  transition: background-color 150ms ease;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--text-tertiary);
+}
+
+/* Suppress all scrollbar chevrons and stepper buttons globally */
+::-webkit-scrollbar-button,
+::-webkit-scrollbar-button:single-button,
+::-webkit-scrollbar-button:vertical:decrement,
+::-webkit-scrollbar-button:vertical:increment,
+::-webkit-scrollbar-button:horizontal:decrement,
+::-webkit-scrollbar-button:horizontal:increment {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+
+/* ─── Global Table & DataGrid Row Hover Highlight ──────────────────────────── */
+table tbody tr {
+  transition: background-color 120ms ease;
+}
+
+table tbody tr:hover {
+  background-color: var(--pearl-200, #F3EFE6) !important;
+}
+
+table thead th {
+  user-select: none;
+}
+
+/* ─── Universal Tab & Segmented Switcher System (Paper & Ink Minimal Roundness) ─ */
+.tab-switcher {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  background-color: var(--pearl-100);
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-sm, 4px);
+  box-shadow: inset 0 1px 2px rgba(20, 20, 15, 0.03);
+}
+
+.tab-switcher__tab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px 10px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: var(--radius-xs, 3px);
+  border: 1px solid transparent;
+  color: var(--text-secondary);
+  background: transparent;
+  cursor: pointer;
+  transition: all 140ms ease;
+  user-select: none;
+}
+
+.tab-switcher__tab:hover:not(.tab-switcher__tab--active) {
+  color: var(--ink);
+  background-color: var(--pearl-200);
+}
+
+.tab-switcher__tab--active {
+  background-color: var(--ink) !important;
+  color: var(--pearl-100) !important;
+  font-weight: 600;
+  border-color: var(--ink) !important;
+  box-shadow: 0 1px 2px rgba(20, 20, 15, 0.08);
+}
+
+.tab-switcher__tab--active:hover {
+  background-color: #FFFFFF !important;
+  color: var(--ink) !important;
+  border-color: var(--ink) !important;
+  outline: 1px solid var(--ink) !important;
 }
 
 html,
@@ -114,14 +241,15 @@ body {
   --font-body:     "Geist", "Geist Fallback", system-ui, -apple-system, sans-serif;
   --font-mono:     "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
-  /* ---- Radius — always zero ---- */
-  --radius: 0px;
+  /* ---- Radius tokens ---- */
+  --radius:      8px;
   --radius-none: 0px;
-  --radius-xs: 0px;
-  --radius-sm: 0px;
-  --radius-md: 0px;
-  --radius-lg: 0px;
-  --radius-full: 0px;
+  --radius-xs:   4px;
+  --radius-sm:   6px;
+  --radius-md:   8px;
+  --radius-lg:   12px;
+  --radius-xl:   16px;
+  --radius-full: 9999px;
 
   /* ---- Spacing (8px base) ---- */
   --space-1: 4px;   --space-2: 8px;   --space-3: 12px;  --space-4: 16px;
@@ -183,12 +311,13 @@ body {
   --container-content: 1120px;
   --gutter:            clamp(1.5rem, 4vw, 4rem);
 
-  /* Shadows purged — tone and hairline borders only */
-  --shadow-sm:           none;
-  --shadow-md:           none;
-  --shadow-lg:           none;
-  --shadow-xl:           none;
-  --shadow-accent-glow:  none;
+  /* Multi-layer elevation shadows */
+  --shadow-xs:           0 1px 2px rgba(20, 20, 15, 0.04);
+  --shadow-sm:           0 1px 3px rgba(20, 20, 15, 0.06), 0 1px 2px rgba(20, 20, 15, 0.04);
+  --shadow-md:           0 4px 6px -1px rgba(20, 20, 15, 0.07), 0 2px 4px -2px rgba(20, 20, 15, 0.05);
+  --shadow-lg:           0 10px 15px -3px rgba(20, 20, 15, 0.08), 0 4px 6px -4px rgba(20, 20, 15, 0.04);
+  --shadow-xl:           0 20px 25px -5px rgba(20, 20, 15, 0.10), 0 8px 10px -6px rgba(20, 20, 15, 0.04);
+  --shadow-accent-glow:  0 0 0 1px var(--ink), 0 4px 12px rgba(20, 20, 15, 0.12);
 
   --z-base:    0;
   --z-raised:  10;

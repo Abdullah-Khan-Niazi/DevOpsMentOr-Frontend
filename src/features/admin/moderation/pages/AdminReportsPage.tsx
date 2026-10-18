@@ -5,9 +5,9 @@ import {
   Card,
   ErrorState,
   EmptyState,
-  LoadingState,
   PageHeader,
   TabRow,
+  TablePageSkeleton,
   toast,
 } from '@/shared/components';
 import { useAdminReports } from '../hooks/useAdminModeration';
@@ -41,7 +41,7 @@ export function AdminReportsPage() {
       {query.isError ? (
         <ErrorState title="Could not load reports" message="Please try again later." />
       ) : query.isLoading ? (
-        <LoadingState />
+        <TablePageSkeleton />
       ) : query.data && query.data.data.length > 0 ? (
         <div className="moderation-admin-page__list">
           {query.data.data.map((report) => (

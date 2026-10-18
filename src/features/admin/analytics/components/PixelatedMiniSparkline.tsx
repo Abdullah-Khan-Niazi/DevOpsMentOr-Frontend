@@ -27,7 +27,7 @@ export function PixelatedMiniSparkline({
                   style={{
                     backgroundColor: isFilled ? color : emptyColor,
                     opacity: isFilled ? 0.9 : 0.3,
-                    borderRadius: 0,
+                    
                   }}
                 />
               );

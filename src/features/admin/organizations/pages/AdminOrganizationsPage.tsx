@@ -8,6 +8,7 @@ import {
   Input,
   PageHeader,
   Pagination,
+  Skeleton,
   toast,
 } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
@@ -39,6 +40,8 @@ export function AdminOrganizationsPage() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(() => searchParams.get('create') === 'true');
   const create = useCreateOrganization();
   const [form, setForm] = useState<CreateOrgPayload>(EMPTY_FORM);
+  const [nameError, setNameError] = useState<string | null>(null);
+  const [slugError, setSlugError] = useState<string | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -59,11 +62,15 @@ export function AdminOrganizationsPage() {
 
   const openCreateDrawer = () => {
     setForm(EMPTY_FORM);
+    setNameError(null);
+    setSlugError(null);
     setIsDrawerOpen(true);
   };
 
   const closeCreateDrawer = () => {
     setIsDrawerOpen(false);
+    setNameError(null);
+    setSlugError(null);
     if (searchParams.get('create')) {
       const next = new URLSearchParams(searchParams);
       next.delete('create');
@@ -72,10 +79,22 @@ export function AdminOrganizationsPage() {
   };
 
   const submitCreate = () => {
-    if (!form.name.trim() || !form.slug.trim()) {
-      toast.error('Name and slug are required.');
-      return;
+    let hasError = false;
+    if (!form.name.trim()) {
+      setNameError('Organization name is required.');
+      hasError = true;
+    } else {
+      setNameError(null);
     }
+    if (!form.slug.trim()) {
+      setSlugError('URL slug is required.');
+      hasError = true;
+    } else {
+      setSlugError(null);
+    }
+
+    if (hasError) return;
+
     create.mutate(
       {
         ...form,
@@ -216,7 +235,7 @@ export function AdminOrganizationsPage() {
               variant="ghost"
               size="sm"
               className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-              style={{ borderRadius: 0 }}
+             
               onClick={() => {
                 setDraft('');
                 setSearch('');
@@ -238,7 +257,21 @@ export function AdminOrganizationsPage() {
             onRetry={() => void refetch()}
           />
         ) : isLoading ? (
-          <p className="py-6 text-sm text-muted">Loading organizations…</p>
+          <div className="w-full max-w-full overflow-x-auto">
+            <div className="divide-y divide-border/60">
+              {Array.from({ length: 8 }, (_, i) => (
+                <div key={i} className="flex items-center justify-between px-3 py-3">
+                  <div className="space-y-1.5 w-1/3">
+                    <Skeleton className="h-4 w-40 rounded-xs" />
+                    <Skeleton className="h-3 w-48 rounded-xs" />
+                  </div>
+                  <Skeleton className="h-4 w-28 rounded-xs" />
+                  <Skeleton className="h-4 w-24 rounded-xs" />
+                  <Skeleton className="h-4 w-20 rounded-xs" />
+                </div>
+              ))}
+            </div>
+          </div>
         ) : filteredOrgs.length === 0 ? (
           <EmptyState
             title={search || selectedIndustry !== 'all' ? 'No matching organizations' : 'No organizations yet'}
@@ -317,7 +350,7 @@ export function AdminOrganizationsPage() {
 
           {/* Drawer Container */}
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200">
+            <div className="w-screen max-w-lg bg-card border-l border-border rounded-l-md p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200">
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <div>
@@ -340,7 +373,9 @@ export function AdminOrganizationsPage() {
                     label="Organization name"
                     placeholder="e.g. Acme University"
                     value={form.name}
+                    error={nameError ?? undefined}
                     onChange={(e) => {
+                      if (nameError) setNameError(null);
                       const name = e.target.value;
                       const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
                       setForm({
@@ -359,7 +394,11 @@ export function AdminOrganizationsPage() {
                     label="URL slug"
                     placeholder="e.g. acme-university"
                     value={form.slug}
-                    onChange={(e) => setForm({ ...form, slug: e.target.value })}
+                    error={slugError ?? undefined}
+                    onChange={(e) => {
+                      if (slugError) setSlugError(null);
+                      setForm({ ...form, slug: e.target.value });
+                    }}
                     hint="Unique lowercase identifier used in platform workspaces."
                     required
                   />

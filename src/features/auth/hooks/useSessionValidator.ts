@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 import { ROUTES } from '@/shared/constants';
+import { AUTH_TOKEN_KEY } from '@/shared/services';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 
@@ -36,6 +37,45 @@ export function useSessionValidator() {
     if (!isAuthenticated) return;
     void validate();
   }, [isAuthenticated, validate]);
+
+  // Cross-tab logout synchronization (BroadcastChannel + storage event fallback)
+  useEffect(() => {
+    const handleLogout = () => {
+      if (useAuthStore.getState().isAuthenticated) {
+        clearSession();
+        window.location.replace(ROUTES.LOGIN);
+      }
+    };
+
+    let channel: BroadcastChannel | null = null;
+    try {
+      channel = new BroadcastChannel('auth_sync');
+      channel.onmessage = (event) => {
+        if (event.data?.type === 'LOGOUT') {
+          handleLogout();
+        }
+      };
+    } catch {
+      // BroadcastChannel unavailable
+    }
+
+    const handleStorage = (event: StorageEvent) => {
+      if (
+        (event.key === AUTH_TOKEN_KEY && event.newValue === null) ||
+        (event.key === 'auth-session' && (!event.newValue || !JSON.parse(event.newValue || '{}')?.state?.isAuthenticated))
+      ) {
+        handleLogout();
+      }
+    };
+
+    window.addEventListener('storage', handleStorage);
+    return () => {
+      window.removeEventListener('storage', handleStorage);
+      if (channel) {
+        channel.close();
+      }
+    };
+  }, [clearSession]);
 
   // Back-Forward Cache (bfcache) and swipe-back popstate security guards
   useEffect(() => {

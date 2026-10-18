@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button, toast } from '@/shared/components';
+import { cn } from '@/shared/utils';
 import { useOrgClasses, useOrgProfessors } from '../hooks';
 import { classService, orgService } from '../services';
 
@@ -26,6 +27,8 @@ export function OrgInviteDrawer({
     defaultClassId ? [defaultClassId] : [],
   );
   const [emailsInput, setEmailsInput] = useState('');
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [cohortError, setCohortError] = useState<string | null>(null);
   const [isDraggingCsv, setIsDraggingCsv] = useState(false);
   const [csvParsedCount, setCsvParsedCount] = useState<number | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -44,6 +47,8 @@ export function OrgInviteDrawer({
       );
       setAssignedCohortIds(defaultClassId ? [defaultClassId] : []);
       setEmailsInput('');
+      setEmailError(null);
+      setCohortError(null);
       setCsvParsedCount(null);
     }
   }, [isOpen, defaultRole, defaultClassId, cohorts]);
@@ -131,19 +136,26 @@ export function OrgInviteDrawer({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setEmailError(null);
+    setCohortError(null);
 
     const emails = emailsInput
       .split(/[\n,]+/)
       .map((e) => e.trim().toLowerCase())
       .filter((e) => /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(e));
 
+    let hasError = false;
     if (emails.length === 0) {
-      toast.error('Please enter or upload at least one valid email address.');
-      return;
+      setEmailError('Please enter or upload at least one valid email address.');
+      hasError = true;
     }
 
     if (role === 'student' && !selectedCohortId) {
-      toast.error('Please select a target cohort for student enrollment.');
+      setCohortError('Please select a target cohort for student enrollment.');
+      hasError = true;
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -223,7 +235,7 @@ export function OrgInviteDrawer({
 
       {/* Slide-over panel */}
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-none">
+        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
@@ -234,7 +246,7 @@ export function OrgInviteDrawer({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-muted hover:text-card-foreground transition-colors"
+                className="p-1.5 text-muted hover:text-card-foreground transition-colors rounded-sm cursor-pointer"
                 aria-label="Close drawer"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -256,7 +268,7 @@ export function OrgInviteDrawer({
                   <button
                     type="button"
                     onClick={() => setRole('student')}
-                    className={`border p-3 text-left transition-colors rounded-none ${
+                    className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
                       role === 'student'
                         ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
                         : 'border-border bg-surface text-card-foreground hover:bg-surface/80'
@@ -268,7 +280,7 @@ export function OrgInviteDrawer({
                   <button
                     type="button"
                     onClick={() => setRole('professor')}
-                    className={`border p-3 text-left transition-colors rounded-none ${
+                    className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
                       role === 'professor'
                         ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
                         : 'border-border bg-surface text-card-foreground hover:bg-surface/80'
@@ -283,27 +295,45 @@ export function OrgInviteDrawer({
               {role === 'student' && (
                 <div>
                   <label htmlFor="target-cohort-select" className="input-label">
-                    Target Cohort <span className="text-destructive">*</span>
+                    Target Cohort <span className="text-signal ml-0.5">*</span>
                   </label>
                   {cohorts.length === 0 ? (
-                    <div className="border border-border p-3 text-xs text-muted font-mono">
+                    <div className="border border-border p-3 text-xs text-muted font-mono rounded-md">
                       No cohorts provisioned yet. Please create a cohort first.
                     </div>
                   ) : (
-                    <select
-                      id="target-cohort-select"
-                      className="input-field w-full mt-1"
-                      value={selectedCohortId}
-                      onChange={(e) => setSelectedCohortId(e.target.value)}
-                      required
-                    >
-                      <option value="">Select a cohort…</option>
-                      {cohorts.map((c) => (
-                        <option key={c.classId} value={String(c.classId)}>
-                          {c.className} ({c.studentCount} / {c.maxStudents} enrolled)
-                        </option>
-                      ))}
-                    </select>
+                    <>
+                      <select
+                        id="target-cohort-select"
+                        className={cn(
+                          'input-field w-full mt-1',
+                          cohortError && 'border-signal outline-signal focus:border-signal bg-signal/5',
+                        )}
+                        value={selectedCohortId}
+                        onChange={(e) => {
+                          setSelectedCohortId(e.target.value);
+                          if (cohortError) setCohortError(null);
+                        }}
+                        required
+                      >
+                        <option value="">Select a cohort…</option>
+                        {cohorts.map((c) => (
+                          <option key={c.classId} value={String(c.classId)}>
+                            {c.className} ({c.studentCount} / {c.maxStudents} enrolled)
+                          </option>
+                        ))}
+                      </select>
+                      {cohortError ? (
+                        <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
+                          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                            <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                          </svg>
+                          {cohortError}
+                        </p>
+                      ) : null}
+                    </>
                   )}
                 </div>
               )}
@@ -321,11 +351,11 @@ export function OrgInviteDrawer({
                     Optionally assign this professor to lead one or multiple cohorts.
                   </p>
                   {cohorts.length === 0 ? (
-                    <div className="border border-border p-3 text-xs text-muted font-mono">
+                    <div className="border border-border p-3 text-xs text-muted font-mono rounded-md">
                       No cohorts provisioned yet.
                     </div>
                   ) : (
-                    <div className="border border-border/80 max-h-36 overflow-y-auto divide-y divide-border/60 bg-surface/30">
+                    <div className="border border-border/80 max-h-36 overflow-y-auto divide-y divide-border/60 bg-surface/30 rounded-md">
                       {cohorts.map((c) => (
                         <label
                           key={c.classId}
@@ -335,7 +365,7 @@ export function OrgInviteDrawer({
                             type="checkbox"
                             checked={assignedCohortIds.includes(c.classId)}
                             onChange={() => toggleCohortAssignment(c.classId)}
-                            className="rounded-none border-border"
+                            className="rounded-xs border-border"
                           />
                           <span className="font-medium text-card-foreground">{c.className}</span>
                           <span className="text-muted font-mono text-[10px]">
@@ -352,7 +382,7 @@ export function OrgInviteDrawer({
               <div>
                 <div className="flex items-center justify-between">
                   <label htmlFor="invite-emails-area" className="input-label">
-                    Email Address(es) <span className="text-destructive">*</span>
+                    Email Address(es) <span className="text-signal ml-0.5">*</span>
                   </label>
                   <span className="text-xs text-muted font-mono">
                     {
@@ -367,16 +397,32 @@ export function OrgInviteDrawer({
                 <textarea
                   id="invite-emails-area"
                   rows={role === 'professor' ? 3 : 4}
-                  className="input-field w-full font-mono text-xs mt-1"
+                  className={cn(
+                    'input-field w-full font-mono text-xs mt-1',
+                    emailError && 'border-signal outline-signal focus:border-signal bg-signal/5',
+                  )}
                   placeholder={
                     role === 'professor'
                       ? 'professor@example.com'
                       : 'alice@university.edu\nbob@university.edu'
                   }
                   value={emailsInput}
-                  onChange={(e) => setEmailsInput(e.target.value)}
+                  onChange={(e) => {
+                    setEmailsInput(e.target.value);
+                    if (emailError) setEmailError(null);
+                  }}
                   required
                 />
+                {emailError ? (
+                  <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
+                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                      <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+                      <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    {emailError}
+                  </p>
+                ) : null}
               </div>
 
               {/* Drag & Drop CSV Upload Area */}
@@ -393,7 +439,7 @@ export function OrgInviteDrawer({
                     setIsDraggingCsv(false);
                     void handleCsvFile(e.dataTransfer.files);
                   }}
-                  className={`mt-1 border-2 border-dashed p-3.5 text-center transition-colors rounded-none cursor-pointer ${
+                  className={`mt-1 border-2 border-dashed p-3.5 text-center transition-colors rounded-md cursor-pointer ${
                     isDraggingCsv
                       ? 'border-brand-600 bg-brand-50/10'
                       : 'border-border/80 bg-surface/40 hover:bg-surface/70'
@@ -426,7 +472,7 @@ export function OrgInviteDrawer({
                   <button
                     type="button"
                     onClick={handleDownloadSampleCsv}
-                    className="text-xs text-brand-600 hover:text-brand-700 hover:underline inline-flex items-center gap-1 font-mono"
+                    className="text-xs text-brand-600 hover:text-brand-700 hover:underline inline-flex items-center gap-1 font-mono cursor-pointer"
                   >
                     &darr; Download Sample CSV
                   </button>

@@ -1,0 +1,61 @@
+/* Skeleton Loaders — silky shimmer animation with context-accurate page layouts */
+
+.skeleton-bone {
+  background: linear-gradient(
+    90deg,
+    var(--paper-dim) 0%,
+    var(--pearl-200) 50%,
+    var(--paper-dim) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  border-radius: var(--radius-sm, 6px);
+}
+
+.skeleton-bone--text {
+  height: 1em;
+  border-radius: var(--radius-xs, 4px);
+}
+
+.skeleton-bone--circular {
+  border-radius: var(--radius-full, 9999px);
+}
+
+.skeleton-bone--rectangular {
+  border-radius: var(--radius-md, 8px);
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Skeleton Full Page Container — scrollable just like modern premium apps */
+.skeleton-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--container-max);
+  margin: 0 auto;
+  animation: skeletonFadeIn 200ms ease;
+}
+
+@keyframes skeletonFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-bone {
+    animation: none;
+    background: var(--paper-dim);
+  }
+  .skeleton-page {
+    animation: none;
+  }
+}

@@ -1,12 +1,12 @@
 import '../styles/labs.css';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import {
   Button,
   Card,
   ErrorState,
-  LoadingState,
   PageHeader,
   Pagination,
+  TablePageSkeleton,
   toast,
 } from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
@@ -15,6 +15,17 @@ import { labsService } from '../services';
 
 const PAGE_SIZE = 20;
 
+type SortColumn = 'instanceId' | 'username' | 'labName' | 'status' | 'assignedIp' | 'expiresAt';
+type SortDirection = 'asc' | 'desc';
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+  return (
+    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  );
+}
+
 /** LAB-22: instance fleet — filter by status/search and force-terminate. */
 export function AdminLabInstancesPage() {
   const queryClient = useQueryClient();
@@ -22,12 +33,24 @@ export function AdminLabInstancesPage() {
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
 
+  const [sortCol, setSortCol] = useState<SortColumn>('instanceId');
+  const [sortDir, setSortDir] = useState<SortDirection>('desc');
+
   const { data, isLoading, isError, error, refetch } = useAdminLabInstances(
     page,
     PAGE_SIZE,
     status || undefined,
     search || undefined,
   );
+
+  const handleSort = (col: SortColumn) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+  };
 
   const invalidate = (): void => {
     void queryClient.invalidateQueries({ queryKey: ['admin', 'lab-instances'] });
@@ -52,18 +75,62 @@ export function AdminLabInstancesPage() {
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
 
+  const sortedInstances = useMemo(() => {
+    const list = [...instances];
+    list.sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      switch (sortCol) {
+        case 'instanceId':
+          valA = a.instanceId;
+          valB = b.instanceId;
+          break;
+        case 'username':
+          valA = (a.username ?? `user#${a.userId}`).toLowerCase();
+          valB = (b.username ?? `user#${b.userId}`).toLowerCase();
+          break;
+        case 'labName':
+          valA = (a.labName ?? `lab#${a.labId}`).toLowerCase();
+          valB = (b.labName ?? `lab#${b.labId}`).toLowerCase();
+          break;
+        case 'status':
+          valA = a.status;
+          valB = b.status;
+          break;
+        case 'assignedIp':
+          valA = a.assignedIp ?? '';
+          valB = b.assignedIp ?? '';
+          break;
+        case 'expiresAt':
+          valA = a.expiresAt ? new Date(a.expiresAt).getTime() : 0;
+          valB = b.expiresAt ? new Date(b.expiresAt).getTime() : 0;
+          break;
+      }
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [instances, sortCol, sortDir]);
+
+  if (isLoading) {
+    return <TablePageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Lab Instances"
         actions={
-          <Button variant="secondary" size="sm" onClick={() => void refetch()} style={{ borderRadius: 0 }}>
+          <Button variant="secondary" size="sm" onClick={() => void refetch()}>
             Refresh Fleet
           </Button>
         }
       />
 
-      <Card style={{ borderRadius: 0 }}>
+      <Card>
         {/* Single-line responsive filter toolbar */}
         <div className="mb-4 flex items-center gap-1.5 w-full">
           <input
@@ -104,16 +171,13 @@ export function AdminLabInstancesPage() {
                 setPage(1);
               }}
               className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-              style={{ borderRadius: 0 }}
             >
               Reset
             </Button>
           )}
         </div>
 
-        {isLoading ? (
-          <LoadingState />
-        ) : isError ? (
+        {isError ? (
           <ErrorState
             title="Could not load instances"
             message={error.message}
@@ -122,20 +186,50 @@ export function AdminLabInstancesPage() {
         ) : (
           <>
             <div className="w-full max-w-full overflow-x-auto">
-              <table className="w-full text-left text-xs font-mono">
+              <table className="w-full text-left text-xs font-mono border-collapse">
                 <thead>
                   <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
-                    <th className="px-3 py-2 font-medium">Instance ID</th>
-                    <th className="px-3 py-2 font-medium">Learner</th>
-                    <th className="px-3 py-2 font-medium">Lab</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Assigned IP</th>
-                    <th className="px-3 py-2 font-medium">Expires</th>
+                    <th
+                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                      onClick={() => handleSort('instanceId')}
+                    >
+                      Instance ID <SortIcon active={sortCol === 'instanceId'} direction={sortDir} />
+                    </th>
+                    <th
+                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                      onClick={() => handleSort('username')}
+                    >
+                      Learner <SortIcon active={sortCol === 'username'} direction={sortDir} />
+                    </th>
+                    <th
+                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                      onClick={() => handleSort('labName')}
+                    >
+                      Lab <SortIcon active={sortCol === 'labName'} direction={sortDir} />
+                    </th>
+                    <th
+                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                      onClick={() => handleSort('status')}
+                    >
+                      Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+                    </th>
+                    <th
+                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                      onClick={() => handleSort('assignedIp')}
+                    >
+                      Assigned IP <SortIcon active={sortCol === 'assignedIp'} direction={sortDir} />
+                    </th>
+                    <th
+                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                      onClick={() => handleSort('expiresAt')}
+                    >
+                      Expires <SortIcon active={sortCol === 'expiresAt'} direction={sortDir} />
+                    </th>
                     <th className="px-3 py-2 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {instances.map((instance) => (
+                <tbody className="divide-y divide-border/60">
+                  {sortedInstances.map((instance) => (
                     <tr key={instance.instanceId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
                       <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">#{instance.instanceId}</td>
                       <td className="px-3 py-2.5 whitespace-nowrap font-semibold text-card-foreground">
@@ -159,7 +253,7 @@ export function AdminLabInstancesPage() {
                             variant="danger"
                             size="sm"
                             onClick={() => terminate(instance.instanceId)}
-                            style={{ borderRadius: 0 }}
+                           
                           >
                             Terminate
                           </Button>

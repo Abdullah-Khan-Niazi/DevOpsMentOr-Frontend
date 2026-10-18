@@ -1,0 +1,16 @@
+export {
+  Skeleton,
+  AdminDashboardSkeleton,
+  AnalyticsPageSkeleton,
+  OrgDashboardSkeleton,
+  TablePageSkeleton,
+  DetailFormSkeleton,
+  GridCardsSkeleton,
+  DashboardSkeleton,
+  CurriculumSkeleton,
+  LabWorkspaceSkeleton,
+  HomePageSkeleton,
+  PublicPageSkeleton,
+  AuthPageSkeleton,
+  type SkeletonProps,
+} from './Skeleton';

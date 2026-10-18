@@ -65,11 +65,29 @@ export function LoginForm() {
   const {
     register,
     handleSubmit,
+    setError,
+    clearErrors,
     formState: { errors },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '' },
   });
+
+  useEffect(() => {
+    if (!isError || !error) return;
+    const msg = error.message;
+    if (msg === 'INCORRECT_PASSWORD') {
+      setError('password', {
+        type: 'manual',
+        message: 'Incorrect password. Please verify and try again.',
+      });
+    } else if (msg === 'USER_NOT_FOUND' || msg === 'INVALID_CREDENTIALS') {
+      setError('email', {
+        type: 'manual',
+        message: 'No account found matching this email or username.',
+      });
+    }
+  }, [isError, error, setError]);
 
   const redirectTo = () => {
     const params = new URLSearchParams(location.search);
@@ -90,6 +108,7 @@ export function LoginForm() {
   const emailForVerify = data?.data.user.email || submittedEmail;
 
   const onSubmit = (values: LoginFormValues) => {
+    clearErrors();
     setCredentials(values);
     setSubmittedEmail(values.email);
     doLogin(values);
@@ -266,7 +285,12 @@ export function LoginForm() {
           </Link>
         </div>
 
-        {isError && !twoFactorRequired && !needsVerification ? (
+        {isError &&
+        !twoFactorRequired &&
+        !needsVerification &&
+        error.message !== 'INCORRECT_PASSWORD' &&
+        error.message !== 'USER_NOT_FOUND' &&
+        error.message !== 'INVALID_CREDENTIALS' ? (
           <p className="auth-alert auth-alert--error" role="alert">
             {friendlyError(error.message)}
           </p>

@@ -1,7 +1,7 @@
 import { Card, PageHeader } from '@/shared/components';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { EmptyState, ErrorState, LoadingState } from '@/shared/components';
+import { EmptyState, ErrorState, DetailFormSkeleton } from '@/shared/components';
 import { SettingsForm } from '../components';
 import { useSettings } from '../hooks';
 import './SettingsPage.css';
@@ -62,7 +62,7 @@ export default function SettingsPage() {
 
       <div className="settings-hub">
         <h2 className="settings-hub__heading">Organization</h2>
-        {isLoading ? <LoadingState label="Loading settings…" /> : null}
+        {isLoading ? <DetailFormSkeleton /> : null}
 
         {isError ? <ErrorState message={error.message} onRetry={() => void refetch()} /> : null}
 

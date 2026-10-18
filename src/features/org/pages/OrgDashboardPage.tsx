@@ -5,7 +5,8 @@ import {
   Card,
   EmptyState,
   ErrorState,
-  LoadingState,
+  OrgDashboardSkeleton,
+  Skeleton,
   PageHeader,
   TabRow,
   type TabItem,
@@ -129,12 +130,7 @@ export function OrgDashboardPage() {
   }, [allMembers, memberRoleFilter, memberSearch]);
 
   if (query.isLoading) {
-    return (
-      <div className="space-y-6">
-        <PageHeader title="Organization Dashboard" />
-        <LoadingState label="Loading your organization workspace..." />
-      </div>
-    );
+    return <OrgDashboardSkeleton />;
   }
 
   if (query.isError || !query.data) {
@@ -240,9 +236,9 @@ export function OrgDashboardPage() {
           className="cursor-pointer"
         >
           <OrgKpiTile
-            label="Faculty & Instructors"
+            label="Students & Professors"
             value={org.stats.professorCount}
-            subtext="Assigned academic professors"
+            subtext="Academic professors and cohort educators"
           />
         </div>
         <div>
@@ -277,8 +273,21 @@ export function OrgDashboardPage() {
           </div>
 
           {classesQuery.isLoading ? (
-            <div className="py-8 text-center text-xs text-muted font-mono">
-              Loading organization cohorts…
+            <div className="divide-y divide-border/60 border-t border-border/80 pt-2">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="flex items-center justify-between py-3.5 px-4">
+                  <div className="space-y-1.5 w-1/3">
+                    <Skeleton className="h-4 w-36 rounded-xs" />
+                    <Skeleton className="h-3 w-24 rounded-xs" />
+                  </div>
+                  <Skeleton className="h-4 w-28 rounded-xs" />
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-2 w-28 rounded-xs" />
+                    <Skeleton className="h-3 w-16 rounded-xs" />
+                  </div>
+                  <Skeleton className="h-3 w-20 rounded-xs" />
+                </div>
+              ))}
             </div>
           ) : cohorts.length === 0 ? (
             <EmptyState
@@ -393,8 +402,22 @@ export function OrgDashboardPage() {
           </div>
 
           {orgUsersQuery.isLoading ? (
-            <div className="py-8 text-center text-xs text-muted font-mono">
-              Loading organization members…
+            <div className="divide-y divide-border/60 border-t border-border/80 pt-2">
+              {Array.from({ length: 6 }, (_, j) => (
+                <div key={j} className="flex items-center justify-between py-3 px-4">
+                  <div className="flex items-center gap-3 w-1/3">
+                    <Skeleton variant="circular" className="h-8 w-8 shrink-0" />
+                    <div className="space-y-1.5 flex-1">
+                      <Skeleton className="h-4 w-32 rounded-xs" />
+                      <Skeleton className="h-3 w-40 rounded-xs" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-4 w-20 rounded-xs" />
+                  <Skeleton className="h-4 w-28 rounded-xs" />
+                  <Skeleton className="h-4 w-12 rounded-xs" />
+                  <Skeleton className="h-3 w-20 rounded-xs" />
+                </div>
+              ))}
             </div>
           ) : filteredMembers.length === 0 ? (
             <EmptyState

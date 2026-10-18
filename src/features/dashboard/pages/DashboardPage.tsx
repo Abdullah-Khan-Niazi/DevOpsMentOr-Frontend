@@ -83,7 +83,7 @@ function LearnerDashboard() {
         title={`Welcome back, ${user?.fullName ?? 'Learner'}`}
         actions={
           streak > 0 ? (
-            <div className="flex items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-xs font-medium text-card-foreground">
+            <div className="flex items-center gap-1.5 rounded-md border border-border bg-surface px-3 py-1 text-xs font-medium text-card-foreground">
               <span className="text-amber-500 font-bold">&#9733;</span>
               <span>{streak} day streak</span>
             </div>

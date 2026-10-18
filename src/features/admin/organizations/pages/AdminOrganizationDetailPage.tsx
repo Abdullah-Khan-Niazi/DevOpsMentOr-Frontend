@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
+  DetailFormSkeleton,
   EmptyState,
   ErrorState,
   Input,
@@ -1203,13 +1204,7 @@ export function AdminOrganizationDetailPage() {
   const { query, update, assignAdmin } = useAdminOrganizationDetail(orgId);
 
   if (query.isLoading || !query.data) {
-    return (
-      <div className="space-y-4">
-        <div className="h-8 w-64 animate-pulse rounded-none bg-secondary" />
-        <div className="h-10 w-full animate-pulse rounded-none bg-secondary" />
-        <div className="h-64 animate-pulse rounded-none bg-secondary" />
-      </div>
-    );
+    return <DetailFormSkeleton />;
   }
 
   if (query.isError) {

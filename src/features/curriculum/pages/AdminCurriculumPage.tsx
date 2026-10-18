@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, PageHeader, toast } from '@/shared/components';
+import { Button, Card, PageHeader, CurriculumSkeleton, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { CourseMetaCard } from '../components/CourseMetaCard';
 import { ModuleForm } from '../components/ModuleForm';
@@ -63,6 +63,10 @@ export function AdminCurriculumPage() {
     });
   };
 
+  if (course.query.isLoading) {
+    return <CurriculumSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
@@ -74,18 +78,8 @@ export function AdminCurriculumPage() {
         }
       />
 
-      {course.query.isLoading ? (
-        <Card className="space-y-3 p-6" style={{ borderRadius: 0 }}>
-          <div className="h-6 w-1/3 bg-border" />
-          <div className="h-4 w-2/3 bg-border" />
-          <div className="grid grid-cols-3 gap-4 pt-2">
-            <div className="h-16 bg-border" />
-            <div className="h-16 bg-border" />
-            <div className="h-16 bg-border" />
-          </div>
-        </Card>
-      ) : course.query.isError || !course.query.data ? (
-        <Card className="p-6" style={{ borderRadius: 0 }}>
+      {course.query.isError || !course.query.data ? (
+        <Card className="p-6">
           <p className="text-sm text-muted">
             {course.query.error?.message ?? 'Unable to load the course.'}
           </p>
@@ -105,7 +99,7 @@ export function AdminCurriculumPage() {
         />
       )}
 
-      <Card className="p-3" style={{ borderRadius: 0 }}>
+      <Card className="p-3">
         <div className="flex items-center gap-2 text-xs font-mono w-full">
           <span className="text-[10px] text-muted uppercase shrink-0">Publish state:</span>
           <select

@@ -5,8 +5,8 @@ import {
   Card,
   ErrorState,
   Input,
-  LoadingState,
   PageHeader,
+  TablePageSkeleton,
   toast,
 } from '@/shared/components';
 import { useAdminAnnouncements } from '../hooks/useAdminAnnouncements';
@@ -196,7 +196,7 @@ export function AdminAnnouncementsPage() {
       {query.isError ? (
         <ErrorState title="Could not load announcements" message="Please try again later." />
       ) : query.isLoading ? (
-        <LoadingState />
+        <TablePageSkeleton />
       ) : (
         <div className="announcements-admin-page__list">
           {query.data?.map((announcement) => (

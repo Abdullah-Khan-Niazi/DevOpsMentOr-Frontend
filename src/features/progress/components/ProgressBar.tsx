@@ -18,9 +18,9 @@ export function ProgressBar({ percentage, label, size = 'md' }: ProgressBarProps
       aria-label={label ?? 'Progress'}
       className="w-full"
     >
-      <div className={`${height} w-full overflow-hidden rounded-full bg-border`}>
+      <div className={`${height} w-full overflow-hidden rounded-sm bg-border`}>
         <div
-          className="h-full rounded-full bg-brand-600 transition-all duration-300"
+          className="h-full rounded-sm bg-brand-600 transition-all duration-300"
           style={{ width: `${clamped}%` }}
         />
       </div>

@@ -5,8 +5,8 @@ import {
   Card,
   ErrorState,
   Input,
-  LoadingState,
   PageHeader,
+  Skeleton,
   toast,
 } from '@/shared/components';
 import { useAdminEventAttendees, useAdminEvents } from '../hooks/useAdminEvents';
@@ -259,7 +259,16 @@ export function AdminEventsPage() {
           attendees.isError ? (
             <ErrorState title="Could not load attendees" message="Please try again later." />
           ) : attendees.isLoading ? (
-            <LoadingState />
+            <div className="space-y-2 py-2">
+              {Array.from({ length: 4 }, (_, i) => (
+                <div key={i} className="flex items-center justify-between py-2 border-b border-border/40">
+                  <Skeleton className="h-4 w-28 rounded-xs" />
+                  <Skeleton className="h-4 w-40 rounded-xs" />
+                  <Skeleton className="h-4 w-20 rounded-xs" />
+                  <Skeleton className="h-4 w-24 rounded-xs" />
+                </div>
+              ))}
+            </div>
           ) : attendees.data && attendees.data.data.length > 0 ? (
             <table className="events-admin-page__table">
               <thead>

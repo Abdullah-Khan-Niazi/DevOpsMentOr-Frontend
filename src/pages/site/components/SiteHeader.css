@@ -80,23 +80,27 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 0;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm, 6px);
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  transition: color var(--duration-fast) var(--ease-standard);
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
   white-space: nowrap;
 }
 
 .site-header__nav-item:hover,
 .site-header__nav-item:focus-visible {
-  color: var(--color-text-primary);
+  color: var(--ink);
+  background-color: color-mix(in srgb, var(--pearl-200) 65%, transparent);
 }
 
 .site-header__nav-item:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: 4px;
-  border-radius: var(--radius-xs);
+  outline: 2px solid var(--ink);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm, 6px);
 }
 
 .site-header__caret {
@@ -114,15 +118,18 @@
   top: calc(100% + var(--space-3));
   left: 50%;
   transform: translateX(-50%);
-  min-width: 280px;
-  background: var(--color-bg-overlay);
-  border: 1px solid var(--color-border-default);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-lg);
-  padding: var(--space-2);
+  min-width: 290px;
+  background: #FFFFFF;
+  border: 1px solid var(--paper-line);
+  border-radius: var(--radius-md, 8px);
+  box-shadow:
+    0 1px 2px rgba(20, 20, 15, 0.04),
+    0 4px 16px rgba(20, 20, 15, 0.08),
+    0 12px 32px rgba(20, 20, 15, 0.06);
+  padding: 6px;
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
+  gap: 2px;
   z-index: var(--z-overlay);
   animation: dropdown-appear var(--duration-fast) var(--ease-decelerate) forwards;
 }
@@ -141,20 +148,28 @@
 .site-header__dropdown-item {
   display: flex;
   flex-direction: column;
-  gap: var(--space-1);
-  padding: var(--space-3) var(--space-4);
-  border-radius: var(--radius-sm);
+  gap: 2px;
+  margin: 1px 2px;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm, 6px);
   text-decoration: none;
-  transition: background-color var(--duration-fast) var(--ease-standard);
+  transition:
+    background-color 140ms var(--ease-standard),
+    transform 140ms var(--ease-standard);
 }
 
 .site-header__dropdown-item:hover,
 .site-header__dropdown-item:focus-visible {
-  background-color: var(--color-bg-raised);
+  background-color: var(--pearl-200, #F3EFE6);
+}
+
+.site-header__dropdown-item:hover .site-header__dropdown-label,
+.site-header__dropdown-item:focus-visible .site-header__dropdown-label {
+  color: var(--ink);
 }
 
 .site-header__dropdown-item:focus-visible {
-  outline: 2px solid var(--color-accent-500);
+  outline: 2px solid var(--ink);
   outline-offset: -2px;
 }
 
@@ -200,6 +215,7 @@
 .site-header__signup {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   height: 36px;
   padding: 0 var(--space-4);
   background-color: var(--ink);
@@ -208,22 +224,38 @@
   font-size: var(--text-body-s);
   font-weight: 500;
   text-decoration: none;
-  border-radius: 0px !important;
-  border: 1px solid var(--ink);
-  transition: background-color 160ms var(--ease-standard), border-color 160ms var(--ease-standard), transform 160ms var(--ease-standard);
+  border-radius: var(--radius-sm, 6px);
+  border: 1px solid rgba(0, 0, 0, 0.35);
+  box-shadow:
+    0 1px 2px rgba(20, 20, 15, 0.12),
+    0 2px 4px rgba(20, 20, 15, 0.08),
+    0 4px 8px rgba(20, 20, 15, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition:
+    background-color 160ms var(--ease-standard),
+    border-color 160ms var(--ease-standard),
+    box-shadow 160ms var(--ease-standard),
+    transform 160ms var(--ease-standard);
 }
 
 .site-header__signup:hover {
-  background-color: var(--text-secondary);
-  border-color: var(--text-secondary);
-  color: #ffffff;
+  background-color: #262622;
+  border-color: #14140F;
+  color: #FFFFFF;
   transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(20, 20, 15, 0.14),
+    0 4px 8px rgba(20, 20, 15, 0.10),
+    0 8px 16px rgba(20, 20, 15, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
 }
 
 .site-header__signup:active {
-  background-color: var(--ink);
-  border-color: var(--ink);
+  background-color: #0c0c09;
   transform: translateY(0);
+  box-shadow:
+    0 1px 1px rgba(20, 20, 15, 0.10),
+    inset 0 1px 2px rgba(0, 0, 0, 0.28);
 }
 
 .site-header__signup:focus-visible {

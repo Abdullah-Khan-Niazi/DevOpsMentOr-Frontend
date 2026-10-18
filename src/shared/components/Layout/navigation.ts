@@ -180,7 +180,7 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
     });
     items.push({
       to: ROUTES.ORG_PROFESSORS,
-      label: 'Professors',
+      label: 'Students & Professors',
       icon: 'professors',
       section: 'Workspace',
     });
@@ -250,9 +250,21 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
   // ─── Professor / Faculty ──────────────────────────────────────────────────
   if (roles.has('professor')) {
     items.push({
+      to: ROUTES.ORG_DASHBOARD,
+      label: 'Dashboard',
+      icon: 'dashboard',
+      section: 'Workspace',
+    });
+    items.push({
       to: ROUTES.ORG_CLASSES,
       label: 'My cohorts',
       icon: 'classes',
+      section: 'Workspace',
+    });
+    items.push({
+      to: ROUTES.ORG_PROFESSORS,
+      label: 'Students & Professors',
+      icon: 'professors',
       section: 'Workspace',
     });
     items.push({
@@ -296,6 +308,12 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
 
   // ─── Org Student ──────────────────────────────────────────────────────────
   if (roles.has('org_student')) {
+    items.push({
+      to: ROUTES.DASHBOARD,
+      label: 'Dashboard',
+      icon: 'dashboard',
+      section: 'Workspace',
+    });
     items.push({
       to: ROUTES.STUDENT_MY_CLASS,
       label: 'My class',

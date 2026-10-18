@@ -5,9 +5,9 @@ import {
   Card,
   ErrorState,
   EmptyState,
-  LoadingState,
   PageHeader,
   TabRow,
+  TablePageSkeleton,
   toast,
 } from '@/shared/components';
 import { useAdminComments, useAdminReviews } from '../hooks/useAdminModeration';
@@ -155,7 +155,7 @@ export function AdminModerationPage() {
           {query.isError ? (
             <ErrorState title="Could not load reviews" message="Please try again later." />
           ) : query.isLoading ? (
-            <LoadingState />
+            <TablePageSkeleton />
           ) : query.data && query.data.data.length > 0 ? (
             <div className="moderation-admin-page__list">
               {query.data.data.map((review) => (
@@ -185,7 +185,7 @@ export function AdminModerationPage() {
       ) : commentsQuery.isError ? (
         <ErrorState title="Could not load comments" message="Please try again later." />
       ) : commentsQuery.isLoading ? (
-        <LoadingState />
+        <TablePageSkeleton />
       ) : commentsQuery.data && commentsQuery.data.data.length > 0 ? (
         <div className="moderation-admin-page__list">
           {commentsQuery.data.data.map((comment) => (

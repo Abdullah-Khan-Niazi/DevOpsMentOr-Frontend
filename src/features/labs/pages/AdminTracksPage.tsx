@@ -1,10 +1,21 @@
 import { useState, useMemo } from 'react';
-import { Button, Card, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
 import { useAdminTracks } from '../hooks';
 import { labsService } from '../services';
 import type { AdminTrackDto, CreateTrackPayload } from '../types';
+
+type SortColumn = 'trackName' | 'estimatedHours' | 'difficultyName' | 'isActive';
+type SortDirection = 'asc' | 'desc';
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+  return (
+    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  );
+}
 
 /** LAB-19/20/21: admin track management — create and edit ordered paths. */
 export function AdminTracksPage() {
@@ -13,6 +24,9 @@ export function AdminTracksPage() {
   const [editing, setEditing] = useState<AdminTrackDto | null>(null);
   const [draft, setDraft] = useState<CreateTrackPayload | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [sortCol, setSortCol] = useState<SortColumn>('trackName');
+  const [sortDir, setSortDir] = useState<SortDirection>('asc');
 
   const invalidate = (): void => {
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminLabs.tracks('all') });
@@ -63,6 +77,15 @@ export function AdminTracksPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const handleSort = (col: SortColumn) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+  };
+
   const filteredTracks = useMemo(() => {
     if (!data) return [];
     return data.filter((track) => {
@@ -76,6 +99,42 @@ export function AdminTracksPage() {
     });
   }, [data, search, statusFilter]);
 
+  const sortedTracks = useMemo(() => {
+    const list = [...filteredTracks];
+    list.sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      switch (sortCol) {
+        case 'trackName':
+          valA = a.trackName.toLowerCase();
+          valB = b.trackName.toLowerCase();
+          break;
+        case 'estimatedHours':
+          valA = a.estimatedHours;
+          valB = b.estimatedHours;
+          break;
+        case 'difficultyName':
+          valA = (a.difficultyName ?? '').toLowerCase();
+          valB = (b.difficultyName ?? '').toLowerCase();
+          break;
+        case 'isActive':
+          valA = a.isActive ? 1 : 0;
+          valB = b.isActive ? 1 : 0;
+          break;
+      }
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [filteredTracks, sortCol, sortDir]);
+
+  if (isLoading) {
+    return <TablePageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
@@ -87,16 +146,14 @@ export function AdminTracksPage() {
         }
       />
 
-      {isLoading ? (
-        <LoadingState />
-      ) : isError ? (
+      {isError ? (
         <ErrorState
           title="Could not load tracks"
           message={error.message}
           onRetry={() => void refetch()}
         />
       ) : (
-        <Card style={{ borderRadius: 0 }}>
+        <Card>
           {/* Single-line filter toolbar */}
           <div className="mb-4 flex items-center gap-1.5 w-full">
             <input
@@ -127,7 +184,6 @@ export function AdminTracksPage() {
                   setStatusFilter('all');
                 }}
                 className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-                style={{ borderRadius: 0 }}
               >
                 Reset
               </Button>
@@ -135,18 +191,38 @@ export function AdminTracksPage() {
           </div>
 
           <div className="w-full max-w-full overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono">
+            <table className="w-full text-left text-xs font-mono border-collapse">
               <thead>
                 <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
-                  <th className="px-3 py-2 font-medium">Track</th>
-                  <th className="px-3 py-2 font-medium">Hours</th>
-                  <th className="px-3 py-2 font-medium">Difficulty</th>
-                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('trackName')}
+                  >
+                    Track <SortIcon active={sortCol === 'trackName'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('estimatedHours')}
+                  >
+                    Hours <SortIcon active={sortCol === 'estimatedHours'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('difficultyName')}
+                  >
+                    Difficulty <SortIcon active={sortCol === 'difficultyName'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('isActive')}
+                  >
+                    Status <SortIcon active={sortCol === 'isActive'} direction={sortDir} />
+                  </th>
                   <th className="px-3 py-2 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredTracks.map((track) => (
+              <tbody className="divide-y divide-border/60">
+                {sortedTracks.map((track) => (
                   <tr key={track.trackId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
                     <td className="px-3 py-2.5">
                       <div className="font-semibold text-card-foreground">{track.trackName}</div>
@@ -160,7 +236,7 @@ export function AdminTracksPage() {
                       </span>
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-right">
-                      <Button variant="secondary" size="sm" onClick={() => openEdit(track)} style={{ borderRadius: 0 }}>
+                      <Button variant="secondary" size="sm" onClick={() => openEdit(track)}>
                         Edit
                       </Button>
                     </td>

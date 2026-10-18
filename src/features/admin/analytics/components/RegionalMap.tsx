@@ -65,29 +65,18 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
     : null;
 
   return (
-    <div className={`flex flex-col gap-4 w-full ${className}`}>
-      {/* Map Header with Real Geographic Choropleth status & Viewbox Switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 text-xs font-mono">
-        <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-none bg-accent animate-pulse" />
-          <span className="font-semibold text-card-foreground uppercase text-[11px]">
-            Regional Distribution
-          </span>
-        </div>
-
-        {/* Region Viewport Filters */}
-        <div className="flex items-center gap-1 border border-border p-0.5 bg-surface text-[11px]">
+    <div className={`flex flex-col gap-3 w-full ${className}`}>
+      {/* Region Viewport Filters */}
+      <div className="flex items-center justify-end w-full">
+        <div className="tab-switcher shrink-0">
           {(['ALL', 'ASIA', 'EUROPE', 'AMERICAS', 'OCEANIA'] as const).map((reg) => (
             <button
               key={reg}
               type="button"
               onClick={() => setSelectedRegion(reg)}
-              className={`px-2 py-0.5 transition-colors cursor-pointer ${
-                selectedRegion === reg
-                  ? 'bg-accent text-accent-foreground font-bold'
-                  : 'text-muted hover:text-card-foreground'
+              className={`tab-switcher__tab ${
+                selectedRegion === reg ? 'tab-switcher__tab--active' : ''
               }`}
-              style={{ borderRadius: 0 }}
             >
               {reg}
             </button>
@@ -96,10 +85,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
       </div>
 
       {/* Actual Vector World Map SVG Canvas */}
-      <div
-        className="relative w-full border border-border bg-surface/80 p-3 overflow-hidden select-none"
-        style={{ borderRadius: 0 }}
-      >
+      <div className="relative w-full border border-border bg-surface/80 p-3 overflow-hidden select-none rounded-md">
         <div
           className="relative w-full aspect-[784/458]"
           onMouseMove={(e) => {
@@ -209,7 +195,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
             <div
               className="absolute bg-surface border border-accent p-3 shadow-2xl font-mono text-xs z-30 pointer-events-none transition-all duration-75"
               style={{
-                borderRadius: 0,
+                
                 left: mouseCoords
                   ? mouseCoords.x > 480
                     ? `${Math.max(10, mouseCoords.x - 250)}px`
@@ -263,7 +249,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
           {/* Map Choropleth Legend (Lower Left Corner) */}
           <div
             className="absolute bottom-3 left-3 bg-surface/90 border border-border p-2 font-mono text-[10px] text-muted flex items-center gap-2"
-            style={{ borderRadius: 0 }}
+           
           >
             <span>Fewer Learners</span>
             <div className="flex items-center gap-0.5">
@@ -292,7 +278,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                   ? 'border-accent bg-accent/15 -translate-y-0.5'
                   : 'border-border bg-surface/40 hover:bg-surface/80 hover:border-card-foreground'
               }`}
-              style={{ borderRadius: 0 }}
+             
               onMouseEnter={() => setHoveredCode(code)}
               onMouseLeave={() => setHoveredCode(null)}
             >
@@ -300,7 +286,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                 <div className="flex items-center gap-1.5 min-w-0">
                   <span
                     className="px-1 py-0.5 border border-border bg-surface text-[10px] font-bold"
-                    style={{ borderRadius: 0 }}
+                   
                   >
                     {c.countryCode}
                   </span>

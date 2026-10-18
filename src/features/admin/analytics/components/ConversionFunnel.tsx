@@ -20,8 +20,7 @@ export function ConversionFunnel({ stages }: ConversionFunnelProps) {
           return (
             <div
               key={stage.stage}
-              className="relative flex flex-col justify-between p-3.5 border border-border bg-surface/50"
-              style={{ borderRadius: 0 }}
+              className="relative flex flex-col justify-between p-3.5 border border-border bg-surface/50 rounded-lg hover:border-[#B8B4A6] hover:shadow-xs transition-all duration-150 cursor-default select-none"
             >
               <div className="flex items-center justify-between">
                 <span className="text-[10px] font-mono uppercase tracking-wider text-muted">
@@ -40,10 +39,10 @@ export function ConversionFunnel({ stages }: ConversionFunnelProps) {
               </div>
 
               {/* Segmented Progress Indicator Bar */}
-              <div className="w-full h-1.5 bg-border-subtle mt-1 overflow-hidden" style={{ borderRadius: 0 }}>
+              <div className="w-full h-1.5 bg-border-subtle mt-1 overflow-hidden rounded-sm">
                 <div
-                  className="h-full bg-accent transition-all duration-300"
-                  style={{ width: `${stage.percentage}%`, borderRadius: 0 }}
+                  className="h-full bg-accent transition-all duration-300 rounded-sm"
+                  style={{ width: `${stage.percentage}%` }}
                 />
               </div>
             </div>

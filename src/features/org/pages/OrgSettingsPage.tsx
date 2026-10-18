@@ -2,9 +2,9 @@ import { useState } from 'react';
 import {
   Button,
   Card,
+  DetailFormSkeleton,
   ErrorState,
   Input,
-  LoadingState,
   PageHeader,
   toast,
 } from '@/shared/components';
@@ -147,12 +147,7 @@ export function OrgSettingsPage() {
   const { query, update, setEmailDomain } = useMyOrg();
 
   if (query.isLoading) {
-    return (
-      <div>
-        <PageHeader title="Settings" />
-        <LoadingState />
-      </div>
-    );
+    return <DetailFormSkeleton />;
   }
 
   if (query.isError || !query.data) {

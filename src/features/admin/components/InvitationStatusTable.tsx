@@ -1,4 +1,4 @@
-import { Button, EmptyState, LoadingState } from '@/shared/components';
+import { Button, EmptyState, Skeleton } from '@/shared/components';
 import type { PendingAdminInvite } from '@/features/auth/types';
 
 // InvitationStatusTable — pending platform-admin invitations with revoke
@@ -25,8 +25,15 @@ export function InvitationStatusTable({
 }: InvitationStatusTableProps) {
   if (isLoading) {
     return (
-      <div className="admin-table-card">
-        <LoadingState label="Loading invitations…" />
+      <div className="admin-table-card divide-y divide-border/60">
+        {Array.from({ length: 4 }, (_, i) => (
+          <div key={i} className="flex items-center justify-between px-3 py-3">
+            <Skeleton className="h-4 w-32 rounded-xs" />
+            <Skeleton className="h-4 w-44 rounded-xs" />
+            <Skeleton className="h-4 w-36 rounded-xs" />
+            <Skeleton className="h-7 w-16 rounded-xs" />
+          </div>
+        ))}
       </div>
     );
   }

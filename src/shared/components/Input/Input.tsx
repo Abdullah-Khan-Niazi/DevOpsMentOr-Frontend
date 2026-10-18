@@ -18,7 +18,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           <label htmlFor={inputId} className="input-label">
             {label}
             {props.required ? (
-              <span className="ml-1 font-bold text-red-500" aria-hidden="true">
+              <span className="text-signal ml-0.5" aria-hidden="true">
                 *
               </span>
             ) : null}

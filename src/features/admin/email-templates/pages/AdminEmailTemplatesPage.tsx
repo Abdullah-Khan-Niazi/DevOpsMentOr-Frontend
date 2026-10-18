@@ -5,9 +5,9 @@ import {
   Card,
   ErrorState,
   Input,
-  LoadingState,
   Modal,
   PageHeader,
+  TablePageSkeleton,
   toast,
 } from '@/shared/components';
 import { useAdminEmailTemplates } from '../hooks/useAdminEmailTemplates';
@@ -88,7 +88,7 @@ export function AdminEmailTemplatesPage() {
       {query.isError ? (
         <ErrorState title="Could not load templates" message="Please try again later." />
       ) : query.isLoading ? (
-        <LoadingState />
+        <TablePageSkeleton />
       ) : (
         <div className="email-templates-admin-page__list">
           {query.data?.map((template) => (

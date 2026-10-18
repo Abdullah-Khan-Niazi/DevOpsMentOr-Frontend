@@ -1,6 +1,6 @@
 import '../styles/analytics-admin.css';
 import { useState, useMemo } from 'react';
-import { Card, ErrorState, LoadingState, PageHeader } from '@/shared/components';
+import { Card, ErrorState, AnalyticsPageSkeleton, PageHeader } from '@/shared/components';
 import {
   ActivityLineChart,
   ContributionHeatmap,
@@ -79,71 +79,81 @@ export function AdminAnalyticsPage() {
   }
 
   if (overview.isLoading || trend.isLoading) {
-    return <LoadingState />;
+    return <AnalyticsPageSkeleton />;
   }
 
   // Derive dynamic sparkline heights from the trend slice
-  const getSliceLevels = (key: 'activeUsers' | 'newSignups' | 'courseCompletions'): number[] => {
-    if (!trend.data?.data || trend.data.data.length === 0) return [1, 2, 3, 2, 4];
-    const slice = trend.data.data.slice(-5).map((d) => d[key]);
+  const getSliceLevels = (
+    key: 'activeUsers' | 'newSignups' | 'courseCompletions' | 'pointsAwarded',
+    fallback: number[] = [2, 3, 4, 3, 4],
+  ): number[] => {
+    if (!trend.data?.data || trend.data.data.length === 0) return fallback;
+    const slice = trend.data.data.slice(-5).map((d) => Number(d[key] ?? 0));
     const max = Math.max(...slice, 1);
+    const min = Math.min(...slice);
+    if (max === min && max === 0) return fallback;
     return slice.map((v) => Math.min(5, Math.max(1, Math.round((v / max) * 5))));
   };
+
+  const subsVal = overview.data?.activeSubscriptions ?? 0;
+  const notifVal = overview.data?.notificationsSent7d ?? 0;
+  const reportsVal = overview.data?.pendingReports ?? 0;
+  const reviewsVal = overview.data?.newReviews7d ?? 0;
 
   const kpis = [
     {
       label: 'Active Users (7d)',
       value: overview.data?.activeUsers7d ?? 0,
-      spark: getSliceLevels('activeUsers'),
+      spark: getSliceLevels('activeUsers', [2, 3, 4, 3, 5]),
       context: 'Active learner accounts generating interaction records over the past 7 days.',
       subtext: 'Unique active learner sessions',
     },
     {
       label: 'New Signups (30d)',
       value: overview.data?.newSignups30d ?? 0,
-      spark: getSliceLevels('newSignups'),
+      spark: getSliceLevels('newSignups', [1, 2, 3, 4, 5]),
       context: 'New student and practitioner profiles created and verified during the past 30 days.',
       subtext: 'Verified account onboarding',
     },
     {
       label: 'Certifications (30d)',
       value: overview.data?.courseCompletions30d ?? 0,
-      spark: getSliceLevels('courseCompletions'),
+      spark: getSliceLevels('courseCompletions', [1, 2, 2, 3, 4]),
       context: 'Officially accredited course graduation certificates recorded in the last 30 days.',
       subtext: 'Accredited certificates issued',
     },
     {
       label: 'Points Awarded (7d)',
       value: overview.data?.pointsAwarded7d ?? 0,
-      spark: [2, 4, 5, 3, 4],
+      spark: getSliceLevels('pointsAwarded', [2, 3, 5, 4, 5]),
       context: 'Total gamified knowledge experience points accrued across lab exercises and quizzes.',
       subtext: 'Knowledge XP points earned',
     },
     {
       label: 'Active Subscriptions',
-      value: overview.data?.activeSubscriptions ?? 0,
-      spark: [3, 4, 4, 5, 5],
+      value: subsVal,
+      spark: [2, 3, 4, 4, Math.max(1, Math.min(5, Math.round(subsVal / 2) + 2))],
       context: 'Current unexpired recurring billing records across individual and enterprise plans.',
       subtext: 'Enterprise & Pro memberships',
     },
     {
       label: 'System Notifications (7d)',
-      value: overview.data?.notificationsSent7d ?? 0,
-      spark: [1, 3, 2, 4, 3],
+      value: notifVal,
+      spark: [1, 2, 4, 3, Math.max(1, Math.min(5, Math.round(notifVal / 3) + 1))],
       context: 'Operational alerts, verification emails, and achievement messages dispatched.',
       subtext: 'Alerts & emails dispatched',
     },
     {
       label: 'Pending Moderation',
-      value: overview.data?.pendingReports ?? 0,
-      spark: [1, 1, 2, 1, 0],
+      value: reportsVal,
+      spark: [1, 2, 1, Math.max(1, Math.min(3, reportsVal)), Math.max(0, Math.min(5, reportsVal))],
       context: 'Open user and content violation reports awaiting administrative resolution.',
       subtext: 'Flagged reports in queue',
     },
     {
       label: 'Learner Reviews (7d)',
-      value: overview.data?.newReviews7d ?? 0,
-      spark: [2, 3, 4, 3, 4],
+      value: reviewsVal,
+      spark: [2, 3, 3, 4, Math.max(1, Math.min(5, Math.round(reviewsVal / 2) + 2))],
       context: 'Curriculum evaluation ratings and written module reviews submitted.',
       subtext: 'Course ratings & feedback',
     },
@@ -160,19 +170,15 @@ export function AdminAnalyticsPage() {
 
         {/* Global Live Sync Indicator & Range Switcher */}
         <div className="flex items-center gap-3">
-
-          <div className="flex items-center gap-1 border border-border p-0.5 bg-surface font-mono text-xs">
+          <div className="tab-switcher">
             {TREND_RANGES.map((val) => (
               <button
                 key={val}
                 type="button"
                 onClick={() => setDays(val)}
-                className={`px-2.5 py-1 transition-colors cursor-pointer ${
-                  days === val
-                    ? 'bg-accent text-accent-foreground font-bold'
-                    : 'text-muted hover:text-card-foreground'
+                className={`tab-switcher__tab ${
+                  days === val ? 'tab-switcher__tab--active' : ''
                 }`}
-                style={{ borderRadius: 0 }}
               >
                 {val}D
               </button>
@@ -190,9 +196,9 @@ export function AdminAnalyticsPage() {
 
       {/* Live Concurrent Session Telemetry Strip */}
       {sessionStats && (
-        <Card className="p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs" style={{ borderRadius: 0 }}>
+        <Card className="p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
           <div className="flex items-center gap-3">
-            <span className="w-2 h-2 bg-signal animate-pulse rounded-none" />
+            <span className="w-2 h-2 bg-signal animate-pulse rounded-full shrink-0 inline-block" />
             <span className="text-muted text-[10px] uppercase">CONCURRENT LEARNERS ONLINE:</span>
             <span className="font-bold text-card-foreground text-sm">
               {sessionStats.currentlyActiveUsers} LEARNERS ACTIVE
@@ -254,7 +260,7 @@ export function AdminAnalyticsPage() {
       />
 
       {/* Primary Visual Centerpiece: Platform Activity Trajectory Line Chart */}
-      <Card className="p-5 flex flex-col gap-4" style={{ borderRadius: 0 }}>
+      <Card className="p-5 flex flex-col gap-4">
         <ActivityLineChart
           data={lineChartData}
           height={280}
@@ -265,7 +271,7 @@ export function AdminAnalyticsPage() {
       </Card>
 
       {/* Multi-Metric Contribution & Activity Heatmap (5 modes: Activity, Logins, Labs, Signups, Orgs) */}
-      <Card className="p-5 flex flex-col gap-3" style={{ borderRadius: 0 }}>
+      <Card className="p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
@@ -287,7 +293,7 @@ export function AdminAnalyticsPage() {
       {/* Conversion Funnel & Subscription Tiers (Hatched Pie Chart) */}
       <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
         {/* Left: Stepped Fluid Conversion Funnel */}
-        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden">
           <div>
             <div className="mb-2">
               <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
@@ -310,7 +316,7 @@ export function AdminAnalyticsPage() {
         </Card>
 
         {/* Right: Subscription Tiers Hatched Pie Chart */}
-        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden">
           <div>
             <div className="flex items-center justify-between mb-2">
               <div>
@@ -334,7 +340,7 @@ export function AdminAnalyticsPage() {
       </div>
 
       {/* Real Vector Geographic Choropleth Map (180 Countries, Darker for more users) */}
-      <Card className="p-5 flex flex-col gap-3" style={{ borderRadius: 0 }}>
+      <Card className="p-5 flex flex-col gap-3">
         <div className="flex items-center justify-between">
           <div>
             <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
@@ -349,7 +355,7 @@ export function AdminAnalyticsPage() {
       {/* Dual Deep Dive Columns: 24-Hour Traffic Curve (PKT) & Container Sandbox Infrastructure Telemetry */}
       <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
         {/* Peak Activity Traffic Density Curve in PKT (Day / 7D / Month) */}
-        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden">
           <div>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
               <h2 className="text-[11px] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
@@ -360,7 +366,7 @@ export function AdminAnalyticsPage() {
 
               <div className="flex flex-wrap items-center gap-1.5">
                 {/* Time Horizon Selector (Day / Last 7D / Month) */}
-                <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[9px] font-mono shrink-0">
+                <div className="tab-switcher">
                   {(
                     [
                       { key: 'day', label: 'Day' },
@@ -372,12 +378,9 @@ export function AdminAnalyticsPage() {
                       key={w.key}
                       type="button"
                       onClick={() => setTrafficWindow(w.key)}
-                      className={`px-1.5 py-0.5 transition-colors cursor-pointer ${
-                        trafficWindow === w.key
-                          ? 'bg-accent text-accent-foreground font-bold'
-                          : 'text-muted hover:text-card-foreground'
+                      className={`tab-switcher__tab ${
+                        trafficWindow === w.key ? 'tab-switcher__tab--active' : ''
                       }`}
-                      style={{ borderRadius: 0 }}
                     >
                       {w.label}
                     </button>
@@ -407,7 +410,7 @@ export function AdminAnalyticsPage() {
         </Card>
 
         {/* Container Sandbox Compute & Pod Lifecycle Telemetry */}
-        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+        <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden">
           <div>
             <div className="flex items-center justify-between mb-4">
               <div>
@@ -418,7 +421,7 @@ export function AdminAnalyticsPage() {
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2 text-xs font-mono">
-              <div className="p-3 border border-border bg-surface/50" style={{ borderRadius: 0 }}>
+              <div className="p-3 border border-border bg-surface/50">
                 <span className="text-muted block text-[10px] uppercase">Active Pods</span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.activeInstances ?? 0}
@@ -428,7 +431,7 @@ export function AdminAnalyticsPage() {
                 </span>
               </div>
 
-              <div className="p-3 border border-border bg-surface/50" style={{ borderRadius: 0 }}>
+              <div className="p-3 border border-border bg-surface/50">
                 <span className="text-muted block text-[10px] uppercase">Compute Allocated</span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.totalRamGb ?? 0} GB
@@ -438,7 +441,7 @@ export function AdminAnalyticsPage() {
                 </span>
               </div>
 
-              <div className="p-3 border border-border bg-surface/50" style={{ borderRadius: 0 }}>
+              <div className="p-3 border border-border bg-surface/50">
                 <span className="text-muted block text-[10px] uppercase">Avg Session Duration</span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.avgDurationMinutes ?? 0}m
@@ -446,7 +449,7 @@ export function AdminAnalyticsPage() {
                 <span className="text-[10px] text-muted block mt-0.5">Average pod active time</span>
               </div>
 
-              <div className="p-3 border border-border bg-surface/50" style={{ borderRadius: 0 }}>
+              <div className="p-3 border border-border bg-surface/50">
                 <span className="text-muted block text-[10px] uppercase">Lifecycle Buffer</span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.terminatedInstances ?? 0}
@@ -477,8 +480,7 @@ function AnalyticsKpiCard({
   return (
     <Card
       tabIndex={0}
-      className="group relative flex flex-col justify-between p-3.5 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-0.5 hover:border-accent hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer select-none"
-      style={{ borderRadius: 0 }}
+      className="group relative flex flex-col justify-between p-3.5 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-1 hover:border-ink hover:shadow-md hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer select-none"
     >
       <div className="flex items-start justify-between">
         <span className="text-[10px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors truncate">

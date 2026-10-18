@@ -105,7 +105,7 @@ export function OrgMemberDetailDrawer({
 
       {/* Slide-over panel */}
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-none">
+        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
           <div className="space-y-6">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border pb-4">
@@ -118,7 +118,7 @@ export function OrgMemberDetailDrawer({
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-muted hover:text-card-foreground transition-colors"
+                className="p-1.5 text-muted hover:text-card-foreground transition-colors rounded-sm cursor-pointer"
                 aria-label="Close drawer"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -144,7 +144,7 @@ export function OrgMemberDetailDrawer({
                 {/* Member Identity Card */}
                 <Card className="p-4 space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center border border-border bg-surface text-base font-bold text-card-foreground shrink-0 font-mono">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-surface text-base font-bold text-card-foreground shrink-0 font-mono">
                       {(member.fullName || member.username || 'U').charAt(0).toUpperCase()}
                     </div>
                     <div className="min-w-0">
@@ -215,11 +215,11 @@ export function OrgMemberDetailDrawer({
                   </div>
 
                   {member.classes.length === 0 ? (
-                    <div className="border border-border/80 bg-surface/40 p-4 text-center text-xs text-muted font-mono">
+                    <div className="border border-border/80 bg-surface/40 p-4 text-center text-xs text-muted font-mono rounded-md">
                       No cohort assignments recorded for this member.
                     </div>
                   ) : (
-                    <div className="border border-border divide-y divide-border/60">
+                    <div className="border border-border divide-y divide-border/60 rounded-md overflow-hidden">
                       {member.classes.map((cls) => (
                         <div
                           key={cls.classId}
@@ -244,7 +244,7 @@ export function OrgMemberDetailDrawer({
                                 type="button"
                                 disabled={withdrawingCohortId === cls.classId}
                                 onClick={() => handleWithdrawFromCohort(cls.classId)}
-                                className="text-[11px] text-destructive hover:underline font-mono"
+                                className="text-[11px] text-destructive hover:underline font-mono cursor-pointer"
                               >
                                 {withdrawingCohortId === cls.classId ? 'Removing…' : 'Withdraw'}
                               </button>
@@ -257,7 +257,7 @@ export function OrgMemberDetailDrawer({
 
                   {/* Add / Assign Cohort Selector */}
                   {member.role !== 'org_admin' && unassignedCohorts.length > 0 && (
-                    <div className="border border-dashed border-border p-3 space-y-2 bg-surface/20">
+                    <div className="border border-dashed border-border p-3 space-y-2 bg-surface/20 rounded-md">
                       <p className="text-xs font-semibold text-card-foreground">
                         {member.role === 'professor'
                           ? 'Assign to Another Cohort'

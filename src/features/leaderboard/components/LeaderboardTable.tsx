@@ -1,6 +1,7 @@
-// SCR-F7-02/03/04 shared ranked table. Rows are normalized by the page so the
-// same table renders global, country, season, class and org standings. The
-// session user's own row gets an accent-glow highlight (no status pills).
+import { useState, useMemo } from 'react';
+
+// SCR-F7-02/03/04 shared ranked table with column sorting.
+// The session user's own row gets an accent-glow highlight (no status pills).
 
 export interface LeaderboardRow {
   userId: number;
@@ -8,6 +9,17 @@ export interface LeaderboardRow {
   name: string;
   points: number;
   countryCode?: string | null;
+}
+
+type SortColumn = 'rank' | 'name' | 'points' | 'country';
+type SortDirection = 'asc' | 'desc';
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+  return (
+    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  );
 }
 
 interface LeaderboardTableProps {
@@ -36,6 +48,50 @@ export function LeaderboardTable({
   emptyTitle,
   emptyDescription,
 }: LeaderboardTableProps) {
+  const [sortCol, setSortCol] = useState<SortColumn>('rank');
+  const [sortDir, setSortDir] = useState<SortDirection>('asc');
+
+  const handleSort = (col: SortColumn) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortCol(col);
+      setSortDir(col === 'points' ? 'desc' : 'asc');
+    }
+  };
+
+  const sortedRows = useMemo(() => {
+    const list = [...rows];
+    list.sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      switch (sortCol) {
+        case 'rank':
+          valA = a.rank ?? 999999;
+          valB = b.rank ?? 999999;
+          break;
+        case 'name':
+          valA = a.name.toLowerCase();
+          valB = b.name.toLowerCase();
+          break;
+        case 'points':
+          valA = a.points;
+          valB = b.points;
+          break;
+        case 'country':
+          valA = a.countryCode ?? '';
+          valB = b.countryCode ?? '';
+          break;
+      }
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [rows, sortCol, sortDir]);
+
   if (isLoading) {
     return (
       <div className="leaderboard-table-wrap" aria-hidden="true">
@@ -60,14 +116,34 @@ export function LeaderboardTable({
       <table className="leaderboard-table">
         <thead>
           <tr>
-            <th className="leaderboard-table__rank">Rank</th>
-            <th>Learner</th>
-            <th className="leaderboard-table__num">Points</th>
-            <th>Country</th>
+            <th
+              className="leaderboard-table__rank cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('rank')}
+            >
+              Rank <SortIcon active={sortCol === 'rank'} direction={sortDir} />
+            </th>
+            <th
+              className="cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('name')}
+            >
+              Learner <SortIcon active={sortCol === 'name'} direction={sortDir} />
+            </th>
+            <th
+              className="leaderboard-table__num cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('points')}
+            >
+              Points <SortIcon active={sortCol === 'points'} direction={sortDir} />
+            </th>
+            <th
+              className="cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('country')}
+            >
+              Country <SortIcon active={sortCol === 'country'} direction={sortDir} />
+            </th>
           </tr>
         </thead>
         <tbody>
-          {rows.map((row) => {
+          {sortedRows.map((row) => {
             const isViewer = row.userId === viewerUserId;
             const flag = row.countryCode ? countryFlags?.get(row.countryCode) : undefined;
             return (

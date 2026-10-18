@@ -3,6 +3,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import {
   Button,
   Card,
+  DetailFormSkeleton,
   ErrorState,
   PageHeader,
   Pagination,
@@ -103,13 +104,7 @@ export function AdminUserDetailPage() {
   }
 
   if (query.isLoading || !query.data) {
-    return (
-      <div className="space-y-4">
-        <div className="h-8 w-64 animate-pulse rounded-md bg-secondary" />
-        <div className="h-10 w-full animate-pulse rounded-md bg-secondary" />
-        <div className="h-64 animate-pulse rounded-lg bg-secondary" />
-      </div>
-    );
+    return <DetailFormSkeleton />;
   }
 
   const user = query.data;

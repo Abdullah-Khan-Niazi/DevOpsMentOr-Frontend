@@ -30,6 +30,13 @@ export const useAuthStore = create<AuthState>()(
           refreshToken: null,
           isAuthenticated: false,
         });
+        try {
+          const channel = new BroadcastChannel('auth_sync');
+          channel.postMessage({ type: 'LOGOUT' });
+          channel.close();
+        } catch {
+          // BroadcastChannel unavailable in this environment
+        }
       },
     }),
     {

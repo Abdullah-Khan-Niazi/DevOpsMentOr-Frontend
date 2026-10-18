@@ -10,7 +10,7 @@ export function ReportsList({ reports }: ReportsListProps) {
       {reports.map((report) => (
         <li
           key={report.id}
-          className="flex items-center justify-between rounded-lg border border-border bg-card px-4 py-3"
+          className="flex items-center justify-between rounded-md border border-border bg-card px-4 py-3"
         >
           <div>
             <h3 className="font-medium text-card-foreground">{report.title}</h3>
@@ -18,7 +18,7 @@ export function ReportsList({ reports }: ReportsListProps) {
               Updated {new Date(report.updatedAt).toLocaleString()}
             </p>
           </div>
-          <span className="rounded-full bg-secondary px-2.5 py-1 text-xs capitalize text-muted-foreground">
+          <span className="rounded-sm bg-secondary px-2.5 py-1 text-xs capitalize text-muted">
             {report.status}
           </span>
         </li>

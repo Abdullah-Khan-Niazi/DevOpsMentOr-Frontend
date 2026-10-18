@@ -5,9 +5,9 @@ import {
   Card,
   ErrorState,
   EmptyState,
-  LoadingState,
   PageHeader,
   Pagination,
+  TablePageSkeleton,
   toast,
 } from '@/shared/components';
 import { useAdminFiles } from '../hooks/useAdminFiles';
@@ -92,7 +92,7 @@ export function AdminFilesPage() {
       {query.isError ? (
         <ErrorState title="Could not load files" message="Please try again later." />
       ) : query.isLoading ? (
-        <LoadingState />
+        <TablePageSkeleton />
       ) : query.data && query.data.data.length > 0 ? (
         <>
           <div className="files-admin-page__list">

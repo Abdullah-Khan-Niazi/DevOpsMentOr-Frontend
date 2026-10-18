@@ -11,6 +11,22 @@ export { Spinner } from './Spinner';
 export { EmptyState } from './EmptyState';
 export { ErrorState } from './ErrorState';
 export { LoadingState } from './LoadingState';
+export {
+  Skeleton,
+  AdminDashboardSkeleton,
+  AnalyticsPageSkeleton,
+  OrgDashboardSkeleton,
+  TablePageSkeleton,
+  DetailFormSkeleton,
+  GridCardsSkeleton,
+  DashboardSkeleton,
+  CurriculumSkeleton,
+  LabWorkspaceSkeleton,
+  HomePageSkeleton,
+  PublicPageSkeleton,
+  AuthPageSkeleton,
+  type SkeletonProps,
+} from './Skeleton';
 export { PageHeader, type BreadcrumbItem, type PageHeaderProps } from './PageHeader';
 export { AppShell, AdminShell, AppChrome, buildNavItems, type AppNavItem } from './Layout';
 export { Pagination, type PaginationProps } from './Pagination';

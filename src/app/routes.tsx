@@ -1,7 +1,22 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Route, Routes, Navigate } from 'react-router-dom';
 import { ProtectedRoute } from '@/features/auth';
-import { AdminShell, AppShell, LoadingState } from '@/shared/components';
+import {
+  AdminShell,
+  AppShell,
+  AdminDashboardSkeleton,
+  AnalyticsPageSkeleton,
+  OrgDashboardSkeleton,
+  TablePageSkeleton,
+  DetailFormSkeleton,
+  GridCardsSkeleton,
+  DashboardSkeleton,
+  CurriculumSkeleton,
+  LabWorkspaceSkeleton,
+  HomePageSkeleton,
+  PublicPageSkeleton,
+  AuthPageSkeleton,
+} from '@/shared/components';
 import { PermissionRouteGuard } from '@/shared/guards';
 import { ROUTES } from '@/shared/constants';
 
@@ -148,8 +163,8 @@ const InstructorToolsPage = lazy(() => import('@/pages/site/InstructorToolsPage'
 const PrivacyPage = lazy(() => import('@/pages/site/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/site/TermsPage'));
 
-function LazyPage({ children }: { children: ReactNode }) {
-  return <Suspense fallback={<LoadingState />}>{children}</Suspense>;
+function LazyPage({ children, skeleton }: { children: ReactNode; skeleton?: ReactNode }) {
+  return <Suspense fallback={skeleton ?? <PublicPageSkeleton />}>{children}</Suspense>;
 }
 
 export function AppRoutes() {
@@ -158,7 +173,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.LOGIN}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <LoginPage />
           </LazyPage>
         }
@@ -167,7 +182,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.SIGNUP}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <SignupPage />
           </LazyPage>
         }
@@ -176,7 +191,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.VERIFY_EMAIL}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <VerifyEmailPage />
           </LazyPage>
         }
@@ -185,7 +200,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ONBOARDING}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <OnboardingPage />
           </LazyPage>
         }
@@ -194,7 +209,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.FORGOT_PASSWORD}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <ForgotPasswordPage />
           </LazyPage>
         }
@@ -203,7 +218,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.RESET_PASSWORD}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <ResetPasswordPage />
           </LazyPage>
         }
@@ -212,7 +227,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.OAUTH_CALLBACK}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<AuthPageSkeleton />}>
             <OAuthCallbackPage />
           </LazyPage>
         }
@@ -303,7 +318,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.DASHBOARD}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<DashboardSkeleton />}>
                 <DashboardPage />
               </LazyPage>
             }
@@ -311,7 +326,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.USERS}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <UsersPage />
               </LazyPage>
             }
@@ -319,7 +334,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.ROLES}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <RolesPage />
               </LazyPage>
             }
@@ -327,7 +342,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.REPORTS}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <ReportsPage />
               </LazyPage>
             }
@@ -335,7 +350,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.SETTINGS}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <SettingsPage />
               </LazyPage>
             }
@@ -343,7 +358,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.PREFERENCES}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <PreferencesPage />
               </LazyPage>
             }
@@ -351,7 +366,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.SECURITY}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <SecurityPage />
               </LazyPage>
             }
@@ -359,7 +374,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.LOGIN_HISTORY}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <LoginHistoryPage />
               </LazyPage>
             }
@@ -367,7 +382,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.API_TOKENS}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <ApiTokensPage />
               </LazyPage>
             }
@@ -375,7 +390,7 @@ export function AppRoutes() {
           <Route
             path={ROUTES.PROFILE_EDIT}
             element={
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <EditProfilePage />
               </LazyPage>
             }
@@ -384,7 +399,7 @@ export function AppRoutes() {
             path={ROUTES.STUDENT_MY_CLASS}
             element={
               <PermissionRouteGuard permission="enrollment:read">
-                <LazyPage>
+                <LazyPage skeleton={<CurriculumSkeleton />}>
                   <StudentMyClassPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -394,8 +409,8 @@ export function AppRoutes() {
           <Route
             path={ROUTES.LEARN}
             element={
-              <PermissionRouteGuard permission="curriculum:read">
-                <LazyPage>
+              <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
+                <LazyPage skeleton={<CurriculumSkeleton />}>
                   <LearnCurriculumPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -404,8 +419,8 @@ export function AppRoutes() {
           <Route
             path={ROUTES.LEARN_LESSON}
             element={
-              <PermissionRouteGuard permission="curriculum:read">
-                <LazyPage>
+              <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
+                <LazyPage skeleton={<CurriculumSkeleton />}>
                   <LearnLessonPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -416,7 +431,7 @@ export function AppRoutes() {
             path={ROUTES.LEARN_QUIZ}
             element={
               <PermissionRouteGuard permission="progress.self.read">
-                <LazyPage>
+                <LazyPage skeleton={<CurriculumSkeleton />}>
                   <QuizAttemptPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -427,7 +442,7 @@ export function AppRoutes() {
             path={ROUTES.PROFESSOR_CLASS_PROGRESS}
             element={
               <PermissionRouteGuard permission="progress.class.read">
-                <LazyPage>
+                <LazyPage skeleton={<TablePageSkeleton />}>
                   <ProfessorClassProgressPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -438,7 +453,7 @@ export function AppRoutes() {
             path={ROUTES.LABS}
             element={
               <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage>
+                <LazyPage skeleton={<LabWorkspaceSkeleton />}>
                   <LabsPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -448,7 +463,7 @@ export function AppRoutes() {
             path={ROUTES.LAB_DETAIL}
             element={
               <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage>
+                <LazyPage skeleton={<LabWorkspaceSkeleton />}>
                   <LabDetailPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -458,7 +473,7 @@ export function AppRoutes() {
             path={ROUTES.SHERLOCK_DIAGNOSTIC}
             element={
               <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage>
+                <LazyPage skeleton={<LabWorkspaceSkeleton />}>
                   <SherlockLabPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -468,7 +483,7 @@ export function AppRoutes() {
             path={ROUTES.TRACKS}
             element={
               <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage>
+                <LazyPage skeleton={<CurriculumSkeleton />}>
                   <TracksPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -581,7 +596,7 @@ export function AppRoutes() {
           path={ROUTES.LAB_SESSION}
           element={
             <PermissionRouteGuard permission="labs:instance:read">
-              <LazyPage>
+              <LazyPage skeleton={<LabWorkspaceSkeleton />}>
                 <LabSessionPage />
               </LazyPage>
             </PermissionRouteGuard>
@@ -595,7 +610,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.admin.access">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<AdminDashboardSkeleton />}>
                 <AdminDashboardPage />
               </LazyPage>
             </AdminShell>
@@ -607,7 +622,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.users.read">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminUsersPage />
               </LazyPage>
             </AdminShell>
@@ -619,7 +634,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.users.read">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminUserDetailPage />
               </LazyPage>
             </AdminShell>
@@ -632,7 +647,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.progress.read">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminUserProgressPage />
               </LazyPage>
             </AdminShell>
@@ -644,7 +659,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.settings.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminSettingsPage />
               </LazyPage>
             </AdminShell>
@@ -656,7 +671,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.admin.access">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminAuditLogsPage />
               </LazyPage>
             </AdminShell>
@@ -669,7 +684,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.content.moderate">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminAnnouncementsPage />
               </LazyPage>
             </AdminShell>
@@ -682,7 +697,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.admin.access">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminEventsPage />
               </LazyPage>
             </AdminShell>
@@ -695,7 +710,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.content.moderate">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminModerationPage />
               </LazyPage>
             </AdminShell>
@@ -708,7 +723,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.content.moderate">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminReportsPage />
               </LazyPage>
             </AdminShell>
@@ -721,7 +736,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.admin.access">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminEmailTemplatesPage />
               </LazyPage>
             </AdminShell>
@@ -734,7 +749,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.analytics.read">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<AnalyticsPageSkeleton />}>
                 <AdminAnalyticsPage />
               </LazyPage>
             </AdminShell>
@@ -747,7 +762,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.admin.access">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminFilesPage />
               </LazyPage>
             </AdminShell>
@@ -760,7 +775,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.billing.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminBillingPage />
               </LazyPage>
             </AdminShell>
@@ -772,7 +787,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.admin.invite">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminPlatformAdminsPage />
               </LazyPage>
             </AdminShell>
@@ -785,7 +800,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.labs.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminLabsPage />
               </LazyPage>
             </AdminShell>
@@ -797,7 +812,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.labs.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminTracksPage />
               </LazyPage>
             </AdminShell>
@@ -809,7 +824,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.labs.admin">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminLabInstancesPage />
               </LazyPage>
             </AdminShell>
@@ -823,7 +838,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.organizations.read">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminOrganizationsPage />
               </LazyPage>
             </AdminShell>
@@ -835,7 +850,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.organizations.read">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminOrganizationDetailPage />
               </LazyPage>
             </AdminShell>
@@ -849,7 +864,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<CurriculumSkeleton />}>
                 <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
@@ -861,7 +876,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminModuleEditorPage />
               </LazyPage>
             </AdminShell>
@@ -873,7 +888,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminLessonEditorPage />
               </LazyPage>
             </AdminShell>
@@ -885,7 +900,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminQuizBuilderPage />
               </LazyPage>
             </AdminShell>
@@ -898,9 +913,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_DASHBOARD}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<OrgDashboardSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<OrgDashboardSkeleton />}>
                   <OrgDashboardPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -912,9 +927,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_CLASSES}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<TablePageSkeleton />}>
                   <OrgClassesPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -926,9 +941,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_CLASS_NEW}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<DetailFormSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<DetailFormSkeleton />}>
                   <OrgClassCreatePage />
                 </LazyPage>
               </OrgAdminShell>
@@ -940,9 +955,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_CLASS_DETAIL}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<TablePageSkeleton />}>
                   <OrgClassDetailPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -954,9 +969,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_CLASS_ROSTER}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<TablePageSkeleton />}>
                   <OrgClassRosterPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -968,9 +983,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_CLASS_INVITE}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<DetailFormSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<DetailFormSkeleton />}>
                   <OrgClassInvitePage />
                 </LazyPage>
               </OrgAdminShell>
@@ -982,9 +997,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_PROFESSORS}
         element={
           <PermissionRouteGuard permission="org:professors:invite">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<TablePageSkeleton />}>
                   <OrgProfessorsPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -996,9 +1011,9 @@ export function AppRoutes() {
         path={ROUTES.ORG_SETTINGS}
         element={
           <PermissionRouteGuard permission="org:read">
-            <Suspense fallback={<LoadingState />}>
+            <Suspense fallback={<DetailFormSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<DetailFormSkeleton />}>
                   <OrgSettingsPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -1010,10 +1025,10 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_STUDENTS_PROGRESS}
         element={
-          <PermissionRouteGuard permission="progress.org.read">
-            <Suspense fallback={<LoadingState />}>
+          <PermissionRouteGuard permission={['progress.org.read', 'progress.class.read']}>
+            <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
-                <LazyPage>
+                <LazyPage skeleton={<TablePageSkeleton />}>
                   <OrgStudentsProgressPage />
                 </LazyPage>
               </OrgAdminShell>
@@ -1028,7 +1043,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.gamification.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
                 <AdminGamificationPage />
               </LazyPage>
             </AdminShell>
@@ -1040,7 +1055,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.gamification.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<GridCardsSkeleton />}>
                 <AdminBadgesPage />
               </LazyPage>
             </AdminShell>
@@ -1052,7 +1067,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.gamification.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<GridCardsSkeleton />}>
                 <AdminAchievementsPage />
               </LazyPage>
             </AdminShell>
@@ -1064,7 +1079,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.gamification.manage">
             <AdminShell>
-              <LazyPage>
+              <LazyPage skeleton={<TablePageSkeleton />}>
                 <AdminSeasonsPage />
               </LazyPage>
             </AdminShell>
@@ -1075,7 +1090,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.HOME}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<HomePageSkeleton />}>
             <HomePage />
           </LazyPage>
         }
@@ -1084,7 +1099,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.HOW_IT_WORKS}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <HowItWorksPage />
           </LazyPage>
         }
@@ -1092,7 +1107,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.CURRICULUM}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <CurriculumPage />
           </LazyPage>
         }
@@ -1100,7 +1115,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.PRICING}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <PricingPage />
           </LazyPage>
         }
@@ -1108,7 +1123,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ABOUT}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <AboutPage />
           </LazyPage>
         }
@@ -1116,7 +1131,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.CONTACT}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <ContactPage />
           </LazyPage>
         }
@@ -1124,7 +1139,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.FOR_INSTITUTIONS}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <ForInstitutionsPage />
           </LazyPage>
         }
@@ -1132,7 +1147,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.SECURITY_TRUST}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <SecurityTrustPage />
           </LazyPage>
         }
@@ -1140,7 +1155,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.FAQ}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <FaqPage />
           </LazyPage>
         }
@@ -1148,7 +1163,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.CAREERS}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <CareersPage />
           </LazyPage>
         }
@@ -1156,7 +1171,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.DOCUMENTATION}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <DocumentationPage />
           </LazyPage>
         }
@@ -1172,7 +1187,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.INSTRUCTOR_TOOLS}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <InstructorToolsPage />
           </LazyPage>
         }
@@ -1180,7 +1195,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.PRIVACY}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <PrivacyPage />
           </LazyPage>
         }
@@ -1188,7 +1203,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.TERMS}
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <TermsPage />
           </LazyPage>
         }
@@ -1196,7 +1211,7 @@ export function AppRoutes() {
       <Route
         path="*"
         element={
-          <LazyPage>
+          <LazyPage skeleton={<PublicPageSkeleton />}>
             <NotFoundPage />
           </LazyPage>
         }

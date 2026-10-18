@@ -11,7 +11,9 @@ interface NewCohortDrawerProps {
 
 export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerProps) {
   const [className, setClassName] = useState('');
+  const [nameError, setNameError] = useState<string | null>(null);
   const [slug, setSlug] = useState('');
+  const [slugError, setSlugError] = useState<string | null>(null);
   const [description, setDescription] = useState('');
   const [maxStudents, setMaxStudents] = useState('50');
   const [selectedProfessorId, setSelectedProfessorId] = useState<string>('');
@@ -25,7 +27,9 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
   useEffect(() => {
     if (isOpen) {
       setClassName('');
+      setNameError(null);
       setSlug('');
+      setSlugError(null);
       setDescription('');
       setMaxStudents('50');
       setSelectedProfessorId('');
@@ -47,20 +51,33 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
 
   const handleNameChange = (name: string) => {
     setClassName(name);
+    if (nameError) setNameError(null);
     const autoSlug = name
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/^-|-$/g, '');
     if (slug === '' || slug === autoSlug.slice(0, -1)) {
       setSlug(autoSlug);
+      if (slugError) setSlugError(null);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setNameError(null);
+    setSlugError(null);
+
     const trimmedName = className.trim();
+    let hasError = false;
     if (!trimmedName) {
-      toast.error('Cohort name is required.');
+      setNameError('Cohort name is required.');
+      hasError = true;
+    }
+    if (!slug.trim()) {
+      setSlugError('Identifier / slug is required.');
+      hasError = true;
+    }
+    if (hasError) {
       return;
     }
 
@@ -102,7 +119,7 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
 
       {/* Slide-over panel */}
       <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-none">
+        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
@@ -111,7 +128,7 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
               <button
                 type="button"
                 onClick={onClose}
-                className="p-1.5 text-muted hover:text-card-foreground transition-colors"
+                className="p-1.5 text-muted hover:text-card-foreground transition-colors rounded-sm cursor-pointer"
                 aria-label="Close drawer"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -130,6 +147,7 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
                 label="Cohort / Class Name"
                 placeholder="e.g. CS 101 — Intro to Systems"
                 value={className}
+                error={nameError ?? undefined}
                 onChange={(e) => handleNameChange(e.target.value)}
                 required
               />
@@ -138,7 +156,11 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
                 label="Identifier / Slug"
                 placeholder="e.g. cs-101-systems"
                 value={slug}
-                onChange={(e) => setSlug(e.target.value)}
+                error={slugError ?? undefined}
+                onChange={(e) => {
+                  setSlug(e.target.value);
+                  if (slugError) setSlugError(null);
+                }}
                 required
               />
 

@@ -14,9 +14,8 @@ import { buildNavItems, type AppNavItem } from './navigation';
 import './AppChrome.css';
 
 // Unified authenticated chrome — responsive layout:
-//   mobile (< 768px): top navigation header + slide-out drawer + 100% width content area
-//   desktop & tablet (>= 768px): Gemini-style collapsible sidebar with clean dock grouping
-// Zero intrusive banners, zero redundant switcher clutter.
+//   mobile & tablet (< 1024px): top navigation header + dedicated slide-out drawer
+//   desktop (>= 1024px): Gemini-style collapsible sidebar with instant dock tooltips
 
 interface AppChromeProps {
   navItems?: AppNavItem[];
@@ -38,6 +37,7 @@ function userInitials(fullName?: string | null): string {
 export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: AppChromeProps) {
   const { isSidebarOpen, toggleSidebar } = useUiStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hoveredTooltip, setHoveredTooltip] = useState<{ text: string; top: number } | null>(null);
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
   const { data: announcements } = usePublishedAnnouncements();
@@ -62,7 +62,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
 
   return (
     <div className="app-chrome">
-      {/* ─── Mobile Top Header (Screens < 768px only) ────────────────────────── */}
+      {/* ─── Mobile Top Header (Screens < 1024px) ────────────────────────────── */}
       <header className="app-chrome__mobile-header">
         <Link to={logoTo} className="app-chrome__mobile-logo" aria-label="DevOpsMentor home">
           <SiteLogo />
@@ -79,12 +79,29 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
             aria-label={mobileMenuOpen ? 'Close navigation' : 'Open navigation'}
             aria-expanded={mobileMenuOpen}
           >
-            <Icon name={mobileMenuOpen ? 'x' : 'menu'} />
+            <span
+              className={cn(
+                'app-chrome__hamburger-bar',
+                mobileMenuOpen && 'app-chrome__hamburger-bar--open-1',
+              )}
+            />
+            <span
+              className={cn(
+                'app-chrome__hamburger-bar',
+                mobileMenuOpen && 'app-chrome__hamburger-bar--open-2',
+              )}
+            />
+            <span
+              className={cn(
+                'app-chrome__hamburger-bar',
+                mobileMenuOpen && 'app-chrome__hamburger-bar--open-3',
+              )}
+            />
           </button>
         </div>
       </header>
 
-      {/* ─── Mobile Drawer (Screens < 768px only) ───────────────────────────── */}
+      {/* ─── Mobile Drawer (Screens < 1024px) ─────────────────────────────────── */}
       {mobileMenuOpen && (
         <div className="app-chrome__mobile-drawer-root">
           <div
@@ -104,7 +121,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
               </Link>
               <button
                 type="button"
-                className="app-chrome__collapse"
+                className="app-chrome__mobile-close"
                 onClick={() => setMobileMenuOpen(false)}
                 aria-label="Close navigation"
               >
@@ -140,7 +157,6 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                 to={profileTo}
                 onClick={() => setMobileMenuOpen(false)}
                 className="app-chrome__profile"
-                title={profileName}
               >
                 <span className="app-chrome__avatar" aria-hidden="true">
                   {userInitials(profileName)}
@@ -155,7 +171,6 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                   logout.mutate();
                 }}
                 disabled={logout.isPending}
-                title={logout.isPending ? 'Logging out…' : 'Log out'}
                 aria-label="Log out"
               >
                 <Icon name="logout" className="app-chrome__logout-icon" />
@@ -165,7 +180,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
         </div>
       )}
 
-      {/* ─── Desktop & Tablet Sidebar (Screens >= 768px only) ───────────────── */}
+      {/* ─── Desktop Sidebar (Screens >= 1024px) ──────────────────────────────── */}
       <aside className={cn('app-chrome__sidebar', isSidebarOpen && 'app-chrome__sidebar--open')}>
         <div className="app-chrome__top">
           <Link to={logoTo} className="app-chrome__logo" aria-label="DevOpsMentor home">
@@ -175,7 +190,10 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
           <button
             type="button"
             className="app-chrome__collapse"
-            onClick={toggleSidebar}
+            onClick={() => {
+              setHoveredTooltip(null);
+              toggleSidebar();
+            }}
             aria-expanded={isSidebarOpen}
             aria-label={isSidebarOpen ? 'Collapse sidebar' : 'Expand sidebar'}
           >
@@ -198,10 +216,17 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                 <NavLink
                   key={item.to}
                   to={item.to}
-                  title={isSidebarOpen ? undefined : item.label}
                   className={({ isActive }) =>
                     cn('app-chrome__nav-item', isActive && 'app-chrome__nav-item--active')
                   }
+                  onMouseEnter={(e) => {
+                    if (!isSidebarOpen) {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      setHoveredTooltip({ text: item.label, top: rect.top + rect.height / 2 });
+                    }
+                  }}
+                  onMouseLeave={() => setHoveredTooltip(null)}
+                  onClick={() => setHoveredTooltip(null)}
                 >
                   <Icon name={item.icon} className="app-chrome__nav-icon" />
                   <span className="app-chrome__nav-label">{item.label}</span>
@@ -212,7 +237,18 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
         </nav>
 
         <div className="app-chrome__footer">
-          <Link to={profileTo} className="app-chrome__profile" title={profileName}>
+          <Link
+            to={profileTo}
+            className="app-chrome__profile"
+            onMouseEnter={(e) => {
+              if (!isSidebarOpen) {
+                const rect = e.currentTarget.getBoundingClientRect();
+                setHoveredTooltip({ text: profileName, top: rect.top + rect.height / 2 });
+              }
+            }}
+            onMouseLeave={() => setHoveredTooltip(null)}
+            onClick={() => setHoveredTooltip(null)}
+          >
             <span className="app-chrome__avatar" aria-hidden="true">
               {userInitials(profileName)}
             </span>
@@ -221,20 +257,33 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
             ) : null}
           </Link>
 
-          {isSidebarOpen ? (
+          {isSidebarOpen && (
             <button
               type="button"
               className="app-chrome__logout"
-              onClick={() => logout.mutate()}
+              onClick={() => {
+                setHoveredTooltip(null);
+                logout.mutate();
+              }}
               disabled={logout.isPending}
-              title={logout.isPending ? 'Logging out…' : 'Log out'}
               aria-label="Log out"
             >
               <Icon name="logout" className="app-chrome__logout-icon" />
             </button>
-          ) : null}
+          )}
         </div>
       </aside>
+
+      {/* Floating portal-level tooltip for collapsed sidebar dock */}
+      {!isSidebarOpen && hoveredTooltip && (
+        <div
+          className="app-chrome__floating-portal-tooltip"
+          style={{ top: `${hoveredTooltip.top}px` }}
+          role="tooltip"
+        >
+          {hoveredTooltip.text}
+        </div>
+      )}
 
       {/* ─── Main Content Shell ────────────────────────────────────────────── */}
       <main className="app-chrome__main">

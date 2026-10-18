@@ -1,5 +1,17 @@
+import { useState, useMemo } from 'react';
 import { Button } from '@/shared/components';
 import type { InvitationDto } from '../types';
+
+type SortColumn = 'inviteeEmail' | 'status' | 'createdAt' | 'expiresAt';
+type SortDirection = 'asc' | 'desc';
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+  return (
+    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  );
+}
 
 interface InvitationStatusTableProps {
   invitations: InvitationDto[];
@@ -16,7 +28,7 @@ const STATUS_LABEL: Record<InvitationDto['status'], string> = {
   expired: 'Expired',
 };
 
-/** F3 contract §10: invitation status table with per-row resend action. */
+/** F3 contract §10: invitation status table with column sorting and per-row resend action. */
 export function InvitationStatusTable({
   invitations,
   isLoading,
@@ -24,6 +36,50 @@ export function InvitationStatusTable({
   canResend = false,
   onResend,
 }: InvitationStatusTableProps) {
+  const [sortCol, setSortCol] = useState<SortColumn>('createdAt');
+  const [sortDir, setSortDir] = useState<SortDirection>('desc');
+
+  const handleSort = (col: SortColumn) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+  };
+
+  const sortedInvitations = useMemo(() => {
+    const list = [...invitations];
+    list.sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      switch (sortCol) {
+        case 'inviteeEmail':
+          valA = a.inviteeEmail.toLowerCase();
+          valB = b.inviteeEmail.toLowerCase();
+          break;
+        case 'status':
+          valA = a.status;
+          valB = b.status;
+          break;
+        case 'createdAt':
+          valA = new Date(a.createdAt).getTime();
+          valB = new Date(b.createdAt).getTime();
+          break;
+        case 'expiresAt':
+          valA = new Date(a.expiresAt).getTime();
+          valB = new Date(b.expiresAt).getTime();
+          break;
+      }
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [invitations, sortCol, sortDir]);
+
   if (isLoading) {
     return <div className="py-8 text-center text-xs font-mono text-muted">Loading invitations…</div>;
   }
@@ -41,15 +97,35 @@ export function InvitationStatusTable({
       <table className="w-full text-left text-sm border-collapse">
         <thead>
           <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
-            <th className="px-4 py-3 font-medium">Invitee Email</th>
-            <th className="px-4 py-3 font-medium">Status</th>
-            <th className="px-4 py-3 font-medium">Sent On</th>
-            <th className="px-4 py-3 font-medium">Expires On</th>
+            <th
+              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('inviteeEmail')}
+            >
+              Invitee Email <SortIcon active={sortCol === 'inviteeEmail'} direction={sortDir} />
+            </th>
+            <th
+              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('status')}
+            >
+              Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+            </th>
+            <th
+              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('createdAt')}
+            >
+              Sent On <SortIcon active={sortCol === 'createdAt'} direction={sortDir} />
+            </th>
+            <th
+              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
+              onClick={() => handleSort('expiresAt')}
+            >
+              Expires On <SortIcon active={sortCol === 'expiresAt'} direction={sortDir} />
+            </th>
             {canResend ? <th className="px-4 py-3 font-medium text-right">Actions</th> : null}
           </tr>
         </thead>
         <tbody className="divide-y divide-border/60">
-          {invitations.map((invite) => (
+          {sortedInvitations.map((invite) => (
             <tr
               key={invite.invitationId}
               className="hover:bg-surface/80 transition-colors"
@@ -59,7 +135,7 @@ export function InvitationStatusTable({
               </td>
               <td className="px-4 py-3.5">
                 <span
-                  className={`inline-block px-2 py-0.5 border text-[10px] font-mono font-semibold uppercase tracking-wider ${
+                  className={`inline-block px-2 py-0.5 border text-[10px] font-mono font-semibold uppercase tracking-wider rounded-sm ${
                     invite.status === 'accepted'
                       ? 'border-border-strong bg-accent/10 text-card-foreground'
                       : invite.status === 'pending'

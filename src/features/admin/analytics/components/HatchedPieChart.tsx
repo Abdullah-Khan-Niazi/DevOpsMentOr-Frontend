@@ -254,7 +254,7 @@ export function HatchedPieChart({
                     ? 'border-accent bg-accent/10 text-card-foreground'
                     : 'border-transparent hover:bg-surface/60 text-muted'
                 }`}
-                style={{ borderRadius: 0 }}
+               
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
               >
@@ -264,7 +264,7 @@ export function HatchedPieChart({
                     width="14"
                     height="14"
                     className="shrink-0 text-card-foreground border border-border"
-                    style={{ borderRadius: 0 }}
+                   
                   >
                     <rect
                       width="14"

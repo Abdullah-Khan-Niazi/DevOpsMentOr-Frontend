@@ -16,17 +16,17 @@ interface ContinueLearningCardProps {
 export function ContinueLearningCard({ pointer, isLoading }: ContinueLearningCardProps) {
   if (isLoading) {
     return (
-      <div className="space-y-3 rounded-lg border border-border bg-card p-5">
-        <div className="h-4 w-1/3 rounded bg-border" />
+      <div className="space-y-3 rounded-md border border-border bg-card p-5">
+        <div className="h-4 w-1/3 rounded-sm bg-border" />
         <div className="h-8 rounded-md bg-border" />
-        <div className="h-2 w-full rounded-full bg-border" />
+        <div className="h-2 w-full rounded-sm bg-border" />
       </div>
     );
   }
 
   if (!pointer) {
     return (
-      <div className="rounded-lg border border-border bg-card p-5">
+      <div className="rounded-md border border-border bg-card p-5">
         <h2 className="text-sm font-semibold text-card-foreground">Continue learning</h2>
         <p className="mt-2 text-sm text-muted-foreground">Start your journey: open Module 1.</p>
         <Link
@@ -40,7 +40,7 @@ export function ContinueLearningCard({ pointer, isLoading }: ContinueLearningCar
   }
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-md border border-border bg-card p-5">
       <h2 className="text-sm font-semibold text-card-foreground">Continue learning</h2>
       <p className="mt-2 text-xs uppercase tracking-wide text-muted">{pointer.moduleTitle}</p>
       <p className="mt-1 text-base font-medium text-card-foreground">{pointer.lessonTitle}</p>

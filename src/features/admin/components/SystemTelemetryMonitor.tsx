@@ -324,7 +324,7 @@ export function SystemTelemetryMonitor({
   ]);
 
   return (
-    <Card className={`p-5 flex flex-col gap-4 font-mono text-xs w-full min-w-0 max-w-full overflow-hidden ${className}`} style={{ borderRadius: 0 }}>
+    <Card className={`p-5 flex flex-col gap-4 font-mono text-xs w-full min-w-0 max-w-full overflow-hidden ${className}`}>
       {/* Top Header & Multilevel Tab Switcher — Single Horizontal Level */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
@@ -336,7 +336,7 @@ export function SystemTelemetryMonitor({
         {/* Multilevel Tab Switcher (Placed from the right, on same level) */}
         <div className="flex flex-wrap items-center gap-2 ml-auto">
           {/* Level 1: Subsystem Selector */}
-          <div className="flex flex-wrap items-center gap-0.5 border border-border p-0.5 bg-surface text-[10px] sm:text-[11px] max-w-full">
+          <div className="tab-switcher max-w-full overflow-x-auto">
             {(
               [
                 { key: 'overview', label: 'Telemetry Overview' },
@@ -350,12 +350,9 @@ export function SystemTelemetryMonitor({
                 key={tab.key}
                 type="button"
                 onClick={() => setActiveTab(tab.key)}
-                className={`px-1.5 sm:px-2.5 py-1 transition-all cursor-pointer whitespace-nowrap active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent ${
-                  activeTab === tab.key
-                    ? 'bg-accent text-accent-foreground font-bold'
-                    : 'text-muted hover:text-card-foreground hover:bg-surface-hover/80'
+                className={`tab-switcher__tab ${
+                  activeTab === tab.key ? 'tab-switcher__tab--active' : ''
                 }`}
-                style={{ borderRadius: 0 }}
               >
                 {tab.label}
               </button>
@@ -363,7 +360,7 @@ export function SystemTelemetryMonitor({
           </div>
 
           {/* Level 2: Time Horizon Selector (Placed from the right) */}
-          <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[9px] sm:text-[10px] font-mono shrink-0">
+          <div className="tab-switcher shrink-0">
             {(
               [
                 { key: '1h', label: '1H LIVE' },
@@ -375,12 +372,9 @@ export function SystemTelemetryMonitor({
                 key={t.key}
                 type="button"
                 onClick={() => setTimeRange(t.key)}
-                className={`px-1.5 sm:px-2 py-0.5 transition-all cursor-pointer active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent ${
-                  timeRange === t.key
-                    ? 'bg-accent text-accent-foreground font-bold'
-                    : 'text-muted hover:text-card-foreground hover:bg-surface-hover/80'
+                className={`tab-switcher__tab ${
+                  timeRange === t.key ? 'tab-switcher__tab--active' : ''
                 }`}
-                style={{ borderRadius: 0 }}
               >
                 {t.label}
               </button>
@@ -391,39 +385,39 @@ export function SystemTelemetryMonitor({
 
       <div className="flex flex-col gap-3 w-full min-w-0">
         {/* Tab-Specific Contextual Strip */}
-        <div className="flex flex-wrap items-center justify-between gap-3 p-2 bg-surface/60 border border-border text-[10px] sm:text-[11px] w-full min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-3 px-3.5 py-2.5 bg-surface/60 border border-border rounded-md text-[10px] sm:text-[11px] w-full min-w-0">
           {activeTab === 'overview' && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 w-full min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
                 <span className="text-muted uppercase text-[10px]">Active Pods:</span>
                 <span className="font-bold text-card-foreground">{activeContainers} Running</span>
                 <span className="text-[10px] text-muted">({pendingPods} queued)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
                 <span className="text-muted uppercase text-[10px]">Pod RAM:</span>
                 <span className="font-bold text-card-foreground">{allocatedRamGb} GB</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
                 <span className="text-muted uppercase text-[10px]">CPU Cores:</span>
                 <span className="font-bold text-card-foreground">{host?.cpuCores ?? 8} Cores</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
                 <span className="text-muted uppercase text-[10px]">1m/5m/15m Load:</span>
                 <span className="font-bold text-card-foreground">
                   {host?.loadAvg1m ?? '0.49'} / {host?.loadAvg5m ?? '0.93'} / {host?.loadAvg15m ?? '1.07'}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
                 <span className="text-muted uppercase text-[10px]">Host CPU:</span>
                 <span className="font-bold text-card-foreground">{cpuPercent}%</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
                 <span className="text-muted uppercase text-[10px]">Host RAM:</span>
                 <span className="font-bold text-card-foreground">{memoryPercent}% ({host?.totalMemoryMb ? (host.totalMemoryMb - (host.freeMemoryMb ?? 0)).toLocaleString() : '5,194'} MB)</span>
               </div>
@@ -433,23 +427,23 @@ export function SystemTelemetryMonitor({
           {activeTab === 'compute' && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 w-full min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
                 <span className="text-muted uppercase text-[10px]">Active Pods:</span>
                 <span className="font-bold text-card-foreground">{activeContainers} Running</span>
                 <span className="text-[10px] text-muted">({pendingPods} queued)</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
                 <span className="text-muted uppercase text-[10px]">Allocated RAM:</span>
                 <span className="font-bold text-card-foreground">{allocatedRamGb} GB</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
                 <span className="text-muted uppercase text-[10px]">Allocated Cores:</span>
                 <span className="font-bold text-card-foreground">{allocatedCpuCores} Cores</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: 'var(--color-primary, #14140F)' }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--color-primary, #14140F)' }} />
                 <span className="text-muted uppercase text-[10px]">Cluster Health:</span>
                 <span className="font-bold text-card-foreground">{k8sStatus}</span>
               </div>
@@ -467,29 +461,29 @@ export function SystemTelemetryMonitor({
           {activeTab === 'hardware' && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 w-full min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
                 <span className="text-muted uppercase text-[10px]">CPU Cores:</span>
                 <span className="font-bold text-card-foreground">{host?.cpuCores ?? 8} Cores</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
                 <span className="text-muted uppercase text-[10px]">1m/5m/15m Load:</span>
                 <span className="font-bold text-card-foreground">
                   {host?.loadAvg1m ?? '0.49'} / {host?.loadAvg5m ?? '0.93'} / {host?.loadAvg15m ?? '1.07'}
                 </span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
                 <span className="text-muted uppercase text-[10px]">Total RAM:</span>
                 <span className="font-bold text-card-foreground">{host?.totalMemoryMb ? host.totalMemoryMb.toLocaleString() : '7,814'} MB</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
                 <span className="text-muted uppercase text-[10px]">Free RAM:</span>
                 <span className="font-bold text-card-foreground">{host?.freeMemoryMb ? host.freeMemoryMb.toLocaleString() : '2,620'} MB</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.processHeap }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.processHeap }} />
                 <span className="text-muted uppercase text-[10px]">Process Heap:</span>
                 <span className="font-bold text-card-foreground">{host?.heapUsedMb ?? 54} MB</span>
               </div>
@@ -499,27 +493,27 @@ export function SystemTelemetryMonitor({
           {activeTab === 'infrastructure' && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 w-full min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.redisMemory }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.redisMemory }} />
                 <span className="text-muted uppercase text-[10px]">Redis Used:</span>
                 <span className="font-bold text-card-foreground">{cache?.usedMemoryHuman ?? '1.36 MB'} / {cache?.maxMemoryHuman ?? '25 MB'}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.cacheHitRatio }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.cacheHitRatio }} />
                 <span className="text-muted uppercase text-[10px]">Cache Hit Ratio:</span>
                 <span className="font-bold text-card-foreground">{cache?.hitRatioPercent ?? 31}%</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.mysqlQueries }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.mysqlQueries }} />
                 <span className="text-muted uppercase text-[10px]">DB Queries:</span>
                 <span className="font-bold text-card-foreground">{db?.totalQueries ? db.totalQueries.toLocaleString() : '60,745'} queries</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
                 <span className="text-muted uppercase text-[10px]">Active DB Pools:</span>
                 <span className="font-bold text-card-foreground">{db?.activeConnections ?? 10}</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.aiTokens }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.aiTokens }} />
                 <span className="text-muted uppercase text-[10px]">Active AI Chats:</span>
                 <span className="font-bold text-card-foreground">{ai?.activeConversations ?? 0}</span>
               </div>
@@ -529,22 +523,22 @@ export function SystemTelemetryMonitor({
           {activeTab === 'traffic' && (
             <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 w-full min-w-0">
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.webRequests }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.webRequests }} />
                 <span className="text-muted uppercase text-[10px]">Throughput:</span>
                 <span className="font-bold text-card-foreground">{request?.avgRequestsPerMinute ?? 3.4} req/min</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
                 <span className="text-muted uppercase text-[10px]">Daily Volume:</span>
                 <span className="font-bold text-card-foreground">{request?.dailyRequests ? request.dailyRequests.toLocaleString() : '203'} reqs</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }} />
                 <span className="text-muted uppercase text-[10px]">Online Learners:</span>
                 <span className="font-bold text-card-foreground">{session?.currentlyActiveUsers ?? 1} Active</span>
               </div>
               <div className="flex items-center gap-1.5">
-                <span className="w-2 h-2 rounded-none" style={{ backgroundColor: TELEMETRY_TOKENS.activeSessions }} />
+                <span className="w-2 h-2 rounded-full" style={{ backgroundColor: TELEMETRY_TOKENS.activeSessions }} />
                 <span className="text-muted uppercase text-[10px]">Average Stay:</span>
                 <span className="font-bold text-card-foreground">{session?.avgStayDurationMinutes ?? 284}m</span>
               </div>
@@ -567,12 +561,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.overview_cpu ? `${TELEMETRY_TOKENS.hostCpu}cc` : undefined,
                   backgroundColor: seriesToggles.overview_cpu ? `${TELEMETRY_TOKENS.hostCpu}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
                 <span>Host CPU (%)</span>
               </button>
 
@@ -585,12 +579,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.overview_memory ? `${TELEMETRY_TOKENS.hostRam}cc` : undefined,
                   backgroundColor: seriesToggles.overview_memory ? `${TELEMETRY_TOKENS.hostRam}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
                 <span>Host RAM (%)</span>
               </button>
 
@@ -603,12 +597,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.overview_containers ? `${TELEMETRY_TOKENS.activePods}cc` : undefined,
                   backgroundColor: seriesToggles.overview_containers ? `${TELEMETRY_TOKENS.activePods}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
                 <span>Lab Pods</span>
               </button>
 
@@ -621,12 +615,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.overview_requests ? `${TELEMETRY_TOKENS.webRequests}cc` : undefined,
                   backgroundColor: seriesToggles.overview_requests ? `${TELEMETRY_TOKENS.webRequests}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.webRequests }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.webRequests }} />
                 <span>Web Traffic (req/m)</span>
               </button>
 
@@ -676,7 +670,7 @@ export function SystemTelemetryMonitor({
                       if (!active || !payload || payload.length === 0) return null;
                       const item = payload[0]?.payload as UnifiedPlotPoint | undefined;
                       return (
-                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 0 }}>
+                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 'var(--radius-md, 8px)' }}>
                           <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[10px]">{timeRange === '7d' ? '7D Hourly' : timeRange === '24h' ? '24H' : 'Live'}</span>
@@ -726,12 +720,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.compute_containers ? `${TELEMETRY_TOKENS.activePods}cc` : undefined,
                   backgroundColor: seriesToggles.compute_containers ? `${TELEMETRY_TOKENS.activePods}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.activePods }} />
                 <span>Running Lab Pods</span>
               </button>
 
@@ -744,12 +738,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.compute_pending ? `${TELEMETRY_TOKENS.queuedPods}cc` : undefined,
                   backgroundColor: seriesToggles.compute_pending ? `${TELEMETRY_TOKENS.queuedPods}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
                 <span>Queued / Pending Pods</span>
               </button>
 
@@ -762,12 +756,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.compute_ramGb ? `${TELEMETRY_TOKENS.usedRam}cc` : undefined,
                   backgroundColor: seriesToggles.compute_ramGb ? `${TELEMETRY_TOKENS.usedRam}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
                 <span>Allocated RAM (GB)</span>
               </button>
 
@@ -780,12 +774,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.compute_cores ? `${TELEMETRY_TOKENS.allocatedCores}cc` : undefined,
                   backgroundColor: seriesToggles.compute_cores ? `${TELEMETRY_TOKENS.allocatedCores}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }} />
                 <span>Allocated Cores</span>
               </button>
 
@@ -834,7 +828,7 @@ export function SystemTelemetryMonitor({
                       if (!active || !payload || payload.length === 0) return null;
                       const item = payload[0]?.payload as UnifiedPlotPoint | undefined;
                       return (
-                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 0 }}>
+                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 'var(--radius-md, 8px)' }}>
                           <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-card-foreground font-bold uppercase text-[10px]">Sandbox Pods</span>
@@ -888,12 +882,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.hardware_cpu ? `${TELEMETRY_TOKENS.hostCpu}cc` : undefined,
                   backgroundColor: seriesToggles.hardware_cpu ? `${TELEMETRY_TOKENS.hostCpu}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.hostCpu }} />
                 <span>CPU Load (%)</span>
               </button>
 
@@ -906,12 +900,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.hardware_cpuMax ? `${TELEMETRY_TOKENS.cpuMaxSpike}cc` : undefined,
                   backgroundColor: seriesToggles.hardware_cpuMax ? `${TELEMETRY_TOKENS.cpuMaxSpike}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.cpuMaxSpike }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.cpuMaxSpike }} />
                 <span>CPU Peak Max (%)</span>
               </button>
 
@@ -924,12 +918,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.hardware_memory ? `${TELEMETRY_TOKENS.hostRam}cc` : undefined,
                   backgroundColor: seriesToggles.hardware_memory ? `${TELEMETRY_TOKENS.hostRam}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.hostRam }} />
                 <span>Host RAM (%)</span>
               </button>
 
@@ -942,12 +936,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.hardware_memMb ? `${TELEMETRY_TOKENS.usedRam}cc` : undefined,
                   backgroundColor: seriesToggles.hardware_memMb ? `${TELEMETRY_TOKENS.usedRam}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }} />
                 <span>Used RAM (MB)</span>
               </button>
 
@@ -960,12 +954,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.hardware_heapMb ? `${TELEMETRY_TOKENS.processHeap}cc` : undefined,
                   backgroundColor: seriesToggles.hardware_heapMb ? `${TELEMETRY_TOKENS.processHeap}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.processHeap }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.processHeap }} />
                 <span>Process Heap (MB)</span>
               </button>
 
@@ -1015,7 +1009,7 @@ export function SystemTelemetryMonitor({
                       if (!active || !payload || payload.length === 0) return null;
                       const item = payload[0]?.payload as UnifiedPlotPoint | undefined;
                       return (
-                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 0 }}>
+                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 'var(--radius-md, 8px)' }}>
                           <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[10px]">Host Hardware</span>
@@ -1074,12 +1068,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.infra_cacheMem ? `${TELEMETRY_TOKENS.redisMemory}cc` : undefined,
                   backgroundColor: seriesToggles.infra_cacheMem ? `${TELEMETRY_TOKENS.redisMemory}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.redisMemory }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.redisMemory }} />
                 <span>Redis Memory (%)</span>
               </button>
 
@@ -1092,12 +1086,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.infra_hitRatio ? `${TELEMETRY_TOKENS.cacheHitRatio}cc` : undefined,
                   backgroundColor: seriesToggles.infra_hitRatio ? `${TELEMETRY_TOKENS.cacheHitRatio}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.cacheHitRatio }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.cacheHitRatio }} />
                 <span>Cache Hit Ratio (%)</span>
               </button>
 
@@ -1110,12 +1104,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.infra_dbQueries ? `${TELEMETRY_TOKENS.mysqlQueries}cc` : undefined,
                   backgroundColor: seriesToggles.infra_dbQueries ? `${TELEMETRY_TOKENS.mysqlQueries}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.mysqlQueries }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.mysqlQueries }} />
                 <span>MySQL Queries / min</span>
               </button>
 
@@ -1128,12 +1122,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.infra_aiTokens ? `${TELEMETRY_TOKENS.aiTokens}cc` : undefined,
                   backgroundColor: seriesToggles.infra_aiTokens ? `${TELEMETRY_TOKENS.aiTokens}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.aiTokens }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.aiTokens }} />
                 <span>AI Tokens / min</span>
               </button>
 
@@ -1183,7 +1177,7 @@ export function SystemTelemetryMonitor({
                       if (!active || !payload || payload.length === 0) return null;
                       const item = payload[0]?.payload as UnifiedPlotPoint | undefined;
                       return (
-                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 0 }}>
+                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 'var(--radius-md, 8px)' }}>
                           <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[10px]">Infrastructure</span>
@@ -1237,12 +1231,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.traffic_reqAvg ? `${TELEMETRY_TOKENS.webRequests}cc` : undefined,
                   backgroundColor: seriesToggles.traffic_reqAvg ? `${TELEMETRY_TOKENS.webRequests}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.webRequests }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.webRequests }} />
                 <span>Avg Requests (req/m)</span>
               </button>
 
@@ -1255,12 +1249,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.traffic_reqMax ? `${TELEMETRY_TOKENS.queuedPods}cc` : undefined,
                   backgroundColor: seriesToggles.traffic_reqMax ? `${TELEMETRY_TOKENS.queuedPods}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.queuedPods }} />
                 <span>Spike Peak Max (req/m)</span>
               </button>
 
@@ -1273,12 +1267,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.traffic_learners ? `${TELEMETRY_TOKENS.activeLearners}cc` : undefined,
                   backgroundColor: seriesToggles.traffic_learners ? `${TELEMETRY_TOKENS.activeLearners}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }} />
                 <span>Active Learners Online</span>
               </button>
 
@@ -1291,12 +1285,12 @@ export function SystemTelemetryMonitor({
                     : 'border-border/40 text-muted opacity-40 line-through'
                 }`}
                 style={{
-                  borderRadius: 0,
+                  borderRadius: '4px',
                   borderColor: seriesToggles.traffic_sessions ? `${TELEMETRY_TOKENS.activeSessions}cc` : undefined,
                   backgroundColor: seriesToggles.traffic_sessions ? `${TELEMETRY_TOKENS.activeSessions}1a` : undefined,
                 }}
               >
-                <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.activeSessions }} />
+                <span className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.activeSessions }} />
                 <span>Active Sessions</span>
               </button>
 
@@ -1345,7 +1339,7 @@ export function SystemTelemetryMonitor({
                       if (!active || !payload || payload.length === 0) return null;
                       const item = payload[0]?.payload as UnifiedPlotPoint | undefined;
                       return (
-                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 0 }}>
+                        <div className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30" style={{ borderRadius: 'var(--radius-md, 8px)' }}>
                           <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-info uppercase text-[10px]">Web Traffic</span>

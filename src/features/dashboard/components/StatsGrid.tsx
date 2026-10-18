@@ -15,7 +15,7 @@ export function StatsGrid({ stats }: StatsGridProps) {
   return (
     <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
       {items.map((item) => (
-        <div key={item.label} className="rounded-lg border border-border bg-card p-4">
+        <div key={item.label} className="rounded-lg border border-border bg-card p-4 transition-all duration-150 hover:border-[#B8B4A6] hover:shadow-xs hover:-translate-y-0.5 cursor-default select-none">
           <p className="text-sm text-muted">{item.label}</p>
           <p className="mt-2 text-2xl font-semibold capitalize text-card-foreground">
             {item.value}

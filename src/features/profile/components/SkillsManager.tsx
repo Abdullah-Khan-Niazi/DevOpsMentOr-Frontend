@@ -151,10 +151,10 @@ export function SkillsManager() {
                 {skills.map((skill) => (
                   <span
                     key={skill.skillId}
-                    className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-sm text-muted-foreground"
+                    className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1 text-xs text-card-foreground font-medium"
                   >
                     {skill.skillName}
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-xs text-muted">
                       {skill.proficiencyLevel}
                       {skill.yearsExperience > 0 ? ` · ${skill.yearsExperience}y` : ''}
                     </span>

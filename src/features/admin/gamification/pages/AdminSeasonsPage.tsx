@@ -1,6 +1,6 @@
 import '../styles/gamification-admin.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, ErrorState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
 import { useAdminSeasons } from '../hooks/useAdminGamification';
 import type { CreateSeasonPayload, SeasonContentPayload, UpdateSeasonPayload } from '../types';
 
@@ -166,6 +166,10 @@ export function AdminSeasonsPage() {
     );
   };
 
+  if (query.isLoading) {
+    return <TablePageSkeleton />;
+  }
+
   return (
     <div>
       <PageHeader
@@ -174,11 +178,7 @@ export function AdminSeasonsPage() {
         actions={<Button onClick={openCreate}>New season</Button>}
       />
 
-      {query.isLoading ? (
-        <div className="admin-table-wrap" aria-hidden="true">
-          <div className="admin-table admin-table--skeleton" />
-        </div>
-      ) : query.isError ? (
+      {query.isError ? (
         <ErrorState
           message={query.error?.message ?? 'Could not load seasons.'}
           onRetry={() => void query.refetch()}

@@ -170,7 +170,7 @@ export function ContributionHeatmap({
                   ? 'bg-accent text-accent-foreground font-bold'
                   : 'text-muted hover:text-card-foreground'
               }`}
-              style={{ borderRadius: 0 }}
+             
             >
               {tab.label}
             </button>
@@ -232,7 +232,7 @@ export function ContributionHeatmap({
                         }`}
                         style={{
                           backgroundColor: getCellColor(cell.level),
-                          borderRadius: 0,
+                          
                         }}
                         onMouseEnter={() => setHoveredDay({ date: cell.date, count: cell.count })}
                         onMouseLeave={() => setHoveredDay(null)}
@@ -246,7 +246,7 @@ export function ContributionHeatmap({
               {hoveredDay && (
                 <div
                   className="absolute top-0 right-0 z-50 pointer-events-none px-3 py-2 text-[11px] font-mono border border-accent bg-surface text-card-foreground shadow-2xl"
-                  style={{ borderRadius: 0 }}
+                 
                 >
                   <div className="font-bold text-card-foreground">
                     {hoveredDay.count.toLocaleString()}{' '}
@@ -275,7 +275,7 @@ export function ContributionHeatmap({
               className="w-[10px] h-[10px]"
               style={{
                 backgroundColor: getCellColor(lvl),
-                borderRadius: 0,
+                
               }}
             />
           ))}

@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Button, Card, ErrorState, Modal, PageHeader, toast } from '@/shared/components';
+import { Button, Card, ErrorState, Modal, PageHeader, DetailFormSkeleton, toast } from '@/shared/components';
 import { useAdminSystemSettings } from '../hooks';
 import type { SystemSetting } from '../types';
 
@@ -70,17 +70,13 @@ export function AdminSettingsPage() {
     });
   }, [query.data, selectedGroup, search]);
 
+  if (query.isLoading) {
+    return <DetailFormSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader title="System Settings" />
-
-      {query.isLoading ? (
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 animate-pulse bg-secondary" style={{ borderRadius: 0 }} />
-          ))}
-        </div>
-      ) : null}
 
       {query.isError ? (
         <ErrorState
@@ -90,7 +86,7 @@ export function AdminSettingsPage() {
       ) : null}
 
       {query.data ? (
-        <Card style={{ borderRadius: 0 }}>
+        <Card>
           {/* Single Responsive Filter Toolbar */}
           <div className="mb-4 flex items-center gap-1.5 w-full">
             <input
@@ -124,7 +120,7 @@ export function AdminSettingsPage() {
                   setSelectedGroup('all');
                 }}
                 className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-                style={{ borderRadius: 0 }}
+               
               >
                 Reset
               </Button>
@@ -164,8 +160,7 @@ export function AdminSettingsPage() {
                         <button
                           type="button"
                           onClick={() => openEditor(setting)}
-                          className="px-2.5 py-1 text-xs font-mono border border-border bg-surface text-card-foreground hover:bg-card-foreground hover:text-surface transition-colors cursor-pointer"
-                          style={{ borderRadius: 0 }}
+                          className="px-2.5 py-1 text-xs font-mono rounded-xs border border-border bg-surface text-card-foreground hover:bg-card-foreground hover:text-surface transition-colors cursor-pointer"
                         >
                           Edit
                         </button>
@@ -197,7 +192,7 @@ export function AdminSettingsPage() {
                 className="input-field w-full font-mono text-xs"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-                style={{ borderRadius: 0 }}
+               
               />
             ) : null}
           </div>
@@ -208,7 +203,7 @@ export function AdminSettingsPage() {
               variant="secondary"
               onClick={() => setEditing(null)}
               disabled={update.isPending}
-              style={{ borderRadius: 0 }}
+             
             >
               Cancel
             </Button>
@@ -218,7 +213,7 @@ export function AdminSettingsPage() {
               onClick={saveEdit}
               isLoading={update.isPending}
               disabled={!editing || editValue.trim() === ''}
-              style={{ borderRadius: 0 }}
+             
             >
               Save
             </Button>

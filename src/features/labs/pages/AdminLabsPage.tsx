@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react';
-import { Button, Card, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
 import { useAdminLabs } from '../hooks';
@@ -8,6 +8,17 @@ import type { AdminLabDto, CreateLabPayload, LabType } from '../types';
 
 const LAB_TYPES: LabType[] = ['pro_lab', 'sherlock', 'vip_lab'];
 
+type SortColumn = 'labName' | 'labType' | 'difficultyName' | 'isPremium' | 'isActive';
+type SortDirection = 'asc' | 'desc';
+
+function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
+  return (
+    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    </span>
+  );
+}
+
 /** LAB-16/17/18: admin lab management — create, edit, publish/unpublish. */
 export function AdminLabsPage() {
   const queryClient = useQueryClient();
@@ -15,6 +26,9 @@ export function AdminLabsPage() {
   const [editing, setEditing] = useState<AdminLabDto | null>(null);
   const [draft, setDraft] = useState<CreateLabPayload | null>(null);
   const [saving, setSaving] = useState(false);
+
+  const [sortCol, setSortCol] = useState<SortColumn>('labName');
+  const [sortDir, setSortDir] = useState<SortDirection>('asc');
 
   const invalidate = (): void => {
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminLabs.labs('all') });
@@ -103,6 +117,15 @@ export function AdminLabsPage() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
 
+  const handleSort = (col: SortColumn) => {
+    if (sortCol === col) {
+      setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+    } else {
+      setSortCol(col);
+      setSortDir('asc');
+    }
+  };
+
   const filteredLabs = useMemo(() => {
     if (!data) return [];
     return data.filter((lab) => {
@@ -117,6 +140,46 @@ export function AdminLabsPage() {
     });
   }, [data, search, typeFilter, statusFilter]);
 
+  const sortedLabs = useMemo(() => {
+    const list = [...filteredLabs];
+    list.sort((a, b) => {
+      let valA: string | number = '';
+      let valB: string | number = '';
+
+      switch (sortCol) {
+        case 'labName':
+          valA = a.labName.toLowerCase();
+          valB = b.labName.toLowerCase();
+          break;
+        case 'labType':
+          valA = a.labType;
+          valB = b.labType;
+          break;
+        case 'difficultyName':
+          valA = (a.difficultyName ?? '').toLowerCase();
+          valB = (b.difficultyName ?? '').toLowerCase();
+          break;
+        case 'isPremium':
+          valA = a.isPremium ? 1 : 0;
+          valB = b.isPremium ? 1 : 0;
+          break;
+        case 'isActive':
+          valA = a.isActive ? 1 : 0;
+          valB = b.isActive ? 1 : 0;
+          break;
+      }
+
+      if (valA < valB) return sortDir === 'asc' ? -1 : 1;
+      if (valA > valB) return sortDir === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [filteredLabs, sortCol, sortDir]);
+
+  if (isLoading) {
+    return <TablePageSkeleton />;
+  }
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
@@ -128,16 +191,14 @@ export function AdminLabsPage() {
         }
       />
 
-      {isLoading ? (
-        <LoadingState />
-      ) : isError ? (
+      {isError ? (
         <ErrorState
           title="Could not load labs"
           message={error.message}
           onRetry={() => void refetch()}
         />
       ) : (
-        <Card style={{ borderRadius: 0 }}>
+        <Card>
           {/* Single-line filter toolbar */}
           <div className="mb-4 flex items-center gap-1.5 w-full">
             <input
@@ -181,7 +242,7 @@ export function AdminLabsPage() {
                   setStatusFilter('all');
                 }}
                 className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-                style={{ borderRadius: 0 }}
+               
               >
                 Reset
               </Button>
@@ -189,19 +250,44 @@ export function AdminLabsPage() {
           </div>
 
           <div className="w-full max-w-full overflow-x-auto">
-            <table className="w-full text-left text-xs font-mono">
+            <table className="w-full text-left text-xs font-mono border-collapse">
               <thead>
                 <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
-                  <th className="px-3 py-2 font-medium">Lab</th>
-                  <th className="px-3 py-2 font-medium">Type</th>
-                  <th className="px-3 py-2 font-medium">Difficulty</th>
-                  <th className="px-3 py-2 font-medium">Premium</th>
-                  <th className="px-3 py-2 font-medium">Status</th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('labName')}
+                  >
+                    Lab <SortIcon active={sortCol === 'labName'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('labType')}
+                  >
+                    Type <SortIcon active={sortCol === 'labType'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('difficultyName')}
+                  >
+                    Difficulty <SortIcon active={sortCol === 'difficultyName'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('isPremium')}
+                  >
+                    Premium <SortIcon active={sortCol === 'isPremium'} direction={sortDir} />
+                  </th>
+                  <th
+                    className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
+                    onClick={() => handleSort('isActive')}
+                  >
+                    Status <SortIcon active={sortCol === 'isActive'} direction={sortDir} />
+                  </th>
                   <th className="px-3 py-2 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody>
-                {filteredLabs.map((lab) => (
+              <tbody className="divide-y divide-border/60">
+                {sortedLabs.map((lab) => (
                   <tr key={lab.labId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
                     <td className="px-3 py-2.5">
                       <div className="font-semibold text-card-foreground">{lab.labName}</div>
@@ -223,10 +309,10 @@ export function AdminLabsPage() {
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-right">
                       <div className="flex items-center justify-end gap-1.5">
-                        <Button variant="secondary" size="sm" onClick={() => openEdit(lab)} style={{ borderRadius: 0 }}>
+                        <Button variant="secondary" size="sm" onClick={() => openEdit(lab)}>
                           Edit
                         </Button>
-                        <Button variant="ghost" size="sm" onClick={() => togglePublish(lab)} style={{ borderRadius: 0 }}>
+                        <Button variant="ghost" size="sm" onClick={() => togglePublish(lab)}>
                           {lab.isActive ? 'Unpublish' : 'Publish'}
                         </Button>
                       </div>

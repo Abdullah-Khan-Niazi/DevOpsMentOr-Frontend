@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { Button } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { SiteLogo } from '@/shared/components/Logo';
 import './SiteHeader.css';
@@ -152,11 +153,15 @@ export function SiteHeader() {
 
         {/* Auth CTAs */}
         <div className="site-header__actions">
-          <Link to={ROUTES.LOGIN} className="site-header__login">
-            Log in
+          <Link to={ROUTES.LOGIN} tabIndex={-1}>
+            <Button variant="ghost" size="sm">
+              Log in
+            </Button>
           </Link>
-          <Link to={ROUTES.SIGNUP} className="site-header__signup">
-            Start free
+          <Link to={ROUTES.SIGNUP} tabIndex={-1}>
+            <Button variant="primary" size="sm">
+              Start free
+            </Button>
           </Link>
         </div>
 
@@ -228,12 +233,16 @@ export function SiteHeader() {
               </Link>
             </div>
           </nav>
-          <div className="site-mobile-menu__footer">
-            <Link to={ROUTES.LOGIN} className="site-mobile-menu__login" onClick={closeMobile}>
-              Log in
+          <div className="site-mobile-menu__footer flex flex-col gap-2">
+            <Link to={ROUTES.LOGIN} onClick={closeMobile} tabIndex={-1} className="w-full">
+              <Button variant="ghost" className="w-full justify-center" size="md">
+                Log in
+              </Button>
             </Link>
-            <Link to={ROUTES.SIGNUP} className="site-mobile-menu__signup" onClick={closeMobile}>
-              Start free
+            <Link to={ROUTES.SIGNUP} onClick={closeMobile} tabIndex={-1} className="w-full">
+              <Button variant="primary" className="w-full justify-center" size="md">
+                Start free
+              </Button>
             </Link>
           </div>
         </div>

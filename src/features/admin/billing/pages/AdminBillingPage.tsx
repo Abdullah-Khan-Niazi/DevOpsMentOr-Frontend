@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import {
   Button,
+  DetailFormSkeleton,
   ErrorState,
-  LoadingState,
   PageHeader,
   Pagination,
+  Skeleton,
   TabRow,
   toast,
 } from '@/shared/components';
@@ -203,12 +204,12 @@ export function AdminBillingPage() {
     );
   };
 
-  if (overview.isLoading || overview.isError) {
-    return overview.isError ? (
-      <ErrorState title="Could not load billing" message="Please try again later." />
-    ) : (
-      <LoadingState />
-    );
+  if (overview.isLoading) {
+    return <DetailFormSkeleton />;
+  }
+
+  if (overview.isError) {
+    return <ErrorState title="Could not load billing" message="Please try again later." />;
   }
 
   return (
@@ -233,7 +234,19 @@ export function AdminBillingPage() {
         }}
       />
 
-      {active.isLoading ? <p className="admin-billing__hint">Loading…</p> : null}
+      {active.isLoading ? (
+        <div className="space-y-2 py-4">
+          {Array.from({ length: 5 }, (_, i) => (
+            <div key={i} className="flex items-center justify-between py-2.5 px-3 border-b border-border/40">
+              <Skeleton className="h-4 w-40 rounded-xs" />
+              <Skeleton className="h-4 w-24 rounded-xs" />
+              <Skeleton className="h-4 w-20 rounded-xs" />
+              <Skeleton className="h-4 w-20 rounded-xs" />
+              <Skeleton className="h-4 w-28 rounded-xs" />
+            </div>
+          ))}
+        </div>
+      ) : null}
       {active.isError ? <p className="admin-billing__hint">Could not load data.</p> : null}
 
       {tab === 'subscriptions' && !subscriptions.isLoading && !subscriptions.isError ? (

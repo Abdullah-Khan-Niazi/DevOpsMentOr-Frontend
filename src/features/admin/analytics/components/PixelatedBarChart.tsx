@@ -62,7 +62,7 @@ export function PixelatedBarChart({
               {isHovered && (
                 <div
                   className="absolute bottom-full mb-2 z-50 pointer-events-none px-2 py-1 text-[11px] font-mono border border-border bg-surface text-card-foreground shadow-md whitespace-nowrap"
-                  style={{ borderRadius: 0 }}
+                 
                 >
                   <p className="font-semibold">{point.label}</p>
                   <p style={{ color }}>Value: {point.value.toLocaleString()}</p>
@@ -94,7 +94,7 @@ export function PixelatedBarChart({
                       style={{
                         backgroundColor: bg,
                         opacity: isTotalFilled ? (isHovered ? 1 : 0.9) : 0.35,
-                        borderRadius: 0,
+                        
                       }}
                     />
                   );

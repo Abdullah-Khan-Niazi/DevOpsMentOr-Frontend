@@ -30,7 +30,8 @@
   border-right: 1px solid var(--color-border-subtle);
   overflow: hidden;
   z-index: 30;
-  transition: width var(--duration-base) var(--ease-standard);
+  will-change: width;
+  transition: width 150ms cubic-bezier(0.2, 0, 0, 1);
 }
 
 .app-chrome__sidebar--open {
@@ -323,6 +324,23 @@
   margin-top: auto;
 }
 
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__footer {
+  padding: var(--space-3) var(--space-2);
+  align-items: center;
+  justify-content: center;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile {
+  justify-content: center;
+  padding: 0;
+  width: 40px;
+  height: 40px;
+}
+
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout {
+  display: none !important;
+}
+
 .app-chrome__sidebar--open .app-chrome__footer {
   flex-direction: row;
   align-items: center;
@@ -414,27 +432,79 @@
   font-weight: 500;
 }
 
-/* Collapsed footer: icon-only, centered avatar; logout & notification hidden */
+/* ─── Collapsed Footer & Instant Tooltips ─────────────────────────────────── */
 .app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__profile {
   justify-content: center;
   gap: 0;
   padding: 0;
 }
 
+.app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__footer {
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) 0;
+  align-items: center;
+}
+
 .app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__logout {
-  display: none !important;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  justify-content: center;
 }
 
 .app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__top .notification-bell {
   display: none !important;
 }
 
-/* ─── Mobile Header (< 768px) ───────────────────────────────────────────── */
+/* ─── Snappy Floating Portal Tooltip (Collapsed Rail) ───────────────────── */
+.app-chrome__floating-portal-tooltip {
+  position: fixed;
+  left: 74px;
+  transform: translateY(-50%);
+  padding: 5px 10px;
+  background-color: var(--ink);
+  color: var(--pearl-100);
+  font-family: var(--font-body);
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.2;
+  white-space: nowrap;
+  border-radius: var(--radius-sm, 6px);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+  pointer-events: none;
+  z-index: 9999;
+  animation: appChromeTooltipIn 100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.app-chrome__floating-portal-tooltip::before {
+  content: '';
+  position: absolute;
+  left: -4px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+  width: 7px;
+  height: 7px;
+  background-color: var(--ink);
+}
+
+@keyframes appChromeTooltipIn {
+  from {
+    opacity: 0;
+    transform: translateY(-50%) translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(-50%) translateX(0);
+  }
+}
+
+/* ─── Mobile Header & Responsive Drawer (< 1024px) ────────────────────────── */
 .app-chrome__mobile-header {
   display: none;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   .app-chrome {
     flex-direction: column;
     min-height: 100vh;
@@ -447,15 +517,16 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 56px;
+    height: 58px;
     padding: 0 var(--space-4);
-    background-color: var(--color-bg-base);
-    border-bottom: 1px solid var(--color-border-subtle);
+    background-color: var(--pearl-100);
+    border-bottom: 1px solid var(--paper-line);
     position: sticky;
     top: 0;
     z-index: 40;
     width: 100%;
     flex-shrink: 0;
+    box-shadow: var(--shadow-xs);
   }
 
   .app-chrome__mobile-logo {
@@ -472,8 +543,8 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: var(--radius-full);
     background-color: var(--color-accent-600);
     color: var(--color-text-on-accent);
@@ -482,65 +553,153 @@
     text-decoration: none;
   }
 
+  /* Hamburger Toggle button with animated bars */
   .app-chrome__mobile-toggle {
     display: inline-flex;
-    align-items: center;
+    flex-direction: column;
     justify-content: center;
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--color-border-subtle);
-    background-color: var(--color-bg-raised);
-    color: var(--color-text-primary);
+    align-items: center;
+    gap: 4px;
+    width: 38px;
+    height: 38px;
+    padding: 0;
+    border: 1px solid var(--paper-line);
+    background-color: var(--pearl-100);
+    border-radius: var(--radius-sm, 6px);
     cursor: pointer;
-    border-radius: 0;
+    transition:
+      background-color 140ms ease,
+      border-color 140ms ease;
   }
 
-  /* Completely hide desktop sidebar rail on mobile screens */
+  .app-chrome__mobile-toggle:hover {
+    background-color: var(--paper-dim);
+    border-color: #CEC9BD;
+  }
+
+  .app-chrome__mobile-toggle:focus-visible {
+    outline: 2px solid var(--ink);
+    outline-offset: 1px;
+  }
+
+  .app-chrome__hamburger-bar {
+    display: block;
+    width: 18px;
+    height: 2px;
+    background-color: var(--ink);
+    border-radius: 1px;
+    transition:
+      transform 200ms cubic-bezier(0.16, 1, 0.3, 1),
+      opacity 150ms ease;
+  }
+
+  .app-chrome__hamburger-bar--open-1 {
+    transform: translateY(6px) rotate(45deg);
+  }
+
+  .app-chrome__hamburger-bar--open-2 {
+    opacity: 0;
+  }
+
+  .app-chrome__hamburger-bar--open-3 {
+    transform: translateY(-6px) rotate(-45deg);
+  }
+
+  /* Completely hide desktop sidebar rail on mobile/tablet viewports */
   .app-chrome__sidebar {
     display: none !important;
   }
 }
 
-/* ─── Mobile Drawer ──────────────────────────────────────────────────────── */
+/* ─── Mobile Slide-out Drawer ────────────────────────────────────────────── */
 .app-chrome__mobile-drawer-root {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 100;
   display: flex;
 }
 
 .app-chrome__mobile-backdrop {
   position: fixed;
   inset: 0;
-  background-color: rgba(20, 20, 15, 0.65);
+  background-color: rgba(20, 20, 15, 0.45);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  z-index: 51;
+  z-index: 101;
+  animation: backdropFadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
+  overscroll-behavior: contain;
 }
 
 .app-chrome__mobile-drawer {
   position: relative;
-  z-index: 52;
+  z-index: 102;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  width: 288px;
+  width: 290px;
   max-width: 85vw;
   height: 100vh;
-  background-color: var(--color-bg-base);
-  border-right: 1px solid var(--color-border-subtle);
+  height: 100dvh;
+  background-color: var(--pearl-100);
+  border-right: 1px solid var(--paper-line);
   overflow-y: auto;
-  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+  overscroll-behavior: contain;
+  box-shadow: var(--shadow-xl);
+  animation: drawerSlideIn 240ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes drawerSlideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes backdropFadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .app-chrome__mobile-drawer-top {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  height: 56px;
+  height: 58px;
   padding: 0 var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 1px solid var(--paper-line);
   flex-shrink: 0;
+}
+
+.app-chrome__mobile-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  border-radius: var(--radius-sm, 6px);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    color 140ms ease,
+    background-color 140ms ease;
+}
+
+.app-chrome__mobile-close:hover {
+  color: var(--ink);
+  background-color: var(--paper-dim);
+}
+
+.app-chrome__mobile-close:focus-visible {
+  outline: 2px solid var(--ink);
+  outline-offset: 1px;
 }
 
 .app-chrome__mobile-nav {
@@ -557,9 +716,9 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 1px solid var(--paper-line);
   flex-shrink: 0;
-  background-color: var(--color-bg-raised);
+  background-color: var(--paper-dim);
 }
 
 /* ─── Content ─────────────────────────────────────────────────────────────── */

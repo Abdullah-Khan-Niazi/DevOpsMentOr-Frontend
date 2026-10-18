@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
-import { Button, GoogleIcon, GitHubIcon } from '@/shared/components';
-import { useAuthStore, useOAuthLogin } from '@/features/auth';
+import { Button } from '@/shared/components';
+import { useAuthStore, useOAuthLogin, OAuthButton } from '@/features/auth';
 import {
   useInView,
   useReducedMotion,
@@ -1444,10 +1444,13 @@ function FinalCtaSection() {
                   <div className="hp-final-card__actions">
                     <Link
                       to={ROUTES.DASHBOARD}
-                      className="hp-final-card__btn hp-final-card__btn--email"
+                      className="w-full block"
                       aria-label="Go to Dashboard"
+                      tabIndex={-1}
                     >
-                      <span>Go to Dashboard</span>
+                      <Button variant="primary" className="w-full justify-center" size="md">
+                        Go to Dashboard
+                      </Button>
                     </Link>
                   </div>
                 </>
@@ -1455,26 +1458,9 @@ function FinalCtaSection() {
                 <>
                   <h3 className="hp-final-card__heading">Create Your Free Account</h3>
 
-                  <div className="hp-final-card__actions">
-                    <button
-                      type="button"
-                      onClick={() => initiateOAuth('google')}
-                      className="hp-final-card__btn hp-final-card__btn--google"
-                      aria-label="Continue with Google"
-                    >
-                      <GoogleIcon className="hp-final-card__icon" width={18} height={18} />
-                      <span>Continue with Google</span>
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => initiateOAuth('github')}
-                      className="hp-final-card__btn hp-final-card__btn--github"
-                      aria-label="Continue with GitHub"
-                    >
-                      <GitHubIcon className="hp-final-card__icon" width={18} height={18} />
-                      <span>Continue with GitHub</span>
-                    </button>
+                  <div className="hp-final-card__actions flex flex-col gap-3">
+                    <OAuthButton provider="google" onClick={() => initiateOAuth('google')} />
+                    <OAuthButton provider="github" onClick={() => initiateOAuth('github')} />
 
                     <div className="hp-final-card__divider" aria-hidden="true">
                       <span className="hp-final-card__divider-line" />
@@ -1484,25 +1470,32 @@ function FinalCtaSection() {
 
                     <Link
                       to={ROUTES.SIGNUP}
-                      className="hp-final-card__btn hp-final-card__btn--email"
+                      className="w-full block"
                       aria-label="Continue with Email"
+                      tabIndex={-1}
                     >
-                      <svg
-                        className="hp-final-card__icon"
-                        width="18"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        aria-hidden="true"
+                      <Button
+                        variant="primary"
+                        icon={
+                          <svg
+                            width="18"
+                            height="18"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                          >
+                            <rect width="20" height="16" x="2" y="4" rx="0" />
+                            <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
+                          </svg>
+                        }
+                        className="w-full justify-center"
+                        size="md"
                       >
-                        <rect width="20" height="16" x="2" y="4" rx="0" />
-                        <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                      </svg>
-                      <span>Continue with Email</span>
+                        Continue with Email
+                      </Button>
                     </Link>
                   </div>
 

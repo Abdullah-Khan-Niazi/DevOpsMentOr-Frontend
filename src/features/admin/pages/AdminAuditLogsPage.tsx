@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Button, Card, ErrorState, PageHeader, Pagination } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, Pagination, Skeleton } from '@/shared/components';
 import { useAdminAuditLogs, useAdminAuditMetadata } from '../hooks';
 
 const PAGE_SIZE = 25;
@@ -85,7 +85,7 @@ export function AdminAuditLogsPage() {
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader title="Audit Logs" />
 
-      <Card style={{ borderRadius: 0 }}>
+      <Card>
         {/* Single Responsive Filter Toolbar — No Apply Button */}
         <div className="mb-4 flex items-center gap-1.5 w-full">
           <input
@@ -152,7 +152,7 @@ export function AdminAuditLogsPage() {
               size="sm"
               onClick={resetFilters}
               className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-              style={{ borderRadius: 0 }}
+             
             >
               Reset
             </Button>
@@ -165,10 +165,22 @@ export function AdminAuditLogsPage() {
             onRetry={() => void refetch()}
           />
         ) : isLoading ? (
-          <div className="space-y-2 py-1">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="h-10 animate-pulse bg-secondary" style={{ borderRadius: 0 }} />
-            ))}
+          <div className="w-full max-w-full overflow-x-auto">
+            <div className="divide-y divide-border/60">
+              {Array.from({ length: 8 }, (_, i) => (
+                <div key={i} className="flex items-center justify-between px-3 py-3">
+                  <Skeleton className="h-4 w-28 rounded-xs" />
+                  <div className="space-y-1.5 w-1/4">
+                    <Skeleton className="h-4 w-32 rounded-xs" />
+                    <Skeleton className="h-3 w-40 rounded-xs" />
+                  </div>
+                  <Skeleton className="h-4 w-24 rounded-xs" />
+                  <Skeleton className="h-4 w-20 rounded-xs" />
+                  <Skeleton className="h-4 w-28 rounded-xs" />
+                  <Skeleton className="h-4 w-36 rounded-xs" />
+                </div>
+              ))}
+            </div>
           </div>
         ) : data && data.data.length === 0 ? (
           <p className="py-6 text-sm text-muted font-mono">No audit logs found matching criteria.</p>

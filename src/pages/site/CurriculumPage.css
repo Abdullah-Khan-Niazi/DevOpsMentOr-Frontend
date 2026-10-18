@@ -282,7 +282,7 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
   padding: 4px;
   border: 1px solid var(--paper-line);
   background-color: var(--paper-dim);
-  border-radius: 9999px;
+  border-radius: var(--radius-md, 6px);
   width: auto;
   max-width: none;
   flex-shrink: 0;
@@ -291,6 +291,7 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
 .cur-slide__head-row .cur-slide__tab {
   padding: 5px 16px;
   font-size: 0.8rem;
+  border-radius: var(--radius-sm, 4px);
 }
 
 .cur-slide__title {
@@ -326,6 +327,7 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
   margin-bottom: var(--space-4);
   width: 100%;
   max-width: 580px;
+  border-radius: var(--radius-md, 6px);
 }
 
 .cur-slide__tab {
@@ -337,7 +339,7 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
   letter-spacing: var(--tracking-wide, 0.02em);
   color: var(--text-secondary);
   padding: var(--space-1) var(--space-3);
-  border-radius: 9999px;
+  border-radius: var(--radius-sm, 4px);
   cursor: pointer;
   outline: none;
   transition:
@@ -356,6 +358,13 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
   color: var(--paper);
   border-color: var(--ink);
   font-weight: 600;
+}
+
+.cur-slide__tab--active:hover {
+  background-color: #ffffff;
+  color: var(--ink);
+  border-color: var(--ink);
+  outline: 1px solid var(--ink);
 }
 
 .cur-slide__tab:focus-visible {

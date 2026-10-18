@@ -1,6 +1,6 @@
 import '../styles/gamification-admin.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, ErrorState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
 import { useAdminBadges } from '../hooks/useAdminGamification';
 import type { BadgeDto, CreateBadgePayload } from '../types';
 
@@ -153,6 +153,10 @@ export function AdminBadgesPage() {
       });
   };
 
+  if (query.isLoading) {
+    return <TablePageSkeleton />;
+  }
+
   return (
     <div>
       <PageHeader
@@ -161,11 +165,7 @@ export function AdminBadgesPage() {
         actions={<Button onClick={openCreate}>New badge</Button>}
       />
 
-      {query.isLoading ? (
-        <div className="admin-table-wrap" aria-hidden="true">
-          <div className="admin-table admin-table--skeleton" />
-        </div>
-      ) : query.isError ? (
+      {query.isError ? (
         <ErrorState
           message={query.error?.message ?? 'Could not load the badge catalog.'}
           onRetry={() => void query.refetch()}

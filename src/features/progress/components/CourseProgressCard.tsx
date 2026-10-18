@@ -14,10 +14,10 @@ interface CourseProgressCardProps {
 export function CourseProgressCard({ course, isLoading }: CourseProgressCardProps) {
   if (isLoading) {
     return (
-      <div className="space-y-3 rounded-lg border border-border bg-card p-5">
-        <div className="h-4 w-1/2 rounded bg-border" />
+      <div className="space-y-3 rounded-md border border-border bg-card p-5">
+        <div className="h-4 w-1/2 rounded-sm bg-border" />
         <div className="mx-auto h-20 w-20 rounded-full bg-border" />
-        <div className="h-2 w-full rounded-full bg-border" />
+        <div className="h-2 w-full rounded-sm bg-border" />
       </div>
     );
   }
@@ -28,7 +28,7 @@ export function CourseProgressCard({ course, isLoading }: CourseProgressCardProp
   const dashOffset = circumference * (1 - percentage / 100);
 
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="rounded-md border border-border bg-card p-5">
       <h2 className="text-sm font-semibold text-card-foreground">Course progress</h2>
       <div className="mt-4 flex items-center gap-4">
         <div className="relative h-20 w-20 shrink-0">

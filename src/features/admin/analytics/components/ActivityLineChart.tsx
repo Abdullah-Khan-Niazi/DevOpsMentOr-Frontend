@@ -72,18 +72,15 @@ export function ActivityLineChart({
 
         <div className="flex items-center gap-2">
           {onDaysChange && (
-            <div className="flex items-center gap-1 border border-border p-0.5 bg-surface font-mono text-xs">
+            <div className="tab-switcher shrink-0">
               {ranges.map((d) => (
                 <button
                   key={d}
                   type="button"
                   onClick={() => onDaysChange(d)}
-                  className={`px-2 py-0.5 transition-colors cursor-pointer ${
-                    days === d
-                      ? 'bg-accent text-accent-foreground font-bold'
-                      : 'text-muted hover:text-card-foreground'
+                  className={`tab-switcher__tab ${
+                    days === d ? 'tab-switcher__tab--active' : ''
                   }`}
-                  style={{ borderRadius: 0 }}
                 >
                   {d}D
                 </button>
@@ -93,18 +90,18 @@ export function ActivityLineChart({
         </div>
       </div>
 
-      {/* Series Toggle Filters with Square Pixel Swatches */}
+      {/* Series Toggle Filters with Circular Indicators */}
       <div className="flex flex-wrap items-center gap-4 text-xs font-mono pt-1">
         <button
           type="button"
           onClick={() =>
             setVisibleSeries((prev) => ({ ...prev, activeUsers: !prev.activeUsers }))
           }
-          className={`flex items-center gap-1.5 transition-opacity cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 transition-opacity cursor-pointer ${
             visibleSeries.activeUsers ? 'opacity-100' : 'opacity-40 line-through'
           }`}
         >
-          <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners, shapeRendering: 'crispEdges' }} />
+          <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }} />
           <span className="text-card-foreground font-medium">Active Learners</span>
         </button>
 
@@ -113,11 +110,11 @@ export function ActivityLineChart({
           onClick={() =>
             setVisibleSeries((prev) => ({ ...prev, newSignups: !prev.newSignups }))
           }
-          className={`flex items-center gap-1.5 transition-opacity cursor-pointer ${
+          className={`inline-flex items-center gap-1.5 transition-opacity cursor-pointer ${
             visibleSeries.newSignups ? 'opacity-100' : 'opacity-40 line-through'
           }`}
         >
-          <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.newSignups, shapeRendering: 'crispEdges' }} />
+          <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.newSignups }} />
           <span className="text-card-foreground font-medium">New Signups</span>
         </button>
 
@@ -130,11 +127,11 @@ export function ActivityLineChart({
                 courseCompletions: !prev.courseCompletions,
               }))
             }
-            className={`flex items-center gap-1.5 transition-opacity cursor-pointer ${
+            className={`inline-flex items-center gap-1.5 transition-opacity cursor-pointer ${
               visibleSeries.courseCompletions ? 'opacity-100' : 'opacity-40 line-through'
             }`}
           >
-            <span className="w-2.5 h-2.5" style={{ backgroundColor: TELEMETRY_TOKENS.completions, shapeRendering: 'crispEdges' }} />
+            <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.completions }} />
             <span className="text-card-foreground font-medium">Completions</span>
           </button>
         )}
@@ -166,8 +163,7 @@ export function ActivityLineChart({
                 if (!active || !payload || payload.length === 0) return null;
                 return (
                   <div
-                    className="border border-border bg-surface p-2.5 shadow-xl font-mono text-xs"
-                    style={{ borderRadius: 0 }}
+                    className="border border-border bg-surface p-2.5 shadow-xl font-mono text-xs rounded-lg"
                   >
                     <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-1.5 flex items-center justify-between gap-4">
                       <span>Date: {label}</span>

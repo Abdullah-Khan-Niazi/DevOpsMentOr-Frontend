@@ -12,15 +12,17 @@ export interface OAuthButtonProps extends ButtonHTMLAttributes<HTMLButtonElement
   provider: OAuthProvider;
 }
 
-// §3.3 secondary-variant button, token-driven — provider mark uses authentic SVG icons from project assets
 export function OAuthButton({ provider, className, ...props }: OAuthButtonProps) {
   const config = providerConfig[provider];
 
   return (
-    <Button type="button" variant="secondary" className={`w-full ${className ?? ''}`} {...props}>
-      <span className="auth-oauth__mark" aria-hidden="true">
-        {config.icon}
-      </span>
+    <Button
+      type="button"
+      variant="secondary"
+      icon={config.icon}
+      className={`w-full justify-center ${className ?? ''}`}
+      {...props}
+    >
       Continue with {config.label}
     </Button>
   );

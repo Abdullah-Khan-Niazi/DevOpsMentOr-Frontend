@@ -1,6 +1,6 @@
 import '../styles/gamification-admin.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, ErrorState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
 import { useAdminAchievements } from '../hooks/useAdminGamification';
 import type { CreateAchievementPayload } from '../types';
 
@@ -121,6 +121,10 @@ export function AdminAchievementsPage() {
       });
   };
 
+  if (query.isLoading) {
+    return <TablePageSkeleton />;
+  }
+
   return (
     <div>
       <PageHeader
@@ -129,11 +133,7 @@ export function AdminAchievementsPage() {
         actions={<Button onClick={openCreate}>New achievement</Button>}
       />
 
-      {query.isLoading ? (
-        <div className="admin-table-wrap" aria-hidden="true">
-          <div className="admin-table admin-table--skeleton" />
-        </div>
-      ) : query.isError ? (
+      {query.isError ? (
         <ErrorState
           message={query.error?.message ?? 'Could not load the achievement catalog.'}
           onRetry={() => void query.refetch()}

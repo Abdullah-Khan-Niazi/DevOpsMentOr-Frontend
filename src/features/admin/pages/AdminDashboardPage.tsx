@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, ErrorState, PageHeader } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, AdminDashboardSkeleton } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import {
   ActivityLineChart,
@@ -112,6 +112,76 @@ export function AdminDashboardPage() {
 
   const totalAuditPages = Math.max(1, Math.ceil(filteredAuditLogs.length / AUDIT_PAGE_SIZE));
 
+  const userbaseLevels = useMemo(() => {
+    if (data?.kpis?.sparklines?.userbase) return data.kpis.sparklines.userbase;
+    const series = data?.kpis?.peakActivity?.sevenDayDistribution?.map((p) => p.count) ?? [];
+    if (series.length >= 5) {
+      const slice = series.slice(-5);
+      const min = Math.min(...slice);
+      const max = Math.max(...slice);
+      const range = max - min || 1;
+      return slice.map((val) => Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)));
+    }
+    const u = data?.kpis?.totalUsers ?? data?.kpis?.totalIndividualLearners ?? 1;
+    return [
+      Math.max(1, Math.min(5, Math.round(u * 0.4) || 2)),
+      Math.max(1, Math.min(5, Math.round(u * 0.6) || 3)),
+      Math.max(1, Math.min(5, Math.round(u * 0.8) || 4)),
+      Math.max(1, Math.min(5, Math.round(u * 0.7) || 3)),
+      Math.max(1, Math.min(5, Math.round(u * 1.0) || 5)),
+    ];
+  }, [data]);
+
+  const podsLevels = useMemo(() => {
+    if (data?.kpis?.sparklines?.pods) return data.kpis.sparklines.pods;
+    const active = data?.kpis?.pwnbox?.activePods ?? 0;
+    const pending = data?.kpis?.pwnbox?.pendingPods ?? 0;
+    const errors = data?.kpis?.pwnbox?.errorPods ?? 0;
+    const stopped = data?.kpis?.pwnbox?.stoppedPods ?? 0;
+    const total = active + pending + errors + stopped || 1;
+    return [
+      Math.max(1, Math.min(5, Math.round((stopped / total) * 5) + 1)),
+      Math.max(1, Math.min(5, Math.round((errors / total) * 5) + 1)),
+      Math.max(1, Math.min(5, Math.round((pending / total) * 5) + 1)),
+      Math.max(1, Math.min(5, Math.round((active / total) * 5) + 1)),
+      Math.max(1, Math.min(5, Math.round(active > 0 ? 5 : 1))),
+    ];
+  }, [data]);
+
+  const computeLevels = useMemo(() => {
+    if (data?.kpis?.sparklines?.compute) return data.kpis.sparklines.compute;
+    const ram = data?.kpis?.pwnbox?.totalActiveRamGb ?? data?.kpis?.hostTelemetry?.memoryUsagePercent ?? 20;
+    const cpu = data?.kpis?.pwnbox?.totalActiveCpuCores ?? data?.kpis?.hostTelemetry?.activeCpuLoadPercent ?? 15;
+    const heap = data?.kpis?.hostTelemetry?.heapUsedMb ?? 60;
+    return [
+      Math.max(1, Math.min(5, Math.round(cpu / 20) + 1)),
+      Math.max(1, Math.min(5, Math.round(ram / 20) + 1)),
+      Math.max(1, Math.min(5, Math.round(heap / 40) + 1)),
+      Math.max(1, Math.min(5, Math.round((cpu + ram) / 40) + 1)),
+      Math.max(1, Math.min(5, Math.round(ram > 0 ? 4 : 1))),
+    ];
+  }, [data]);
+
+  const learnersLevels = useMemo(() => {
+    if (data?.kpis?.sparklines?.learners) return data.kpis.sparklines.learners;
+    const hourly = data?.kpis?.peakActivity?.hourlyDistribution?.map((h) => h.count) ?? [];
+    if (hourly.length >= 5) {
+      const slice = hourly.slice(-5);
+      const min = Math.min(...slice);
+      const max = Math.max(...slice);
+      const range = max - min || 1;
+      return slice.map((val) => Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)));
+    }
+    const l = data?.kpis?.activeLearners ?? 1;
+    return [
+      Math.max(1, Math.min(5, Math.round(l * 0.5) || 2)),
+      Math.max(1, Math.min(5, Math.round(l * 0.7) || 3)),
+      Math.max(1, Math.min(5, Math.round(l * 0.6) || 2)),
+      Math.max(1, Math.min(5, Math.round(l * 0.9) || 4)),
+      Math.max(1, Math.min(5, Math.round(l * 1.0) || 5)),
+    ];
+  }, [data]);
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
@@ -147,13 +217,7 @@ export function AdminDashboardPage() {
         }
       />
 
-      {isLoading ? (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {[0, 1, 2, 3].map((i) => (
-            <div key={i} className="h-32 animate-pulse border border-border bg-surface" />
-          ))}
-        </div>
-      ) : null}
+      {isLoading ? <AdminDashboardSkeleton /> : null}
 
       {isError ? (
         <ErrorState
@@ -172,7 +236,7 @@ export function AdminDashboardPage() {
               value={data.kpis.totalUsers ?? data.kpis.totalIndividualLearners}
               subtext={`${data.kpis.totalIndividualLearners} individual • ${data.kpis.totalOrgStudents ?? 0} students`}
               href={ROUTES.ADMIN_USERS}
-              sparklineLevels={data.kpis.sparklines?.userbase ?? [1, 2, 3, 2, 4]}
+              sparklineLevels={userbaseLevels}
               tooltipContext="Total learner and administrator accounts registered across all tenants."
             />
 
@@ -182,7 +246,7 @@ export function AdminDashboardPage() {
               value={data.kpis.pwnbox?.activePods ?? 0}
               subtext={`${data.kpis.pwnbox?.pendingPods ?? 0} queued in buffer • ${data.kpis.pwnbox?.errorPods ?? 0} errors`}
               href={ROUTES.ADMIN_ANALYTICS}
-              sparklineLevels={data.kpis.sparklines?.pods ?? [1, 2, 3, 2, 4]}
+              sparklineLevels={podsLevels}
               accentValue="ACTIVE"
               tooltipContext="Live interactive browser sandboxes currently running in container orchestrator."
             />
@@ -193,7 +257,7 @@ export function AdminDashboardPage() {
               value={`${data.kpis.pwnbox?.totalActiveRamGb ?? 0} GB`}
               subtext={`${data.kpis.pwnbox?.totalActiveCpuCores ?? 0} CPU cores provisioned`}
               href={ROUTES.ADMIN_ANALYTICS}
-              sparklineLevels={data.kpis.sparklines?.compute ?? [1, 2, 3, 2, 4]}
+              sparklineLevels={computeLevels}
               tooltipContext="Dedicated memory and processor cores actively assigned to learner sandboxes."
             />
 
@@ -203,7 +267,7 @@ export function AdminDashboardPage() {
               value={data.kpis.activeLearners}
               subtext={`${data.kpis.totalOrganizations} tenant organizations`}
               href={ROUTES.ADMIN_USERS}
-              sparklineLevels={data.kpis.sparklines?.learners ?? [1, 2, 3, 2, 4]}
+              sparklineLevels={learnersLevels}
               tooltipContext="Unique individual learners who logged in or completed lessons in the past 30 days."
             />
           </div>
@@ -223,7 +287,7 @@ export function AdminDashboardPage() {
           {/* Visual Centerpiece: Progression Funnel & Userbase Segmentation (Images 2 & 3) */}
           <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
             {/* Left: Fluid Progression Funnel */}
-            <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+            <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden">
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-4">
                   Learner Progression Funnel
@@ -236,7 +300,7 @@ export function AdminDashboardPage() {
             </Card>
 
             {/* Right: Hatched User Segmentation Pie Chart */}
-            <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+            <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden">
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-4">
                   User Role Distribution
@@ -260,7 +324,7 @@ export function AdminDashboardPage() {
             {/* Left Column: Activity Trends (Multi-Series Line Chart + 24h PKT curve) */}
             <div className="flex flex-col gap-6 w-full min-w-0 max-w-full">
               {/* Daily Activity Multi-Series Line Chart with Visible Labeled Axes */}
-              <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+              <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden">
                 <ActivityLineChart
                   data={lineChartData}
                   height={250}
@@ -270,7 +334,7 @@ export function AdminDashboardPage() {
               </Card>
 
               {/* Traffic Density Curve in PKT (Day / 7D / Month) */}
-              <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+              <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
                   <h2 className="text-[11px] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
                     {trafficWindow === 'day' && '24-Hour Traffic Curve (PKT)'}
@@ -280,7 +344,7 @@ export function AdminDashboardPage() {
 
                   <div className="flex flex-wrap items-center gap-1.5">
                     {/* Time Horizon Selector (Day / Last 7D / Month) */}
-                    <div className="flex items-center gap-0.5 border border-border p-0.5 bg-surface text-[9px] font-mono shrink-0">
+                    <div className="tab-switcher">
                       {(
                         [
                           { key: 'day', label: 'Day' },
@@ -292,12 +356,9 @@ export function AdminDashboardPage() {
                           key={w.key}
                           type="button"
                           onClick={() => setTrafficWindow(w.key)}
-                          className={`px-1.5 py-0.5 transition-colors cursor-pointer ${
-                            trafficWindow === w.key
-                              ? 'bg-accent text-accent-foreground font-bold'
-                              : 'text-muted hover:text-card-foreground'
+                          className={`tab-switcher__tab ${
+                            trafficWindow === w.key ? 'tab-switcher__tab--active' : ''
                           }`}
-                          style={{ borderRadius: 0 }}
                         >
                           {w.label}
                         </button>
@@ -305,7 +366,7 @@ export function AdminDashboardPage() {
                     </div>
 
                     {data.kpis.peakActivity?.peakHour && (
-                      <div className="flex items-center gap-1 text-muted text-[10px] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap">
+                      <div className="flex items-center gap-1 text-muted text-[10px] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap rounded-md">
                         <span className="text-[9px] uppercase">PEAK:</span>
                         <span className="font-bold text-card-foreground">
                           {data.kpis.peakActivity.peakHour}
@@ -327,7 +388,7 @@ export function AdminDashboardPage() {
             </div>
 
             {/* Right Column: Single Column Administrative Audit Trail */}
-            <Card className="flex flex-col justify-between p-5 h-full min-w-0 max-w-full overflow-hidden" style={{ borderRadius: 0 }}>
+            <Card className="flex flex-col justify-between p-5 h-full min-w-0 max-w-full overflow-hidden">
               <div className="flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div>
@@ -353,12 +414,11 @@ export function AdminDashboardPage() {
                       setAuditSearch(e.target.value);
                       setAuditPage(1);
                     }}
-                    className="w-full border border-border bg-surface px-3 py-1.5 text-xs font-mono text-card-foreground placeholder:text-muted focus:outline-none focus:border-accent"
-                    style={{ borderRadius: 0 }}
+                    className="w-full border border-border bg-surface px-3 py-1.5 text-xs font-mono text-card-foreground placeholder:text-muted focus:outline-none focus:border-accent rounded-md"
                   />
 
-                  {/* Filter Pills */}
-                  <div className="flex flex-wrap items-center gap-1.5 text-[11px] font-mono">
+                  {/* Filter Tabs */}
+                  <div className="tab-switcher">
                     {(['ALL', 'USER', 'ORG', 'AUTH', 'SETTING'] as AuditFilterCategory[]).map(
                       (cat) => (
                         <button
@@ -368,12 +428,9 @@ export function AdminDashboardPage() {
                             setAuditFilter(cat);
                             setAuditPage(1);
                           }}
-                          className={`px-2 py-0.5 border transition-colors ${
-                            auditFilter === cat
-                              ? 'border-accent bg-accent/15 text-accent font-semibold'
-                              : 'border-border text-muted hover:text-card-foreground hover:border-card-foreground'
+                          className={`tab-switcher__tab ${
+                            auditFilter === cat ? 'tab-switcher__tab--active' : ''
                           }`}
-                          style={{ borderRadius: 0 }}
                         >
                           {cat}
                         </button>
@@ -427,8 +484,7 @@ export function AdminDashboardPage() {
                       type="button"
                       disabled={auditPage <= 1}
                       onClick={() => setAuditPage((p) => p - 1)}
-                      className="px-2 py-1 border border-border disabled:opacity-40 hover:border-card-foreground transition-colors"
-                      style={{ borderRadius: 0 }}
+                      className="px-2.5 py-1 border border-border rounded-md disabled:opacity-40 hover:border-card-foreground transition-colors cursor-pointer"
                     >
                       Prev
                     </button>
@@ -436,8 +492,7 @@ export function AdminDashboardPage() {
                       type="button"
                       disabled={auditPage >= totalAuditPages}
                       onClick={() => setAuditPage((p) => p + 1)}
-                      className="px-2 py-1 border border-border disabled:opacity-40 hover:border-card-foreground transition-colors"
-                      style={{ borderRadius: 0 }}
+                      className="px-2.5 py-1 border border-border rounded-md disabled:opacity-40 hover:border-card-foreground transition-colors cursor-pointer"
                     >
                       Next
                     </button>
@@ -459,6 +514,7 @@ function NothingKpiCard({
   href,
   sparklineLevels,
   accentValue,
+  tooltipContext,
 }: {
   label: string;
   value: string | number;
@@ -471,13 +527,23 @@ function NothingKpiCard({
   const cardContent = (
     <Card
       tabIndex={0}
-      className="group relative flex flex-col justify-between p-4 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-1 hover:border-accent hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer h-full select-none"
-      style={{ borderRadius: 0 }}
+      className="group relative flex flex-col justify-between p-4 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-1 hover:border-ink hover:shadow-md hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer h-full select-none"
     >
       <div className="flex items-start justify-between">
-        <p className="text-[11px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors">
-          {label}
-        </p>
+        <div className="flex items-center gap-1.5">
+          <p className="text-[11px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors">
+            {label}
+          </p>
+          {tooltipContext && (
+            <span
+              className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-mono text-muted group-hover:text-card-foreground border border-border/80 rounded-xs transition-colors cursor-help"
+              title={tooltipContext}
+              aria-label={tooltipContext}
+            >
+              ?
+            </span>
+          )}
+        </div>
         {sparklineLevels && <PixelatedMiniSparkline levels={sparklineLevels} />}
       </div>
 

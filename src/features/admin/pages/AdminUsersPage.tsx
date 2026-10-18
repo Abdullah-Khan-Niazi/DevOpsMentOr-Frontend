@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { Button, Card, ErrorState, PageHeader, Pagination, toast } from '@/shared/components';
+import { cn } from '@/shared/utils';
 import { apiClient } from '@/shared/services';
 import { useAdminUsers } from '../hooks';
 import { useAdminOrganizations } from '../organizations/hooks';
@@ -45,6 +46,8 @@ export function AdminUsersPage() {
   const [inviteEmails, setInviteEmails] = useState('');
   const [isDraggingCsv, setIsDraggingCsv] = useState(false);
   const [csvParsedCount, setCsvParsedCount] = useState<number | null>(null);
+  const [inviteEmailError, setInviteEmailError] = useState<string | null>(null);
+  const [inviteOrgError, setInviteOrgError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleDownloadSampleCsv = () => {
@@ -174,13 +177,23 @@ export function AdminUsersPage() {
       .map((e) => e.trim().toLowerCase())
       .filter((e) => e.length > 0 && e.includes('@'));
 
+    let hasError = false;
+
     if (rawList.length === 0) {
-      toast.error('Please enter at least one valid email address.');
-      return;
+      setInviteEmailError('Please enter at least one valid email address.');
+      hasError = true;
+    } else {
+      setInviteEmailError(null);
     }
 
     if (inviteType === 'organization' && !inviteOrgId) {
-      toast.error('Please select an organization for this invite.');
+      setInviteOrgError('Please select an organization for this invite.');
+      hasError = true;
+    } else {
+      setInviteOrgError(null);
+    }
+
+    if (hasError) {
       return;
     }
 
@@ -308,7 +321,7 @@ export function AdminUsersPage() {
           </select>
 
           {(filters.search || filters.role || filters.organizationId || filters.country || filters.status !== 'active') && (
-            <Button variant="ghost" size="sm" onClick={resetFilters} className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]" style={{ borderRadius: 0 }}>
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="h-7 text-[11px] px-2 shrink-0 transition-transform active:scale-[0.98]">
               Reset
             </Button>
           )}
@@ -347,19 +360,20 @@ export function AdminUsersPage() {
           />
 
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-none">
+            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-md">
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <div>
                     <h2 className="text-lg font-bold text-card-foreground">Invite User(s)</h2>
-                    <p className="text-xs text-muted mt-0.5">
-                      Dispatch onboarding email invitations with roles.
-                    </p>
                   </div>
                   <button
                     type="button"
-                    onClick={() => setIsInviteOpen(false)}
-                    className="p-1.5 text-muted hover:text-card-foreground transition-colors"
+                    onClick={() => {
+                      setIsInviteOpen(false);
+                      setInviteEmailError(null);
+                      setInviteOrgError(null);
+                    }}
+                    className="p-1.5 text-muted hover:text-card-foreground transition-colors cursor-pointer rounded-xs"
                     aria-label="Close drawer"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -377,15 +391,15 @@ export function AdminUsersPage() {
                         onClick={() => {
                           setInviteType('individual_learner');
                           setInviteRole('individual_learner');
+                          setInviteOrgError(null);
                         }}
-                        className={`border p-3 text-left transition-colors rounded-none ${
+                        className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
                           inviteType === 'individual_learner'
-                            ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
-                            : 'border-border bg-surface text-card-foreground'
+                            ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold shadow-xs'
+                            : 'border-border bg-surface text-card-foreground hover:bg-surface-hover/60'
                         }`}
                       >
                         <div className="text-sm font-medium">Individual Learner</div>
-                        <div className="text-xs text-muted mt-0.5">Self-directed platform user</div>
                       </button>
 
                       <button
@@ -394,14 +408,13 @@ export function AdminUsersPage() {
                           setInviteType('organization');
                           setInviteRole('org_student');
                         }}
-                        className={`border p-3 text-left transition-colors rounded-none ${
+                        className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
                           inviteType === 'organization'
-                            ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
-                            : 'border-border bg-surface text-card-foreground'
+                            ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold shadow-xs'
+                            : 'border-border bg-surface text-card-foreground hover:bg-surface-hover/60'
                         }`}
                       >
                         <div className="text-sm font-medium">Organization Member</div>
-                        <div className="text-xs text-muted mt-0.5">Part of an institution / team</div>
                       </button>
                     </div>
                   </div>
@@ -414,9 +427,15 @@ export function AdminUsersPage() {
                         </label>
                         <select
                           id="invite-org-select"
-                          className="input-field w-full mt-1"
+                          className={cn(
+                            'input-field w-full mt-1 rounded-md transition-colors',
+                            inviteOrgError && 'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5'
+                          )}
                           value={inviteOrgId ?? ''}
-                          onChange={(e) => setInviteOrgId(e.target.value ? Number(e.target.value) : undefined)}
+                          onChange={(e) => {
+                            setInviteOrgId(e.target.value ? Number(e.target.value) : undefined);
+                            if (inviteOrgError) setInviteOrgError(null);
+                          }}
                         >
                           <option value="">Select Organization…</option>
                           {orgsData?.data.map((org) => (
@@ -425,6 +444,16 @@ export function AdminUsersPage() {
                             </option>
                           ))}
                         </select>
+                        {inviteOrgError ? (
+                          <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
+                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                              <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+                              <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                            </svg>
+                            {inviteOrgError}
+                          </p>
+                        ) : null}
                       </div>
 
                       <div>
@@ -433,7 +462,7 @@ export function AdminUsersPage() {
                         </label>
                         <select
                           id="invite-role-select"
-                          className="input-field w-full mt-1"
+                          className="input-field w-full mt-1 rounded-md"
                           value={inviteRole}
                           onChange={(e) =>
                             setInviteRole(e.target.value as 'org_student' | 'org_admin' | 'professor')
@@ -473,7 +502,7 @@ export function AdminUsersPage() {
                         void handleCsvFile(e.dataTransfer.files);
                       }}
                       onClick={() => fileInputRef.current?.click()}
-                      className={`mt-1 border border-dashed p-3 text-center cursor-pointer transition-colors rounded-none ${
+                      className={`mt-1 border border-dashed p-3 text-center cursor-pointer transition-colors rounded-md ${
                         isDraggingCsv
                           ? 'border-brand-600 bg-brand-50/20'
                           : 'border-border bg-surface/50 hover:bg-surface'
@@ -508,20 +537,40 @@ export function AdminUsersPage() {
                     <textarea
                       id="invite-emails-area"
                       rows={4}
-                      className="input-field w-full mt-1 font-mono text-xs rounded-none"
+                      className={cn(
+                        'input-field w-full mt-1 font-mono text-xs rounded-lg transition-colors',
+                        inviteEmailError && 'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5'
+                      )}
                       placeholder="student1@example.com&#10;student2@example.com, student3@example.com"
                       value={inviteEmails}
-                      onChange={(e) => setInviteEmails(e.target.value)}
+                      onChange={(e) => {
+                        setInviteEmails(e.target.value);
+                        if (inviteEmailError) setInviteEmailError(null);
+                      }}
                     />
-                    <p className="mt-1 text-xs text-muted">
-                      Separate multiple email addresses with commas or line breaks.
-                    </p>
+                    {inviteEmailError ? (
+                      <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
+                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <circle cx="12" cy="12" r="10" strokeWidth="2" />
+                          <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
+                          <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                        </svg>
+                        {inviteEmailError}
+                      </p>
+                    ) : null}
                   </div>
                 </div>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-6 border-t border-border mt-6">
-                <Button variant="secondary" onClick={() => setIsInviteOpen(false)}>
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    setIsInviteOpen(false);
+                    setInviteEmailError(null);
+                    setInviteOrgError(null);
+                  }}
+                >
                   Cancel
                 </Button>
                 <Button onClick={handleSendInvites} isLoading={inviteMutation.isPending}>

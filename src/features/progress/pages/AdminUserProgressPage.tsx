@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Card, ErrorState, PageHeader, Pagination } from '@/shared/components';
+import { Card, DetailFormSkeleton, ErrorState, PageHeader, Pagination } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { ActivityLogTable } from '../components/ActivityLogTable';
 import { CourseProgressCard } from '../components/CourseProgressCard';
@@ -20,6 +20,10 @@ export function AdminUserProgressPage() {
   const activity = useMemo(() => data?.activity ?? [], [data]);
   const pagedActivity = activity.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(activity.length / PAGE_SIZE));
+
+  if (query.isLoading) {
+    return <DetailFormSkeleton />;
+  }
 
   if (query.isError) {
     return (
