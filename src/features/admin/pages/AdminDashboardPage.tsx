@@ -530,20 +530,12 @@ function NothingKpiCard({
       className="group relative flex flex-col justify-between p-4 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-1 hover:border-ink hover:shadow-md hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer h-full select-none"
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-1.5">
-          <p className="text-[11px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors">
-            {label}
-          </p>
-          {tooltipContext && (
-            <span
-              className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-mono text-muted group-hover:text-card-foreground border border-border/80 rounded-xs transition-colors cursor-help"
-              title={tooltipContext}
-              aria-label={tooltipContext}
-            >
-              ?
-            </span>
-          )}
-        </div>
+        <p
+          className="text-[11px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors"
+          title={tooltipContext}
+        >
+          {label}
+        </p>
         {sparklineLevels && <PixelatedMiniSparkline levels={sparklineLevels} />}
       </div>
 

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { Button, Card, toast } from '@/shared/components';
 import { use2fa } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
@@ -246,6 +247,13 @@ export default function SecurityPage() {
 }
 
 function PasswordManagementCard() {
+  const { data: me, refetch } = useQuery({
+    queryKey: ['auth', 'me'],
+    queryFn: () => authService.getMe(),
+  });
+
+  const hasPassword = Boolean(me?.hasPassword);
+
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -255,6 +263,11 @@ function PasswordManagementCard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
+
+    if (hasPassword && !currentPassword.trim()) {
+      setErrorMsg('Current password is required.');
+      return;
+    }
 
     if (newPassword.length < 8) {
       setErrorMsg('New password must be at least 8 characters long.');
@@ -269,13 +282,14 @@ function PasswordManagementCard() {
     setIsSubmitting(true);
     try {
       await authService.setPassword({
-        currentPassword: currentPassword.trim() ? currentPassword : undefined,
+        currentPassword: hasPassword ? currentPassword : undefined,
         newPassword,
       });
-      toast.success('Password saved successfully.');
+      toast.success(hasPassword ? 'Password changed successfully.' : 'Password set successfully.');
       setCurrentPassword('');
       setNewPassword('');
       setConfirmPassword('');
+      void refetch();
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Failed to update password.';
       setErrorMsg(msg);
@@ -286,9 +300,13 @@ function PasswordManagementCard() {
 
   return (
     <Card className="settings-card">
-      <h2 className="settings-card__title">Account Password</h2>
+      <h2 className="settings-card__title">
+        {hasPassword ? 'Change Password' : 'Set Account Password'}
+      </h2>
       <p className="settings-card__body">
-        Set or update your account password. If you signed in with Google or GitHub, setting a password allows you to sign in using your email and password as well.
+        {hasPassword
+          ? 'Update your current account password. Ensure it has at least 8 characters.'
+          : 'Add a password so you can sign in with your email address in addition to Google or GitHub.'}
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md pt-2">
@@ -298,19 +316,22 @@ function PasswordManagementCard() {
           </div>
         )}
 
-        <div>
-          <label className="block text-xs font-mono text-muted mb-1">
-            Current Password <span className="text-[10px] text-muted/60">(leave blank if you registered via OAuth)</span>
-          </label>
-          <input
-            type="password"
-            autoComplete="current-password"
-            value={currentPassword}
-            onChange={(e) => setCurrentPassword(e.target.value)}
-            className="input-field w-full rounded-none font-mono text-xs"
-            placeholder="••••••••••••"
-          />
-        </div>
+        {hasPassword && (
+          <div>
+            <label className="block text-xs font-mono text-muted mb-1">
+              Current Password
+            </label>
+            <input
+              type="password"
+              autoComplete="current-password"
+              required
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+              className="input-field w-full rounded-none font-mono text-xs"
+              placeholder="••••••••••••"
+            />
+          </div>
+        )}
 
         <div>
           <label className="block text-xs font-mono text-muted mb-1">New Password</label>
@@ -340,7 +361,7 @@ function PasswordManagementCard() {
 
         <div>
           <Button type="submit" isLoading={isSubmitting} className="rounded-none">
-            Save Password
+            {hasPassword ? 'Change Password' : 'Set Password'}
           </Button>
         </div>
       </form>

@@ -24,13 +24,32 @@ export interface AppNavItem {
   section: NavSection;
 }
 
-export function buildNavItems(user: AuthUser | null): AppNavItem[] {
+export function buildNavItems(
+  user: AuthUser | null,
+  context?: 'personal' | 'org' | 'platform',
+): AppNavItem[] {
   if (!user) return [];
 
   const permissions = new Set(user.permissions ?? []);
   const roles = new Set(user.roles ?? []);
-  const isPlatformAdmin = roles.has('platform_admin');
   const items: AppNavItem[] = [];
+
+  // When context is strictly 'personal', return personal learning workspace items
+  if (context === 'personal') {
+    items.push(
+      { to: ROUTES.DASHBOARD, label: 'Dashboard', icon: 'dashboard', section: 'Workspace' },
+      { to: ROUTES.LEARN, label: 'Curriculum', icon: 'roles', section: 'Workspace' },
+      { to: ROUTES.LABS, label: 'Sandboxes', icon: 'terminal', section: 'Workspace' },
+      { to: ROUTES.TRACKS, label: 'Career Paths', icon: 'track', section: 'Workspace' },
+      { to: ROUTES.ACHIEVEMENTS, label: 'Achievements', icon: 'award', section: 'Workspace' },
+      { to: ROUTES.LEADERBOARD, label: 'Leaderboard', icon: 'leaderboard', section: 'Workspace' },
+      { to: ROUTES.SETTINGS, label: 'Settings', icon: 'settings', section: 'Workspace' },
+      { to: ROUTES.BILLING, label: 'Billing', icon: 'card', section: 'Workspace' },
+    );
+    return items;
+  }
+
+  const isPlatformAdmin = roles.has('platform_admin');
 
   // ─── Platform Administration ──────────────────────────────────────────────
   if (isPlatformAdmin) {
@@ -210,10 +229,6 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       icon: 'roles',
       section: 'Workspace',
     });
-    items.push(
-      { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
-      { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
-    );
     items.push({
       to: ROUTES.ACHIEVEMENTS,
       label: 'Achievements',
@@ -280,12 +295,6 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       section: 'Workspace',
     });
     items.push({
-      to: ROUTES.LABS,
-      label: 'Labs',
-      icon: 'lab',
-      section: 'Workspace',
-    });
-    items.push({
       to: ROUTES.EVENTS,
       label: 'Events',
       icon: 'calendar',
@@ -326,10 +335,6 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
       icon: 'roles',
       section: 'Workspace',
     });
-    items.push(
-      { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
-      { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
-    );
     items.push({
       to: ROUTES.ACHIEVEMENTS,
       label: 'Achievements',
@@ -378,10 +383,6 @@ export function buildNavItems(user: AuthUser | null): AppNavItem[] {
     icon: 'roles',
     section: 'Workspace',
   });
-  items.push(
-    { to: ROUTES.LABS, label: 'Labs', icon: 'lab', section: 'Workspace' },
-    { to: ROUTES.TRACKS, label: 'Tracks', icon: 'track', section: 'Workspace' },
-  );
   items.push({
     to: ROUTES.ACHIEVEMENTS,
     label: 'Achievements',

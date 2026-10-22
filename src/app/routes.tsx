@@ -12,7 +12,6 @@ import {
   GridCardsSkeleton,
   DashboardSkeleton,
   CurriculumSkeleton,
-  LabWorkspaceSkeleton,
   HomePageSkeleton,
   PublicPageSkeleton,
   AuthPageSkeleton,
@@ -67,13 +66,6 @@ const EnrollAcceptPage = lazy(() => import('@/features/enrollment/pages/EnrollAc
 const StudentMyClassPage = lazy(() => import('@/features/enrollment/pages/StudentMyClassPage'));
 // ─── F4 canonical curriculum (admin + learner) ─────────────────────────────
 const AdminCurriculumPage = lazy(() => import('@/features/curriculum/pages/AdminCurriculumPage'));
-const AdminModuleEditorPage = lazy(
-  () => import('@/features/curriculum/pages/AdminModuleEditorPage'),
-);
-const AdminLessonEditorPage = lazy(
-  () => import('@/features/curriculum/pages/AdminLessonEditorPage'),
-);
-const AdminQuizBuilderPage = lazy(() => import('@/features/curriculum/pages/AdminQuizBuilderPage'));
 const LearnCurriculumPage = lazy(() => import('@/features/curriculum/pages/LearnCurriculumPage'));
 const LearnLessonPage = lazy(() => import('@/features/curriculum/pages/LearnLessonPage'));
 // ─── F5 learning experience & progress tracking ─────────────────────────────
@@ -86,12 +78,6 @@ const OrgStudentsProgressPage = lazy(
 );
 const AdminUserProgressPage = lazy(() => import('@/features/progress/pages/AdminUserProgressPage'));
 // ─── F6 labs, execution engine & AI Mentor ────────────────────────────────
-const LabsPage = lazy(() => import('@/features/labs/pages/LabsPage'));
-const LabDetailPage = lazy(() => import('@/features/labs/pages/LabDetailPage'));
-const LabSessionPage = lazy(() => import('@/features/labs/pages/LabSessionPage'));
-const SherlockLabPage = lazy(() => import('@/features/labs/pages/SherlockLabPage'));
-const TracksPage = lazy(() => import('@/features/labs/pages/TracksPage'));
-const TrackDetailPage = lazy(() => import('@/features/labs/pages/TrackDetailPage'));
 const VpnSettingsPage = lazy(() => import('@/features/labs/pages/VpnSettingsPage'));
 // ─── F9 billing (learner portal) and pricing checkout ─────────────────
 const BillingPage = lazy(() => import('@/features/billing/pages/BillingPage'));
@@ -398,11 +384,9 @@ export function AppRoutes() {
           <Route
             path={ROUTES.STUDENT_MY_CLASS}
             element={
-              <PermissionRouteGuard permission="enrollment:read">
-                <LazyPage skeleton={<CurriculumSkeleton />}>
-                  <StudentMyClassPage />
-                </LazyPage>
-              </PermissionRouteGuard>
+              <LazyPage skeleton={<CurriculumSkeleton />}>
+                <StudentMyClassPage />
+              </LazyPage>
             }
           />
           {/* ─── F4 learner curriculum (AppShell, permission-gated) ─────── */}
@@ -448,57 +432,12 @@ export function AppRoutes() {
               </PermissionRouteGuard>
             }
           />
-          {/* ─── F6 labs catalog & session (AppShell, permission-gated) ── */}
-          <Route
-            path={ROUTES.LABS}
-            element={
-              <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage skeleton={<LabWorkspaceSkeleton />}>
-                  <LabsPage />
-                </LazyPage>
-              </PermissionRouteGuard>
-            }
-          />
-          <Route
-            path={ROUTES.LAB_DETAIL}
-            element={
-              <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage skeleton={<LabWorkspaceSkeleton />}>
-                  <LabDetailPage />
-                </LazyPage>
-              </PermissionRouteGuard>
-            }
-          />
-          <Route
-            path={ROUTES.SHERLOCK_DIAGNOSTIC}
-            element={
-              <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage skeleton={<LabWorkspaceSkeleton />}>
-                  <SherlockLabPage />
-                </LazyPage>
-              </PermissionRouteGuard>
-            }
-          />
-          <Route
-            path={ROUTES.TRACKS}
-            element={
-              <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage skeleton={<CurriculumSkeleton />}>
-                  <TracksPage />
-                </LazyPage>
-              </PermissionRouteGuard>
-            }
-          />
-          <Route
-            path={ROUTES.TRACK_DETAIL}
-            element={
-              <PermissionRouteGuard permission="labs:instance:read">
-                <LazyPage>
-                  <TrackDetailPage />
-                </LazyPage>
-              </PermissionRouteGuard>
-            }
-          />
+          {/* ─── F6 labs catalog & tracks deprecated — redirected to unified learner curriculum ── */}
+          <Route path={ROUTES.LABS} element={<Navigate to={ROUTES.LEARN} replace />} />
+          <Route path={ROUTES.LAB_DETAIL} element={<Navigate to={ROUTES.LEARN} replace />} />
+          <Route path={ROUTES.SHERLOCK_DIAGNOSTIC} element={<Navigate to={ROUTES.LEARN} replace />} />
+          <Route path={ROUTES.TRACKS} element={<Navigate to={ROUTES.LEARN} replace />} />
+          <Route path={ROUTES.TRACK_DETAIL} element={<Navigate to={ROUTES.LEARN} replace />} />
           <Route
             path={ROUTES.VPN_SETTINGS}
             element={
@@ -591,17 +530,8 @@ export function AppRoutes() {
             }
           />
         </Route>
-        {/* ─── F6 lab session: full-viewport LabShell, no AppShell sidebar ─── */}
-        <Route
-          path={ROUTES.LAB_SESSION}
-          element={
-            <PermissionRouteGuard permission="labs:instance:read">
-              <LazyPage skeleton={<LabWorkspaceSkeleton />}>
-                <LabSessionPage />
-              </LazyPage>
-            </PermissionRouteGuard>
-          }
-        />
+        {/* ─── F6 lab session deprecated — all lab sessions launch within /learn/lessons/:lessonId ─── */}
+        <Route path={ROUTES.LAB_SESSION} element={<Navigate to={ROUTES.LEARN} replace />} />
       </Route>
 
       {/* ─── F2 admin console (AdminShell layout, permission-gated) ─────── */}
@@ -876,8 +806,8 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<DetailFormSkeleton />}>
-                <AdminModuleEditorPage />
+              <LazyPage skeleton={<CurriculumSkeleton />}>
+                <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
@@ -888,8 +818,8 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<DetailFormSkeleton />}>
-                <AdminLessonEditorPage />
+              <LazyPage skeleton={<CurriculumSkeleton />}>
+                <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
@@ -900,8 +830,8 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<DetailFormSkeleton />}>
-                <AdminQuizBuilderPage />
+              <LazyPage skeleton={<CurriculumSkeleton />}>
+                <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>

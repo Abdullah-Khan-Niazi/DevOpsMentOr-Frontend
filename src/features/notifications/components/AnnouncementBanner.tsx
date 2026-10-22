@@ -2,12 +2,31 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '@/shared/components/Icon';
 import { ROUTES } from '@/shared/constants';
+import { notificationService } from '../services';
 import type { AnnouncementDto } from '../types';
 
-// SCR-F8-03: dismissible banner for the newest published announcement.
-// Priority drives the accent (`--color-warning` for high, `--color-error`
-// for critical); dismissal is stored in session state only (no backend
-// banner-state endpoint exists in F8).
+const DISMISSED_STORAGE_KEY = 'stardust_dismissed_announcements';
+
+function getStoredDismissedIds(): Set<number> {
+  try {
+    const raw = localStorage.getItem(DISMISSED_STORAGE_KEY);
+    if (!raw) return new Set();
+    const parsed = JSON.parse(raw);
+    return new Set(Array.isArray(parsed) ? parsed : []);
+  } catch {
+    return new Set();
+  }
+}
+
+function persistDismissedId(id: number) {
+  try {
+    const stored = getStoredDismissedIds();
+    stored.add(id);
+    localStorage.setItem(DISMISSED_STORAGE_KEY, JSON.stringify([...stored]));
+  } catch {
+    // localStorage unavailable or full
+  }
+}
 
 interface AnnouncementBannerProps {
   announcements: AnnouncementDto[];
@@ -21,7 +40,7 @@ const PRIORITY_LEVEL: Record<AnnouncementDto['priority'], number> = {
 };
 
 export function AnnouncementBanner({ announcements }: AnnouncementBannerProps) {
-  const [dismissedIds, setDismissedIds] = useState<Set<number>>(() => new Set());
+  const [dismissedIds, setDismissedIds] = useState<Set<number>>(getStoredDismissedIds);
 
   const visible = announcements
     .filter((announcement) => !dismissedIds.has(announcement.announcementId))
@@ -31,6 +50,13 @@ export function AnnouncementBanner({ announcements }: AnnouncementBannerProps) {
   if (!active) {
     return null;
   }
+
+  const handleDismiss = (announcementId: number) => {
+    persistDismissedId(announcementId);
+    setDismissedIds((prev) => new Set(prev).add(announcementId));
+    // Persist to backend so it stays marked read across sessions/devices
+    notificationService.markAnnouncementRead(announcementId).catch(() => {});
+  };
 
   return (
     <div
@@ -51,7 +77,7 @@ export function AnnouncementBanner({ announcements }: AnnouncementBannerProps) {
         type="button"
         className="announcement-banner__dismiss"
         aria-label="Dismiss announcement"
-        onClick={() => setDismissedIds((current) => new Set(current).add(active.announcementId))}
+        onClick={() => handleDismiss(active.announcementId)}
       >
         <Icon name="x-circle" size={16} />
       </button>

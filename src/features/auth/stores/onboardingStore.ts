@@ -20,11 +20,20 @@ export function getStepOrder(
   accountType: AccountType | null,
 ): OnboardingStep[] {
   if (flow === 'oauth') {
+    // Frictionless solo onboarding: individual learners skip straight to finish
+    if (accountType === 'individual' || !accountType) {
+      return ['finish'];
+    }
     const steps: OnboardingStep[] = ['account-type'];
     if (accountType === 'organization') steps.push('organization');
     if (accountType === 'member') steps.push('invitation');
     steps.push('finish');
     return steps;
+  }
+
+  // Frictionless email onboarding: individual learners go straight from credentials to verify
+  if (accountType === 'individual' || !accountType) {
+    return ['credentials', 'verify'];
   }
 
   const steps: OnboardingStep[] = ['credentials', 'account-type'];
@@ -66,7 +75,7 @@ interface OnboardingState extends OnboardingData {
 }
 
 const EMPTY: OnboardingData = {
-  accountType: null,
+  accountType: 'individual',
   email: null,
   fullName: null,
   username: null,
@@ -80,17 +89,34 @@ export const useOnboardingStore = create<OnboardingState>()(
     (set) => ({
       ...EMPTY,
       flow: null,
-      step: 'account-type',
-      startEmail: (data) => set({ ...EMPTY, ...data, flow: 'email', step: 'credentials' }),
-      startOAuth: (oauth, data) =>
-        set({ ...EMPTY, ...data, oauth, flow: 'oauth', step: 'account-type' }),
+      step: 'credentials',
+      startEmail: (data) =>
+        set({
+          ...EMPTY,
+          ...data,
+          flow: 'email',
+          accountType: data?.accountType ?? 'individual',
+          step: 'credentials',
+        }),
+      startOAuth: (oauth, data) => {
+        const accType = data?.accountType ?? 'individual';
+        const isOrgOrMember = accType === 'organization' || accType === 'member';
+        return set({
+          ...EMPTY,
+          ...data,
+          oauth,
+          flow: 'oauth',
+          accountType: accType,
+          step: isOrgOrMember ? 'account-type' : 'finish',
+        });
+      },
       setAccountType: (accountType) => set({ accountType }),
       setOrganization: (organization) => set({ organization }),
       setInvitationCode: (invitationCode) => set({ invitationCode }),
       setCredentials: (email, username, fullName) => set({ email, username, fullName }),
       setEmail: (email) => set({ email }),
       setStep: (step) => set({ step }),
-      reset: () => set({ ...EMPTY, flow: null, step: 'account-type' }),
+      reset: () => set({ ...EMPTY, flow: null, step: 'credentials' }),
     }),
     {
       name: 'auth-onboarding',

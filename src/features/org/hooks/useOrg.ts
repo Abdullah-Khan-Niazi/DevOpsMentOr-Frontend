@@ -1,6 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
-import { orgService, type UpdateMyOrgPayload } from '../services';
+import { orgService, type CreateOrgPayload, type UpdateMyOrgPayload } from '../services';
+
+export function useCreateOrg() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (payload: CreateOrgPayload) => orgService.createOrg(payload),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+      void queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+    },
+  });
+}
 
 export function useMyOrg() {
   const queryClient = useQueryClient();

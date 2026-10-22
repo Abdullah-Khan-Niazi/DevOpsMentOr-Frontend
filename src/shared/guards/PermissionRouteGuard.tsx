@@ -32,6 +32,23 @@ export function PermissionRouteGuard({
   }
 
   const required = Array.isArray(permission) ? permission : [permission];
+  const roles = new Set(user.roles ?? []);
+
+  // Platform admin bypasses specific permission checks
+  if (roles.has('platform_admin')) {
+    return <>{children}</>;
+  }
+
+  // Org admin bypasses org/class permission checks
+  if (roles.has('org_admin') && required.some((p) => p.startsWith('org:') || p.startsWith('class:'))) {
+    return <>{children}</>;
+  }
+
+  // Professor bypasses class/org permission checks
+  if (roles.has('professor') && required.some((p) => p.startsWith('class:') || p.startsWith('org:'))) {
+    return <>{children}</>;
+  }
+
   const allowed = required.some((name) => user.permissions?.includes(name));
 
   if (!allowed) {

@@ -476,48 +476,86 @@ export function DashboardSkeleton() {
   );
 }
 
-/** Curriculum & Lessons Full-Page Skeleton */
+/** Curriculum & Tree DAG Master View Skeleton */
 export function CurriculumSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 py-2" aria-label="Loading curriculum" role="status">
-      <div className="rounded-md border border-border bg-card p-6 md:p-8 shadow-sm space-y-4">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-5 w-20 rounded-sm" />
-          <Skeleton className="h-5 w-24 rounded-sm" />
+    <div className="skeleton-page space-y-6 py-2 w-full min-w-0" aria-label="Loading curriculum" role="status">
+      {/* Page Header */}
+      <div className="flex items-center justify-between">
+        <div className="space-y-1.5">
+          <Skeleton className="h-8 w-72 rounded-md" />
+          <Skeleton className="h-4 w-96 rounded-xs" />
         </div>
-        <Skeleton className="h-9 w-3/4 max-w-xl rounded-md" />
-        <Skeleton className="h-4 w-full max-w-2xl rounded-xs" />
+        <Skeleton className="h-9 w-32 rounded-md" />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 space-y-4">
-          {Array.from({ length: 4 }, (_, i) => (
-            <div key={i} className="rounded-md border border-border bg-card p-5 shadow-sm space-y-3">
-              <div className="flex items-center justify-between">
-                <Skeleton className="h-5 w-48 md:w-64 rounded-sm" />
+      {/* Toolbar: Search & Filters */}
+      <div className="flex items-center justify-between gap-3 p-3 rounded-md border border-border/40 bg-card/40">
+        <div className="flex items-center gap-2 flex-1">
+          <Skeleton className="h-9 w-full max-w-md rounded-md" />
+          <Skeleton className="h-9 w-28 rounded-md" />
+        </div>
+        <Skeleton className="h-8 w-36 rounded-xs" />
+      </div>
+
+      {/* Course Root Card */}
+      <div className="rounded-md border border-border/60 p-5 bg-card/30 space-y-3">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Skeleton className="h-9 w-9 rounded-sm" />
+            <div className="space-y-1">
+              <Skeleton className="h-3 w-28 rounded-xs" />
+              <Skeleton className="h-5 w-64 rounded-sm" />
+            </div>
+          </div>
+          <Skeleton className="h-8 w-28 rounded-sm" />
+        </div>
+        <div className="flex items-center gap-3 pt-2">
+          <Skeleton className="h-5 w-24 rounded-xs" />
+          <Skeleton className="h-5 w-28 rounded-xs" />
+          <Skeleton className="h-5 w-20 rounded-xs" />
+          <Skeleton className="h-5 w-36 rounded-xs" />
+        </div>
+      </div>
+
+      {/* Module Tree Hierarchy */}
+      <div className="space-y-3">
+        {Array.from({ length: 3 }, (_, i) => (
+          <div key={i} className="space-y-2">
+            {/* Module Row */}
+            <div className="flex items-center justify-between p-3 rounded-sm border border-border/40 bg-card/20">
+              <div className="flex items-center gap-3">
+                <Skeleton className="h-4 w-4 rounded-xs" />
+                <Skeleton className="h-5 w-8 rounded-xs" />
+                <Skeleton className="h-5 w-56 rounded-sm" />
                 <Skeleton className="h-4 w-16 rounded-xs" />
               </div>
-              <div className="pl-6 space-y-2 pt-1">
-                {Array.from({ length: 3 }, (_, j) => (
-                  <div key={j} className="flex items-center justify-between py-1.5 border-b border-border/40 last:border-0">
-                    <Skeleton className="h-4 w-40 md:w-56 rounded-xs" />
-                    <Skeleton className="h-6 w-16 rounded-sm" />
-                  </div>
-                ))}
+              <div className="flex items-center gap-2">
+                <Skeleton className="h-4 w-20 rounded-xs" />
+                <Skeleton className="h-4 w-16 rounded-xs" />
               </div>
             </div>
-          ))}
-        </div>
 
-        <div className="rounded-md border border-border bg-card p-6 shadow-sm space-y-4 h-fit">
-          <Skeleton className="h-6 w-36 rounded-sm" />
-          <Skeleton className="h-4 w-full rounded-xs" />
-          <Skeleton className="h-4 w-4/5 rounded-xs" />
-          <div className="pt-4 border-t border-border space-y-3">
-            <Skeleton className="h-5 w-28 rounded-xs" />
-            <Skeleton className="h-10 w-full rounded-md" />
+            {/* Indented Children */}
+            <div className="pl-6 ml-4 border-l-2 border-border/40 space-y-1.5 py-1">
+              {Array.from({ length: 3 }, (_, j) => (
+                <div key={j} className="flex items-center justify-between p-2.5 rounded-xs border border-transparent bg-card/10">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-5 w-5 rounded-xs" />
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-48 md:w-72 rounded-xs" />
+                      <Skeleton className="h-3 w-36 rounded-xs" />
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Skeleton className="h-4 w-12 rounded-xs" />
+                    <Skeleton className="h-4 w-14 rounded-xs" />
+                  </div>
+                </div>
+              ))}
+            </div>
           </div>
-        </div>
+        ))}
       </div>
     </div>
   );

@@ -14,6 +14,59 @@
   font-family: var(--font-body);
 }
 
+/* ─── Learner Top Navigation Bar (d.webp reference) ────────────────────────── */
+.app-chrome--topbar {
+  flex-direction: column;
+}
+
+.app-chrome__topbar {
+  display: flex;
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  width: 100%;
+  background-color: #121212;
+  color: #faf9f6;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.app-chrome__topbar .logo--full,
+.app-chrome__topbar .logo,
+.app-chrome__topbar .logo--mark,
+.app-chrome__topbar .logo--wordmark,
+.app-chrome__topbar .logo--full svg,
+.app-chrome__topbar .logo svg {
+  color: #faf9f6 !important;
+  fill: #faf9f6 !important;
+}
+
+.app-chrome__topbar .logo--full {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+}
+
+.app-chrome__topbar .logo--mark {
+  height: 30px;
+}
+
+.app-chrome__topbar .logo--wordmark {
+  height: 18px;
+  margin-left: 8px;
+}
+
+@media (max-width: 1023px) {
+  .app-chrome__topbar {
+    display: none !important;
+  }
+}
+
+.app-chrome--topbar .app-chrome__main {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
 /* ─── Sidebar — Gemini-style collapse ─────────────────────────────────────── */
 .app-chrome__sidebar {
   display: flex;
@@ -32,6 +85,10 @@
   z-index: 30;
   will-change: width;
   transition: width 150ms cubic-bezier(0.2, 0, 0, 1);
+}
+
+.app-chrome__sidebar:has([data-dropdown-open='true']) {
+  overflow: visible !important;
 }
 
 .app-chrome__sidebar--open {

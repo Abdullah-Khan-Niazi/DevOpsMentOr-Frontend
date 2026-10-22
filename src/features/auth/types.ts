@@ -10,6 +10,7 @@ export interface AuthUser {
   status: string;
   isVerified: boolean;
   twoFactorEnabled?: boolean;
+  hasPassword?: boolean;
   roles: string[];
   permissions?: string[];
 }
@@ -44,6 +45,7 @@ export interface MeResponse {
     status: string;
     isVerified: boolean;
     twoFactorEnabled: boolean;
+    hasPassword?: boolean;
     roles: string[];
     permissions: string[];
   };

@@ -62,7 +62,7 @@ export function TrackDetailPage() {
               item.contentType === 'lab'
                 ? labSlug
                   ? ROUTES.LAB_DETAIL.replace(':labSlug', labSlug)
-                  : ROUTES.LABS
+                  : ROUTES.LEARN
                 : ROUTES.LEARN; // course content opens the learner curriculum
             return (
               <li key={`${item.contentType}-${item.contentId}`} className="track-detail__item">

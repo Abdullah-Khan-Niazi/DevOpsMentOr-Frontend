@@ -214,6 +214,19 @@ export function CredentialsStep({ onNext, password = '', onPasswordChange }: Ste
         Continue
       </Button>
 
+      <div className="text-center -mt-2">
+        <button
+          type="button"
+          onClick={() => {
+            useOnboardingStore.getState().setAccountType('organization');
+            useOnboardingStore.getState().setStep('account-type');
+          }}
+          className="text-xs text-muted hover:text-card-foreground transition-colors cursor-pointer"
+        >
+          Setting up for an organization or school? <span className="underline font-medium text-card-foreground">Customize workspace →</span>
+        </button>
+      </div>
+
       {flow === 'email' ? (
         <>
           <div className="auth-divider" aria-hidden="true">
