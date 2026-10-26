@@ -81,8 +81,8 @@ export function LearnLessonPage() {
       <div className="space-y-6 animate-pulse max-w-6xl mx-auto py-4">
         <div className="h-10 bg-border/40 rounded-xs" />
         <div className="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-6">
-          <div className="h-[480px] bg-border/20 rounded-xs" />
-          <div className="h-[480px] bg-border/30 rounded-xs" />
+          <div className="h-[30rem] bg-border/20 rounded-xs" />
+          <div className="h-[30rem] bg-border/30 rounded-xs" />
         </div>
       </div>
     );
@@ -166,7 +166,13 @@ export function LearnLessonPage() {
             className="p-1.5 rounded-xs hover:bg-surface text-muted hover:text-card-foreground transition-colors cursor-pointer mr-0.5 shrink-0"
             title="Exit to Curriculum"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
@@ -181,7 +187,10 @@ export function LearnLessonPage() {
             <button
               type="button"
               disabled={!prevLesson}
-              onClick={() => prevLesson && navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(prevLesson.lessonId)))}
+              onClick={() =>
+                prevLesson &&
+                navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(prevLesson.lessonId)))
+              }
               className="px-2.5 py-1.5 hover:bg-surface-hover text-muted hover:text-card-foreground disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
               title={prevLesson ? `Previous: ${prevLesson.title}` : 'No previous lesson'}
             >
@@ -193,15 +202,26 @@ export function LearnLessonPage() {
               className="px-3 py-1.5 hover:bg-surface-hover text-xs font-mono font-medium text-card-foreground flex items-center gap-1.5 transition-all cursor-pointer active:scale-[0.98]"
               title="Open module outline"
             >
-              <svg className="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+              <svg
+                className="w-3.5 h-3.5 text-muted"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
               Module Outline
             </button>
             <button
               type="button"
               disabled={!nextLesson}
-              onClick={() => nextLesson && navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))}
+              onClick={() =>
+                nextLesson &&
+                navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))
+              }
               className="px-2.5 py-1.5 hover:bg-surface-hover text-muted hover:text-card-foreground disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer"
               title={nextLesson ? `Next: ${nextLesson.title}` : 'No next lesson'}
             >
@@ -225,7 +245,13 @@ export function LearnLessonPage() {
           <aside className="w-80 md:w-96 border-r border-border bg-card flex flex-col shrink-0 overflow-y-auto">
             <div className="p-4 border-b border-border bg-paper/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="w-4 h-4 text-muted"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                   <polyline points="14 2 14 8 20 8" />
                 </svg>
@@ -233,9 +259,7 @@ export function LearnLessonPage() {
                   Transcript & Notes
                 </h3>
               </div>
-              <span className="text-xs font-mono text-muted font-medium">
-                +15 XP
-              </span>
+              <span className="text-xs font-mono text-muted font-medium">+15 XP</span>
             </div>
 
             <div className="p-4 space-y-4 flex-1 overflow-y-auto">
@@ -245,7 +269,7 @@ export function LearnLessonPage() {
                   {lesson.tags.map((tag) => (
                     <span
                       key={tag.tagId}
-                      className="text-[10px] font-mono text-muted bg-paper px-1.5 py-0.5 rounded-xs border border-border"
+                      className="text-[0.625rem] font-mono text-muted bg-paper px-1.5 py-0.5 rounded-xs border border-border"
                     >
                       #{tag.tagName}
                     </span>
@@ -271,13 +295,11 @@ export function LearnLessonPage() {
                         <span className="text-xs font-semibold text-card-foreground">
                           {block.title}
                         </span>
-                        <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-xs bg-paper border border-border text-muted">
+                        <span className="text-[0.625rem] font-mono px-1.5 py-0.2 rounded-xs bg-paper border border-border text-muted">
                           {block.timeRange}
                         </span>
                       </div>
-                      <p className="text-xs text-muted mt-1 leading-relaxed">
-                        {block.summary}
-                      </p>
+                      <p className="text-xs text-muted mt-1 leading-relaxed">{block.summary}</p>
                     </div>
                   );
                 })}
@@ -286,12 +308,10 @@ export function LearnLessonPage() {
               {/* Lesson Text / Syllabus Content if present */}
               {lesson.content && (
                 <div className="pt-3 border-t border-border space-y-2 text-xs leading-relaxed text-muted">
-                  <span className="text-[10px] font-mono uppercase tracking-wider text-muted font-bold block">
+                  <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted font-bold block">
                     Lesson Reference
                   </span>
-                  <p className="whitespace-pre-line text-card-foreground">
-                    {lesson.content}
-                  </p>
+                  <p className="whitespace-pre-line text-card-foreground">{lesson.content}</p>
                 </div>
               )}
             </div>
@@ -331,10 +351,12 @@ export function LearnLessonPage() {
                   {CONTENT_TYPE_LABELS[lesson.contentType]}
                 </span>
                 <h1 className="text-2xl font-bold text-card-foreground">{lesson.title}</h1>
-                <div className="prose prose-sm dark:prose-invert max-w-none text-card-foreground/90">
+                <div className="prose prose-sm max-w-none text-card-foreground/90">
                   {lesson.content ? (
                     lesson.content.split('\n\n').map((para, i) => (
-                      <p key={i} className="leading-relaxed">{para}</p>
+                      <p key={i} className="leading-relaxed">
+                        {para}
+                      </p>
                     ))
                   ) : (
                     <p className="text-muted">Content for this module is being staged.</p>
@@ -354,7 +376,13 @@ export function LearnLessonPage() {
           onClick={() => setIsSidePanelHidden((h) => !h)}
           className="px-2.5 py-1 rounded-xs border border-border bg-paper hover:bg-surface-hover text-xs font-mono text-card-foreground transition-all cursor-pointer font-medium flex items-center gap-1.5 active:scale-[0.98]"
         >
-          <svg className="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-3.5 h-3.5 text-muted"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <line x1="9" y1="3" x2="9" y2="21" />
           </svg>
@@ -368,7 +396,7 @@ export function LearnLessonPage() {
               key={l.lessonId}
               className={`h-1.5 rounded-full transition-all ${
                 lIdx < index || isCompleted
-                  ? 'bg-emerald-500 w-8'
+                  ? 'bg-success w-8'
                   : lIdx === index
                     ? 'bg-brand-600 w-10 ring-1 ring-brand-500/30'
                     : 'bg-border/80 w-6'
@@ -376,7 +404,7 @@ export function LearnLessonPage() {
               title={`Lesson ${lIdx + 1}: ${l.title}`}
             />
           ))}
-          <span className="text-[11px] font-mono text-muted ml-2">
+          <span className="text-[0.6875rem] font-mono text-muted ml-2">
             Item {index + 1} of {lessons.length}
           </span>
         </div>
@@ -387,7 +415,9 @@ export function LearnLessonPage() {
             <Button
               variant="primary"
               size="sm"
-              onClick={() => navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))}
+              onClick={() =>
+                navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))
+              }
               className="font-mono text-xs shadow-xs active:scale-[0.98] transition-all"
             >
               Next Lesson →

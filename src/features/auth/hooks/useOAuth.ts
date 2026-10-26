@@ -38,6 +38,38 @@ function redirectUri(provider: string): string {
   return `${window.location.origin}/api/auth/callback/${provider}`;
 }
 
+/**
+ * Preserve the `?redirect=` destination (e.g. an invite-accept URL) across the
+ * provider round-trip. OAuth bounces the browser to an external origin, so the
+ * only durable place is sessionStorage.
+ */
+const OAUTH_REDIRECT_KEY = 'oauth_redirect';
+
+function persistOAuthRedirect(): void {
+  try {
+    const redirect = new URLSearchParams(window.location.search).get('redirect');
+    if (redirect && redirect.startsWith('/')) {
+      sessionStorage.setItem(OAUTH_REDIRECT_KEY, redirect);
+    }
+  } catch {
+    // sessionStorage unavailable
+  }
+}
+
+/** Return and clear the preserved redirect, or the given fallback. */
+export function consumeOAuthRedirect(fallback: string): string {
+  try {
+    const stored = sessionStorage.getItem(OAUTH_REDIRECT_KEY);
+    if (stored && stored.startsWith('/')) {
+      sessionStorage.removeItem(OAUTH_REDIRECT_KEY);
+      return stored;
+    }
+  } catch {
+    // sessionStorage unavailable
+  }
+  return fallback;
+}
+
 function handleOAuthResult(
   data: OAuthLoginResult,
   setSession: (payload: LoginResponse) => void,
@@ -61,7 +93,7 @@ function handleOAuthResult(
             },
           };
     setSession(sessionPayload);
-    void navigate(ROUTES.DASHBOARD, { replace: true });
+    void navigate(consumeOAuthRedirect(ROUTES.DASHBOARD), { replace: true });
     return;
   }
 
@@ -103,6 +135,7 @@ export function useOAuthLogin() {
     const state = generateState();
     sessionStorage.setItem(`oauth_state_${provider}`, state);
     sessionStorage.setItem('oauth_mode', 'login');
+    persistOAuthRedirect();
 
     const params = new URLSearchParams({
       client_id: config.clientId,
@@ -142,6 +175,7 @@ export function useOAuthSignup() {
     const state = generateState();
     sessionStorage.setItem(`oauth_state_${provider}`, state);
     sessionStorage.setItem('oauth_mode', 'signup');
+    persistOAuthRedirect();
 
     const params = new URLSearchParams({
       client_id: config.clientId,
@@ -167,7 +201,7 @@ export function useOAuthComplete() {
     onSuccess: (data) => {
       setSession(data);
       resetOnboarding();
-      void navigate(ROUTES.DASHBOARD, { replace: true });
+      void navigate(consumeOAuthRedirect(ROUTES.DASHBOARD), { replace: true });
     },
   });
 }

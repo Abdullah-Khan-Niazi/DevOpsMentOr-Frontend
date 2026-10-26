@@ -86,7 +86,7 @@
 @keyframes abt-text-in-left {
   from {
     opacity: 0;
-    transform: translateX(-24px);
+    transform: translateX(-1.5rem);
   }
   to {
     opacity: 1;
@@ -97,7 +97,7 @@
 @keyframes abt-text-in-right {
   from {
     opacity: 0;
-    transform: translateX(24px);
+    transform: translateX(1.5rem);
   }
   to {
     opacity: 1;
@@ -153,11 +153,11 @@
 
 .abt-row__photo {
   width: 100%;
-  max-width: 340px;
+  max-width: 21.25rem;
   aspect-ratio: 1 / 1;
   object-fit: cover;
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   /* Desaturated 10–15% at rest → full color on hover (--duration-base) */
   filter: saturate(0.87);
   transition: filter var(--duration-base) var(--ease-decelerate);
@@ -170,7 +170,7 @@
 /* Monogram fallback tile — only when the team photo cannot be fetched */
 .abt-row__monogram {
   width: 100%;
-  max-width: 340px;
+  max-width: 21.25rem;
   aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
@@ -180,7 +180,7 @@
   color: var(--color-accent-500);
   background-color: var(--color-bg-raised);
   border-radius: var(--radius-md);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
 }
 
 /* ─── §5.4.3 Institutional context strip — plain centered text, no card ──── */
@@ -242,14 +242,14 @@
 
   .abt-row__photo,
   .abt-row__monogram {
-    max-width: 280px;
+    max-width: 17.5rem;
   }
 }
 
 @keyframes abt-text-in-up {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(1.25rem);
   }
   to {
     opacity: 1;

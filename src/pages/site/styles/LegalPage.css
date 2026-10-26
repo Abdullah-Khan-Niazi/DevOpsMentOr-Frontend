@@ -57,7 +57,7 @@
 
 .lg-cta {
   padding: var(--space-16) 0 var(--space-32);
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
 }
 
 .lg-cta__text {

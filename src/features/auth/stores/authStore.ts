@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import { AUTH_REFRESH_TOKEN_KEY, AUTH_TOKEN_KEY } from '@/shared/services';
+import { useWorkspaceStore } from '@/shared/stores';
 import type { AuthState, LoginResponse } from '../types';
 
 export const useAuthStore = create<AuthState>()(
@@ -24,6 +25,9 @@ export const useAuthStore = create<AuthState>()(
       clearSession: () => {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+        // Never leak the previous account's workspace selection to the next
+        // user on this browser.
+        useWorkspaceStore.getState().clearWorkspace();
         set({
           user: null,
           accessToken: null,

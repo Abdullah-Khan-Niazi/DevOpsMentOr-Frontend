@@ -5,7 +5,7 @@ import { Icon } from '@/shared/components/Icon';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { useLogout } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import { useUiStore } from '@/shared/stores';
+import { useUiStore, useWorkspaceStore } from '@/shared/stores';
 import { ROUTES } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import { AnnouncementBanner } from '@/features/notifications/components/AnnouncementBanner';
@@ -48,24 +48,22 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
   const canSeeNotifications = (user?.permissions ?? []).includes('notifications:inbox:read');
 
   const roles = new Set(user?.roles ?? []);
+  const isPlatformAdmin = roles.has('platform_admin');
 
   // ─── Active Context Resolution ─────────────────────────────────────────────
-  // Priority: URL path > localStorage workspace selection > role inference
+  // Priority: URL path > reactive workspace store (persisted + cross-tab) > role inference
   const isAdminPath = location.pathname.startsWith('/admin');
   const isOrgPath = location.pathname.startsWith('/org');
-
-  let activeWorkspace = 'default';
-  try {
-    activeWorkspace = localStorage.getItem('stardust_active_workspace') || 'default';
-  } catch {
-    // ignore
-  }
+  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
 
   // Determine the active context for nav scoping
   let activeContext: 'personal' | 'org' | 'platform' = 'personal';
-  if (isAdminPath || (roles.has('platform_admin') && activeWorkspace === 'platform')) {
+  if (isAdminPath || (isPlatformAdmin && activeWorkspace === 'platform')) {
     activeContext = 'platform';
-  } else if (isOrgPath || ((roles.has('org_admin') || roles.has('professor')) && activeWorkspace === 'org')) {
+  } else if (
+    isOrgPath ||
+    ((roles.has('org_admin') || roles.has('professor')) && activeWorkspace === 'org')
+  ) {
     activeContext = 'org';
   } else {
     activeContext = 'personal';
@@ -73,9 +71,10 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
 
   // Learner roles always show topbar; staff show sidebar UNLESS they've switched to personal context
   const isNaturalLearner =
-    roles.has('individual_learner') ||
-    roles.has('org_student') ||
-    (!roles.has('platform_admin') && !roles.has('org_admin') && !roles.has('professor'));
+    isPlatformAdmin === false &&
+    (roles.has('individual_learner') ||
+      roles.has('org_student') ||
+      (!roles.has('org_admin') && !roles.has('professor')));
 
   // showTopbarNav: learner roles OR staff who switched to personal workspace
   const showTopbarNav =
@@ -87,7 +86,10 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
   useEffect(() => {
     if (!profileDropdownOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
         setProfileDropdownOpen(false);
       }
     };
@@ -103,15 +105,18 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
   // Scope nav items to active context
   const currentNavItems = navItems ?? buildNavItems(user, activeContext);
 
-  const groups = currentNavItems.reduce<Array<{ section: string; items: AppNavItem[] }>>((acc, item) => {
-    const last = acc[acc.length - 1];
-    if (last && last.section === item.section) {
-      last.items.push(item);
-    } else {
-      acc.push({ section: item.section, items: [item] });
-    }
-    return acc;
-  }, []);
+  const groups = currentNavItems.reduce<Array<{ section: string; items: AppNavItem[] }>>(
+    (acc, item) => {
+      const last = acc[acc.length - 1];
+      if (last && last.section === item.section) {
+        last.items.push(item);
+      } else {
+        acc.push({ section: item.section, items: [item] });
+      }
+      return acc;
+    },
+    [],
+  );
 
   return (
     <div className={cn('app-chrome', showTopbarNav && 'app-chrome--topbar')}>
@@ -121,23 +126,22 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
           <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
             {/* Left: Site Logo & Workspace Context Switcher */}
             <div className="flex items-center gap-4">
-              <Link to={logoTo} className="flex items-center text-pearl-100 hover:opacity-85 transition-opacity" aria-label="DevOpsMentor home">
+              <Link
+                to={logoTo}
+                className="flex items-center hover:opacity-85 transition-opacity"
+                aria-label="DevOpsMentor home"
+              >
                 <SiteLogo />
               </Link>
-              <WorkspaceSwitcher variant="topbar" />
+              {!isPlatformAdmin && <WorkspaceSwitcher variant="topbar" />}
             </div>
 
-            {/* Center: Segmented Navigation Pills (as in d.webp) */}
-            <nav className="flex items-center gap-1.5 p-1 rounded-full bg-white/10 dark:bg-white/5 border border-white/10" aria-label="Learner Primary">
+            {/* Center: Segmented tab navigation (universal .tab-switcher system) */}
+            <nav className="tab-switcher" aria-label="Learner Primary">
               <NavLink
                 to={ROUTES.DASHBOARD}
                 className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
+                  cn('tab-switcher__tab', isActive && 'tab-switcher__tab--active')
                 }
               >
                 <Icon name="dashboard" size={14} />
@@ -147,46 +151,11 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
               <NavLink
                 to={ROUTES.LEARN}
                 className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
+                  cn('tab-switcher__tab', isActive && 'tab-switcher__tab--active')
                 }
               >
                 <Icon name="roles" size={14} />
                 <span>Curriculum</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.LABS}
-                className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
-                }
-              >
-                <Icon name="terminal" size={14} />
-                <span>Sandboxes</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.TRACKS}
-                className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
-                }
-              >
-                <Icon name="track" size={14} />
-                <span>Career Paths</span>
               </NavLink>
             </nav>
 
@@ -199,25 +168,25 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                 <button
                   type="button"
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full hover:bg-white/10 transition-colors cursor-pointer text-left"
+                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border border-border hover:bg-pearl-200 transition-colors cursor-pointer text-left"
                   aria-expanded={profileDropdownOpen}
                   aria-label="User menu"
                 >
-                  <span className="w-8 h-8 rounded-full bg-pearl-100 text-ink flex items-center justify-center font-bold text-xs shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-ink text-pearl-100 flex items-center justify-center font-bold text-xs shrink-0">
                     {userInitials(profileName)}
                   </span>
                   <div className="hidden xl:flex flex-col text-left">
-                    <span className="text-xs font-semibold text-pearl-100 leading-tight truncate max-w-[120px]">
+                    <span className="text-xs font-semibold text-ink leading-tight truncate max-w-[7.5rem]">
                       Hi, {user?.fullName?.split(' ')[0] || user?.username || 'Learner'}!
                     </span>
-                    <span className="text-[10px] text-pearl-100/60 truncate max-w-[120px] font-mono">
+                    <span className="text-[0.625rem] text-muted truncate max-w-[7.5rem] font-mono">
                       {user?.email ?? ''}
                     </span>
                   </div>
                   <Icon
                     name={profileDropdownOpen ? 'chevrons-right' : 'chevrons-left'}
                     size={12}
-                    className="text-pearl-100/60 -rotate-90"
+                    className="text-muted -rotate-90"
                   />
                 </button>
 
@@ -225,8 +194,12 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                 {profileDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-card shadow-lg py-1.5 z-50 text-card-foreground">
                     <div className="px-3.5 py-2 border-b border-border">
-                      <p className="text-xs font-semibold text-card-foreground truncate">{profileName}</p>
-                      <p className="text-[11px] text-muted truncate font-mono">{user?.email}</p>
+                      <p className="text-xs font-semibold text-card-foreground truncate">
+                        {profileName}
+                      </p>
+                      <p className="text-[0.6875rem] text-muted truncate font-mono">
+                        {user?.email}
+                      </p>
                     </div>
 
                     <div className="py-1">
@@ -355,9 +328,14 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
               </button>
             </div>
 
-            <div className="px-4 py-3 border-b border-border">
-              <WorkspaceSwitcher variant="mobile" />
-            </div>
+            {!isPlatformAdmin && (
+              <div className="px-4 py-3 border-b border-border">
+                <WorkspaceSwitcher
+                  variant="mobile"
+                  onAfterSwitch={() => setMobileMenuOpen(false)}
+                />
+              </div>
+            )}
 
             <nav className="app-chrome__mobile-nav" aria-label="Mobile Primary">
               {groups.map((group) => (
@@ -437,9 +415,11 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
             {isSidebarOpen && canSeeNotifications ? <NotificationBell /> : null}
           </div>
 
-          <div className="px-3 py-2 border-b border-border">
-            <WorkspaceSwitcher variant="sidebar" isCollapsed={!isSidebarOpen} />
-          </div>
+          {!isPlatformAdmin && (
+            <div className="px-3 py-2 border-b border-border">
+              <WorkspaceSwitcher variant="sidebar" isCollapsed={!isSidebarOpen} />
+            </div>
+          )}
 
           <nav className="app-chrome__nav" aria-label="Primary">
             {groups.map((group) => (

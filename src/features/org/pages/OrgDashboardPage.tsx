@@ -184,13 +184,16 @@ export function OrgDashboardPage() {
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-card-foreground truncate">{org.name}</h2>
                 {org.isVerified ? (
-                  <span className="border border-border bg-secondary px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-secondary-foreground font-mono">
+                  <span className="border border-border bg-secondary px-1.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-secondary-foreground font-mono">
                     Verified
                   </span>
                 ) : null}
               </div>
               <p className="mt-0.5 text-xs text-muted font-mono">
-                {[org.industry, org.emailDomain ? `@${org.emailDomain} restricted` : 'Open enrollment']
+                {[
+                  org.industry,
+                  org.emailDomain ? `@${org.emailDomain} restricted` : 'Open enrollment',
+                ]
                   .filter(Boolean)
                   .join(' · ')}
               </p>
@@ -316,10 +319,9 @@ export function OrgDashboardPage() {
                         key={c.classId}
                         tabIndex={0}
                         onClick={() =>
-                          navigate(
-                            ROUTES.ORG_CLASS_DETAIL.replace(':classId', String(c.classId)),
-                            { state: { fromUrl: '/org/dashboard?tab=cohorts' } },
-                          )
+                          navigate(ROUTES.ORG_CLASS_DETAIL.replace(':classId', String(c.classId)), {
+                            state: { fromUrl: '/org/dashboard?tab=cohorts' },
+                          })
                         }
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
@@ -389,7 +391,7 @@ export function OrgDashboardPage() {
             <div>
               <select
                 aria-label="Filter by role"
-                className="input-field text-xs font-mono h-9 min-w-[130px]"
+                className="input-field text-xs font-mono h-9 min-w-[8.125rem]"
                 value={memberRoleFilter}
                 onChange={(e) => setMemberRoleFilter(e.target.value as MemberRoleFilter)}
               >

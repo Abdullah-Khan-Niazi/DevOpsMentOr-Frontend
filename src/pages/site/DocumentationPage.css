@@ -12,7 +12,7 @@
 }
 
 .dc-frame {
-  max-width: 860px;
+  max-width: 53.75rem;
 }
 
 /* Grading report (browser frame body) */
@@ -29,11 +29,11 @@
 
 .dc-report__row {
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 1.5rem 1fr auto;
   gap: var(--space-3);
   align-items: baseline;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .dc-report__row:last-of-type {
@@ -86,7 +86,7 @@
 }
 
 .dc-ref-list {
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
 }
 
 .dc-ref-row {
@@ -95,7 +95,7 @@
   gap: var(--space-6);
   align-items: baseline;
   padding: var(--space-4) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .dc-ref-row__title {
@@ -135,7 +135,7 @@
   }
 
   .dc-report__row {
-    grid-template-columns: 24px 1fr;
+    grid-template-columns: 1.5rem 1fr;
   }
 
   .dc-report__status {

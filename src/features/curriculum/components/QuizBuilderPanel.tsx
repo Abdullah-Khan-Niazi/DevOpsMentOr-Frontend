@@ -119,18 +119,14 @@ export function QuizBuilderPanel({
     setDraftText(q.questionText);
     setDraftPoints(String(q.points));
     setDraftExplanation(q.explanation ?? '');
-    setDraftAnswers(
-      q.answers.map((a) => ({ answerText: a.answerText, isCorrect: a.isCorrect })),
-    );
+    setDraftAnswers(q.answers.map((a) => ({ answerText: a.answerText, isCorrect: a.isCorrect })));
     setQuestionTextError(null);
     setAnswersError(null);
     setIsFormOpen(true);
   };
 
   const setAnswerChoice = (index: number, patch: Partial<DraftAnswer>) => {
-    setDraftAnswers((prev) =>
-      prev.map((ans, i) => (i === index ? { ...ans, ...patch } : ans)),
-    );
+    setDraftAnswers((prev) => prev.map((ans, i) => (i === index ? { ...ans, ...patch } : ans)));
     if (answersError) setAnswersError(null);
   };
 
@@ -140,9 +136,7 @@ export function QuizBuilderPanel({
         prev.map((ans, i) => (i === index ? { ...ans, isCorrect: !ans.isCorrect } : ans)),
       );
     } else {
-      setDraftAnswers((prev) =>
-        prev.map((ans, i) => ({ ...ans, isCorrect: i === index })),
-      );
+      setDraftAnswers((prev) => prev.map((ans, i) => ({ ...ans, isCorrect: i === index })));
     }
     if (answersError) setAnswersError(null);
   };
@@ -230,7 +224,7 @@ export function QuizBuilderPanel({
           }`}
         >
           <span>Questions Pool</span>
-          <span className="text-[10px] font-mono px-1.5 py-0.2 rounded-xs bg-paper border border-border text-muted">
+          <span className="text-[0.625rem] font-mono px-1.5 py-0.2 rounded-xs bg-paper border border-border text-muted">
             {quiz.questions.length}
           </span>
         </button>
@@ -241,9 +235,13 @@ export function QuizBuilderPanel({
         <form onSubmit={handleSaveQuizSettings} className="space-y-4">
           <div className="flex items-center justify-between p-3 rounded-md border border-border bg-paper/40">
             <div>
-              <p className="text-xs font-mono font-semibold text-card-foreground">Publication Status</p>
-              <p className="text-[11px] text-muted">
-                {quiz.isPublished ? 'Live and accessible to enrolled learners' : 'Draft mode (hidden from learners)'}
+              <p className="text-xs font-mono font-semibold text-card-foreground">
+                Publication Status
+              </p>
+              <p className="text-[0.6875rem] text-muted">
+                {quiz.isPublished
+                  ? 'Live and accessible to enrolled learners'
+                  : 'Draft mode (hidden from learners)'}
               </p>
             </div>
             <PublishToggle
@@ -315,7 +313,10 @@ export function QuizBuilderPanel({
               onChange={(e) => setIsRequired(e.target.checked)}
               className="h-4 w-4 accent-brand-600 rounded-xs cursor-pointer"
             />
-            <label htmlFor="quiz-mandatory" className="text-xs font-mono text-card-foreground cursor-pointer">
+            <label
+              htmlFor="quiz-mandatory"
+              className="text-xs font-mono text-card-foreground cursor-pointer"
+            >
               Mandatory completion for course certification
             </label>
           </div>
@@ -335,7 +336,8 @@ export function QuizBuilderPanel({
           {!isFormOpen && (
             <div className="flex items-center justify-between">
               <span className="text-xs font-mono text-muted">
-                {quiz.questions.length} total questions ({quiz.questions.reduce((sum, q) => sum + q.points, 0)} total XP)
+                {quiz.questions.length} total questions (
+                {quiz.questions.reduce((sum, q) => sum + q.points, 0)} total XP)
               </span>
               <Button variant="secondary" size="sm" onClick={openNewQuestion}>
                 + Add Question
@@ -345,7 +347,10 @@ export function QuizBuilderPanel({
 
           {/* Inline Question Create/Edit Form */}
           {isFormOpen && (
-            <form onSubmit={handleSaveQuestion} className="space-y-4 p-4 rounded-md border border-brand-500/40 bg-brand-50/5">
+            <form
+              onSubmit={handleSaveQuestion}
+              className="space-y-4 p-4 rounded-md border border-brand-500/40 bg-brand-50/5"
+            >
               <div className="flex items-center justify-between border-b border-border pb-2">
                 <span className="text-xs font-mono font-bold text-card-foreground">
                   {editingQuestionId !== null ? 'Edit Question' : 'New Question'}
@@ -411,8 +416,10 @@ export function QuizBuilderPanel({
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label className="input-label">Answer Choices & Correct Option</label>
-                  <span className="text-[10px] font-mono text-muted">
-                    {draftType === 'multiple_select' ? 'Select all that apply' : 'Select single correct answer'}
+                  <span className="text-[0.625rem] font-mono text-muted">
+                    {draftType === 'multiple_select'
+                      ? 'Select all that apply'
+                      : 'Select single correct answer'}
                   </span>
                 </div>
 
@@ -426,7 +433,7 @@ export function QuizBuilderPanel({
                         onClick={() => setCorrectAnswer(index)}
                         className={`w-6 h-6 rounded-xs border flex items-center justify-center shrink-0 cursor-pointer transition-colors ${
                           answer.isCorrect
-                            ? 'bg-emerald-500 border-emerald-600 text-white font-bold text-xs'
+                            ? 'bg-success border-success text-pearl-100 font-bold text-xs'
                             : 'border-border bg-paper hover:border-card-foreground text-transparent'
                         }`}
                         title={answer.isCorrect ? 'Correct Answer' : 'Click to mark as correct'}
@@ -476,7 +483,12 @@ export function QuizBuilderPanel({
               </div>
 
               <div className="flex justify-end gap-2 pt-2 border-t border-border">
-                <Button variant="ghost" size="sm" type="button" onClick={() => setIsFormOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  type="button"
+                  onClick={() => setIsFormOpen(false)}
+                >
                   Cancel
                 </Button>
                 <Button variant="primary" size="sm" type="submit" isLoading={savingQuestion}>
@@ -504,22 +516,26 @@ export function QuizBuilderPanel({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0 flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="text-[10px] font-mono text-muted font-bold">#{qIndex + 1}</span>
-                        <span className="text-[9px] font-mono px-1 py-0.2 rounded-xs bg-paper border border-border uppercase font-semibold text-muted">
+                        <span className="text-[0.625rem] font-mono text-muted font-bold">
+                          #{qIndex + 1}
+                        </span>
+                        <span className="text-[0.5625rem] font-mono px-1 py-0.2 rounded-xs bg-paper border border-border uppercase font-semibold text-muted">
                           {QUESTION_TYPE_LABELS[q.questionType]}
                         </span>
-                        <span className="text-[10px] font-mono text-brand-600 dark:text-brand-400 font-bold">
+                        <span className="text-[0.625rem] font-mono text-brand-600 font-bold">
                           +{q.points} XP
                         </span>
                       </div>
-                      <p className="text-xs font-medium text-card-foreground leading-snug">{q.questionText}</p>
+                      <p className="text-xs font-medium text-card-foreground leading-snug">
+                        {q.questionText}
+                      </p>
                     </div>
 
                     <div className="flex items-center gap-1 shrink-0">
                       <button
                         type="button"
                         onClick={() => openEditQuestion(q)}
-                        className="px-2 py-0.5 rounded-xs border border-border bg-paper hover:bg-surface-hover text-card-foreground text-[11px] font-mono transition-colors cursor-pointer"
+                        className="px-2 py-0.5 rounded-xs border border-border bg-paper hover:bg-surface-hover text-card-foreground text-[0.6875rem] font-mono transition-colors cursor-pointer"
                       >
                         Edit
                       </button>
@@ -529,13 +545,20 @@ export function QuizBuilderPanel({
                   {/* Answers preview */}
                   <div className="space-y-1 pl-2 border-l border-border/60">
                     {q.answers.map((ans) => (
-                      <div key={ans.answerId} className="flex items-center gap-1.5 text-[11px] font-mono">
+                      <div
+                        key={ans.answerId}
+                        className="flex items-center gap-1.5 text-[0.6875rem] font-mono"
+                      >
                         {ans.isCorrect ? (
-                          <span className="text-emerald-500 font-bold">✓</span>
+                          <span className="text-success font-bold">✓</span>
                         ) : (
                           <span className="text-muted">○</span>
                         )}
-                        <span className={ans.isCorrect ? 'text-card-foreground font-semibold' : 'text-muted'}>
+                        <span
+                          className={
+                            ans.isCorrect ? 'text-card-foreground font-semibold' : 'text-muted'
+                          }
+                        >
                           {ans.answerText}
                         </span>
                       </div>

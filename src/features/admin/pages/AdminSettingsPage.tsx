@@ -1,5 +1,13 @@
 import { useState, useMemo } from 'react';
-import { Button, Card, ErrorState, Modal, PageHeader, DetailFormSkeleton, toast } from '@/shared/components';
+import {
+  Button,
+  Card,
+  ErrorState,
+  Modal,
+  PageHeader,
+  DetailFormSkeleton,
+  toast,
+} from '@/shared/components';
 import { useAdminSystemSettings } from '../hooks';
 import type { SystemSetting } from '../types';
 
@@ -119,8 +127,7 @@ export function AdminSettingsPage() {
                   setSearch('');
                   setSelectedGroup('all');
                 }}
-                className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-               
+                className="h-7 text-[0.6875rem] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
               >
                 Reset
               </Button>
@@ -130,7 +137,7 @@ export function AdminSettingsPage() {
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead>
-                <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Setting Key</th>
                   <th className="px-3 py-2 font-medium">Value</th>
                   <th className="px-3 py-2 font-medium w-28">Group</th>
@@ -140,14 +147,15 @@ export function AdminSettingsPage() {
               </thead>
               <tbody>
                 {filteredSettings.map((setting) => (
-                  <tr key={setting.settingId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 transition-colors">
+                  <tr
+                    key={setting.settingId}
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/50 transition-colors"
+                  >
                     <td className="px-3 py-2 font-semibold text-card-foreground">
                       {setting.settingKey}
                     </td>
                     <td className="px-3 py-2 font-mono text-xs text-card-foreground">
-                      <span>
-                        {displayValue(setting.settingValue)}
-                      </span>
+                      <span>{displayValue(setting.settingValue)}</span>
                     </td>
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
                       {setting.groupName ?? '—'}
@@ -165,7 +173,7 @@ export function AdminSettingsPage() {
                           Edit
                         </button>
                       ) : (
-                        <span className="text-[11px] text-muted">Read-only</span>
+                        <span className="text-[0.6875rem] text-muted">Read-only</span>
                       )}
                     </td>
                   </tr>
@@ -192,7 +200,6 @@ export function AdminSettingsPage() {
                 className="input-field w-full font-mono text-xs"
                 value={editValue}
                 onChange={(e) => setEditValue(e.target.value)}
-               
               />
             ) : null}
           </div>
@@ -203,7 +210,6 @@ export function AdminSettingsPage() {
               variant="secondary"
               onClick={() => setEditing(null)}
               disabled={update.isPending}
-             
             >
               Cancel
             </Button>
@@ -213,7 +219,6 @@ export function AdminSettingsPage() {
               onClick={saveEdit}
               isLoading={update.isPending}
               disabled={!editing || editValue.trim() === ''}
-             
             >
               Save
             </Button>

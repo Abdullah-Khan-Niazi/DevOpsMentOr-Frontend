@@ -43,7 +43,11 @@ export function OrgInviteDrawer({
     if (isOpen) {
       setRole(defaultRole);
       setSelectedCohortId(
-        defaultClassId ? String(defaultClassId) : cohorts[0]?.classId ? String(cohorts[0].classId) : '',
+        defaultClassId
+          ? String(defaultClassId)
+          : cohorts[0]?.classId
+            ? String(cohorts[0].classId)
+            : '',
       );
       setAssignedCohortIds(defaultClassId ? [defaultClassId] : []);
       setEmailsInput('');
@@ -88,7 +92,10 @@ export function OrgInviteDrawer({
     const file = files[0];
     try {
       const text = await file.text();
-      const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
       const parsedEmails: string[] = [];
 
       for (const line of lines) {
@@ -193,7 +200,9 @@ export function OrgInviteDrawer({
         if (failCount === 0) {
           toast.success(
             `Dispatched ${successCount} professor invitation(s)${
-              assignedCohortIds.length > 0 ? ` with ${assignedCohortIds.length} cohort(s) assigned` : ''
+              assignedCohortIds.length > 0
+                ? ` with ${assignedCohortIds.length} cohort(s) assigned`
+                : ''
             }.`,
           );
         } else {
@@ -307,7 +316,8 @@ export function OrgInviteDrawer({
                         id="target-cohort-select"
                         className={cn(
                           'input-field w-full mt-1',
-                          cohortError && 'border-signal outline-signal focus:border-signal bg-signal/5',
+                          cohortError &&
+                            'border-signal outline-signal focus:border-signal bg-signal/5',
                         )}
                         value={selectedCohortId}
                         onChange={(e) => {
@@ -325,10 +335,29 @@ export function OrgInviteDrawer({
                       </select>
                       {cohortError ? (
                         <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
-                          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg
+                            className="w-3.5 h-3.5 shrink-0"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
                             <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                            <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                            <line
+                              x1="12"
+                              y1="8"
+                              x2="12"
+                              y2="12"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
+                            <line
+                              x1="12"
+                              y1="16"
+                              x2="12.01"
+                              y2="16"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                            />
                           </svg>
                           {cohortError}
                         </p>
@@ -347,7 +376,7 @@ export function OrgInviteDrawer({
                       {assignedCohortIds.length} selected
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted mb-1.5 font-mono">
+                  <p className="text-[0.6875rem] text-muted mb-1.5 font-mono">
                     Optionally assign this professor to lead one or multiple cohorts.
                   </p>
                   {cohorts.length === 0 ? (
@@ -368,7 +397,7 @@ export function OrgInviteDrawer({
                             className="rounded-xs border-border"
                           />
                           <span className="font-medium text-card-foreground">{c.className}</span>
-                          <span className="text-muted font-mono text-[10px]">
+                          <span className="text-muted font-mono text-[0.625rem]">
                             ({c.studentCount}/{c.maxStudents} enrolled)
                           </span>
                         </label>
@@ -415,10 +444,22 @@ export function OrgInviteDrawer({
                 />
                 {emailError ? (
                   <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
-                    <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg
+                      className="w-3.5 h-3.5 shrink-0"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
                       <circle cx="12" cy="12" r="10" strokeWidth="2" />
                       <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
-                      <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                      <line
+                        x1="12"
+                        y1="16"
+                        x2="12.01"
+                        y2="16"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                      />
                     </svg>
                     {emailError}
                   </p>
@@ -457,11 +498,11 @@ export function OrgInviteDrawer({
                     <p className="text-xs font-medium text-card-foreground">
                       Click to upload or drag &amp; drop CSV file
                     </p>
-                    <p className="text-[11px] text-muted font-mono">
+                    <p className="text-[0.6875rem] text-muted font-mono">
                       Format: email, role, fullName
                     </p>
                     {csvParsedCount !== null && (
-                      <p className="text-[11px] font-mono text-brand-600 font-semibold mt-1">
+                      <p className="text-[0.6875rem] font-mono text-brand-600 font-semibold mt-1">
                         &check; {csvParsedCount} email(s) loaded from CSV
                       </p>
                     )}

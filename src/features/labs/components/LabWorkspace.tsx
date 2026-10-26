@@ -94,7 +94,13 @@ export function LabWorkspace({
       hasAutoStarted.current = true;
       handleLaunch();
     }
-  }, [activeInstanceQuery.isLoading, instance, provisionMutation.isPending, provisionMutation.isSuccess, provisionMutation.isError]);
+  }, [
+    activeInstanceQuery.isLoading,
+    instance,
+    provisionMutation.isPending,
+    provisionMutation.isSuccess,
+    provisionMutation.isError,
+  ]);
 
   // Synthetic default assertions if none evaluated yet
   const defaultObjectives = useMemo(() => {
@@ -180,7 +186,8 @@ export function LabWorkspace({
     });
   };
 
-  const isProvisioning = provisionMutation.isPending || activeInstanceQuery.isLoading || instance?.status === 'pending';
+  const isProvisioning =
+    provisionMutation.isPending || activeInstanceQuery.isLoading || instance?.status === 'pending';
   const isRunning = Boolean(instance && instance.status === 'running' && instance.terminalWsUrl);
 
   return (
@@ -204,7 +211,13 @@ export function LabWorkspace({
             className="p-1.5 rounded-xs hover:bg-surface text-muted hover:text-card-foreground transition-colors cursor-pointer mr-0.5 shrink-0"
             title="Exit to Curriculum"
           >
-            <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <svg
+              className="w-4 h-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
               <path d="M19 12H5M12 19l-7-7 7-7" />
             </svg>
           </button>
@@ -220,7 +233,10 @@ export function LabWorkspace({
             <button
               type="button"
               disabled={!prevLesson}
-              onClick={() => prevLesson && navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(prevLesson.lessonId)))}
+              onClick={() =>
+                prevLesson &&
+                navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(prevLesson.lessonId)))
+              }
               className="px-2.5 py-1.5 hover:bg-surface-hover text-muted hover:text-card-foreground disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-[0.96]"
               title={prevLesson ? `Previous: ${prevLesson.title}` : 'No previous lesson'}
             >
@@ -232,15 +248,26 @@ export function LabWorkspace({
               className="px-3 py-1.5 hover:bg-surface-hover text-xs font-mono font-medium text-card-foreground flex items-center gap-1.5 transition-all cursor-pointer active:scale-[0.98]"
               title="Open module outline"
             >
-              <svg className="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
-                <line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="18" x2="21" y2="18" />
+              <svg
+                className="w-3.5 h-3.5 text-muted"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <line x1="3" y1="12" x2="21" y2="12" />
+                <line x1="3" y1="6" x2="21" y2="6" />
+                <line x1="3" y1="18" x2="21" y2="18" />
               </svg>
               Module Outline
             </button>
             <button
               type="button"
               disabled={!nextLesson}
-              onClick={() => nextLesson && navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))}
+              onClick={() =>
+                nextLesson &&
+                navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))
+              }
               className="px-2.5 py-1.5 hover:bg-surface-hover text-muted hover:text-card-foreground disabled:opacity-20 disabled:cursor-not-allowed transition-all cursor-pointer active:scale-[0.96]"
               title={nextLesson ? `Next: ${nextLesson.title}` : 'No next lesson'}
             >
@@ -253,8 +280,8 @@ export function LabWorkspace({
         <div className="flex items-center gap-2 sm:gap-3 shrink-0 z-10 ml-auto">
           {isRunning && instance ? (
             <>
-              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-xs bg-paper border border-border text-[11px] font-mono">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 inline-block shrink-0" />
+              <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-xs bg-paper border border-border text-[0.6875rem] font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-signal inline-block shrink-0" />
                 <span className="text-muted">TIME:</span>
                 <LabTimerCountdown
                   expiresAt={instance.expiresAt}
@@ -286,7 +313,7 @@ export function LabWorkspace({
             </>
           ) : isProvisioning ? (
             <div className="flex items-center gap-2 px-2.5 py-1 rounded-xs bg-paper border border-border text-card-foreground text-xs font-mono">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-ping inline-block shrink-0" />
+              <span className="w-1.5 h-1.5 rounded-full bg-signal animate-ping inline-block shrink-0" />
               <span>Bootstrapping Sandbox…</span>
             </div>
           ) : (
@@ -311,7 +338,7 @@ export function LabWorkspace({
             AI Mentor
           </Button>
 
-          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xs bg-paper border border-border text-[11px] font-mono text-card-foreground">
+          <div className="hidden sm:flex items-center gap-1 px-2.5 py-1 rounded-xs bg-paper border border-border text-[0.6875rem] font-mono text-card-foreground">
             <span className="font-semibold">{userXp.toLocaleString()} XP</span>
           </div>
         </div>
@@ -325,28 +352,36 @@ export function LabWorkspace({
             {/* Panel Tab Header */}
             <div className="p-3.5 border-b border-border bg-paper/50 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <svg className="w-4 h-4 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+                <svg
+                  className="w-4 h-4 text-muted"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <rect x="2" y="3" width="20" height="14" rx="2" />
-                  <line x1="8" y1="21" x2="16" y2="21" /><line x1="12" y1="17" x2="12" y2="21" />
+                  <line x1="8" y1="21" x2="16" y2="21" />
+                  <line x1="12" y1="17" x2="12" y2="21" />
                 </svg>
                 <h3 className="text-xs font-mono uppercase tracking-wider text-card-foreground font-semibold">
                   Lab Scenario & Tasks
                 </h3>
               </div>
-              <span className="text-xs font-mono text-muted font-medium">
-                75 XP
-              </span>
+              <span className="text-xs font-mono text-muted font-medium">75 XP</span>
             </div>
 
             <div className="p-4 space-y-4 flex-1 overflow-y-auto text-sm leading-relaxed text-card-foreground">
               {/* Context / Scenario description */}
               {lesson.content ? (
-                <div className="space-y-3 prose prose-sm dark:prose-invert max-w-none text-xs text-muted">
-                  {lesson.content.split('\n\n').slice(0, 2).map((block, idx) => (
-                    <p key={idx} className="whitespace-pre-line text-card-foreground/90">
-                      {block}
-                    </p>
-                  ))}
+                <div className="space-y-3 prose prose-sm max-w-none text-xs text-muted">
+                  {lesson.content
+                    .split('\n\n')
+                    .slice(0, 2)
+                    .map((block, idx) => (
+                      <p key={idx} className="whitespace-pre-line text-card-foreground/90">
+                        {block}
+                      </p>
+                    ))}
                 </div>
               ) : (
                 <p className="text-xs text-muted">
@@ -360,7 +395,7 @@ export function LabWorkspace({
                   <span className="text-xs font-mono uppercase font-bold text-card-foreground">
                     Tasks ({passedCount}/{displayedAssertions.length})
                   </span>
-                  <span className="text-[10px] font-mono text-muted">
+                  <span className="text-[0.625rem] font-mono text-muted">
                     {allPassed ? 'All objectives met' : 'Complete to earn XP'}
                   </span>
                 </div>
@@ -373,16 +408,16 @@ export function LabWorkspace({
                         key={idx}
                         className={`p-3 rounded-xs border transition-all ${
                           item.passed
-                            ? 'border-emerald-500/40 bg-emerald-500/10'
+                            ? 'border-success/40 bg-success/10'
                             : 'border-border/80 bg-paper/50'
                         }`}
                       >
                         <div className="flex items-start gap-2.5">
                           {/* Number Badge (DataCamp circle) */}
                           <span
-                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[11px] font-bold ${
+                            className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[0.6875rem] font-bold ${
                               item.passed
-                                ? 'bg-emerald-500 text-white'
+                                ? 'bg-success text-pearl-100'
                                 : 'bg-surface border border-border text-card-foreground'
                             }`}
                           >
@@ -390,13 +425,9 @@ export function LabWorkspace({
                           </span>
 
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs font-medium text-card-foreground">
-                              {item.name}
-                            </p>
+                            <p className="text-xs font-medium text-card-foreground">{item.name}</p>
                             {item.message && (
-                              <p className="text-[11px] text-muted mt-0.5">
-                                {item.message}
-                              </p>
+                              <p className="text-[0.6875rem] text-muted mt-0.5">{item.message}</p>
                             )}
 
                             {/* Hint button */}
@@ -404,15 +435,16 @@ export function LabWorkspace({
                               <button
                                 type="button"
                                 onClick={() => setExpandedHintIndex(isHintOpen ? null : idx)}
-                                className="text-[10px] font-mono text-muted hover:text-card-foreground hover:underline inline-flex items-center gap-1 cursor-pointer"
+                                className="text-[0.625rem] font-mono text-muted hover:text-card-foreground hover:underline inline-flex items-center gap-1 cursor-pointer"
                               >
                                 {isHintOpen ? 'Hide Hint' : 'Take Hint (-5 XP)'}
                               </button>
 
                               {isHintOpen && (
-                                <div className="mt-1.5 p-2 rounded-xs bg-paper border border-border text-[11px] font-mono text-muted">
+                                <div className="mt-1.5 p-2 rounded-xs bg-paper border border-border text-[0.6875rem] font-mono text-muted">
                                   {/* @ts-expect-error synthetic hint prop */}
-                                  {item.hint ?? 'Inspect running pods and verify configuration flags in /workspace/.'}
+                                  {item.hint ??
+                                    'Inspect running pods and verify configuration flags in /workspace/.'}
                                 </div>
                               )}
                             </div>
@@ -426,7 +458,7 @@ export function LabWorkspace({
 
               {/* Quick Terminal Helper Commands */}
               <div className="border-t border-border pt-3 space-y-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted font-bold block">
+                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted font-bold block">
                   Helpful Commands
                 </span>
                 <div className="space-y-1 font-mono text-xs">
@@ -443,17 +475,17 @@ export function LabWorkspace({
         )}
 
         {/* Center/Right Live Terminal Area (Full Viewport) */}
-        <main className="flex-1 bg-[#14140F] flex flex-col relative min-h-0 overflow-hidden">
+        <main className="flex-1 bg-ink flex flex-col relative min-h-0 overflow-hidden">
           {/* Terminal Tabs Bar */}
-          <div className="h-9 border-b border-white/10 bg-[#1A1A14] px-3 flex items-center justify-between shrink-0">
-            <div className="inline-flex items-center rounded-xs bg-black/40 border border-white/10 p-0.5 text-xs font-mono">
+          <div className="h-9 border-b border-pearl-100/10 bg-ink-soft px-3 flex items-center justify-between shrink-0">
+            <div className="inline-flex items-center rounded-xs bg-ink-deep/40 border border-pearl-100/10 p-0.5 text-xs font-mono">
               <button
                 type="button"
                 onClick={() => setActiveTab('terminal')}
                 className={`px-3 py-0.5 rounded-xs transition-colors cursor-pointer ${
                   activeTab === 'terminal'
-                    ? 'bg-white/20 text-white font-semibold'
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-pearl-100/20 text-pearl-100 font-semibold'
+                    : 'text-pearl-100/60 hover:text-pearl-100'
                 }`}
               >
                 Terminal
@@ -463,30 +495,34 @@ export function LabWorkspace({
                 onClick={() => setActiveTab('docs')}
                 className={`px-3 py-0.5 rounded-xs transition-colors cursor-pointer ${
                   activeTab === 'docs'
-                    ? 'bg-white/20 text-white font-semibold'
-                    : 'text-white/60 hover:text-white'
+                    ? 'bg-pearl-100/20 text-pearl-100 font-semibold'
+                    : 'text-pearl-100/60 hover:text-pearl-100'
                 }`}
               >
                 Architecture & Docs
               </button>
             </div>
 
-            <div className="flex items-center gap-2 text-[11px] font-mono text-white/40">
-              <span className={`w-1.5 h-1.5 rounded-full inline-block ${isRunning ? 'bg-emerald-400 animate-pulse' : 'bg-white/30'}`} />
+            <div className="flex items-center gap-2 text-[0.6875rem] font-mono text-pearl-100/40">
+              <span
+                className={`w-1.5 h-1.5 rounded-full inline-block ${isRunning ? 'bg-signal animate-pulse' : 'bg-pearl-100/30'}`}
+              />
               <span>{isRunning ? 'Connected · Live Shell' : 'Interactive Sandbox'}</span>
             </div>
           </div>
 
           {activeTab === 'docs' ? (
-            <div className="flex-1 p-6 text-white overflow-y-auto space-y-4 font-sans text-xs max-w-3xl">
-              <h2 className="text-base font-bold text-white font-mono">
+            <div className="flex-1 p-6 text-pearl-100 overflow-y-auto space-y-4 font-sans text-xs max-w-3xl">
+              <h2 className="text-base font-bold text-pearl-100 font-mono">
                 System Topology & Target State
               </h2>
-              <p className="text-white/80 leading-relaxed">
-                This lab instance operates inside an isolated container namespace. The ingress port forwards traffic directly from your terminal session to port 30080 on the internal bridge.
+              <p className="text-pearl-100/80 leading-relaxed">
+                This lab instance operates inside an isolated container namespace. The ingress port
+                forwards traffic directly from your terminal session to port 30080 on the internal
+                bridge.
               </p>
-              <div className="p-4 rounded-xs border border-white/10 bg-white/5 font-mono space-y-2 text-white/90">
-                <p className="text-emerald-400 font-bold">Cluster Network Spec:</p>
+              <div className="p-4 rounded-xs border border-pearl-100/10 bg-pearl-100/5 font-mono space-y-2 text-pearl-100/90">
+                <p className="text-pearl-200 font-bold">Cluster Network Spec:</p>
                 <p>• Internal CIDR: 10.244.0.0/16</p>
                 <p>• Health Probe Endpoint: GET /health</p>
                 <p>• Target Deployment: devops-core-app</p>
@@ -500,34 +536,41 @@ export function LabWorkspace({
               />
             </div>
           ) : isProvisioning ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0D1117] text-white space-y-4">
-              <div className="w-12 h-12 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-ink-deep text-pearl-100 space-y-4">
+              <div className="w-12 h-12 rounded-full border-2 border-pearl-100/20 border-t-pearl-100 animate-spin" />
               <div className="space-y-1.5 text-center max-w-md">
-                <h3 className="text-base font-mono font-bold text-white tracking-tight">
+                <h3 className="text-base font-mono font-bold text-pearl-100 tracking-tight">
                   Bootstrapping Lab Environment…
                 </h3>
-                <p className="text-xs font-mono text-white/60 leading-relaxed">
-                  Allocating dedicated container namespace, mounting volumes, and bridging xterm stream.
+                <p className="text-xs font-mono text-pearl-100/60 leading-relaxed">
+                  Allocating dedicated container namespace, mounting volumes, and bridging xterm
+                  stream.
                 </p>
               </div>
-              <div className="w-48 h-1 rounded-full bg-white/10 overflow-hidden">
-                <div className="h-full bg-emerald-500 animate-pulse w-3/4 rounded-full" />
+              <div className="w-48 h-1 rounded-full bg-pearl-100/10 overflow-hidden">
+                <div className="h-full bg-signal animate-pulse w-3/4 rounded-full" />
               </div>
             </div>
           ) : provisionMutation.isError ? (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0D1117] text-white space-y-4 text-center">
-              <div className="w-12 h-12 rounded-full bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-400">
-                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-ink-deep text-pearl-100 space-y-4 text-center">
+              <div className="w-12 h-12 rounded-full bg-error/10 border border-error/30 flex items-center justify-center text-error">
+                <svg
+                  className="w-6 h-6"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth={2}
+                >
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
                 </svg>
               </div>
               <div className="space-y-1 max-w-md">
-                <h3 className="text-sm font-mono font-bold text-white">
+                <h3 className="text-sm font-mono font-bold text-pearl-100">
                   Sandbox Allocation Failed
                 </h3>
-                <p className="text-xs font-mono text-white/60">
+                <p className="text-xs font-mono text-pearl-100/60">
                   {provisionMutation.error?.message ?? 'Could not allocate container namespace.'}
                 </p>
               </div>
@@ -541,11 +584,9 @@ export function LabWorkspace({
               </Button>
             </div>
           ) : (
-            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-[#0D1117] text-white space-y-4 text-center">
-              <div className="w-12 h-12 rounded-full border-2 border-emerald-500/20 border-t-emerald-500 animate-spin" />
-              <p className="font-mono text-xs text-white/60">
-                Initializing sandbox session…
-              </p>
+            <div className="flex-1 flex flex-col items-center justify-center p-8 bg-ink-deep text-pearl-100 space-y-4 text-center">
+              <div className="w-12 h-12 rounded-full border-2 border-pearl-100/20 border-t-pearl-100 animate-spin" />
+              <p className="font-mono text-xs text-pearl-100/60">Initializing sandbox session…</p>
             </div>
           )}
         </main>
@@ -559,7 +600,13 @@ export function LabWorkspace({
           onClick={() => setInstructionsCollapsed((c) => !c)}
           className="px-2.5 py-1 rounded-xs border border-border bg-paper hover:bg-surface-hover text-xs font-mono text-card-foreground transition-all cursor-pointer font-medium flex items-center gap-1.5 active:scale-[0.98]"
         >
-          <svg className="w-3.5 h-3.5 text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+          <svg
+            className="w-3.5 h-3.5 text-muted"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+          >
             <rect x="3" y="3" width="18" height="18" rx="2" />
             <line x1="9" y1="3" x2="9" y2="21" />
           </svg>
@@ -573,15 +620,13 @@ export function LabWorkspace({
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all ${
-                  item.passed
-                    ? 'bg-emerald-500 w-10'
-                    : 'bg-border/80 w-8'
+                  item.passed ? 'bg-success w-10' : 'bg-border/80 w-8'
                 }`}
                 title={`Objective ${i + 1}: ${item.name} (${item.passed ? 'Passed' : 'Pending'})`}
               />
             ))}
           </div>
-          <span className="text-[11px] font-mono text-muted ml-1.5">
+          <span className="text-[0.6875rem] font-mono text-muted ml-1.5">
             Checks ({passedCount}/{displayedAssertions.length} Passed)
           </span>
         </div>
@@ -593,13 +638,15 @@ export function LabWorkspace({
               <Button
                 variant="primary"
                 size="sm"
-                onClick={() => navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))}
-                className="font-mono text-xs shadow-xs active:scale-[0.98] transition-all bg-emerald-600 hover:bg-emerald-700"
+                onClick={() =>
+                  navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(nextLesson.lessonId)))
+                }
+                className="font-mono text-xs shadow-xs active:scale-[0.98] transition-all bg-ink hover:bg-ink-soft"
               >
                 Continue to Next Lesson →
               </Button>
             ) : (
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xs bg-emerald-500/15 border border-emerald-500/40 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-xs bg-success/15 border border-success/40 text-success font-mono text-xs font-bold">
                 ✓ Objectives Met
               </div>
             )

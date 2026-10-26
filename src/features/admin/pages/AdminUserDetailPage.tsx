@@ -55,12 +55,14 @@ export function AdminUserDetailPage() {
   const { userId } = useParams<{ userId: string }>();
   const navigate = useNavigate();
   const location = useLocation();
-  const backState = location.state as {
-    fromOrgId?: number;
-    fromTab?: string;
-    fromClassId?: number;
-    fromUrl?: string;
-  } | undefined;
+  const backState = location.state as
+    | {
+        fromOrgId?: number;
+        fromTab?: string;
+        fromClassId?: number;
+        fromUrl?: string;
+      }
+    | undefined;
 
   const handleBack = () => {
     if (backState?.fromUrl) {
@@ -183,18 +185,14 @@ export function AdminUserDetailPage() {
             <Row label="Assigned roles">{user.roles.join(', ') || 'None'}</Row>
             <Row label="Email verified">{user.isVerified ? 'Yes' : 'No'}</Row>
             <Row label="Joined platform">{formatDate(user.createdAt)}</Row>
-            <Row label="Last login">
-              {formatDate(user.loginHistory[0]?.createdAt ?? null)}
-            </Row>
+            <Row label="Last login">{formatDate(user.loginHistory[0]?.createdAt ?? null)}</Row>
             {user.profile?.country ? (
               <Row label="Country">{user.profile.country.countryName}</Row>
             ) : null}
             {user.profile?.occupation ? (
               <Row label="Occupation">{user.profile.occupation}</Row>
             ) : null}
-            {user.profile?.company ? (
-              <Row label="Company">{user.profile.company}</Row>
-            ) : null}
+            {user.profile?.company ? <Row label="Company">{user.profile.company}</Row> : null}
           </dl>
 
           {user.bio ? (
@@ -227,7 +225,9 @@ export function AdminUserDetailPage() {
       {activeTab === 'security' ? (
         <div className="space-y-6">
           <Card className="p-6">
-            <h2 className="mb-4 text-base font-semibold text-card-foreground">Governance & Ban Status</h2>
+            <h2 className="mb-4 text-base font-semibold text-card-foreground">
+              Governance & Ban Status
+            </h2>
             {user.isBanned ? (
               <div className="rounded-md border border-red-200 bg-red-50 p-4 text-sm text-red-900">
                 <p className="font-medium">User is currently banned.</p>
@@ -301,7 +301,9 @@ export function AdminUserDetailPage() {
                       <td className="px-3 py-2">{login.ipAddress ?? '-'}</td>
                       <td className="px-3 py-2 text-muted-foreground">
                         {login.isSuccessful ? (
-                          <span className="font-mono text-card-foreground font-medium">Success</span>
+                          <span className="font-mono text-card-foreground font-medium">
+                            Success
+                          </span>
                         ) : (
                           <span className="text-red-600 font-medium">
                             Failed {login.failureReason ? `(${login.failureReason})` : ''}
@@ -320,15 +322,21 @@ export function AdminUserDetailPage() {
       {activeTab === 'engagement' ? (
         <div className="space-y-6">
           <Card className="p-6">
-            <h2 className="mb-4 text-base font-semibold text-card-foreground">Engagement Metrics</h2>
+            <h2 className="mb-4 text-base font-semibold text-card-foreground">
+              Engagement Metrics
+            </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border border-border p-4 bg-surface rounded-none">
                 <span className="text-xs uppercase text-muted">Followers</span>
-                <p className="mt-1 text-2xl font-bold text-card-foreground">{user.followersCount}</p>
+                <p className="mt-1 text-2xl font-bold text-card-foreground">
+                  {user.followersCount}
+                </p>
               </div>
               <div className="border border-border p-4 bg-surface rounded-none">
                 <span className="text-xs uppercase text-muted">Following</span>
-                <p className="mt-1 text-2xl font-bold text-card-foreground">{user.followingCount}</p>
+                <p className="mt-1 text-2xl font-bold text-card-foreground">
+                  {user.followingCount}
+                </p>
               </div>
               <div className="border border-border p-4 bg-surface rounded-none">
                 <span className="text-xs uppercase text-muted">Profile Views</span>
@@ -347,13 +355,18 @@ export function AdminUserDetailPage() {
 
           {progressQuery.isError ? (
             <ErrorState
-              message={progressQuery.error?.message ?? 'Unable to load curriculum and lab progress.'}
+              message={
+                progressQuery.error?.message ?? 'Unable to load curriculum and lab progress.'
+              }
               onRetry={() => void progressQuery.refetch()}
             />
           ) : (
             <>
               <div className="grid gap-6 lg:grid-cols-2">
-                <CourseProgressCard course={progressQuery.data?.course ?? null} isLoading={progressQuery.isLoading} />
+                <CourseProgressCard
+                  course={progressQuery.data?.course ?? null}
+                  isLoading={progressQuery.isLoading}
+                />
                 <Card className="p-6 rounded-none">
                   <h3 className="text-sm font-semibold text-card-foreground">Quiz Attempts</h3>
                   {progressQuery.isLoading ? (
@@ -370,10 +383,18 @@ export function AdminUserDetailPage() {
                           key={attempt.attemptId}
                           className="flex items-center justify-between gap-3 pt-2 text-sm"
                         >
-                          <span className="text-card-foreground font-medium">Attempt #{attempt.attemptNumber}</span>
+                          <span className="text-card-foreground font-medium">
+                            Attempt #{attempt.attemptNumber}
+                          </span>
                           <span className="tabular-nums text-xs">
                             <span className="font-bold">{attempt.score}%</span> ·{' '}
-                            <span className={attempt.isPassed ? 'font-mono text-card-foreground font-bold' : 'text-red-500 font-medium'}>
+                            <span
+                              className={
+                                attempt.isPassed
+                                  ? 'font-mono text-card-foreground font-bold'
+                                  : 'text-red-500 font-medium'
+                              }
+                            >
                               {attempt.isPassed ? 'Passed' : 'Failed'}
                             </span>
                           </span>
@@ -385,12 +406,19 @@ export function AdminUserDetailPage() {
               </div>
 
               <Card className="p-6 rounded-none">
-                <h3 className="mb-4 text-sm font-semibold text-card-foreground">Module Breakdown</h3>
-                <ModuleBreakdownTable modules={progressQuery.data?.modules ?? []} isLoading={progressQuery.isLoading} />
+                <h3 className="mb-4 text-sm font-semibold text-card-foreground">
+                  Module Breakdown
+                </h3>
+                <ModuleBreakdownTable
+                  modules={progressQuery.data?.modules ?? []}
+                  isLoading={progressQuery.isLoading}
+                />
               </Card>
 
               <Card className="p-6 rounded-none">
-                <h3 className="mb-4 text-sm font-semibold text-card-foreground">Curriculum & Lab Activity Log</h3>
+                <h3 className="mb-4 text-sm font-semibold text-card-foreground">
+                  Curriculum & Lab Activity Log
+                </h3>
                 <ActivityLogTable
                   items={(progressQuery.data?.activity ?? []).slice(
                     (activityPage - 1) * ACTIVITY_PAGE_SIZE,
@@ -403,7 +431,10 @@ export function AdminUserDetailPage() {
                     page={activityPage}
                     pageSize={ACTIVITY_PAGE_SIZE}
                     total={progressQuery.data?.activity.length ?? 0}
-                    totalPages={Math.max(1, Math.ceil((progressQuery.data?.activity.length ?? 0) / ACTIVITY_PAGE_SIZE))}
+                    totalPages={Math.max(
+                      1,
+                      Math.ceil((progressQuery.data?.activity.length ?? 0) / ACTIVITY_PAGE_SIZE),
+                    )}
                     onPageChange={setActivityPage}
                   />
                 )}
@@ -418,12 +449,13 @@ export function AdminUserDetailPage() {
           <h2 className="mb-4 text-base font-semibold text-card-foreground">Danger Zone</h2>
 
           {user.deletedAt ? (
-            <div className="rounded-md border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+            <div className="rounded-md border border-warning/40 bg-warning/10 p-4 text-sm text-warning">
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="font-semibold">User is Soft-Deleted</h3>
-                  <p className="text-xs text-amber-800 mt-0.5">
-                    Deleted on {formatDate(user.deletedAt)}. You can revert this soft delete at any time.
+                  <p className="text-xs text-warning mt-0.5">
+                    Deleted on {formatDate(user.deletedAt)}. You can revert this soft delete at any
+                    time.
                   </p>
                 </div>
                 <Button

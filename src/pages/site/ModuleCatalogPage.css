@@ -66,7 +66,7 @@
   gap: var(--space-2);
   padding: var(--space-6);
   background-color: var(--color-bg-raised);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   cursor: crosshair; /* §6.5 — curriculum cards' crosshair exception */
   transition:
@@ -76,7 +76,7 @@
 
 .mc-module-card:hover {
   border-color: var(--color-border-strong);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 .mc-module-card__num {

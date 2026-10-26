@@ -33,7 +33,7 @@
   font-weight: 500;
   background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
   background-position: 0 100%;
-  background-size: 0% 1px;
+  background-size: 0% 0.0625rem;
   background-repeat: no-repeat;
   transition:
     color var(--duration-fast) var(--ease-standard),
@@ -42,12 +42,12 @@
 
 .faq-crosslink:hover {
   color: var(--color-accent-400);
-  background-size: 100% 1px;
+  background-size: 100% 0.0625rem;
 }
 
 .faq-crosslink:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--color-accent-500);
+  outline-offset: 0.125rem;
   border-radius: var(--radius-xs);
 }
 
@@ -58,7 +58,7 @@
 }
 
 .faq-container {
-  max-width: 840px;
+  max-width: 52.5rem;
 }
 
 .faq-categories {
@@ -88,7 +88,7 @@
 .faq-footer {
   margin-top: var(--space-12);
   padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
 }
 
 .faq-footer-text {
@@ -104,7 +104,7 @@
   font-weight: 500;
   background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
   background-position: 0 100%;
-  background-size: 0% 1px;
+  background-size: 0% 0.0625rem;
   background-repeat: no-repeat;
   transition:
     color var(--duration-fast) var(--ease-standard),
@@ -113,12 +113,12 @@
 
 .faq-contact-link:hover {
   color: var(--color-accent-400);
-  background-size: 100% 1px;
+  background-size: 100% 0.0625rem;
 }
 
 .faq-contact-link:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--color-accent-500);
+  outline-offset: 0.125rem;
   border-radius: var(--radius-xs);
 }
 

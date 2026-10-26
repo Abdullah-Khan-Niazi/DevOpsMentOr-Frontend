@@ -9,20 +9,20 @@
   );
   background-size: 200% 100%;
   animation: skeleton-shimmer 1.6s ease-in-out infinite;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
 }
 
 .skeleton-bone--text {
   height: 1em;
-  border-radius: var(--radius-xs, 4px);
+  border-radius: var(--radius-xs);
 }
 
 .skeleton-bone--circular {
-  border-radius: var(--radius-full, 9999px);
+  border-radius: var(--radius-full);
 }
 
 .skeleton-bone--rectangular {
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
 }
 
 @keyframes skeleton-shimmer {
@@ -46,8 +46,12 @@
 }
 
 @keyframes skeletonFadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

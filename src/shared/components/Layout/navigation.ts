@@ -34,13 +34,13 @@ export function buildNavItems(
   const roles = new Set(user.roles ?? []);
   const items: AppNavItem[] = [];
 
-  // When context is strictly 'personal', return personal learning workspace items
+  // When context is strictly 'personal', return personal learning workspace items.
+  // Sandboxes/Career Paths are intentionally absent: both routes redirect to
+  // /learn, so listing them was two dead links in every menu.
   if (context === 'personal') {
     items.push(
       { to: ROUTES.DASHBOARD, label: 'Dashboard', icon: 'dashboard', section: 'Workspace' },
       { to: ROUTES.LEARN, label: 'Curriculum', icon: 'roles', section: 'Workspace' },
-      { to: ROUTES.LABS, label: 'Sandboxes', icon: 'terminal', section: 'Workspace' },
-      { to: ROUTES.TRACKS, label: 'Career Paths', icon: 'track', section: 'Workspace' },
       { to: ROUTES.ACHIEVEMENTS, label: 'Achievements', icon: 'award', section: 'Workspace' },
       { to: ROUTES.LEADERBOARD, label: 'Leaderboard', icon: 'leaderboard', section: 'Workspace' },
       { to: ROUTES.SETTINGS, label: 'Settings', icon: 'settings', section: 'Workspace' },

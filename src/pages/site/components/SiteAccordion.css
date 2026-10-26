@@ -8,7 +8,7 @@
 }
 
 .site-accordion__item {
-  border: 1px solid var(--color-border-subtle);
+  border: 0.0625rem solid var(--color-border-subtle);
   border-radius: var(--radius-md);
   background-color: var(--color-bg-raised);
   transition: border-color var(--duration-fast) var(--ease-standard);
@@ -48,8 +48,8 @@
 }
 
 .site-accordion__trigger:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: -2px;
+  outline: 0.125rem solid var(--color-accent-500);
+  outline-offset: -0.125rem;
   border-radius: var(--radius-md);
 }
 
@@ -64,8 +64,9 @@
   justify-content: center;
   color: var(--color-text-tertiary);
   flex-shrink: 0;
-  transition: transform var(--duration-fast) var(--ease-standard),
-              color var(--duration-fast) var(--ease-standard);
+  transition:
+    transform var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
 }
 
 .site-accordion__item--expanded .site-accordion__icon {
@@ -75,7 +76,7 @@
 
 /* Expanded Answer Panel — Hairline divider + dedicated answer spacing tokens */
 .site-accordion__panel {
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
   padding: var(--space-6);
   animation: site-accordion-expand var(--duration-fast) var(--ease-decelerate);
 }
@@ -97,7 +98,7 @@
 @keyframes site-accordion-expand {
   from {
     opacity: 0;
-    transform: translateY(-4px);
+    transform: translateY(-0.25rem);
   }
   to {
     opacity: 1;

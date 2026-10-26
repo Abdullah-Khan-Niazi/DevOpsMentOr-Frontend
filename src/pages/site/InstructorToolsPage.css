@@ -10,7 +10,7 @@
 }
 
 .it-frame {
-  max-width: 860px;
+  max-width: 53.75rem;
 }
 
 /* ─── Console mock (browser frame body) ──────────────────────────────────── */
@@ -27,11 +27,11 @@
 
 .it-console__row {
   display: grid;
-  grid-template-columns: 1fr 56px 140px 1fr;
+  grid-template-columns: 1fr 3.5rem 8.75rem 1fr;
   gap: var(--space-4);
   align-items: center;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .it-console__row:last-child {
@@ -64,7 +64,7 @@
 
 .it-console__bar {
   flex: 1;
-  height: 6px;
+  height: 0.375rem;
   background-color: var(--color-bg-void);
   border-radius: var(--radius-xs);
   overflow: hidden;

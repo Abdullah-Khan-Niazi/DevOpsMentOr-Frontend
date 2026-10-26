@@ -5,12 +5,21 @@ import { ROUTES } from '@/shared/constants';
 import { ModuleAccordionList } from '../components/ModuleAccordionList';
 import { useCourseOverview } from '../hooks';
 import { useContinueLearning } from '@/features/progress/hooks';
-import { useBadgeCatalog, useGamificationProfile } from '@/features/achievements/hooks/useGamification';
+import {
+  useBadgeCatalog,
+  useGamificationProfile,
+} from '@/features/achievements/hooks/useGamification';
 import { ReportModal } from '@/features/community';
 
 function ClockIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
@@ -19,7 +28,13 @@ function ClockIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function LayersIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <polygon points="12 2 2 7 12 12 22 7 12 2" />
       <polyline points="2 17 12 22 22 17" />
       <polyline points="2 12 12 17 22 12" />
@@ -29,7 +44,13 @@ function LayersIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function PlayIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <polygon points="5 3 19 12 5 21 5 3" fill="currentColor" />
     </svg>
   );
@@ -37,7 +58,13 @@ function PlayIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function CheckCircleIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" />
       <polyline points="22 4 12 14.01 9 11.01" />
     </svg>
@@ -46,7 +73,13 @@ function CheckCircleIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function TrophyIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+    >
       <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6" />
       <path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18" />
       <path d="M4 22h16" />
@@ -113,7 +146,7 @@ export function LearnCurriculumPage() {
   const { course, modules } = overview.data;
 
   // DB-driven computed total points for the track
-  const totalCoursePoints = (course.totalLessons * 60) + (course.totalQuizzes * 40) + 500;
+  const totalCoursePoints = course.totalLessons * 60 + course.totalQuizzes * 40 + 500;
   const userXp = gamificationProfile.data?.points?.balance;
 
   const openLesson = (lessonId: number) => {
@@ -134,21 +167,23 @@ export function LearnCurriculumPage() {
       <div className="border border-border bg-card p-6 sm:p-8 rounded-xs shadow-2xs space-y-4">
         <div className="flex flex-col lg:flex-row lg:items-start justify-between gap-6">
           <div className="min-w-0 flex-1 space-y-2">
-            <span className="text-xs font-mono text-muted">
-              DevOps Engineering Curriculum
-            </span>
+            <span className="text-xs font-mono text-muted">DevOps Engineering Curriculum</span>
 
             <h1 className="text-2xl sm:text-3xl font-bold text-card-foreground tracking-tight">
               {course.title}
             </h1>
 
             <p className="text-sm text-muted max-w-2xl leading-relaxed">
-              {course.description ?? 'Comprehensive hands-on curriculum in Linux server administration, Kubernetes architecture, and cloud reliability.'}
+              {course.description ??
+                'Comprehensive hands-on curriculum in Linux server administration, Kubernetes architecture, and cloud reliability.'}
             </p>
 
             {userXp !== undefined && (
               <p className="text-xs font-mono text-muted pt-1">
-                Your Progress: <span className="text-card-foreground font-semibold">{userXp.toLocaleString()} XP</span>
+                Your Progress:{' '}
+                <span className="text-card-foreground font-semibold">
+                  {userXp.toLocaleString()} XP
+                </span>
               </p>
             )}
 
@@ -181,13 +216,13 @@ export function LearnCurriculumPage() {
                 <TrophyIcon className="w-5 h-5" />
               </div>
               <div>
-                <span className="text-[10px] font-mono uppercase font-bold text-muted block">
+                <span className="text-[0.625rem] font-mono uppercase font-bold text-muted block">
                   Track Credential
                 </span>
                 <h4 className="text-xs font-bold text-card-foreground mt-0.5">
                   {courseBadge.badgeName}
                 </h4>
-                <p className="text-[10px] text-muted font-mono mt-0.5">
+                <p className="text-[0.625rem] text-muted font-mono mt-0.5">
                   Verified Certificate upon completion
                 </p>
               </div>
@@ -229,9 +264,7 @@ export function LearnCurriculumPage() {
           <h2 className="text-xs font-mono uppercase tracking-wider text-muted font-bold">
             Course Curriculum ({modules.length} Modules)
           </h2>
-          <span className="text-xs font-mono text-muted">
-            All chapters interactive
-          </span>
+          <span className="text-xs font-mono text-muted">All chapters interactive</span>
         </div>
 
         <ModuleAccordionList

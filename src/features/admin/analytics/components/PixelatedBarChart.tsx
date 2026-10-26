@@ -42,7 +42,10 @@ export function PixelatedBarChart({
   );
 
   return (
-    <div className="flex flex-col justify-end w-full min-w-0 max-w-full overflow-hidden" style={{ height }}>
+    <div
+      className="flex flex-col justify-end w-full min-w-0 max-w-full overflow-hidden"
+      style={{ height }}
+    >
       {/* Chart Canvas */}
       <div className="relative flex items-end justify-between gap-0.5 sm:gap-2 flex-1 pb-2 w-full min-w-0">
         {data.map((point, idx) => {
@@ -60,10 +63,7 @@ export function PixelatedBarChart({
             >
               {/* Floating Tooltip */}
               {isHovered && (
-                <div
-                  className="absolute bottom-full mb-2 z-50 pointer-events-none px-2 py-1 text-[11px] font-mono border border-border bg-surface text-card-foreground shadow-md whitespace-nowrap"
-                 
-                >
+                <div className="absolute bottom-full mb-2 z-50 pointer-events-none px-2 py-1 text-[0.6875rem] font-mono border border-border bg-surface text-card-foreground shadow-md whitespace-nowrap">
                   <p className="font-semibold">{point.label}</p>
                   <p style={{ color }}>Value: {point.value.toLocaleString()}</p>
                   {point.secondaryValue !== undefined && (
@@ -75,7 +75,7 @@ export function PixelatedBarChart({
               )}
 
               {/* Stacked Vertical Segment Blocks */}
-              <div className="flex flex-col-reverse gap-[2px] w-full max-w-[20px] transition-opacity duration-150">
+              <div className="flex flex-col-reverse gap-[0.125rem] w-full max-w-[1.25rem] transition-opacity duration-150">
                 {Array.from({ length: segments }).map((_, segIdx) => {
                   const isPrimaryFilled = segIdx < filledPrimarySegments;
                   const isTotalFilled = segIdx < filledTotalSegments;
@@ -90,11 +90,10 @@ export function PixelatedBarChart({
                   return (
                     <div
                       key={segIdx}
-                      className="w-full h-[6px] transition-colors duration-100"
+                      className="w-full h-[0.375rem] transition-colors duration-100"
                       style={{
                         backgroundColor: bg,
                         opacity: isTotalFilled ? (isHovered ? 1 : 0.9) : 0.35,
-                        
                       }}
                     />
                   );
@@ -106,9 +105,10 @@ export function PixelatedBarChart({
       </div>
 
       {/* Monospace X-Axis Labels */}
-      <div className="flex items-center justify-between border-t border-border pt-2 text-[10px] font-mono text-muted uppercase tracking-wider w-full min-w-0 overflow-hidden">
+      <div className="flex items-center justify-between border-t border-border pt-2 text-[0.625rem] font-mono text-muted uppercase tracking-wider w-full min-w-0 overflow-hidden">
         {data.map((point, idx) => {
-          const showOnMobile = data.length <= 10 || idx === 0 || idx === data.length - 1 || idx % 4 === 0;
+          const showOnMobile =
+            data.length <= 10 || idx === 0 || idx === data.length - 1 || idx % 4 === 0;
           return (
             <span
               key={`${point.label}-lbl-${idx}`}

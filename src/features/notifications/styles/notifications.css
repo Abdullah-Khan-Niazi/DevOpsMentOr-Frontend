@@ -16,7 +16,7 @@
   align-items: flex-start;
   gap: var(--space-3);
   padding: var(--space-4);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-bg-raised);
   color: var(--color-text-primary);
@@ -32,7 +32,7 @@
 }
 
 .notification-item--skeleton {
-  height: 76px;
+  height: 4.75rem;
   background: var(--color-bg-raised);
   animation: skeleton-pulse 1.4s var(--ease-standard) infinite;
 }
@@ -41,8 +41,8 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--radius-sm);
   background: var(--color-bg-sunken);
   color: var(--color-text-tertiary);
@@ -82,8 +82,8 @@
 }
 
 .notification-item__unread {
-  width: 8px;
-  height: 8px;
+  width: 0.5rem;
+  height: 0.5rem;
   flex-shrink: 0;
   border-radius: var(--radius-full);
   background: var(--color-accent-500);
@@ -91,7 +91,7 @@
 
 .notification-item__message {
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -100,7 +100,7 @@
 
 .notification-item__time {
   color: var(--color-text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 
 .notification-item__dismiss {
@@ -123,8 +123,8 @@
   position: relative;
   display: grid;
   place-items: center;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: var(--radius-sm);
   color: var(--color-text-secondary);
   transition:
@@ -139,12 +139,12 @@
 
 .notification-bell__badge {
   position: absolute;
-  top: -4px;
-  right: -4px;
+  top: -0.25rem;
+  right: -0.25rem;
   display: grid;
   place-items: center;
-  min-width: 18px;
-  height: 18px;
+  min-width: 1.125rem;
+  height: 1.125rem;
   padding: 0 var(--space-1);
   border-radius: var(--radius-full);
   background: var(--color-error);
@@ -159,16 +159,16 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-default);
+  border-bottom: 0.0625rem solid var(--color-border-default);
   background: var(--color-bg-raised);
 }
 
 .announcement-banner[data-priority='high'] {
-  border-left: 3px solid var(--color-warning);
+  border-left: 0.1875rem solid var(--color-warning);
 }
 
 .announcement-banner[data-priority='critical'] {
-  border-left: 3px solid var(--color-error);
+  border-left: 0.1875rem solid var(--color-error);
 }
 
 .announcement-banner__icon {
@@ -182,7 +182,7 @@
   flex: 1;
   min-width: 0;
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
 }
 
 .announcement-banner__content {
@@ -193,7 +193,7 @@
 
 .announcement-banner__link {
   color: var(--color-text-link);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
   white-space: nowrap;
 }
 
@@ -213,11 +213,11 @@
 }
 
 .announcements-page__card[data-priority='high'] {
-  border-left: 3px solid var(--color-warning);
+  border-left: 0.1875rem solid var(--color-warning);
 }
 
 .announcements-page__card[data-priority='critical'] {
-  border-left: 3px solid var(--color-error);
+  border-left: 0.1875rem solid var(--color-error);
 }
 
 .announcements-page__card-head {
@@ -228,14 +228,14 @@
 }
 
 .announcements-page__title {
-  font-size: 1.125rem;
+  font-size: var(--text-body-l);
   font-weight: 600;
 }
 
 .announcements-page__priority {
   padding: var(--space-1) var(--space-2);
   border-radius: var(--radius-full);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
   font-weight: 600;
   background: var(--color-bg-sunken);
   color: var(--color-text-secondary);
@@ -259,7 +259,7 @@
 .announcements-page__meta {
   margin-top: var(--space-3);
   color: var(--color-text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 
 /* SCR-F8-02 preferences */
@@ -288,7 +288,7 @@
 }
 
 .preferences-page__dirty {
-  padding: 2px var(--space-2);
+  padding: 0.125rem var(--space-2);
   border-radius: var(--radius-full);
   background: var(--color-warning);
   color: var(--color-text-on-accent);
@@ -307,14 +307,14 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
   cursor: pointer;
 }
 
 .preferences-page__channel input {
   accent-color: var(--color-accent-600);
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
 @keyframes skeleton-pulse {

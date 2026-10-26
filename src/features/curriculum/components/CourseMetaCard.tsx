@@ -41,12 +41,7 @@ interface CourseMetaCardProps {
  * Course settings and architecture editor inside the slide-over drawer.
  * Clean, cardless presentation with field-specific validation.
  */
-export function CourseMetaCard({
-  course,
-  saving,
-  onSave,
-  onCancel,
-}: CourseMetaCardProps) {
+export function CourseMetaCard({ course, saving, onSave, onCancel }: CourseMetaCardProps) {
   const [title, setTitle] = useState(course.title);
   const [description, setDescription] = useState(course.description ?? '');
   const [estimatedHours, setEstimatedHours] = useState(String(course.estimatedHours));
@@ -85,7 +80,7 @@ export function CourseMetaCard({
       {/* Overview Status Strip */}
       <div className="flex items-center justify-between p-3 rounded-xs bg-paper border border-border">
         <div>
-          <span className="text-[10px] font-mono uppercase tracking-wider text-muted font-bold block">
+          <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted font-bold block">
             Scope
           </span>
           <span className="text-xs font-semibold text-card-foreground">
@@ -94,10 +89,10 @@ export function CourseMetaCard({
         </div>
         <div className="flex items-center gap-2">
           <span
-            className={`text-[10px] font-mono px-2 py-0.5 rounded-xs border ${
+            className={`text-[0.625rem] font-mono px-2 py-0.5 rounded-xs border ${
               course.isPublished
-                ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                : 'border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400'
+                ? 'border-success/30 bg-success/10 text-success'
+                : 'border-warning/30 bg-warning/10 text-warning'
             }`}
           >
             {course.isPublished ? 'Live & Published' : 'Draft / Unpublished'}
@@ -114,9 +109,7 @@ export function CourseMetaCard({
           placeholder="e.g., DevOps Engineer: Production Architecture & Labs"
           error={titleError ?? undefined}
         />
-        {titleError && (
-          <p className="mt-1 text-xs text-rose-500 font-mono">{titleError}</p>
-        )}
+        {titleError && <p className="mt-1 text-xs text-rose-500 font-mono">{titleError}</p>}
       </div>
 
       {/* Description */}

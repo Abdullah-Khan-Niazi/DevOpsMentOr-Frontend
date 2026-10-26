@@ -1,5 +1,12 @@
 import { useState, useMemo } from 'react';
-import { Button, Card, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
+import {
+  Button,
+  Card,
+  ErrorState,
+  PageHeader,
+  TablePageSkeleton,
+  toast,
+} from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
 import { useAdminTracks } from '../hooks';
@@ -11,7 +18,9 @@ type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
       {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
     </span>
   );
@@ -93,7 +102,8 @@ export function AdminTracksPage() {
       if (statusFilter === 'draft' && track.isActive) return false;
       if (search.trim()) {
         const q = search.toLowerCase();
-        if (!track.trackName.toLowerCase().includes(q) && !track.slug.toLowerCase().includes(q)) return false;
+        if (!track.trackName.toLowerCase().includes(q) && !track.slug.toLowerCase().includes(q))
+          return false;
       }
       return true;
     });
@@ -183,7 +193,7 @@ export function AdminTracksPage() {
                   setSearch('');
                   setStatusFilter('all');
                 }}
-                className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+                className="h-7 text-[0.6875rem] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
               >
                 Reset
               </Button>
@@ -193,7 +203,7 @@ export function AdminTracksPage() {
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-xs font-mono border-collapse">
               <thead>
-                <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
                   <th
                     className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
                     onClick={() => handleSort('trackName')}
@@ -210,7 +220,8 @@ export function AdminTracksPage() {
                     className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
                     onClick={() => handleSort('difficultyName')}
                   >
-                    Difficulty <SortIcon active={sortCol === 'difficultyName'} direction={sortDir} />
+                    Difficulty{' '}
+                    <SortIcon active={sortCol === 'difficultyName'} direction={sortDir} />
                   </th>
                   <th
                     className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
@@ -223,15 +234,26 @@ export function AdminTracksPage() {
               </thead>
               <tbody className="divide-y divide-border/60">
                 {sortedTracks.map((track) => (
-                  <tr key={track.trackId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
+                  <tr
+                    key={track.trackId}
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
+                  >
                     <td className="px-3 py-2.5">
                       <div className="font-semibold text-card-foreground">{track.trackName}</div>
-                      <div className="text-[11px] text-muted font-mono">/{track.slug}</div>
+                      <div className="text-[0.6875rem] text-muted font-mono">/{track.slug}</div>
                     </td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{track.estimatedHours} hrs</td>
-                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">{track.difficultyName ?? 'Any'}</td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                      {track.estimatedHours} hrs
+                    </td>
+                    <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                      {track.difficultyName ?? 'Any'}
+                    </td>
                     <td className="px-3 py-2.5 whitespace-nowrap font-mono text-xs">
-                      <span className={track.isActive ? 'font-semibold text-card-foreground' : 'text-muted'}>
+                      <span
+                        className={
+                          track.isActive ? 'font-semibold text-card-foreground' : 'text-muted'
+                        }
+                      >
                         {track.isActive ? 'Published' : 'Draft'}
                       </span>
                     </td>

@@ -39,7 +39,7 @@
 .sec-closing-section {
   padding-top: var(--space-32);
   padding-bottom: var(--space-32);
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
 }
 
 .sec-closing-inner {
@@ -69,8 +69,8 @@
 }
 
 .sec-contact-link:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--color-accent-500);
+  outline-offset: 0.125rem;
   border-radius: var(--radius-xs);
 }
 

@@ -1,17 +1,21 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button, Input, toast } from '@/shared/components';
 import { Icon } from '@/shared/components/Icon';
-import { ROUTES } from '@/shared/constants';
+import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import type { AuthUser } from '@/features/auth/types';
 import { authService } from '@/features/auth/services';
 import { useMyOrg, useCreateOrg } from '@/features/org/hooks/useOrg';
 import { useMyClass } from '@/features/enrollment/hooks';
+import { useWorkspaceStore } from '@/shared/stores';
 
 interface WorkspaceSwitcherProps {
   variant?: 'topbar' | 'sidebar' | 'mobile';
   isCollapsed?: boolean;
+  /** Called after a successful workspace switch (e.g. to close the mobile drawer). */
+  onAfterSwitch?: () => void;
 }
 
 function slugify(val: string): string {
@@ -22,8 +26,13 @@ function slugify(val: string): string {
     .slice(0, 50);
 }
 
-export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: WorkspaceSwitcherProps) {
+export function WorkspaceSwitcher({
+  variant = 'topbar',
+  isCollapsed = false,
+  onAfterSwitch,
+}: WorkspaceSwitcherProps) {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
 
   const [isOpen, setIsOpen] = useState(false);
@@ -31,14 +40,9 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
   const [isJoinCohortOpen, setIsJoinCohortOpen] = useState(false);
   const [cohortCode, setCohortCode] = useState('');
 
-  // Active workspace stored in localStorage
-  const [activeMode, setActiveMode] = useState<string>(() => {
-    try {
-      return localStorage.getItem('stardust_active_workspace') || 'default';
-    } catch {
-      return 'default';
-    }
-  });
+  // ─── Reactive workspace context (store: persists + cross-tab broadcast) ────
+  const activeMode = useWorkspaceStore((state) => state.activeWorkspace);
+  const setActiveWorkspace = useWorkspaceStore((state) => state.setActiveWorkspace);
 
   // Create Org Form State
   const [orgName, setOrgName] = useState('');
@@ -71,6 +75,10 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
     return () => document.removeEventListener('mousedown', onClickOutside);
   }, [isOpen]);
 
+  // Platform admins have a single, platform-scoped workspace: no switcher.
+  // (Early return placed after all hooks so hook order is stable.)
+  if (isPlatformAdmin) return null;
+
   const enrolledClass = classQuery.data ?? null;
   const myOrg = orgQuery.data ?? null;
 
@@ -78,22 +86,20 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
   let activeWorkspaceName = 'Personal Space';
   if (activeMode === 'personal') {
     activeWorkspaceName = 'Personal Space';
-  } else if (isPlatformAdmin) {
-    activeWorkspaceName = 'Platform Admin';
   } else if (isOrgAdmin || isProfessor) {
     activeWorkspaceName = myOrg?.name ?? 'Organization Space';
   } else if (isOrgStudent && enrolledClass) {
     activeWorkspaceName = enrolledClass.className;
   }
 
-  const switchWorkspace = (mode: string, route: string) => {
-    setActiveMode(mode);
-    try {
-      localStorage.setItem('stardust_active_workspace', mode);
-    } catch {
-      // storage quota or private mode
-    }
+  const switchWorkspace = (mode: 'personal' | 'org' | 'class', route: string) => {
+    setActiveWorkspace(mode);
+    // Refetch context-scoped data so stale org/class caches never bleed
+    // across workspaces.
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass });
     setIsOpen(false);
+    onAfterSwitch?.();
     navigate(route);
   };
 
@@ -111,26 +117,30 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
         industry: industry.trim() || undefined,
         description: description.trim() || undefined,
       });
-
-      // Refresh session user state so org permissions are instantly updated
-      const freshMe = await authService.getMe();
-      useAuthStore.getState().setUser(freshMe as unknown as AuthUser);
-
-      try {
-        localStorage.setItem('stardust_active_workspace', 'org');
-      } catch {
-        // ignore
-      }
-      setActiveMode('org');
-      toast.success('Organization created successfully!');
-      setIsCreateOrgOpen(false);
-      setOrgName('');
-      setOrgSlug('');
-      setDescription('');
-      navigate(ROUTES.ORG_DASHBOARD);
     } catch (err: unknown) {
       toast.error((err as Error).message || 'Failed to create organization.');
+      return;
     }
+
+    // Best-effort identity refresh: the org already exists, so a failure here
+    // must never strand the user — roles sync on the next session validation.
+    try {
+      const freshMe = await authService.getMe();
+      useAuthStore.getState().setUser(freshMe as unknown as AuthUser);
+    } catch {
+      // Ignore — permissions will refresh on next session validation.
+    }
+
+    setActiveWorkspace('org');
+    toast.success('Organization created successfully!');
+    setIsCreateOrgOpen(false);
+    setOrgName('');
+    setOrgSlug('');
+    setSlugTouched(false);
+    setIndustry('');
+    setDescription('');
+    onAfterSwitch?.();
+    navigate(ROUTES.ORG_DASHBOARD);
   };
 
   const handleJoinCohort = (e: React.FormEvent) => {
@@ -154,13 +164,13 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
         <button
           type="button"
           onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-pearl-100 text-xs font-medium transition-all cursor-pointer max-w-[200px]"
+          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-border bg-card hover:bg-surface-hover text-card-foreground text-xs font-medium transition-all cursor-pointer max-w-[12.5rem]"
           aria-expanded={isOpen}
           aria-label="Switch workspace"
         >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
+          <span className="w-2 h-2 rounded-full bg-ink shrink-0" />
           <span className="truncate">{activeWorkspaceName}</span>
-          <span className="text-[10px] text-pearl-100/60 font-mono">▾</span>
+          <span className="text-[0.625rem] text-muted font-mono">▾</span>
         </button>
       ) : isCollapsed ? (
         <button
@@ -181,10 +191,10 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
           aria-label="Switch workspace"
         >
           <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
+            <span className="w-2 h-2 rounded-full bg-ink shrink-0" />
             <span className="truncate font-semibold">{activeWorkspaceName}</span>
           </div>
-          <span className="text-muted text-[10px] font-mono shrink-0">▾</span>
+          <span className="text-muted text-[0.625rem] font-mono shrink-0">▾</span>
         </button>
       )}
 
@@ -195,7 +205,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
             variant === 'sidebar' && isCollapsed ? 'left-14 top-0' : 'left-0'
           }`}
         >
-          <div className="px-3.5 py-1.5 text-[11px] font-mono uppercase tracking-wider text-muted border-b border-border">
+          <div className="px-3.5 py-1.5 text-[0.6875rem] font-mono uppercase tracking-wider text-muted border-b border-border">
             Workspaces
           </div>
 
@@ -211,26 +221,9 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                 <span className="truncate">Personal Learning Space</span>
               </div>
               {activeWorkspaceName === 'Personal Space' && (
-                <span className="text-xs font-bold text-emerald-500">✓</span>
+                <span className="text-xs font-bold text-ink">✓</span>
               )}
             </button>
-
-            {/* Platform Admin Console (if platform admin) */}
-            {isPlatformAdmin && (
-              <button
-                type="button"
-                onClick={() => switchWorkspace('platform', ROUTES.ADMIN_DASHBOARD)}
-                className="w-full flex items-center justify-between px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5 truncate">
-                  <Icon name="settings" size={14} className="text-muted shrink-0" />
-                  <span className="truncate">Platform Administration</span>
-                </div>
-                {activeWorkspaceName === 'Platform Admin' && (
-                  <span className="text-xs font-bold text-emerald-500">✓</span>
-                )}
-              </button>
-            )}
 
             {/* Organization Workspace (if org admin, professor, or has org) */}
             {(isOrgAdmin || isProfessor || myOrg) && (
@@ -244,7 +237,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                   <span className="truncate">{myOrg?.name ?? 'Organization Space'}</span>
                 </div>
                 {activeWorkspaceName === (myOrg?.name ?? 'Organization Space') && (
-                  <span className="text-xs font-bold text-emerald-500">✓</span>
+                  <span className="text-xs font-bold text-ink">✓</span>
                 )}
               </button>
             )}
@@ -261,7 +254,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                   <span className="truncate">{enrolledClass.className}</span>
                 </div>
                 {activeWorkspaceName === enrolledClass.className && (
-                  <span className="text-xs font-bold text-emerald-500">✓</span>
+                  <span className="text-xs font-bold text-ink">✓</span>
                 )}
               </button>
             )}
@@ -298,7 +291,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
 
       {/* ─── Modal 1: Join Cohort with Code ──────────────────────────────── */}
       {isJoinCohortOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-xs">
           <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-card-foreground tracking-tight">
@@ -314,7 +307,8 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
             </div>
 
             <p className="text-xs text-muted leading-relaxed">
-              Enter the invitation code or token provided by your instructor or organization administrator.
+              Enter the invitation code or token provided by your instructor or organization
+              administrator.
             </p>
 
             <form onSubmit={handleJoinCohort} className="space-y-4">
@@ -347,7 +341,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
 
       {/* ─── Modal 2: Create Organization ─────────────────────────────────── */}
       {isCreateOrgOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-ink/60 backdrop-blur-xs">
           <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95">
             <div className="flex items-center justify-between">
               <h3 className="text-base font-bold text-card-foreground tracking-tight">
@@ -363,7 +357,8 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
             </div>
 
             <p className="text-xs text-muted leading-relaxed">
-              Create an isolated organization workspace to manage cohorts, invite instructors, and track student progression.
+              Create an isolated organization workspace to manage cohorts, invite instructors, and
+              track student progression.
             </p>
 
             <form onSubmit={handleCreateOrg} className="space-y-4">
@@ -371,7 +366,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                 label="Organization Name"
                 placeholder="e.g. FAST NUCES Computer Science"
                 value={orgName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                onChange={(e) => {
                   const val = e.target.value;
                   setOrgName(val);
                   if (!slugTouched) {
@@ -385,7 +380,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                 label="Organization Slug (URL identifier)"
                 placeholder="e.g. fast-nuces"
                 value={orgSlug}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                onChange={(e) => {
                   setSlugTouched(true);
                   setOrgSlug(slugify(e.target.value));
                 }}
@@ -396,14 +391,14 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                 label="Industry / Field (Optional)"
                 placeholder="e.g. Higher Education, Software Engineering"
                 value={industry}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setIndustry(e.target.value)}
+                onChange={(e) => setIndustry(e.target.value)}
               />
 
               <Input
                 label="Description (Optional)"
                 placeholder="Brief description of your school or company workspace"
                 value={description}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
+                onChange={(e) => setDescription(e.target.value)}
               />
 
               <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
@@ -415,12 +410,7 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
                 >
                   Cancel
                 </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  disabled={createOrg.isPending}
-                >
+                <Button type="submit" variant="primary" size="sm" disabled={createOrg.isPending}>
                   {createOrg.isPending ? 'Creating…' : 'Create Workspace'}
                 </Button>
               </div>

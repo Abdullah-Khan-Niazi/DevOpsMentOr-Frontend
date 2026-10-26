@@ -49,7 +49,15 @@ interface ModuleNodeProps {
 
 function TerminalIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="4 17 10 11 4 5" />
       <line x1="12" y1="19" x2="20" y2="19" />
     </svg>
@@ -58,7 +66,15 @@ function TerminalIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function ServerStackIcon({ className = 'w-5 h-5' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <ellipse cx="12" cy="5" rx="9" ry="3" />
       <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
       <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
@@ -68,7 +84,15 @@ function ServerStackIcon({ className = 'w-5 h-5' }: { className?: string }) {
 
 function WrenchIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
     </svg>
   );
@@ -76,7 +100,15 @@ function WrenchIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function CheckmarkIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -84,7 +116,15 @@ function CheckmarkIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function TrophyBadgeIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="8" r="7" />
       <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
     </svg>
@@ -93,7 +133,15 @@ function TrophyBadgeIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) 
 
 function ZapXpIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
     </svg>
   );
@@ -101,7 +149,15 @@ function ZapXpIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
 
 function ClockDurationIcon({ className = 'w-3.5 h-3.5' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round">
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.5}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
       <circle cx="12" cy="12" r="10" />
       <polyline points="12 6 12 12 16 14" />
     </svg>
@@ -110,11 +166,11 @@ function ClockDurationIcon({ className = 'w-3.5 h-3.5' }: { className?: string }
 
 // ─── Module Child Items (Interleaved Ordering) ───────────────────────────────
 
-type ModuleChildItem =
-  | { kind: 'lesson'; data: LessonDto }
-  | { kind: 'quiz'; data: QuizDetailDto };
+type ModuleChildItem = { kind: 'lesson'; data: LessonDto } | { kind: 'quiz'; data: QuizDetailDto };
 
-function getStoredModuleItemOrder(moduleId: number): Array<{ kind: 'lesson' | 'quiz'; id: number }> | null {
+function getStoredModuleItemOrder(
+  moduleId: number,
+): Array<{ kind: 'lesson' | 'quiz'; id: number }> | null {
   try {
     const raw = localStorage.getItem(`stardust_module_ordering_${moduleId}`);
     if (!raw) return null;
@@ -151,7 +207,10 @@ function ModuleNode({
   isBusy,
   searchFilter,
 }: ModuleNodeProps) {
-  const editor = useAdminModuleEditor(module.moduleId, isExpanded || searchFilter.trim().length > 0);
+  const editor = useAdminModuleEditor(
+    module.moduleId,
+    isExpanded || searchFilter.trim().length > 0,
+  );
   const lessons: LessonDto[] = editor.query.data?.lessons ?? [];
   const quizzes: QuizDetailDto[] = editor.query.data?.quizzes ?? [];
   const [orderVersion, setOrderVersion] = useState(0);
@@ -182,7 +241,10 @@ function ModuleNode({
       if (l.contentType === 'interactive') return acc + 20;
       return acc + 15;
     }, 0);
-    const quizPoints = quizzes.reduce((acc, q) => acc + (q.questionCount > 0 ? q.questionCount * 10 : 25), 0);
+    const quizPoints = quizzes.reduce(
+      (acc, q) => acc + (q.questionCount > 0 ? q.questionCount * 10 : 25),
+      0,
+    );
     return lessonPoints + quizPoints || module.lessonCount * 40;
   }, [lessons, quizzes, module.lessonCount]);
 
@@ -252,7 +314,9 @@ function ModuleNode({
     setOrderVersion((v) => v + 1);
 
     // If lessons shifted relative positions, synchronize backend database order
-    const nextLessons = next.filter((item): item is { kind: 'lesson'; data: LessonDto } => item.kind === 'lesson');
+    const nextLessons = next.filter(
+      (item): item is { kind: 'lesson'; data: LessonDto } => item.kind === 'lesson',
+    );
     const orders = nextLessons.map((l, order) => ({
       lessonId: l.data.lessonId,
       lessonOrder: order + 1,
@@ -278,14 +342,14 @@ function ModuleNode({
   }
 
   // Exact button styling satisfying:
-  // - Text strictly remains black on hover (never turns white, in both light and dark mode)
+  // - Text strictly remains ink on hover (never turns white — single light theme)
   // - Text gets more bolder on hover (font-medium -> hover:font-bold -> active:font-black)
-  // - White/Paper fill background
-  // - Border black on hover and bold 2px on active press
+  // - Pearl/paper fill background
+  // - Border ink on hover and bold 2px on active press
   const quickBtnClass =
-    'text-[11px] font-mono px-2.5 py-1 rounded-xs border border-zinc-400 dark:border-zinc-400 bg-white dark:bg-white text-black dark:text-black font-medium hover:font-bold hover:text-black dark:hover:text-black hover:bg-white dark:hover:bg-white hover:border-black dark:hover:border-black hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-[0.98] active:border-2 active:border-black dark:active:border-black active:font-black active:text-black dark:active:text-black transition-all duration-150 ease-out cursor-pointer';
+    'text-[0.6875rem] font-mono px-2.5 py-1 rounded-xs border border-border bg-pearl-100 text-ink font-medium hover:font-bold hover:text-ink hover:bg-pearl-100 hover:border-ink hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-[0.98] active:border-2 active:border-ink active:font-black active:text-ink transition-all duration-150 ease-out cursor-pointer';
   const quickLabBtnClass =
-    'text-[11px] font-mono px-2.5 py-1 rounded-xs border border-zinc-400 dark:border-zinc-400 bg-white dark:bg-white text-black dark:text-black font-medium hover:font-bold hover:text-black dark:hover:text-black hover:bg-white dark:hover:bg-white hover:border-black dark:hover:border-black hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-[0.98] active:border-2 active:border-black dark:active:border-black active:font-black active:text-black dark:active:text-black transition-all duration-150 ease-out cursor-pointer flex items-center gap-1.5';
+    'text-[0.6875rem] font-mono px-2.5 py-1 rounded-xs border border-border bg-pearl-100 text-ink font-medium hover:font-bold hover:text-ink hover:bg-pearl-100 hover:border-ink hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-[0.98] active:border-2 active:border-ink active:font-black active:text-ink transition-all duration-150 ease-out cursor-pointer flex items-center gap-1.5';
 
   return (
     <div className="relative group/module">
@@ -327,15 +391,19 @@ function ModuleNode({
           {/* Module Title and DB-driven KPIs */}
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-2">
-              <span className="text-sm font-semibold text-card-foreground truncate">{module.title}</span>
-              <span className="text-[10px] font-mono text-muted shrink-0">
+              <span className="text-sm font-semibold text-card-foreground truncate">
+                {module.title}
+              </span>
+              <span className="text-[0.625rem] font-mono text-muted shrink-0">
                 · {module.isPublished ? 'Published' : 'Draft'}
               </span>
             </div>
 
             {/* DB-Driven Module Metadata Strip - Pure Ink & Paper, no yellow, no emojis */}
-            <div className="flex items-center gap-2.5 text-[11px] font-mono text-muted truncate mt-0.5">
-              <span>{module.lessonCount} {module.lessonCount === 1 ? 'item' : 'items'}</span>
+            <div className="flex items-center gap-2.5 text-[0.6875rem] font-mono text-muted truncate mt-0.5">
+              <span>
+                {module.lessonCount} {module.lessonCount === 1 ? 'item' : 'items'}
+              </span>
               <span>·</span>
               <span className="flex items-center gap-1">
                 <ClockDurationIcon className="w-3 h-3 text-muted" />
@@ -424,7 +492,9 @@ function ModuleNode({
             </div>
           ) : orderedItems.length === 0 ? (
             <div className="p-3 rounded-xs border border-dashed border-border/80 bg-transparent text-center">
-              <p className="text-xs text-muted font-mono">No lessons or quizzes yet in this module.</p>
+              <p className="text-xs text-muted font-mono">
+                No lessons or quizzes yet in this module.
+              </p>
               <div className="mt-2 flex items-center justify-center gap-2">
                 <button
                   type="button"
@@ -458,7 +528,8 @@ function ModuleNode({
 
                 if (item.kind === 'quiz') {
                   const quiz = item.data;
-                  const isSelected = selectedNode?.type === 'quiz' && selectedNode.id === quiz.quizId;
+                  const isSelected =
+                    selectedNode?.type === 'quiz' && selectedNode.id === quiz.quizId;
                   const quizXp = quiz.questionCount > 0 ? quiz.questionCount * 10 : 25;
 
                   return (
@@ -485,15 +556,18 @@ function ModuleNode({
                             <span className="text-xs font-medium text-card-foreground truncate">
                               {quiz.title}
                             </span>
-                            <span className="text-[10px] font-mono text-muted uppercase tracking-wider font-semibold">
+                            <span className="text-[0.625rem] font-mono text-muted uppercase tracking-wider font-semibold">
                               QUIZ
                             </span>
-                            <span className="text-[10px] font-mono text-muted">
+                            <span className="text-[0.625rem] font-mono text-muted">
                               · {quiz.isPublished ? 'Published' : 'Draft'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[10px] font-mono text-muted">
-                            <span>{quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}</span>
+                          <div className="flex items-center gap-2 mt-0.5 text-[0.625rem] font-mono text-muted">
+                            <span>
+                              {quiz.questionCount}{' '}
+                              {quiz.questionCount === 1 ? 'question' : 'questions'}
+                            </span>
                             <span>·</span>
                             <span>Pass {quiz.passingScore}%</span>
                             {quiz.timeLimitMinutes && (
@@ -537,7 +611,7 @@ function ModuleNode({
                             ↓
                           </button>
                         </div>
-                        <span className="text-[10px] font-mono text-muted shrink-0">
+                        <span className="text-[0.625rem] font-mono text-muted shrink-0">
                           #{module.moduleOrder}.{itemIndex + 1}
                         </span>
                       </div>
@@ -549,17 +623,21 @@ function ModuleNode({
                 const lesson = item.data;
                 const isLab = lesson.contentType === 'lab';
                 const isInteractive = lesson.contentType === 'interactive';
-                const isSelected =
-                  isLab
-                    ? selectedNode?.type === 'lab' && selectedNode.id === lesson.lessonId
-                    : selectedNode?.type === 'lesson' && selectedNode.id === lesson.lessonId;
+                const isSelected = isLab
+                  ? selectedNode?.type === 'lab' && selectedNode.id === lesson.lessonId
+                  : selectedNode?.type === 'lesson' && selectedNode.id === lesson.lessonId;
 
                 // Identify Break-Fix Diagnostic Lab
                 const isBreakFix =
                   lesson.tags.some((t) =>
-                    ['break-fix', 'breakfix', 'diagnostic', 'troubleshoot', 'incident', 'sherlock'].some(
-                      (term) => t.tagName.toLowerCase().includes(term),
-                    ),
+                    [
+                      'break-fix',
+                      'breakfix',
+                      'diagnostic',
+                      'troubleshoot',
+                      'incident',
+                      'sherlock',
+                    ].some((term) => t.tagName.toLowerCase().includes(term)),
                   ) ||
                   ['break-fix', 'breakfix', 'troubleshoot', 'diagnostic', 'incident'].some((term) =>
                     lesson.title.toLowerCase().includes(term),
@@ -641,16 +719,16 @@ function ModuleNode({
                           <span className="text-xs font-medium text-card-foreground truncate">
                             {lesson.title}
                           </span>
-                          <span className="text-[10px] font-mono text-muted uppercase tracking-wider font-semibold">
+                          <span className="text-[0.625rem] font-mono text-muted uppercase tracking-wider font-semibold">
                             {subtypeBadge}
                           </span>
-                          <span className="text-[10px] font-mono text-muted">
+                          <span className="text-[0.625rem] font-mono text-muted">
                             · {lesson.isPublished ? 'Published' : 'Draft'}
                           </span>
                         </div>
 
                         {/* Metrics: Time, XP, and Skill Tags */}
-                        <div className="flex items-center gap-2 mt-0.5 overflow-hidden text-[10px] font-mono text-muted">
+                        <div className="flex items-center gap-2 mt-0.5 overflow-hidden text-[0.625rem] font-mono text-muted">
                           <span className="flex items-center gap-0.5">
                             <ClockDurationIcon className="w-3 h-3 text-muted" />
                             {estimatedMinutes}m
@@ -667,13 +745,13 @@ function ModuleNode({
                                 {lesson.tags.slice(0, 3).map((tag) => (
                                   <span
                                     key={tag.tagId}
-                                    className="text-[9px] font-mono text-muted bg-paper px-1 rounded-xs border border-border truncate"
+                                    className="text-[0.5625rem] font-mono text-muted bg-paper px-1 rounded-xs border border-border truncate"
                                   >
                                     #{tag.tagName}
                                   </span>
                                 ))}
                                 {lesson.tags.length > 3 && (
-                                  <span className="text-[9px] font-mono text-muted">
+                                  <span className="text-[0.5625rem] font-mono text-muted">
                                     +{lesson.tags.length - 3}
                                   </span>
                                 )}
@@ -710,7 +788,7 @@ function ModuleNode({
                           ↓
                         </button>
                       </div>
-                      <span className="text-[10px] font-mono text-muted shrink-0">
+                      <span className="text-[0.625rem] font-mono text-muted shrink-0">
                         #{module.moduleOrder}.{itemIndex + 1}
                       </span>
                     </div>
@@ -763,7 +841,9 @@ export function CurriculumTree({
 }: CurriculumTreeProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterState, setFilterState] = useState<'all' | 'published' | 'draft'>('all');
-  const [expandedModuleIds, setExpandedModuleIds] = useState<Set<number>>(() => new Set(modules.map((m) => m.moduleId)));
+  const [expandedModuleIds, setExpandedModuleIds] = useState<Set<number>>(
+    () => new Set(modules.map((m) => m.moduleId)),
+  );
 
   const toggleModule = (id: number) => {
     setExpandedModuleIds((prev) => {
@@ -795,7 +875,7 @@ export function CurriculumTree({
 
   // DB-driven overall curriculum KPIs
   const totalCoursePoints = useMemo(() => {
-    return (course.totalLessons * 60) + (course.totalQuizzes * 40) + 500;
+    return course.totalLessons * 60 + course.totalQuizzes * 40 + 500;
   }, [course.totalLessons, course.totalQuizzes]);
 
   const badgesQuery = useBadgeCatalog();
@@ -873,15 +953,15 @@ export function CurriculumTree({
       >
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-xs bg-brand-500/10 border border-brand-500/30 text-brand-600 dark:text-brand-400 flex items-center justify-center shrink-0">
+            <div className="w-10 h-10 rounded-xs bg-brand-500/10 border border-brand-500/30 text-brand-600 flex items-center justify-center shrink-0">
               <ServerStackIcon className="w-5 h-5" />
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">
+                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted">
                   Canonical Track
                 </span>
-                <span className="text-[10px] font-mono text-muted">
+                <span className="text-[0.625rem] font-mono text-muted">
                   · {course.isPublished ? 'Live & Published' : 'Draft / Unpublished'}
                 </span>
               </div>
@@ -926,7 +1006,7 @@ export function CurriculumTree({
           <span>·</span>
           {courseBadge ? (
             <span
-              className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400"
+              className="flex items-center gap-1.5 text-success"
               title={`${courseBadge.description ?? courseBadge.badgeName} (${courseBadge.pointsRequired} pts required)`}
             >
               <TrophyBadgeIcon className="w-3.5 h-3.5" />
@@ -935,7 +1015,7 @@ export function CurriculumTree({
           ) : badgesQuery.isLoading ? (
             <span className="h-4 w-28 bg-border/40 rounded-xs animate-pulse inline-block" />
           ) : (
-            <span className="flex items-center gap-1.5 text-emerald-600 dark:text-emerald-400">
+            <span className="flex items-center gap-1.5 text-success">
               <TrophyBadgeIcon className="w-3.5 h-3.5" />
               Canonical Certified Track Badge
             </span>

@@ -161,8 +161,7 @@ export function FluidFunnelChart({
             {overallRate}
           </span>
           <p className="text-xs text-muted mt-0.5">
-            {headlineSubtext ??
-              `Progression rate across ${stages.length} core platform milestones`}
+            {headlineSubtext ?? `Progression rate across ${stages.length} core platform milestones`}
           </p>
         </div>
         {headlineGrowth && (
@@ -234,17 +233,19 @@ export function FluidFunnelChart({
                     height="22"
                     rx="11"
                     ry="11"
-                    fill="#FFFFFF"
-                    stroke="#DBDAD3"
-                    strokeWidth="1"
+                    style={{
+                      fill: 'var(--pearl-100)',
+                      stroke: 'var(--paper-line)',
+                      strokeWidth: 1,
+                    }}
                     className="filter drop-shadow-sm"
                   />
                   <text
                     x="22"
                     y="15"
                     textAnchor="middle"
-                    fill="#0A0B0D"
-                    className="font-mono font-bold text-[11px]"
+                    style={{ fill: 'var(--ink)' }}
+                    className="font-mono font-bold text-[0.6875rem]"
                   >
                     {pct}%
                   </text>
@@ -255,7 +256,7 @@ export function FluidFunnelChart({
                   x={xCenter}
                   y={totalHeight - 10}
                   textAnchor="middle"
-                  className="fill-muted font-mono text-[11px]"
+                  className="fill-muted font-mono text-[0.6875rem]"
                 >
                   {stage.stage}
                 </text>

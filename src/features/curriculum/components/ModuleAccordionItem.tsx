@@ -14,7 +14,13 @@ interface ModuleAccordionItemProps {
 
 function LessonPlayIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <circle cx="12" cy="12" r="10" />
       <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" />
     </svg>
@@ -23,7 +29,13 @@ function LessonPlayIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function LabTerminalIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <polyline points="4 17 10 11 4 5" />
       <line x1="12" y1="19" x2="20" y2="19" />
     </svg>
@@ -32,7 +44,13 @@ function LabTerminalIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function QuizCheckIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <path d="M9 11l3 3L22 4" />
       <path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11" />
     </svg>
@@ -60,7 +78,10 @@ export function ModuleAccordionItem({
 
   const estimatedXp = useMemo(() => {
     const lXp = lessons.reduce((acc, l) => (l.contentType === 'lab' ? acc + 75 : acc + 25), 0);
-    const qXp = quizzes.reduce((acc, q) => acc + (q.questionCount > 0 ? q.questionCount * 10 : 25), 0);
+    const qXp = quizzes.reduce(
+      (acc, q) => acc + (q.questionCount > 0 ? q.questionCount * 10 : 25),
+      0,
+    );
     return lXp + qXp || module.lessonCount * 40;
   }, [lessons, quizzes, module.lessonCount]);
 
@@ -81,18 +102,14 @@ export function ModuleAccordionItem({
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start sm:items-center gap-3 min-w-0">
             {/* Circled Chapter Index Number */}
-            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white dark:bg-white dark:text-black font-mono text-xs font-bold">
+            <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-white font-mono text-xs font-bold">
               {module.moduleOrder}
             </span>
 
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h3 className="text-base font-bold text-card-foreground">
-                  {module.title}
-                </h3>
-                <span className="text-xs font-mono text-muted">
-                  · Available
-                </span>
+                <h3 className="text-base font-bold text-card-foreground">{module.title}</h3>
+                <span className="text-xs font-mono text-muted">· Available</span>
               </div>
             </div>
           </div>
@@ -102,7 +119,7 @@ export function ModuleAccordionItem({
             <div className="flex items-center gap-2">
               <div className="w-24 sm:w-32 h-1.5 rounded-xs bg-paper border border-border overflow-hidden">
                 <div
-                  className="h-full bg-ink dark:bg-pearl-100 transition-all duration-300"
+                  className="h-full bg-ink transition-all duration-300"
                   style={{ width: `${module.isPublished ? '0%' : '0%'}` }}
                 />
               </div>
@@ -138,7 +155,7 @@ export function ModuleAccordionItem({
             </svg>
             <span>{open ? 'Hide Chapter Details' : 'Show Chapter Details'}</span>
           </button>
-          <span className="text-[11px] font-mono text-muted hidden sm:inline">
+          <span className="text-[0.6875rem] font-mono text-muted hidden sm:inline">
             · {estimatedXp} XP Available
           </span>
         </div>
@@ -188,7 +205,7 @@ export function ModuleAccordionItem({
                       {/* Leading Type Icon */}
                       <span className="shrink-0 text-muted">
                         {isLab ? (
-                          <span className="flex h-6 w-6 items-center justify-center rounded-xs bg-brand-500/10 text-brand-600 dark:text-brand-400 border border-brand-500/20">
+                          <span className="flex h-6 w-6 items-center justify-center rounded-xs bg-brand-500/10 text-brand-600 border border-brand-500/20">
                             <LabTerminalIcon className="w-3.5 h-3.5" />
                           </span>
                         ) : (
@@ -200,10 +217,8 @@ export function ModuleAccordionItem({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold truncate">
-                            {lesson.title}
-                          </span>
-                          <span className="text-[10px] font-mono text-muted uppercase tracking-wider font-semibold">
+                          <span className="text-xs font-semibold truncate">{lesson.title}</span>
+                          <span className="text-[0.625rem] font-mono text-muted uppercase tracking-wider font-semibold">
                             · {lesson.contentType}
                           </span>
                         </div>
@@ -227,7 +242,9 @@ export function ModuleAccordionItem({
                 return (
                   <div
                     key={quiz.quizId}
-                    onClick={() => navigate(ROUTES.LEARN_QUIZ.replace(':quizId', String(quiz.quizId)))}
+                    onClick={() =>
+                      navigate(ROUTES.LEARN_QUIZ.replace(':quizId', String(quiz.quizId)))
+                    }
                     className="flex items-center justify-between p-2.5 rounded-xs border border-transparent hover:border-border/80 hover:bg-paper transition-all cursor-pointer text-card-foreground"
                   >
                     <div className="flex items-center gap-3 min-w-0 flex-1">
@@ -237,10 +254,8 @@ export function ModuleAccordionItem({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-semibold truncate">
-                            {quiz.title}
-                          </span>
-                          <span className="text-[10px] font-mono text-muted uppercase tracking-wider font-semibold">
+                          <span className="text-xs font-semibold truncate">{quiz.title}</span>
+                          <span className="text-[0.625rem] font-mono text-muted uppercase tracking-wider font-semibold">
                             · QUIZ
                           </span>
                         </div>
@@ -248,12 +263,10 @@ export function ModuleAccordionItem({
                     </div>
 
                     <div className="flex items-center gap-3 shrink-0 ml-2">
-                      <span className="text-[11px] font-mono text-muted hidden sm:inline">
+                      <span className="text-[0.6875rem] font-mono text-muted hidden sm:inline">
                         {quiz.questionCount} {quiz.questionCount === 1 ? 'question' : 'questions'}
                       </span>
-                      <span className="text-xs font-mono text-muted font-medium">
-                        {quizXp} XP
-                      </span>
+                      <span className="text-xs font-mono text-muted font-medium">{quizXp} XP</span>
                     </div>
                   </div>
                 );
