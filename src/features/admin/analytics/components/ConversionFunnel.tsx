@@ -20,15 +20,13 @@ export function ConversionFunnel({ stages }: ConversionFunnelProps) {
           return (
             <div
               key={stage.stage}
-              className="relative flex flex-col justify-between p-3.5 border border-border bg-surface/50 rounded-lg hover:border-[#B8B4A6] hover:shadow-xs transition-all duration-150 cursor-default select-none"
+              className="relative flex flex-col justify-between p-3.5 border border-border bg-surface/50 rounded-lg hover:border-paper-line-strong hover:shadow-xs transition-all duration-150 cursor-default select-none"
             >
               <div className="flex items-center justify-between">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted">
+                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted">
                   Step 0{idx + 1}
                 </span>
-                <span className="text-xs font-mono font-bold text-accent">
-                  {stage.percentage}%
-                </span>
+                <span className="text-xs font-mono font-bold text-accent">{stage.percentage}%</span>
               </div>
 
               <div className="my-2">

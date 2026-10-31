@@ -41,7 +41,7 @@ export function TabRow({ items, activeId, onChange }: TabRowProps) {
           role="tab"
           className={cn(
             'shrink-0 whitespace-nowrap rounded-t-md px-4 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-card-foreground',
-            item.id === activeId && 'text-brand-700',
+            item.id === activeId && 'text-ink font-semibold',
           )}
         >
           {item.label}
@@ -50,7 +50,7 @@ export function TabRow({ items, activeId, onChange }: TabRowProps) {
       {indicator ? (
         <span
           aria-hidden="true"
-          className="absolute bottom-0 h-0.5 bg-brand-600 transition-[transform,width] duration-[280ms] ease-[var(--ease-standard)]"
+          className="absolute bottom-0 h-0.5 bg-ink transition-[transform,width] duration-[280ms] ease-[var(--ease-standard)]"
           style={{ transform: `translateX(${indicator.left}px)`, width: indicator.width }}
         />
       ) : null}

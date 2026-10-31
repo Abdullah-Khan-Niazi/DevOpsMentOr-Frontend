@@ -1,20 +1,41 @@
 import { useCallback, useEffect } from 'react';
+import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/shared/constants';
 import { AUTH_TOKEN_KEY } from '@/shared/services';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 
+// Tracks which account produced the current query cache. If a different
+// account signs in in the same tab, the previous account's org/class/progress
+// data must never paint while the new session loads.
+let cachedUserId: number | null = null;
+
 // Runs whenever authentication transitions to true (initial restore or a
 // fresh login) and merges /auth/me identity (roles + permissions — the login
 // response carries roles but not the resolved permission set).
 export function useSessionValidator() {
+  const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const setUser = useAuthStore((state) => state.setUser);
   const clearSession = useAuthStore((state) => state.clearSession);
 
+  const endSession = useCallback(() => {
+    queryClient.clear();
+    cachedUserId = null;
+    clearSession();
+  }, [clearSession, queryClient]);
+
   const validate = useCallback(async () => {
     try {
       const me = await authService.getMe();
+
+      if (cachedUserId !== null && cachedUserId !== me.userId) {
+        // A different account now owns this tab. Nothing cached under the
+        // previous identity is safe to reuse.
+        queryClient.clear();
+      }
+      cachedUserId = me.userId;
+
       const user = useAuthStore.getState().user;
 
       setUser({
@@ -29,9 +50,9 @@ export function useSessionValidator() {
         permissions: me.permissions,
       });
     } catch {
-      clearSession();
+      endSession();
     }
-  }, [setUser, clearSession]);
+  }, [endSession, queryClient, setUser]);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -42,7 +63,7 @@ export function useSessionValidator() {
   useEffect(() => {
     const handleLogout = () => {
       if (useAuthStore.getState().isAuthenticated) {
-        clearSession();
+        endSession();
         window.location.replace(ROUTES.LOGIN);
       }
     };
@@ -62,7 +83,9 @@ export function useSessionValidator() {
     const handleStorage = (event: StorageEvent) => {
       if (
         (event.key === AUTH_TOKEN_KEY && event.newValue === null) ||
-        (event.key === 'auth-session' && (!event.newValue || !JSON.parse(event.newValue || '{}')?.state?.isAuthenticated))
+        (event.key === 'auth-session' &&
+          (!event.newValue ||
+            !JSON.parse(event.newValue || '{}')?.state?.isAuthenticated))
       ) {
         handleLogout();
       }
@@ -75,7 +98,7 @@ export function useSessionValidator() {
         channel.close();
       }
     };
-  }, [clearSession]);
+  }, [endSession]);
 
   // Back-Forward Cache (bfcache) and swipe-back popstate security guards
   useEffect(() => {

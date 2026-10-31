@@ -112,7 +112,8 @@ export function AdminAnalyticsPage() {
       label: 'New Signups (30d)',
       value: overview.data?.newSignups30d ?? 0,
       spark: getSliceLevels('newSignups', [1, 2, 3, 4, 5]),
-      context: 'New student and practitioner profiles created and verified during the past 30 days.',
+      context:
+        'New student and practitioner profiles created and verified during the past 30 days.',
       subtext: 'Verified account onboarding',
     },
     {
@@ -126,14 +127,16 @@ export function AdminAnalyticsPage() {
       label: 'Points Awarded (7d)',
       value: overview.data?.pointsAwarded7d ?? 0,
       spark: getSliceLevels('pointsAwarded', [2, 3, 5, 4, 5]),
-      context: 'Total gamified knowledge experience points accrued across lab exercises and quizzes.',
+      context:
+        'Total gamified knowledge experience points accrued across lab exercises and quizzes.',
       subtext: 'Knowledge XP points earned',
     },
     {
       label: 'Active Subscriptions',
       value: subsVal,
       spark: [2, 3, 4, 4, Math.max(1, Math.min(5, Math.round(subsVal / 2) + 2))],
-      context: 'Current unexpired recurring billing records across individual and enterprise plans.',
+      context:
+        'Current unexpired recurring billing records across individual and enterprise plans.',
       subtext: 'Enterprise & Pro memberships',
     },
     {
@@ -176,9 +179,7 @@ export function AdminAnalyticsPage() {
                 key={val}
                 type="button"
                 onClick={() => setDays(val)}
-                className={`tab-switcher__tab ${
-                  days === val ? 'tab-switcher__tab--active' : ''
-                }`}
+                className={`tab-switcher__tab ${days === val ? 'tab-switcher__tab--active' : ''}`}
               >
                 {val}D
               </button>
@@ -199,30 +200,34 @@ export function AdminAnalyticsPage() {
         <Card className="p-4 flex flex-wrap items-center justify-between gap-4 font-mono text-xs">
           <div className="flex items-center gap-3">
             <span className="w-2 h-2 bg-signal animate-pulse rounded-full shrink-0 inline-block" />
-            <span className="text-muted text-[10px] uppercase">CONCURRENT LEARNERS ONLINE:</span>
+            <span className="text-muted text-[0.625rem] uppercase">
+              CONCURRENT LEARNERS ONLINE:
+            </span>
             <span className="font-bold text-card-foreground text-sm">
               {sessionStats.currentlyActiveUsers} LEARNERS ACTIVE
             </span>
-            <span className="text-muted text-[11px]">
+            <span className="text-muted text-[0.6875rem]">
               ({sessionStats.activeSessions} active browser sessions)
             </span>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 text-[11px]">
+          <div className="flex flex-wrap items-center gap-6 text-[0.6875rem]">
             <div>
-              <span className="text-muted text-[10px] uppercase mr-1.5">AVG STAY DURATION:</span>
+              <span className="text-muted text-[0.625rem] uppercase mr-1.5">
+                AVG STAY DURATION:
+              </span>
               <span className="font-semibold text-card-foreground">
                 {sessionStats.avgStayDurationMinutes}m
               </span>
             </div>
             <div>
-              <span className="text-muted text-[10px] uppercase mr-1.5">MIN STAY:</span>
+              <span className="text-muted text-[0.625rem] uppercase mr-1.5">MIN STAY:</span>
               <span className="font-semibold text-card-foreground">
                 {sessionStats.minStayDurationMinutes}m
               </span>
             </div>
             <div>
-              <span className="text-muted text-[10px] uppercase mr-1.5">MAX STAY:</span>
+              <span className="text-muted text-[0.625rem] uppercase mr-1.5">MAX STAY:</span>
               <span className="font-semibold text-card-foreground">
                 {sessionStats.maxStayDurationMinutes}m
               </span>
@@ -309,7 +314,7 @@ export function AdminAnalyticsPage() {
               headlineGrowth="+0.4% vs prior 30 days"
             />
           </div>
-          <div className="mt-4 pt-2 border-t border-border/60 text-[11px] font-mono text-muted flex justify-between">
+          <div className="mt-4 pt-2 border-t border-border/60 text-[0.6875rem] font-mono text-muted flex justify-between">
             <span>Milestone criteria: Progress &gt;= 1 lesson &gt;= 1 sandbox</span>
             <span>Accredited certs issued</span>
           </div>
@@ -358,7 +363,7 @@ export function AdminAnalyticsPage() {
         <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden">
           <div>
             <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-              <h2 className="text-[11px] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
+              <h2 className="text-[0.6875rem] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
                 {trafficWindow === 'day' && '24-Hour Traffic Density Curve (PKT)'}
                 {trafficWindow === '7d' && '7-Day Traffic Trajectory (PKT)'}
                 {trafficWindow === 'month' && '30-Day Traffic Trajectory (PKT)'}
@@ -388,8 +393,8 @@ export function AdminAnalyticsPage() {
                 </div>
 
                 {dashboardData?.kpis.peakActivity?.peakHour && (
-                  <div className="flex items-center gap-1 text-muted text-[10px] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap">
-                    <span className="text-[9px] uppercase">PEAK:</span>
+                  <div className="flex items-center gap-1 text-muted text-[0.625rem] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap">
+                    <span className="text-[0.5625rem] uppercase">PEAK:</span>
                     <span className="font-bold text-card-foreground">
                       {dashboardData.kpis.peakActivity.peakHour}
                     </span>
@@ -422,39 +427,45 @@ export function AdminAnalyticsPage() {
 
             <div className="grid gap-3 sm:grid-cols-2 text-xs font-mono">
               <div className="p-3 border border-border bg-surface/50">
-                <span className="text-muted block text-[10px] uppercase">Active Pods</span>
+                <span className="text-muted block text-[0.625rem] uppercase">Active Pods</span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.activeInstances ?? 0}
                 </span>
-                <span className="text-[10px] text-muted block mt-0.5">
+                <span className="text-[0.625rem] text-muted block mt-0.5">
                   {detailed.data?.pwnbox?.pendingInstances ?? 0} queued in buffer
                 </span>
               </div>
 
               <div className="p-3 border border-border bg-surface/50">
-                <span className="text-muted block text-[10px] uppercase">Compute Allocated</span>
+                <span className="text-muted block text-[0.625rem] uppercase">
+                  Compute Allocated
+                </span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.totalRamGb ?? 0} GB
                 </span>
-                <span className="text-[10px] text-muted block mt-0.5">
+                <span className="text-[0.625rem] text-muted block mt-0.5">
                   {detailed.data?.pwnbox?.totalCpuCores ?? 0} CPU cores
                 </span>
               </div>
 
               <div className="p-3 border border-border bg-surface/50">
-                <span className="text-muted block text-[10px] uppercase">Avg Session Duration</span>
+                <span className="text-muted block text-[0.625rem] uppercase">
+                  Avg Session Duration
+                </span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.avgDurationMinutes ?? 0}m
                 </span>
-                <span className="text-[10px] text-muted block mt-0.5">Average pod active time</span>
+                <span className="text-[0.625rem] text-muted block mt-0.5">
+                  Average pod active time
+                </span>
               </div>
 
               <div className="p-3 border border-border bg-surface/50">
-                <span className="text-muted block text-[10px] uppercase">Lifecycle Buffer</span>
+                <span className="text-muted block text-[0.625rem] uppercase">Lifecycle Buffer</span>
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.terminatedInstances ?? 0}
                 </span>
-                <span className="text-[10px] text-muted block mt-0.5">
+                <span className="text-[0.625rem] text-muted block mt-0.5">
                   Terminated • {detailed.data?.pwnbox?.errorInstances ?? 0} errors
                 </span>
               </div>
@@ -483,7 +494,7 @@ function AnalyticsKpiCard({
       className="group relative flex flex-col justify-between p-3.5 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-1 hover:border-ink hover:shadow-md hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer select-none"
     >
       <div className="flex items-start justify-between">
-        <span className="text-[10px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors truncate">
+        <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors truncate">
           {kpi.label}
         </span>
         <PixelatedMiniSparkline levels={kpi.spark} />
@@ -495,7 +506,7 @@ function AnalyticsKpiCard({
         </span>
       </div>
 
-      <p className="mt-2 pt-1.5 border-t border-border/40 text-[11px] font-mono text-muted group-hover:text-card-foreground/80 transition-colors truncate">
+      <p className="mt-2 pt-1.5 border-t border-border/40 text-[0.6875rem] font-mono text-muted group-hover:text-card-foreground/80 transition-colors truncate">
         {kpi.subtext}
       </p>
     </Card>

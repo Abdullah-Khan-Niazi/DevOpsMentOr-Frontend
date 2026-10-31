@@ -7,7 +7,9 @@ type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
       {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
     </span>
   );
@@ -81,7 +83,9 @@ export function InvitationStatusTable({
   }, [invitations, sortCol, sortDir]);
 
   if (isLoading) {
-    return <div className="py-8 text-center text-xs font-mono text-muted">Loading invitations…</div>;
+    return (
+      <div className="py-8 text-center text-xs font-mono text-muted">Loading invitations…</div>
+    );
   }
 
   if (invitations.length === 0) {
@@ -126,20 +130,17 @@ export function InvitationStatusTable({
         </thead>
         <tbody className="divide-y divide-border/60">
           {sortedInvitations.map((invite) => (
-            <tr
-              key={invite.invitationId}
-              className="hover:bg-surface/80 transition-colors"
-            >
+            <tr key={invite.invitationId} className="hover:bg-surface/80 transition-colors">
               <td className="px-4 py-3.5 font-mono text-xs font-semibold text-card-foreground">
                 {invite.inviteeEmail}
               </td>
               <td className="px-4 py-3.5">
                 <span
-                  className={`inline-block px-2 py-0.5 border text-[10px] font-mono font-semibold uppercase tracking-wider rounded-sm ${
+                  className={`inline-block px-2 py-0.5 border text-[0.625rem] font-mono font-semibold uppercase tracking-wider rounded-sm ${
                     invite.status === 'accepted'
                       ? 'border-border-strong bg-accent/10 text-card-foreground'
                       : invite.status === 'pending'
-                        ? 'border-amber-600/50 bg-amber-500/10 text-amber-700'
+                        ? 'border-warning/50 bg-warning/10 text-warning'
                         : 'border-border bg-surface text-muted'
                   }`}
                 >

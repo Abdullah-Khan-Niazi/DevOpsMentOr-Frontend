@@ -26,8 +26,16 @@ interface LessonFormProps {
 }
 
 const CONTENT_TYPE_OPTIONS: Array<{ value: ContentType; label: string; icon: string }> = [
-  { value: 'text', label: 'Reading Theory', icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z' },
-  { value: 'video', label: 'Video Lecture', icon: 'M22 8l-6 4 6 4V8z M2 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z' },
+  {
+    value: 'text',
+    label: 'Reading Theory',
+    icon: 'M4 19.5A2.5 2.5 0 0 1 6.5 17H20 M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z',
+  },
+  {
+    value: 'video',
+    label: 'Video Lecture',
+    icon: 'M22 8l-6 4 6 4V8z M2 5h14a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z',
+  },
   { value: 'interactive', label: 'Slides & Walkthrough', icon: 'M2 3h20v14H2z M8 21h8 M12 17v4' },
   { value: 'lab', label: 'Hands-On Lab', icon: 'M4 17l6-6-6-6 M12 19h8' },
 ];
@@ -104,9 +112,13 @@ export function LessonForm({
       {isEditing && initial?.isPublished !== undefined && onPublishToggle && (
         <div className="flex items-center justify-between p-3 rounded-md border border-border bg-paper/40">
           <div>
-            <p className="text-xs font-mono font-semibold text-card-foreground">Publication State</p>
-            <p className="text-[11px] text-muted">
-              {initial.isPublished ? 'Visible to enrolled learners' : 'Draft mode (hidden from learners)'}
+            <p className="text-xs font-mono font-semibold text-card-foreground">
+              Publication State
+            </p>
+            <p className="text-[0.6875rem] text-muted">
+              {initial.isPublished
+                ? 'Visible to enrolled learners'
+                : 'Draft mode (hidden from learners)'}
             </p>
           </div>
           <PublishToggle
@@ -151,7 +163,7 @@ export function LessonForm({
                 }`}
               >
                 <svg
-                  className={`w-4 h-4 ${isSelected ? 'text-brand-600 dark:text-brand-400' : 'text-muted'}`}
+                  className={`w-4 h-4 ${isSelected ? 'text-brand-600' : 'text-muted'}`}
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -205,7 +217,7 @@ export function LessonForm({
                 ? 'Lab Brief & Instructions (Markdown)'
                 : 'Lesson Theory & Architecture (Markdown)'}
           </label>
-          <span className="text-[10px] font-mono text-muted">Supports Markdown</span>
+          <span className="text-[0.625rem] font-mono text-muted">Supports Markdown</span>
         </div>
         <textarea
           id="lesson-body-area"
@@ -241,7 +253,7 @@ export function LessonForm({
                   key={tag.tagId}
                   type="button"
                   onClick={() => toggleTag(tag.tagId)}
-                  className={`text-[10px] font-mono px-2 py-0.5 rounded-xs border transition-colors cursor-pointer ${
+                  className={`text-[0.625rem] font-mono px-2 py-0.5 rounded-xs border transition-colors cursor-pointer ${
                     selected
                       ? 'bg-ink text-pearl-100 border-ink font-semibold'
                       : 'bg-card/60 text-muted border-border hover:border-card-foreground'

@@ -227,6 +227,7 @@ export interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   setSession: (payload: LoginResponse) => void;
+  setTokens: (tokens: { accessToken: string; refreshToken: string }) => void;
   setUser: (user: AuthUser) => void;
   clearSession: () => void;
 }

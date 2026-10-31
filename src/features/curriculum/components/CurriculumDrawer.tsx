@@ -62,7 +62,7 @@ export function CurriculumDrawer({
             {/* Drawer Header */}
             <div className="flex items-center justify-between border-b border-border pb-4">
               <div>
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted font-bold block">
+                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted font-bold block">
                   {createAction
                     ? `CREATE · ${createAction.type.toUpperCase()}`
                     : selectedNode
@@ -97,7 +97,12 @@ export function CurriculumDrawer({
                 aria-label="Close drawer"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
                 </svg>
               </button>
             </div>
@@ -206,13 +211,7 @@ function SelectedNodeContent({
 
 // ─── Module Drawer Content ───────────────────────────────────────────────────
 
-function ModuleNodeDrawerContent({
-  moduleId,
-  onClose,
-}: {
-  moduleId: number;
-  onClose: () => void;
-}) {
+function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onClose: () => void }) {
   const editor = useAdminModuleEditor(moduleId);
   const [archiving, setArchiving] = useState(false);
   const [archiveTitle, setArchiveTitle] = useState('');
@@ -253,7 +252,9 @@ function ModuleNodeDrawerContent({
       <div className="flex items-center justify-between p-3 rounded-md bg-paper border border-border">
         <div>
           <p className="text-xs font-mono font-semibold text-card-foreground">Publication Status</p>
-          <p className="text-xs text-muted">{module.isPublished ? 'Published and live' : 'Draft / Unpublished'}</p>
+          <p className="text-xs text-muted">
+            {module.isPublished ? 'Published and live' : 'Draft / Unpublished'}
+          </p>
         </div>
 
         <div className="flex items-center gap-2">
@@ -291,7 +292,9 @@ function ModuleNodeDrawerContent({
             {
               title: values.title,
               description: values.description.trim() || null,
-              estimatedMinutes: values.estimatedMinutes ? Number(values.estimatedMinutes) : undefined,
+              estimatedMinutes: values.estimatedMinutes
+                ? Number(values.estimatedMinutes)
+                : undefined,
               moduleOrder: values.moduleOrder ? Number(values.moduleOrder) : undefined,
             },
             {
@@ -306,7 +309,8 @@ function ModuleNodeDrawerContent({
       <Modal open={archiving} onClose={() => setArchiving(false)} title="Archive Module">
         <p className="modal-panel__body text-xs text-muted">
           Archiving will hide all lessons and quizzes within this module from enrolled learners.
-          Type <span className="font-mono font-semibold text-card-foreground">{module.title}</span> to confirm.
+          Type <span className="font-mono font-semibold text-card-foreground">{module.title}</span>{' '}
+          to confirm.
         </p>
         <div className="mt-4">
           <Input
@@ -317,7 +321,11 @@ function ModuleNodeDrawerContent({
           />
         </div>
         <div className="modal-panel__actions mt-6 flex justify-end gap-2">
-          <Button variant="secondary" onClick={() => setArchiving(false)} disabled={editor.archive.isPending}>
+          <Button
+            variant="secondary"
+            onClick={() => setArchiving(false)}
+            disabled={editor.archive.isPending}
+          >
             Cancel
           </Button>
           <Button variant="danger" onClick={confirmArchive} isLoading={editor.archive.isPending}>
@@ -386,7 +394,9 @@ function LessonNodeDrawerContent({
             contentType: values.contentType,
             content: values.content.trim() || null,
             videoUrl: values.videoUrl.trim() || null,
-            videoDurationSeconds: values.videoDurationSeconds ? Number(values.videoDurationSeconds) : null,
+            videoDurationSeconds: values.videoDurationSeconds
+              ? Number(values.videoDurationSeconds)
+              : null,
             lessonOrder: Number(values.lessonOrder),
             tagIds: values.tagIds,
           },
@@ -433,7 +443,10 @@ function LabNodeDrawerContent({
     <LabConfigForm
       initial={{
         title: lesson.title,
-        slug: lesson.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, ''),
+        slug: lesson.title
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, '-')
+          .replace(/(^-|-$)/g, ''),
         difficultyId: 2,
         labType: 'pro_lab',
         estimatedHours: 2,
@@ -572,7 +585,9 @@ function CreateActionContent({
             {
               title: values.title,
               description: values.description.trim() || undefined,
-              estimatedMinutes: values.estimatedMinutes ? Number(values.estimatedMinutes) : undefined,
+              estimatedMinutes: values.estimatedMinutes
+                ? Number(values.estimatedMinutes)
+                : undefined,
               moduleOrder: Number(values.moduleOrder) || 1,
             },
             {
@@ -651,7 +666,9 @@ function CreateLessonContent({
             contentType: values.contentType,
             content: values.content.trim() || undefined,
             videoUrl: values.videoUrl.trim() || null,
-            videoDurationSeconds: values.videoDurationSeconds ? Number(values.videoDurationSeconds) : null,
+            videoDurationSeconds: values.videoDurationSeconds
+              ? Number(values.videoDurationSeconds)
+              : null,
             lessonOrder: Number(values.lessonOrder) || 1,
             tagIds: values.tagIds,
           },
@@ -777,9 +794,7 @@ function CreateQuizContent({
           onChange={(e) => handleTitleChange(e.target.value)}
           error={titleError ?? undefined}
         />
-        {titleError && (
-          <p className="mt-1 text-xs text-rose-500 font-mono">{titleError}</p>
-        )}
+        {titleError && <p className="mt-1 text-xs text-rose-500 font-mono">{titleError}</p>}
       </div>
 
       <div className="grid grid-cols-2 gap-4">
@@ -817,7 +832,13 @@ function CreateQuizContent({
       </div>
 
       <div className="flex justify-end gap-2 pt-4 border-t border-border">
-        <Button variant="ghost" size="sm" type="button" onClick={onClose} disabled={editor.createQuiz.isPending}>
+        <Button
+          variant="ghost"
+          size="sm"
+          type="button"
+          onClick={onClose}
+          disabled={editor.createQuiz.isPending}
+        >
           Cancel
         </Button>
         <Button variant="primary" size="sm" type="submit" isLoading={editor.createQuiz.isPending}>

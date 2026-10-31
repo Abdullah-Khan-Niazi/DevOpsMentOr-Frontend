@@ -1,9 +1,11 @@
 import { useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button, Card, ErrorState, Input, LoadingState, toast } from '@/shared/components';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
-import { ROUTES } from '@/shared/constants';
+import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
+import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
 import { extractInvitationToken } from '@/features/auth/utils/invitation';
 import { useAcceptInvitation, useValidateInvitation } from '../hooks';
 
@@ -11,10 +13,7 @@ import { useAcceptInvitation, useValidateInvitation } from '../hooks';
 export function EnrollAcceptPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const rawParam =
-    searchParams.get('token') ||
-    searchParams.get('code') ||
-    searchParams.get('invite') ||
-    '';
+    searchParams.get('token') || searchParams.get('code') || searchParams.get('invite') || '';
   const token = extractInvitationToken(rawParam);
 
   const [inputCode, setInputCode] = useState('');
@@ -22,6 +21,7 @@ export function EnrollAcceptPage() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const accept = useAcceptInvitation();
   const [accepted, setAccepted] = useState(false);
+  const queryClient = useQueryClient();
 
   const preview = useValidateInvitation(token);
 
@@ -44,9 +44,21 @@ export function EnrollAcceptPage() {
 
   const handleAccept = () => {
     accept.mutate(token, {
-      onSuccess: () => {
+      onSuccess: async () => {
         toast.success('Invitation accepted.');
         setAccepted(true);
+
+        // Refresh identity so the new role (org_student / professor) shows up
+        // immediately in nav, switcher and route guards. This also rotates the
+        // JWT because roles and permissions are embedded in it — updating the
+        // store alone would leave the API denying the new workspace.
+        await refreshAuthSession();
+
+        // Refetch context-scoped data so the success screen and the next
+        // workspace the user opens show the freshly granted scope.
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
       },
       onError: (error) => toast.error(error.message),
     });
@@ -105,7 +117,9 @@ export function EnrollAcceptPage() {
       <AuthLayout title="Invitation" subtitle="Enrollment invitation">
         <Card className="p-6 space-y-4 text-center">
           <ErrorState
-            message={preview.error?.message ?? 'This invitation is invalid or has expired (72h limit).'}
+            message={
+              preview.error?.message ?? 'This invitation is invalid or has expired (72h limit).'
+            }
           />
           <Button variant="secondary" className="w-full" onClick={handleResetToken}>
             Enter a different code or link
@@ -133,8 +147,13 @@ export function EnrollAcceptPage() {
             ) : null}
             .
           </p>
-          <Link to={ROUTES.STUDENT_MY_CLASS} className="inline-block w-full">
-            <Button className="w-full">Go to Class Workspace</Button>
+          <Link
+            to={invitee.kind === 'class' ? ROUTES.STUDENT_MY_CLASS : ROUTES.ORG_DASHBOARD}
+            className="inline-block w-full"
+          >
+            <Button className="w-full">
+              {invitee.kind === 'class' ? 'Go to Class Workspace' : 'Go to Organization Workspace'}
+            </Button>
           </Link>
         </Card>
       </AuthLayout>
@@ -151,7 +170,8 @@ export function EnrollAcceptPage() {
             {invitee.kind === 'class' && invitee.className ? (
               <>
                 {' '}
-                in cohort <span className="font-semibold text-card-foreground">{invitee.className}</span>
+                in cohort{' '}
+                <span className="font-semibold text-card-foreground">{invitee.className}</span>
               </>
             ) : null}
             .

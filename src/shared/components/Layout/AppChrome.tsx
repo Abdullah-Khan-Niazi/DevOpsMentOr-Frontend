@@ -4,6 +4,7 @@ import { SiteLogo } from '@/shared/components/Logo';
 import { Icon } from '@/shared/components/Icon';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { useLogout } from '@/features/auth/hooks';
+import { useMyClass } from '@/features/enrollment/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useUiStore } from '@/shared/stores';
 import { ROUTES } from '@/shared/constants';
@@ -12,6 +13,11 @@ import { AnnouncementBanner } from '@/features/notifications/components/Announce
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { usePublishedAnnouncements } from '@/features/notifications/hooks/useNotifications';
 import { buildNavItems, type AppNavItem } from './navigation';
+import {
+  isPlatformAdmin as isPlatformAdminUser,
+  resolveWorkspaceKind,
+  workspaceHome,
+} from './workspaceContext';
 import './AppChrome.css';
 
 // Unified authenticated chrome — responsive layout:
@@ -35,7 +41,7 @@ function userInitials(fullName?: string | null): string {
     .toUpperCase();
 }
 
-export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: AppChromeProps) {
+export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
   const { isSidebarOpen, toggleSidebar } = useUiStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
@@ -45,49 +51,30 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
   const logout = useLogout();
   const location = useLocation();
   const { data: announcements } = usePublishedAnnouncements();
-  const canSeeNotifications = (user?.permissions ?? []).includes('notifications:inbox:read');
+  const permissions = new Set(user?.permissions ?? []);
+  const canSeeNotifications = permissions.has('notifications:inbox:read');
+  const canSeeAchievements = permissions.has('gamification:profile:read');
+  const canSeeBilling = permissions.has('billing:subscription:read');
 
   const roles = new Set(user?.roles ?? []);
+  const platformAdmin = isPlatformAdminUser(user);
+  const myClassQuery = useMyClass(roles.has('org_student'));
 
   // ─── Active Context Resolution ─────────────────────────────────────────────
-  // Priority: URL path > localStorage workspace selection > role inference
-  const isAdminPath = location.pathname.startsWith('/admin');
-  const isOrgPath = location.pathname.startsWith('/org');
-
-  let activeWorkspace = 'default';
-  try {
-    activeWorkspace = localStorage.getItem('stardust_active_workspace') || 'default';
-  } catch {
-    // ignore
-  }
-
-  // Determine the active context for nav scoping
-  let activeContext: 'personal' | 'org' | 'platform' = 'personal';
-  if (isAdminPath || (roles.has('platform_admin') && activeWorkspace === 'platform')) {
-    activeContext = 'platform';
-  } else if (isOrgPath || ((roles.has('org_admin') || roles.has('professor')) && activeWorkspace === 'org')) {
-    activeContext = 'org';
-  } else {
-    activeContext = 'personal';
-  }
-
-  // Learner roles always show topbar; staff show sidebar UNLESS they've switched to personal context
-  const isNaturalLearner =
-    roles.has('individual_learner') ||
-    roles.has('org_student') ||
-    (!roles.has('platform_admin') && !roles.has('org_admin') && !roles.has('professor'));
-
-  // showTopbarNav: learner roles OR staff who switched to personal workspace
-  const showTopbarNav =
-    isNaturalLearner || (activeContext === 'personal' && activeWorkspace === 'personal');
-
-  // showSidebarNav: staff in their org/platform context
+  // The route is the only source of truth. There is no persisted workspace
+  // mode, so another tab/account can never move this user's context.
+  const activeContext = resolveWorkspaceKind(location.pathname, user);
+  const showTopbarNav = activeContext === 'personal' || activeContext === 'class';
   const showSidebarNav = !showTopbarNav;
+  const resolvedLogoTo = logoTo ?? workspaceHome(activeContext);
 
   useEffect(() => {
     if (!profileDropdownOpen) return;
     const handleClickOutside = (event: MouseEvent) => {
-      if (profileDropdownRef.current && !profileDropdownRef.current.contains(event.target as Node)) {
+      if (
+        profileDropdownRef.current &&
+        !profileDropdownRef.current.contains(event.target as Node)
+      ) {
         setProfileDropdownOpen(false);
       }
     };
@@ -103,91 +90,66 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
   // Scope nav items to active context
   const currentNavItems = navItems ?? buildNavItems(user, activeContext);
 
-  const groups = currentNavItems.reduce<Array<{ section: string; items: AppNavItem[] }>>((acc, item) => {
-    const last = acc[acc.length - 1];
-    if (last && last.section === item.section) {
-      last.items.push(item);
-    } else {
-      acc.push({ section: item.section, items: [item] });
-    }
-    return acc;
-  }, []);
+  // Topbar is a compact subset of the learner nav. "My class" appears only
+  // when an enrollment actually exists, so no link can dead-end.
+  const topbarRoutes = new Set<string>([
+    ROUTES.DASHBOARD,
+    ROUTES.STUDENT_MY_CLASS,
+    ROUTES.LEARN,
+    ROUTES.ACHIEVEMENTS,
+    ROUTES.LEADERBOARD,
+  ]);
+  const hasEnrolledClass = Boolean(myClassQuery.data);
+  const visibleNavItems = currentNavItems.filter(
+    (item) => item.to !== ROUTES.STUDENT_MY_CLASS || hasEnrolledClass,
+  );
+  const topbarItems = visibleNavItems.filter((item) => topbarRoutes.has(item.to));
+
+  const groups = visibleNavItems.reduce<Array<{ section: string; items: AppNavItem[] }>>(
+    (acc, item) => {
+      const last = acc[acc.length - 1];
+      if (last && last.section === item.section) {
+        last.items.push(item);
+      } else {
+        acc.push({ section: item.section, items: [item] });
+      }
+      return acc;
+    },
+    [],
+  );
 
   return (
     <div className={cn('app-chrome', showTopbarNav && 'app-chrome--topbar')}>
       {/* ─── Learner Top Navigation Bar (d.webp layout) ────────────────────────── */}
       {showTopbarNav && (
         <header className="app-chrome__topbar">
-          <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-6">
+          <div className="app-chrome__topbar-inner">
             {/* Left: Site Logo & Workspace Context Switcher */}
             <div className="flex items-center gap-4">
-              <Link to={logoTo} className="flex items-center text-pearl-100 hover:opacity-85 transition-opacity" aria-label="DevOpsMentor home">
+              <Link
+                to={resolvedLogoTo}
+                className="flex items-center hover:opacity-85 transition-opacity"
+                aria-label="DevOpsMentor home"
+              >
                 <SiteLogo />
               </Link>
-              <WorkspaceSwitcher variant="topbar" />
+              {!platformAdmin && <WorkspaceSwitcher variant="topbar" />}
             </div>
 
-            {/* Center: Segmented Navigation Pills (as in d.webp) */}
-            <nav className="flex items-center gap-1.5 p-1 rounded-full bg-white/10 dark:bg-white/5 border border-white/10" aria-label="Learner Primary">
-              <NavLink
-                to={ROUTES.DASHBOARD}
-                className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
-                }
-              >
-                <Icon name="dashboard" size={14} />
-                <span>Dashboard</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.LEARN}
-                className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
-                }
-              >
-                <Icon name="roles" size={14} />
-                <span>Curriculum</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.LABS}
-                className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
-                }
-              >
-                <Icon name="terminal" size={14} />
-                <span>Sandboxes</span>
-              </NavLink>
-
-              <NavLink
-                to={ROUTES.TRACKS}
-                className={({ isActive }) =>
-                  cn(
-                    'px-4 py-1.5 rounded-full text-xs font-medium flex items-center gap-2 transition-all',
-                    isActive
-                      ? 'bg-pearl-100 text-ink dark:bg-pearl-100 dark:text-ink font-semibold shadow-xs'
-                      : 'text-pearl-100/70 hover:text-pearl-100 hover:bg-white/5',
-                  )
-                }
-              >
-                <Icon name="track" size={14} />
-                <span>Career Paths</span>
-              </NavLink>
+            {/* Center: Role-aware navigation (CSS-migration tab switcher) */}
+            <nav className="tab-switcher" aria-label="Learner Primary">
+              {topbarItems.map((item) => (
+                <NavLink
+                  key={item.to}
+                  to={item.to}
+                  className={({ isActive }) =>
+                    cn('tab-switcher__tab', isActive && 'tab-switcher__tab--active')
+                  }
+                >
+                  <Icon name={item.icon} size={14} />
+                  <span>{item.label}</span>
+                </NavLink>
+              ))}
             </nav>
 
             {/* Right: Notifications & User Profile Chip */}
@@ -199,25 +161,25 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                 <button
                   type="button"
                   onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full hover:bg-white/10 transition-colors cursor-pointer text-left"
+                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border border-border hover:bg-pearl-200 transition-colors cursor-pointer text-left"
                   aria-expanded={profileDropdownOpen}
                   aria-label="User menu"
                 >
-                  <span className="w-8 h-8 rounded-full bg-pearl-100 text-ink flex items-center justify-center font-bold text-xs shrink-0">
+                  <span className="w-8 h-8 rounded-full bg-ink text-pearl-100 flex items-center justify-center font-bold text-xs shrink-0">
                     {userInitials(profileName)}
                   </span>
                   <div className="hidden xl:flex flex-col text-left">
-                    <span className="text-xs font-semibold text-pearl-100 leading-tight truncate max-w-[120px]">
+                    <span className="text-xs font-semibold text-ink leading-tight truncate max-w-[7.5rem]">
                       Hi, {user?.fullName?.split(' ')[0] || user?.username || 'Learner'}!
                     </span>
-                    <span className="text-[10px] text-pearl-100/60 truncate max-w-[120px] font-mono">
+                    <span className="text-[0.625rem] text-muted truncate max-w-[7.5rem] font-mono">
                       {user?.email ?? ''}
                     </span>
                   </div>
                   <Icon
                     name={profileDropdownOpen ? 'chevrons-right' : 'chevrons-left'}
                     size={12}
-                    className="text-pearl-100/60 -rotate-90"
+                    className="text-muted -rotate-90"
                   />
                 </button>
 
@@ -225,8 +187,12 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                 {profileDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-card shadow-lg py-1.5 z-50 text-card-foreground">
                     <div className="px-3.5 py-2 border-b border-border">
-                      <p className="text-xs font-semibold text-card-foreground truncate">{profileName}</p>
-                      <p className="text-[11px] text-muted truncate font-mono">{user?.email}</p>
+                      <p className="text-xs font-semibold text-card-foreground truncate">
+                        {profileName}
+                      </p>
+                      <p className="text-[0.6875rem] text-muted truncate font-mono">
+                        {user?.email}
+                      </p>
                     </div>
 
                     <div className="py-1">
@@ -239,14 +205,16 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                         <span>View Profile</span>
                       </Link>
 
-                      <Link
-                        to={ROUTES.ACHIEVEMENTS}
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
-                      >
-                        <Icon name="award" size={14} className="text-muted" />
-                        <span>Achievements</span>
-                      </Link>
+                      {canSeeAchievements ? (
+                        <Link
+                          to={ROUTES.ACHIEVEMENTS}
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
+                        >
+                          <Icon name="award" size={14} className="text-muted" />
+                          <span>Achievements</span>
+                        </Link>
+                      ) : null}
 
                       <Link
                         to={ROUTES.SETTINGS}
@@ -257,14 +225,16 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
                         <span>Account Settings</span>
                       </Link>
 
-                      <Link
-                        to={ROUTES.BILLING}
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
-                      >
-                        <Icon name="card" size={14} className="text-muted" />
-                        <span>Billing & Seats</span>
-                      </Link>
+                      {canSeeBilling ? (
+                        <Link
+                          to={ROUTES.BILLING}
+                          onClick={() => setProfileDropdownOpen(false)}
+                          className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
+                        >
+                          <Icon name="card" size={14} className="text-muted" />
+                          <span>Billing & Seats</span>
+                        </Link>
+                      ) : null}
                     </div>
 
                     <div className="pt-1 border-t border-border">
@@ -290,7 +260,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
       )}
       {/* ─── Mobile Top Header (Screens < 1024px) ────────────────────────────── */}
       <header className="app-chrome__mobile-header">
-        <Link to={logoTo} className="app-chrome__mobile-logo" aria-label="DevOpsMentor home">
+        <Link to={resolvedLogoTo} className="app-chrome__mobile-logo" aria-label="DevOpsMentor home">
           <SiteLogo />
         </Link>
         <div className="flex items-center gap-2">
@@ -338,7 +308,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
           <aside className="app-chrome__mobile-drawer">
             <div className="app-chrome__mobile-drawer-top">
               <Link
-                to={logoTo}
+                to={resolvedLogoTo}
                 onClick={() => setMobileMenuOpen(false)}
                 className="app-chrome__logo"
                 aria-label="DevOpsMentor home"
@@ -355,9 +325,14 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
               </button>
             </div>
 
-            <div className="px-4 py-3 border-b border-border">
-              <WorkspaceSwitcher variant="mobile" />
-            </div>
+            {!platformAdmin && (
+              <div className="px-4 py-3 border-b border-border">
+                <WorkspaceSwitcher
+                  variant="mobile"
+                  onAfterSwitch={() => setMobileMenuOpen(false)}
+                />
+              </div>
+            )}
 
             <nav className="app-chrome__mobile-nav" aria-label="Mobile Primary">
               {groups.map((group) => (
@@ -414,7 +389,7 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
       {showSidebarNav && (
         <aside className={cn('app-chrome__sidebar', isSidebarOpen && 'app-chrome__sidebar--open')}>
           <div className="app-chrome__top">
-            <Link to={logoTo} className="app-chrome__logo" aria-label="DevOpsMentor home">
+            <Link to={resolvedLogoTo} className="app-chrome__logo" aria-label="DevOpsMentor home">
               <SiteLogo />
             </Link>
 
@@ -437,9 +412,11 @@ export function AppChrome({ navItems, logoTo = ROUTES.DASHBOARD, children }: App
             {isSidebarOpen && canSeeNotifications ? <NotificationBell /> : null}
           </div>
 
-          <div className="px-3 py-2 border-b border-border">
-            <WorkspaceSwitcher variant="sidebar" isCollapsed={!isSidebarOpen} />
-          </div>
+          {!platformAdmin && (
+            <div className="px-3 py-2 border-b border-border">
+              <WorkspaceSwitcher variant="sidebar" isCollapsed={!isSidebarOpen} />
+            </div>
+          )}
 
           <nav className="app-chrome__nav" aria-label="Primary">
             {groups.map((group) => (

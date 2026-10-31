@@ -10,10 +10,14 @@ import {
   useCourseProgress,
   useModulesProgress,
 } from '@/features/progress/hooks';
-import { useBadgeCatalog, useGamificationProfile } from '@/features/achievements/hooks/useGamification';
+import {
+  useBadgeCatalog,
+  useGamificationProfile,
+} from '@/features/achievements/hooks/useGamification';
 import { useCourseOverview } from '@/features/curriculum/hooks';
 import { useLabCatalog } from '@/features/labs/hooks';
 import { AiMentorDrawer } from '@/features/labs/components/AiMentorDrawer';
+import { useMyClass } from '@/features/enrollment/hooks';
 import { StatsGrid } from '../components';
 import { useDashboardStats } from '../hooks';
 
@@ -76,6 +80,9 @@ type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 function LearnerDashboard() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const roles = new Set(user?.roles ?? []);
+  const myClassQuery = useMyClass(roles.has('org_student'));
+  const enrolledClass = myClassQuery.data ?? null;
 
   const course = useCourseProgress();
   const modules = useModulesProgress();
@@ -111,7 +118,9 @@ function LearnerDashboard() {
   const activityItems = useMemo(() => activity.data ?? [], [activity.data]);
 
   const activityDatesSet = useMemo(() => {
-    return new Set(activityItems.map((item) => new Date(item.createdAt).toISOString().slice(0, 10)));
+    return new Set(
+      activityItems.map((item) => new Date(item.createdAt).toISOString().slice(0, 10)),
+    );
   }, [activityItems]);
 
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
@@ -136,22 +145,6 @@ function LearnerDashboard() {
     void courseOverview.refetch();
     void labCatalog.refetch();
   };
-
-  if (isError) {
-    return (
-      <div className="space-y-6 w-full min-w-0 max-w-full">
-        <PageHeader title="Dashboard" />
-        <ErrorState
-          message={
-            course.error?.message ??
-            continueLearning.error?.message ??
-            'Unable to load your progress.'
-          }
-          onRetry={retry}
-        />
-      </div>
-    );
-  }
 
   const pointer = continueLearning.data ?? null;
   const progressPct = pointer?.progressPct ?? course.data?.progressPercentage ?? 0;
@@ -227,9 +220,21 @@ function LearnerDashboard() {
     if (mods.length === 0) {
       return [
         { name: 'Linux Administration', pct: progressPct, xp: Math.round(totalPoints * 0.4) },
-        { name: 'Docker & Containers', pct: Math.min(100, progressPct + 10), xp: Math.round(totalPoints * 0.3) },
-        { name: 'Kubernetes Pods', pct: Math.max(0, progressPct - 20), xp: Math.round(totalPoints * 0.2) },
-        { name: 'CI/CD Pipelines', pct: Math.max(0, progressPct - 35), xp: Math.round(totalPoints * 0.1) },
+        {
+          name: 'Docker & Containers',
+          pct: Math.min(100, progressPct + 10),
+          xp: Math.round(totalPoints * 0.3),
+        },
+        {
+          name: 'Kubernetes Pods',
+          pct: Math.max(0, progressPct - 20),
+          xp: Math.round(totalPoints * 0.2),
+        },
+        {
+          name: 'CI/CD Pipelines',
+          pct: Math.max(0, progressPct - 35),
+          xp: Math.round(totalPoints * 0.1),
+        },
       ];
     }
     return mods.slice(0, 4).map((m) => ({
@@ -238,6 +243,22 @@ function LearnerDashboard() {
       xp: m.completedLessons * 120,
     }));
   }, [modules.data, progressPct, totalPoints]);
+
+  if (isError) {
+    return (
+      <div className="space-y-6 w-full min-w-0 max-w-full">
+        <PageHeader title="Dashboard" />
+        <ErrorState
+          message={
+            course.error?.message ??
+            continueLearning.error?.message ??
+            'Unable to load your progress.'
+          }
+          onRetry={retry}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-8 w-full min-w-0 max-w-full pb-16 select-none">
@@ -257,7 +278,7 @@ function LearnerDashboard() {
         {/* Right: 4 Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
           {/* Card 1: Points / XP */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[120px]">
+          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
             <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="award" size={18} />
             </div>
@@ -270,7 +291,7 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 2: Modules */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[120px]">
+          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
             <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="roles" size={18} />
             </div>
@@ -283,7 +304,7 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 3: Certificates / Badges */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[120px]">
+          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
             <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="flag" size={18} />
             </div>
@@ -296,7 +317,7 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 4: Challenges / Completed Labs */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[120px]">
+          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
             <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="terminal" size={18} />
             </div>
@@ -309,6 +330,27 @@ function LearnerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ─── Class context: one learner dashboard, no separate class workspace ─ */}
+      {enrolledClass && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-2xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+              <Icon name="my-class" size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-mono uppercase tracking-wider text-muted">My class</p>
+              <p className="text-sm font-bold text-card-foreground truncate">
+                {enrolledClass.className}
+              </p>
+              <p className="text-xs text-muted truncate">{enrolledClass.organizationName}</p>
+            </div>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.STUDENT_MY_CLASS)}>
+            View class
+          </Button>
+        </div>
+      )}
 
       {/* ─── 2. MAIN 2-COLUMN LAYOUT (LEFT 65%, RIGHT 35%) ─────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -329,7 +371,7 @@ function LearnerDashboard() {
                   onClick={toggleBookmark}
                   className={`w-9 h-9 rounded-full border border-border flex items-center justify-center transition-all cursor-pointer ${
                     isBookmarked
-                      ? 'bg-ink text-paper dark:bg-pearl-100 dark:text-ink font-bold'
+                      ? 'bg-ink text-paper font-bold'
                       : 'bg-card text-muted hover:text-card-foreground hover:bg-surface-hover'
                   }`}
                   title={isBookmarked ? 'Bookmarked' : 'Bookmark lesson'}
@@ -374,7 +416,7 @@ function LearnerDashboard() {
                     </span>
                     <div className="w-full max-w-md h-2 bg-paper border border-border rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-ink dark:bg-pearl-100 rounded-full transition-all duration-300"
+                        className="h-full bg-ink rounded-full transition-all duration-300"
                         style={{ width: `${Math.max(4, progressPct)}%` }}
                       />
                     </div>
@@ -388,12 +430,14 @@ function LearnerDashboard() {
                     size="md"
                     onClick={() => {
                       if (pointer?.lessonId) {
-                        navigate(ROUTES.LEARN_LESSON.replace(':lessonId', String(pointer.lessonId)));
+                        navigate(
+                          ROUTES.LEARN_LESSON.replace(':lessonId', String(pointer.lessonId)),
+                        );
                       } else {
                         navigate(ROUTES.LEARN);
                       }
                     }}
-                    className="rounded-full px-6 py-2.5 bg-ink text-paper dark:bg-pearl-100 dark:text-ink font-semibold text-xs tracking-wide shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                    className="rounded-full px-6 py-2.5 bg-ink text-paper font-semibold text-xs tracking-wide shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     Resume learning
                   </Button>
@@ -409,17 +453,15 @@ function LearnerDashboard() {
                 Recommended For You
               </h2>
 
-              {/* Filter Tabs */}
-              <div className="flex items-center gap-1 text-xs font-medium self-start sm:self-center">
+              {/* Filter Tabs — universal .tab-switcher */}
+              <div className="tab-switcher self-start sm:self-center">
                 {(['all', 'beginner', 'intermediate', 'advanced'] as const).map((tab) => (
                   <button
                     key={tab}
                     type="button"
                     onClick={() => setSelectedFilter(tab)}
-                    className={`px-3 py-1 rounded-md capitalize transition-colors cursor-pointer ${
-                      selectedFilter === tab
-                        ? 'bg-ink text-paper dark:bg-pearl-100 dark:text-ink font-semibold'
-                        : 'text-muted hover:text-card-foreground'
+                    className={`tab-switcher__tab capitalize ${
+                      selectedFilter === tab ? 'tab-switcher__tab--active' : ''
                     }`}
                   >
                     {tab}
@@ -434,21 +476,21 @@ function LearnerDashboard() {
                 <div
                   key={item.id}
                   onClick={() => navigate(item.to)}
-                  className="border border-border bg-card hover:border-ink/50 dark:hover:border-pearl-100/50 p-5 rounded-2xl flex flex-col justify-between gap-4 transition-all duration-150 cursor-pointer shadow-2xs group"
+                  className="border border-border bg-card hover:border-ink/50 p-5 rounded-2xl flex flex-col justify-between gap-4 transition-all duration-150 cursor-pointer shadow-2xs group"
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs text-muted font-medium">
                       <Icon name={item.icon} size={13} />
                       <span>{item.eyebrow}</span>
                     </div>
-                    <h4 className="text-base font-bold text-card-foreground tracking-tight group-hover:text-ink dark:group-hover:text-pearl-100 line-clamp-2">
+                    <h4 className="text-base font-bold text-card-foreground tracking-tight group-hover:text-ink line-clamp-2">
                       {item.title}
                     </h4>
                   </div>
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/50">
                     <div className="flex items-center gap-2 text-xs font-mono text-muted">
-                      <span className="px-2 py-0.5 rounded-sm border border-border bg-paper font-sans font-medium text-[11px]">
+                      <span className="px-2 py-0.5 rounded-sm border border-border bg-paper font-sans font-medium text-[0.6875rem]">
                         {item.difficulty}
                       </span>
                       <span>•</span>
@@ -513,17 +555,13 @@ function LearnerDashboard() {
                     <div
                       className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold transition-all ${
                         isActive
-                          ? 'bg-ink text-paper dark:bg-pearl-100 dark:text-ink shadow-2xs scale-105'
+                          ? 'bg-ink text-paper shadow-2xs scale-105'
                           : isToday
                             ? 'border-2 border-dashed border-card-foreground text-card-foreground'
                             : 'border border-border bg-paper text-muted'
                       }`}
                     >
-                      {isActive ? (
-                        <Icon name="zap" size={14} />
-                      ) : (
-                        dayLabel
-                      )}
+                      {isActive ? <Icon name="zap" size={14} /> : dayLabel}
                     </div>
                   </div>
                 );
@@ -535,16 +573,16 @@ function LearnerDashboard() {
               {skillItems.map((skill) => (
                 <div key={skill.name} className="space-y-1">
                   <div className="flex items-center justify-between text-xs">
-                    <span className="font-semibold text-card-foreground truncate max-w-[180px]">
+                    <span className="font-semibold text-card-foreground truncate max-w-[11.25rem]">
                       {skill.name}
                     </span>
-                    <span className="font-mono text-muted text-[11px]">
+                    <span className="font-mono text-muted text-[0.6875rem]">
                       {skill.xp.toLocaleString()} XP
                     </span>
                   </div>
                   <div className="w-full h-1.5 bg-paper border border-border rounded-full overflow-hidden">
                     <div
-                      className="h-full bg-ink dark:bg-pearl-100 rounded-full transition-all duration-300"
+                      className="h-full bg-ink rounded-full transition-all duration-300"
                       style={{ width: `${Math.max(4, skill.pct)}%` }}
                     />
                   </div>
@@ -570,7 +608,7 @@ function LearnerDashboard() {
               <div className="w-10 h-10 rounded-xl border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
                 <Icon name="sparkles" size={20} />
               </div>
-              <span className="text-[11px] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm border border-border bg-paper text-muted">
+              <span className="text-[0.6875rem] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm border border-border bg-paper text-muted">
                 Assistant
               </span>
             </div>
@@ -580,7 +618,8 @@ function LearnerDashboard() {
                 DevOps AI Mentor
               </h3>
               <p className="text-xs text-muted leading-relaxed">
-                Stuck on a failing container or terminal task? Get instant debugging hints, architecture explanations, and command walkthroughs.
+                Stuck on a failing container or terminal task? Get instant debugging hints,
+                architecture explanations, and command walkthroughs.
               </p>
             </div>
 
@@ -588,7 +627,7 @@ function LearnerDashboard() {
               variant="primary"
               size="md"
               onClick={() => setIsAiMentorOpen(true)}
-              className="w-full justify-center text-xs font-semibold py-2.5 rounded-xl bg-ink text-paper dark:bg-pearl-100 dark:text-ink shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
+              className="w-full justify-center text-xs font-semibold py-2.5 rounded-xl bg-ink text-paper shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
             >
               <Icon name="sparkles" size={14} />
               <span>Ask AI Mentor</span>
@@ -616,7 +655,9 @@ function AdminStatsDashboard() {
     <div>
       <PageHeader title="Platform Dashboard" />
 
-      {isLoading || isFetching ? <div className="text-xs text-muted font-mono p-4">Loading dashboard…</div> : null}
+      {isLoading || isFetching ? (
+        <div className="text-xs text-muted font-mono p-4">Loading dashboard…</div>
+      ) : null}
 
       {isError ? <ErrorState message={error.message} onRetry={() => void refetch()} /> : null}
 
@@ -638,26 +679,17 @@ export default function DashboardPage() {
     const roles = new Set(user.roles ?? []);
     const permissions = new Set(user.permissions ?? []);
 
-    const activeWorkspace = localStorage.getItem('stardust_active_workspace') || 'default';
-
-    // If user has explicitly selected Personal Space via the context switcher,
-    // let them stay and learn in the LearnerDashboard rather than auto-bouncing them!
-    if (activeWorkspace !== 'personal') {
-      if (roles.has('platform_admin') || permissions.has('platform.admin.access')) {
-        return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
-      }
-      if (
-        roles.has('org_admin') ||
-        permissions.has('org:manage') ||
-        roles.has('professor') ||
-        permissions.has('progress.org.read')
-      ) {
-        return <Navigate to={ROUTES.ORG_DASHBOARD} replace />;
-      }
+    // Platform administrators have a dedicated surface. Everyone else —
+    // including org admins and professors — may use their personal space.
+    if (roles.has('platform_admin') || permissions.has('platform.admin.access')) {
+      return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
     }
   }
 
+  // LearnerDashboard assumes progress.self.read (learner progress hooks).
+  // Staff without that permission get the stats dashboard instead of a
+  // broken learner surface.
   const hasProgressRead = (user?.permissions ?? []).includes('progress.self.read');
 
-  return hasProgressRead || (user?.roles ?? []).length > 0 ? <LearnerDashboard /> : <AdminStatsDashboard />;
+  return hasProgressRead ? <LearnerDashboard /> : <AdminStatsDashboard />;
 }

@@ -19,7 +19,9 @@ export function Skeleton({
   const customStyle: CSSProperties = {
     ...style,
     ...(width !== undefined ? { width: typeof width === 'number' ? `${width}px` : width } : {}),
-    ...(height !== undefined ? { height: typeof height === 'number' ? `${height}px` : height } : {}),
+    ...(height !== undefined
+      ? { height: typeof height === 'number' ? `${height}px` : height }
+      : {}),
   };
 
   return (
@@ -35,7 +37,11 @@ export function Skeleton({
 /** Admin Platform Dashboard Full-Page Skeleton: header, 4 KPI metric cards with sparklines, 2-column split (traffic curve + audit trail), and telemetry monitor */
 export function AdminDashboardSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 w-full min-w-0 max-w-full" aria-label="Loading admin dashboard" role="status">
+    <div
+      className="skeleton-page space-y-6 w-full min-w-0 max-w-full"
+      aria-label="Loading admin dashboard"
+      role="status"
+    >
       {/* Page Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pb-2">
         <div className="space-y-2">
@@ -90,7 +96,10 @@ export function AdminDashboardSkeleton() {
           <Skeleton className="h-9 w-full rounded-sm" />
           <div className="space-y-2 pt-1">
             {Array.from({ length: 4 }, (_, j) => (
-              <div key={j} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+              <div
+                key={j}
+                className="flex items-center justify-between py-2 border-b border-border/50 last:border-0"
+              >
                 <div className="flex items-center gap-2.5">
                   <Skeleton variant="circular" className="h-6 w-6" />
                   <div className="space-y-1">
@@ -121,7 +130,11 @@ export function AdminDashboardSkeleton() {
 /** Analytics Page Full Skeleton: header, 8 KPI cards, Hatched Pie / Funnel, Vector Map, Traffic Density Curve */
 export function AnalyticsPageSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 w-full min-w-0 max-w-full" aria-label="Loading analytics" role="status">
+    <div
+      className="skeleton-page space-y-6 w-full min-w-0 max-w-full"
+      aria-label="Loading analytics"
+      role="status"
+    >
       {/* Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pb-2">
         <div className="space-y-2">
@@ -179,7 +192,11 @@ export function AnalyticsPageSkeleton() {
 /** Organization Dashboard Full Skeleton: identity banner with seat quota, 4 KPI cards, cohorts list, and member directory */
 export function OrgDashboardSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 w-full min-w-0 max-w-full" aria-label="Loading organization workspace" role="status">
+    <div
+      className="skeleton-page space-y-6 w-full min-w-0 max-w-full"
+      aria-label="Loading organization workspace"
+      role="status"
+    >
       {/* Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pb-2">
         <div className="space-y-2">
@@ -253,7 +270,11 @@ export function OrgDashboardSkeleton() {
 /** Table Page Full Skeleton: header, filter toolbar, 8-row table, pagination */
 export function TablePageSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 w-full min-w-0 max-w-full" aria-label="Loading data table" role="status">
+    <div
+      className="skeleton-page space-y-6 w-full min-w-0 max-w-full"
+      aria-label="Loading data table"
+      role="status"
+    >
       {/* Page Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pb-2">
         <div className="space-y-2">
@@ -323,7 +344,11 @@ export function TablePageSkeleton() {
 /** Detail Form / Settings Full-Page Skeleton: breadcrumb, tabs, multi-field form */
 export function DetailFormSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 w-full min-w-0 max-w-full" aria-label="Loading settings" role="status">
+    <div
+      className="skeleton-page space-y-6 w-full min-w-0 max-w-full"
+      aria-label="Loading settings"
+      role="status"
+    >
       {/* Breadcrumb & Title */}
       <div className="space-y-3 pb-2">
         <Skeleton className="h-4 w-36 rounded-xs" />
@@ -378,7 +403,11 @@ export function DetailFormSkeleton() {
 /** Grid Cards Skeleton: for Badges, Achievements, Events, Announcements */
 export function GridCardsSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 w-full min-w-0 max-w-full" aria-label="Loading items" role="status">
+    <div
+      className="skeleton-page space-y-6 w-full min-w-0 max-w-full"
+      aria-label="Loading items"
+      role="status"
+    >
       {/* Header */}
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between pb-2">
         <div className="space-y-2">
@@ -461,7 +490,10 @@ export function DashboardSkeleton() {
           <Skeleton className="h-6 w-36 rounded-sm" />
           <div className="space-y-3 pt-2">
             {Array.from({ length: 5 }, (_, i) => (
-              <div key={i} className="flex items-start gap-3 pb-2 border-b border-border/40 last:border-0">
+              <div
+                key={i}
+                className="flex items-start gap-3 pb-2 border-b border-border/40 last:border-0"
+              >
                 <Skeleton variant="circular" className="h-8 w-8 shrink-0" />
                 <div className="space-y-1.5 flex-1">
                   <Skeleton className="h-3.5 w-full rounded-xs" />
@@ -479,7 +511,11 @@ export function DashboardSkeleton() {
 /** Curriculum & Tree DAG Master View Skeleton */
 export function CurriculumSkeleton() {
   return (
-    <div className="skeleton-page space-y-6 py-2 w-full min-w-0" aria-label="Loading curriculum" role="status">
+    <div
+      className="skeleton-page space-y-6 py-2 w-full min-w-0"
+      aria-label="Loading curriculum"
+      role="status"
+    >
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div className="space-y-1.5">
@@ -539,7 +575,10 @@ export function CurriculumSkeleton() {
             {/* Indented Children */}
             <div className="pl-6 ml-4 border-l-2 border-border/40 space-y-1.5 py-1">
               {Array.from({ length: 3 }, (_, j) => (
-                <div key={j} className="flex items-center justify-between p-2.5 rounded-xs border border-transparent bg-card/10">
+                <div
+                  key={j}
+                  className="flex items-center justify-between p-2.5 rounded-xs border border-transparent bg-card/10"
+                >
                   <div className="flex items-center gap-3">
                     <Skeleton className="h-5 w-5 rounded-xs" />
                     <div className="space-y-1">
@@ -564,7 +603,11 @@ export function CurriculumSkeleton() {
 /** Lab Workspace Full-Page Skeleton */
 export function LabWorkspaceSkeleton() {
   return (
-    <div className="skeleton-page py-2 h-[calc(100vh-6rem)] space-y-4" aria-label="Loading lab workspace" role="status">
+    <div
+      className="skeleton-page py-2 h-[calc(100vh-6rem)] space-y-4"
+      aria-label="Loading lab workspace"
+      role="status"
+    >
       <div className="rounded-md border border-border bg-card px-5 py-3 shadow-sm flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Skeleton className="h-8 w-8 rounded-sm" />
@@ -590,22 +633,22 @@ export function LabWorkspaceSkeleton() {
           </div>
         </div>
 
-        <div className="lg:col-span-7 rounded-md border border-border bg-[#14140F] p-5 shadow-sm flex flex-col justify-between">
+        <div className="lg:col-span-7 rounded-md border border-border bg-ink p-5 shadow-sm flex flex-col justify-between">
           <div className="space-y-3">
             <div className="flex items-center gap-2 pb-3 border-b border-border/20">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/70" />
-              <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/70" />
-              <div className="w-2.5 h-2.5 rounded-full bg-green-500/70" />
+              <div className="w-2.5 h-2.5 rounded-full bg-signal/70" />
+              <div className="w-2.5 h-2.5 rounded-full bg-warning/70" />
+              <div className="w-2.5 h-2.5 rounded-full bg-success/70" />
             </div>
             <div className="space-y-2 font-mono pt-2">
-              <div className="h-3.5 w-60 rounded-xs bg-white/30" />
-              <div className="h-3.5 w-80 rounded-xs bg-white/20" />
-              <div className="h-3.5 w-44 rounded-xs bg-white/20" />
+              <div className="h-3.5 w-60 rounded-xs bg-pearl-100/30" />
+              <div className="h-3.5 w-80 rounded-xs bg-pearl-100/20" />
+              <div className="h-3.5 w-44 rounded-xs bg-pearl-100/20" />
             </div>
           </div>
           <div className="pt-4 border-t border-border/20 flex items-center justify-between">
-            <div className="h-3 w-32 rounded-xs bg-white/20" />
-            <div className="h-7 w-24 rounded-sm bg-white/20" />
+            <div className="h-3 w-32 rounded-xs bg-pearl-100/20" />
+            <div className="h-7 w-24 rounded-sm bg-pearl-100/20" />
           </div>
         </div>
       </div>
@@ -616,7 +659,11 @@ export function LabWorkspaceSkeleton() {
 /** Homepage Full-Page Skeleton: SiteHeader mockup, centered hero with badge, headline lines, CTA buttons, terminal product frame, proof band, feature cards grid, and footer */
 export function HomePageSkeleton() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col" aria-label="Loading homepage" role="status">
+    <div
+      className="min-h-screen bg-background text-foreground flex flex-col"
+      aria-label="Loading homepage"
+      role="status"
+    >
       {/* SiteHeader Skeleton */}
       <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
@@ -651,25 +698,25 @@ export function HomePageSkeleton() {
           </div>
 
           {/* Product Frame / Terminal Preview Mockup */}
-          <div className="w-full max-w-4xl rounded-md border border-border bg-[#14140F] shadow-xl overflow-hidden text-left">
-            <div className="h-10 bg-white/5 border-b border-white/10 px-4 flex items-center justify-between">
+          <div className="w-full max-w-4xl rounded-md border border-border bg-ink shadow-xl overflow-hidden text-left">
+            <div className="h-10 bg-pearl-100/5 border-b border-pearl-100/10 px-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <div className="w-2.5 h-2.5 rounded-full bg-red-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-yellow-500/60" />
-                <div className="w-2.5 h-2.5 rounded-full bg-green-500/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-signal/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-warning/60" />
+                <div className="w-2.5 h-2.5 rounded-full bg-success/60" />
               </div>
               <div className="flex items-center gap-2">
-                <Skeleton className="h-5 w-24 rounded-xs bg-white/15" />
-                <Skeleton className="h-5 w-28 rounded-xs bg-white/10" />
+                <Skeleton className="h-5 w-24 rounded-xs bg-pearl-100/15" />
+                <Skeleton className="h-5 w-28 rounded-xs bg-pearl-100/10" />
               </div>
-              <Skeleton className="h-4 w-16 rounded-xs bg-white/10" />
+              <Skeleton className="h-4 w-16 rounded-xs bg-pearl-100/10" />
             </div>
             <div className="p-6 space-y-3 font-mono">
-              <Skeleton className="h-3.5 w-72 rounded-xs bg-white/25" />
-              <Skeleton className="h-3.5 w-96 rounded-xs bg-white/15" />
-              <Skeleton className="h-3.5 w-64 rounded-xs bg-white/15" />
-              <Skeleton className="h-3.5 w-80 rounded-xs bg-white/20" />
-              <Skeleton className="h-3.5 w-52 rounded-xs bg-white/15" />
+              <Skeleton className="h-3.5 w-72 rounded-xs bg-pearl-100/25" />
+              <Skeleton className="h-3.5 w-96 rounded-xs bg-pearl-100/15" />
+              <Skeleton className="h-3.5 w-64 rounded-xs bg-pearl-100/15" />
+              <Skeleton className="h-3.5 w-80 rounded-xs bg-pearl-100/20" />
+              <Skeleton className="h-3.5 w-52 rounded-xs bg-pearl-100/15" />
             </div>
           </div>
         </section>
@@ -694,7 +741,10 @@ export function HomePageSkeleton() {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {Array.from({ length: 3 }, (_, i) => (
-              <div key={i} className="rounded-md border border-border bg-card p-6 shadow-sm space-y-4">
+              <div
+                key={i}
+                className="rounded-md border border-border bg-card p-6 shadow-sm space-y-4"
+              >
                 <Skeleton className="w-10 h-10 rounded-md" />
                 <Skeleton className="h-5 w-40 rounded-sm" />
                 <Skeleton className="h-4 w-full rounded-xs" />
@@ -725,7 +775,11 @@ export function HomePageSkeleton() {
 /** Public Subpage Skeleton: Header mockup, breadcrumb/tag, title, subtitle, content grid, and footer */
 export function PublicPageSkeleton() {
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col" aria-label="Loading page" role="status">
+    <div
+      className="min-h-screen bg-background text-foreground flex flex-col"
+      aria-label="Loading page"
+      role="status"
+    >
       {/* Header Skeleton */}
       <header className="h-16 border-b border-border bg-card/80 backdrop-blur-sm sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 h-full flex items-center justify-between">
@@ -758,7 +812,10 @@ export function PublicPageSkeleton() {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
           {Array.from({ length: 6 }, (_, i) => (
-            <div key={i} className="rounded-md border border-border bg-card p-6 shadow-sm space-y-4">
+            <div
+              key={i}
+              className="rounded-md border border-border bg-card p-6 shadow-sm space-y-4"
+            >
               <Skeleton className="h-6 w-36 rounded-sm" />
               <Skeleton className="h-4 w-full rounded-xs" />
               <Skeleton className="h-4 w-4/5 rounded-xs" />

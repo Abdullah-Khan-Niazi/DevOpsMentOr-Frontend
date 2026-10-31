@@ -48,9 +48,9 @@
    dash could never span the full line length. */
 .hiw-flow-line {
   position: absolute;
-  left: -20px;
+  left: -1.25rem;
   top: 0;
-  width: 2px;
+  width: 0.125rem;
   height: 100%;
 }
 
@@ -73,7 +73,7 @@
 /* ─── Individual Step ─────────────────────────────────────────────────────── */
 .hiw-step {
   padding: var(--space-12) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
   transition: padding-left var(--duration-base) var(--ease-standard);
 }
 
@@ -84,7 +84,7 @@
 /* Active state — desktop only (class applied conditionally in JSX) */
 .hiw-step--active {
   padding-left: var(--space-4);
-  border-left: 2px solid var(--color-accent-500);
+  border-left: 0.125rem solid var(--color-accent-500);
 }
 
 .hiw-step--active .hiw-step__heading {
@@ -145,7 +145,7 @@
 .hiw-visual-panel {
   position: sticky;
   /* top set inline in JSX — see KNOWN POLISH ITEM comment */
-  height: calc(100vh - 88px - var(--space-16));
+  height: calc(100vh - 5.5rem - var(--space-16));
   display: flex;
   align-items: center;
   justify-content: center;
@@ -154,7 +154,7 @@
 .hiw-visual-panel__inner {
   position: relative;
   width: 100%;
-  min-height: 200px;
+  min-height: 12.5rem;
 }
 
 /* Cross-fade layers */
@@ -177,13 +177,13 @@
 /* ─── Step SVG shared styles ──────────────────────────────────────────────── */
 .hiw-step-svg {
   width: 100%;
-  max-width: 360px;
+  max-width: 22.5rem;
   height: auto;
 }
 
 .hiw-step-terminal-wrapper {
   width: 100%;
-  max-width: 440px;
+  max-width: 27.5rem;
 }
 
 /* Dashed pulse animation — freezes with .node-pulse-anim in reduced-motion */
@@ -237,8 +237,8 @@
 /* ProductFrame cross-fade container */
 .hiw-guardrails-frame-wrapper {
   position: relative;
-  min-height: 220px;
-  max-width: 640px;
+  min-height: 13.75rem;
+  max-width: 40rem;
   cursor: default;
 }
 
@@ -344,7 +344,7 @@
   }
 
   .hiw-guardrails-frame-wrapper {
-    min-height: 280px;
+    min-height: 17.5rem;
   }
 }
 

@@ -34,7 +34,9 @@ export function AdminOrganizationsPage() {
   const [search, setSearch] = useState('');
   const [selectedIndustry, setSelectedIndustry] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'newest' | 'oldest' | 'name_asc' | 'name_desc'>('newest');
-  const [billingFilter, setBillingFilter] = useState<'all' | 'with_billing' | 'without_billing'>('all');
+  const [billingFilter, setBillingFilter] = useState<'all' | 'with_billing' | 'without_billing'>(
+    'all',
+  );
   const [timeFilter, setTimeFilter] = useState<'all' | '30d' | '90d' | '1y'>('all');
   const [page, setPage] = useState(1);
   const [isDrawerOpen, setIsDrawerOpen] = useState(() => searchParams.get('create') === 'true');
@@ -140,8 +142,10 @@ export function AdminOrganizationsPage() {
     }
 
     list.sort((a, b) => {
-      if (sortBy === 'newest') return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
-      if (sortBy === 'oldest') return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      if (sortBy === 'newest')
+        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+      if (sortBy === 'oldest')
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
       if (sortBy === 'name_asc') return a.name.localeCompare(b.name);
       if (sortBy === 'name_desc') return b.name.localeCompare(a.name);
       return 0;
@@ -230,12 +234,17 @@ export function AdminOrganizationsPage() {
             <option value="1y">Past 1Y</option>
           </select>
 
-          {(draft || search || selectedIndustry !== 'all' || sortBy !== 'newest' || billingFilter !== 'all' || timeFilter !== 'all') && (
+          {(draft ||
+            search ||
+            selectedIndustry !== 'all' ||
+            sortBy !== 'newest' ||
+            billingFilter !== 'all' ||
+            timeFilter !== 'all') && (
             <Button
               variant="ghost"
               size="sm"
-              className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-             
+              className="h-7 text-[0.6875rem] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+
               onClick={() => {
                 setDraft('');
                 setSearch('');
@@ -274,57 +283,67 @@ export function AdminOrganizationsPage() {
           </div>
         ) : filteredOrgs.length === 0 ? (
           <EmptyState
-            title={search || selectedIndustry !== 'all' ? 'No matching organizations' : 'No organizations yet'}
+            title={
+              search || selectedIndustry !== 'all'
+                ? 'No matching organizations'
+                : 'No organizations yet'
+            }
             description={
               search || selectedIndustry !== 'all'
                 ? 'Try a different search term or filter.'
                 : 'Create the first organization to get started.'
             }
-            action={!search && selectedIndustry === 'all' ? <Button onClick={openCreateDrawer}>New organization</Button> : undefined}
+            action={
+              !search && selectedIndustry === 'all' ? (
+                <Button onClick={openCreateDrawer}>New organization</Button>
+              ) : undefined
+            }
           />
         ) : (
           <>
             <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-                  <th className="px-3 py-2 font-medium">Organization</th>
-                  <th className="px-3 py-2 font-medium">Slug</th>
-                  <th className="px-3 py-2 font-medium">Industry</th>
-                  <th className="px-3 py-2 font-medium text-right">Created</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredOrgs.map((org) => (
-                  <tr
-                    key={org.organizationId}
-                    onClick={() =>
-                      navigate(
-                        ROUTES.ADMIN_ORGANIZATION_DETAIL.replace(
-                          ':orgId',
-                          String(org.organizationId),
-                        ),
-                      )
-                    }
-                    className="border-b border-border/60 last:border-0 hover:bg-surface/80 active:bg-surface-hover/60 cursor-pointer transition-colors group"
-                  >
-                    <td className="px-3 py-3">
-                      <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
-                        {org.name}
-                      </div>
-                      {org.billingEmail ? (
-                        <div className="text-xs text-muted">{org.billingEmail}</div>
-                      ) : null}
-                    </td>
-                    <td className="px-3 py-3 font-mono text-xs text-muted-foreground">{org.slug}</td>
-                    <td className="px-3 py-3 text-muted-foreground">{org.industry ?? '-'}</td>
-                    <td className="px-3 py-3 text-muted-foreground text-right tabular-nums">
-                      {new Date(org.createdAt).toLocaleDateString()}
-                    </td>
+                <thead>
+                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+                    <th className="px-3 py-2 font-medium">Organization</th>
+                    <th className="px-3 py-2 font-medium">Slug</th>
+                    <th className="px-3 py-2 font-medium">Industry</th>
+                    <th className="px-3 py-2 font-medium text-right">Created</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {filteredOrgs.map((org) => (
+                    <tr
+                      key={org.organizationId}
+                      onClick={() =>
+                        navigate(
+                          ROUTES.ADMIN_ORGANIZATION_DETAIL.replace(
+                            ':orgId',
+                            String(org.organizationId),
+                          ),
+                        )
+                      }
+                      className="border-b border-border/60 last:border-0 hover:bg-surface/80 active:bg-surface-hover/60 cursor-pointer transition-colors group"
+                    >
+                      <td className="px-3 py-3">
+                        <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
+                          {org.name}
+                        </div>
+                        {org.billingEmail ? (
+                          <div className="text-xs text-muted">{org.billingEmail}</div>
+                        ) : null}
+                      </td>
+                      <td className="px-3 py-3 font-mono text-xs text-muted-foreground">
+                        {org.slug}
+                      </td>
+                      <td className="px-3 py-3 text-muted-foreground">{org.industry ?? '-'}</td>
+                      <td className="px-3 py-3 text-muted-foreground text-right tabular-nums">
+                        {new Date(org.createdAt).toLocaleDateString()}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             </div>
             {data ? (
               <Pagination
@@ -363,7 +382,12 @@ export function AdminOrganizationsPage() {
                     aria-label="Close drawer"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -377,13 +401,20 @@ export function AdminOrganizationsPage() {
                     onChange={(e) => {
                       if (nameError) setNameError(null);
                       const name = e.target.value;
-                      const slug = name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+                      const slug = name
+                        .toLowerCase()
+                        .replace(/[^a-z0-9]+/g, '-')
+                        .replace(/^-|-$/g, '');
                       setForm({
                         ...form,
                         name,
                         slug:
                           form.slug === '' ||
-                          form.slug === form.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                          form.slug ===
+                            form.name
+                              .toLowerCase()
+                              .replace(/[^a-z0-9]+/g, '-')
+                              .replace(/^-|-$/g, '')
                             ? slug
                             : form.slug,
                       });

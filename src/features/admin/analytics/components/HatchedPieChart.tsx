@@ -254,7 +254,7 @@ export function HatchedPieChart({
                     ? 'border-accent bg-accent/10 text-card-foreground'
                     : 'border-transparent hover:bg-surface/60 text-muted'
                 }`}
-               
+
                 onMouseEnter={() => setHoveredIdx(idx)}
                 onMouseLeave={() => setHoveredIdx(null)}
               >
@@ -264,14 +264,8 @@ export function HatchedPieChart({
                     width="14"
                     height="14"
                     className="shrink-0 text-card-foreground border border-border"
-                   
                   >
-                    <rect
-                      width="14"
-                      height="14"
-                      fill={`url(#${slice.patternId})`}
-                      stroke="none"
-                    />
+                    <rect width="14" height="14" fill={`url(#${slice.patternId})`} stroke="none" />
                   </svg>
                   <span className="truncate text-card-foreground font-medium">
                     {slice.item.label}
@@ -280,8 +274,8 @@ export function HatchedPieChart({
 
                 {/* Percentage & Count Numbers */}
                 <div className="flex items-center gap-3 shrink-0 ml-auto">
-                  <span className="text-muted text-[11px]">{slice.percentage}%</span>
-                  <span className="font-bold text-card-foreground text-xs min-w-[36px] text-right">
+                  <span className="text-muted text-[0.6875rem]">{slice.percentage}%</span>
+                  <span className="font-bold text-card-foreground text-xs min-w-[2.25rem] text-right">
                     {slice.item.value.toLocaleString()}
                   </span>
                 </div>

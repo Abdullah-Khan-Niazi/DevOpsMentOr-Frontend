@@ -14,7 +14,13 @@ export interface CourseOutlineModalProps {
 
 function TerminalIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <polyline points="4 17 10 11 4 5" />
       <line x1="12" y1="19" x2="20" y2="19" />
     </svg>
@@ -23,7 +29,13 @@ function TerminalIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function CheckmarkIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+    >
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -31,15 +43,19 @@ function CheckmarkIcon({ className = 'w-4 h-4' }: { className?: string }) {
 
 function WrenchIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.75}>
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+    >
       <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
     </svg>
   );
 }
 
-type OutlineItem =
-  | { kind: 'lesson'; data: LessonDto }
-  | { kind: 'quiz'; data: QuizDto };
+type OutlineItem = { kind: 'lesson'; data: LessonDto } | { kind: 'quiz'; data: QuizDto };
 
 function getStoredOrder(modId: number): Array<{ kind: 'lesson' | 'quiz'; id: number }> | null {
   try {
@@ -142,7 +158,10 @@ export function CourseOutlineModal({
 
   const moduleXp = useMemo(() => {
     const lXp = lessons.reduce((acc, l) => (l.contentType === 'lab' ? acc + 75 : 20), 0);
-    const qXp = quizzes.reduce((acc, q) => acc + (q.questionCount > 0 ? q.questionCount * 10 : 25), 0);
+    const qXp = quizzes.reduce(
+      (acc, q) => acc + (q.questionCount > 0 ? q.questionCount * 10 : 25),
+      0,
+    );
     return lXp + qXp;
   }, [lessons, quizzes]);
 
@@ -173,7 +192,7 @@ export function CourseOutlineModal({
           <div className="border-b border-border pb-4 space-y-2">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0 flex-1">
-                <span className="text-[10px] font-mono uppercase tracking-wider text-muted font-bold block">
+                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted font-bold block">
                   Module Outline
                 </span>
                 <h2 className="text-lg font-bold text-card-foreground truncate mt-0.5">
@@ -206,16 +225,19 @@ export function CourseOutlineModal({
                   aria-label="Close outline"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
                   </svg>
                 </button>
               </div>
             </div>
 
             {currentModule?.description && (
-              <p className="text-xs text-muted leading-relaxed">
-                {currentModule.description}
-              </p>
+              <p className="text-xs text-muted leading-relaxed">{currentModule.description}</p>
             )}
 
             {/* DB-driven Module Metrics */}
@@ -250,7 +272,13 @@ export function CourseOutlineModal({
                   (item.data.tags.some((t) => t.tagName.toLowerCase().includes('break-fix')) ||
                     item.data.title.toLowerCase().includes('break-fix'));
 
-                const xp = isLesson ? (isLab ? 75 : 20) : (item.data.questionCount > 0 ? item.data.questionCount * 10 : 25);
+                const xp = isLesson
+                  ? isLab
+                    ? 75
+                    : 20
+                  : item.data.questionCount > 0
+                    ? item.data.questionCount * 10
+                    : 25;
                 const typeLabel = isLesson
                   ? isBreakFix
                     ? 'BREAK-FIX'
@@ -286,14 +314,12 @@ export function CourseOutlineModal({
 
                       <div className="min-w-0 flex-1">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs font-medium truncate">
-                            {item.data.title}
-                          </span>
-                          <span className="text-[10px] font-mono text-muted uppercase font-semibold">
+                          <span className="text-xs font-medium truncate">{item.data.title}</span>
+                          <span className="text-[0.625rem] font-mono text-muted uppercase font-semibold">
                             · {typeLabel}
                           </span>
                           {isActive && (
-                            <span className="text-[10px] font-mono px-1 py-0.2 rounded-xs border border-foreground bg-foreground text-background font-bold">
+                            <span className="text-[0.625rem] font-mono px-1 py-0.2 rounded-xs border border-foreground bg-foreground text-background font-bold">
                               Current
                             </span>
                           )}
@@ -303,7 +329,7 @@ export function CourseOutlineModal({
 
                     <div className="flex items-center gap-3 text-xs font-mono text-muted shrink-0 ml-3">
                       <span>{xp} XP</span>
-                      <span className="text-[10px] text-muted">
+                      <span className="text-[0.625rem] text-muted">
                         #{currentModule?.moduleOrder}.{idx + 1}
                       </span>
                     </div>

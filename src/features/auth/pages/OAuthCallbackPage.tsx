@@ -7,6 +7,7 @@ import { useOnboardingStore } from '@/features/auth/stores/onboardingStore';
 import { authService } from '@/features/auth/services';
 import type { LoginResponse, OAuthPendingResult } from '@/features/auth/types';
 import { getDefaultRouteForUser } from '@/features/auth/utils/rbac';
+import { consumeOAuthRedirect } from '@/features/auth/hooks/useOAuth';
 import '../styles/auth.css';
 
 function OAuthCallbackPage() {
@@ -61,7 +62,11 @@ function OAuthCallbackPage() {
                   },
                 };
           setSession(sessionPayload);
-          void navigate(getDefaultRouteForUser(inner.user), { replace: true });
+          // Honor a redirect preserved across the provider round-trip
+          // (e.g. an invite link) before falling back to the default route.
+          void navigate(consumeOAuthRedirect(getDefaultRouteForUser(inner.user)), {
+            replace: true,
+          });
           return;
         }
 

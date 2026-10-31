@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Button, Input, toast } from '@/shared/components';
+import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useCreateClass, useOrgProfessors } from '../hooks';
 import { classService } from '../services';
 
@@ -9,7 +10,16 @@ interface NewCohortDrawerProps {
   onSuccess?: () => void;
 }
 
+/**
+ * Drawer wrapper: the form is mounted only while the drawer is open, so every
+ * opening starts from a clean draft without a state-resetting effect.
+ */
 export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerProps) {
+  if (!isOpen) return null;
+  return <NewCohortDrawerForm onClose={onClose} onSuccess={onSuccess} />;
+}
+
+function NewCohortDrawerForm({ onClose, onSuccess }: Omit<NewCohortDrawerProps, 'isOpen'>) {
   const [className, setClassName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [slug, setSlug] = useState('');
@@ -20,34 +30,22 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createClassMutation = useCreateClass();
-  const professorsQuery = useOrgProfessors();
+  const canAssignProfessor = useAuthStore((state) =>
+    (state.user?.permissions ?? []).includes('org:manage'),
+  );
+  const professorsQuery = useOrgProfessors(canAssignProfessor);
   const professors = professorsQuery.query.data ?? [];
-
-  // Reset form when drawer opens
-  useEffect(() => {
-    if (isOpen) {
-      setClassName('');
-      setNameError(null);
-      setSlug('');
-      setSlugError(null);
-      setDescription('');
-      setMaxStudents('50');
-      setSelectedProfessorId('');
-    }
-  }, [isOpen]);
 
   // Handle ESC key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  }, [onClose]);
 
   const handleNameChange = (name: string) => {
     setClassName(name);
@@ -122,9 +120,7 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
         <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
           <div className="space-y-6">
             <div className="flex items-center justify-between border-b border-border pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-card-foreground">New Class Cohort</h2>
-              </div>
+              <h2 className="text-lg font-bold text-card-foreground">New Class Cohort</h2>
               <button
                 type="button"
                 onClick={onClose}
@@ -189,24 +185,26 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
                   required
                 />
 
-                <div>
-                  <label htmlFor="cohort-professor" className="input-label">
-                    Lead Faculty / Professor
-                  </label>
-                  <select
-                    id="cohort-professor"
-                    className="input-field w-full"
-                    value={selectedProfessorId}
-                    onChange={(e) => setSelectedProfessorId(e.target.value)}
-                  >
-                    <option value="">Unassigned (assign later)</option>
-                    {professors.map((p) => (
-                      <option key={p.userId} value={String(p.userId)}>
-                        {p.fullName ? `${p.fullName} (${p.email})` : p.email}
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                {canAssignProfessor ? (
+                  <div>
+                    <label htmlFor="cohort-professor" className="input-label">
+                      Lead Faculty / Professor
+                    </label>
+                    <select
+                      id="cohort-professor"
+                      className="input-field w-full"
+                      value={selectedProfessorId}
+                      onChange={(e) => setSelectedProfessorId(e.target.value)}
+                    >
+                      <option value="">Unassigned (assign later)</option>
+                      {professors.map((p) => (
+                        <option key={p.userId} value={String(p.userId)}>
+                          {p.fullName ? `${p.fullName} (${p.email})` : p.email}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                ) : null}
               </div>
             </form>
           </div>
@@ -215,11 +213,7 @@ export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerP
             <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              type="submit"
-              form="new-cohort-form"
-              isLoading={isSubmitting}
-            >
+            <Button type="submit" form="new-cohort-form" isLoading={isSubmitting}>
               Provision Cohort
             </Button>
           </div>

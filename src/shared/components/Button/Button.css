@@ -7,7 +7,7 @@
   justify-content: center;
   gap: var(--space-2);
   border: none;
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   font-family: var(--font-body);
   font-weight: 500;
   letter-spacing: var(--tracking-normal);
@@ -19,20 +19,20 @@
   overflow: hidden;
   user-select: none;
   transition:
-    background-color 160ms var(--ease-standard),
-    border-color 160ms var(--ease-standard),
-    box-shadow 160ms var(--ease-standard),
-    transform 160ms var(--ease-standard),
-    opacity 160ms var(--ease-standard);
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
 }
 
 .btn:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--ink);
+  outline-offset: 0.125rem;
 }
 
 .btn:disabled,
-.btn[aria-disabled="true"] {
+.btn[aria-disabled='true'] {
   opacity: 0.55;
   cursor: not-allowed;
   pointer-events: none;
@@ -42,78 +42,78 @@
 
 /* ─── Sizes ─────────────────────────────────────────────────────────────────── */
 .btn--sm {
-  height: 36px;
+  height: 2.25rem;
   padding: 0 var(--space-3);
   font-size: var(--text-body-s);
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .btn--md {
-  height: 42px;
+  height: 2.625rem;
   padding: 0 var(--space-4);
   font-size: var(--text-body-m);
-  gap: 8px;
+  gap: var(--space-2);
 }
 
 .btn--lg {
-  height: 48px;
+  height: 3rem;
   padding: 0 var(--space-6);
   font-size: var(--text-body-m);
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 /* ─── Primary Variant ──────────────────────────────────────────────────────── */
 .btn--primary {
   background-color: var(--ink);
   color: var(--pearl-100);
-  border: 1px solid rgba(0, 0, 0, 0.35);
+  border: 0.0625rem solid color-mix(in srgb, var(--ink-deep) 35%, transparent);
   box-shadow:
-    0 1px 2px rgba(20, 20, 15, 0.12),
-    0 2px 4px rgba(20, 20, 15, 0.08),
-    0 4px 8px rgba(20, 20, 15, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 12%, transparent),
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 8%, transparent),
+    0 0.25rem 0.5rem color-mix(in srgb, var(--ink) 4%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 16%, transparent);
 }
 
 .btn--primary:hover:not(:disabled) {
-  background-color: #262622;
-  border-color: #14140F;
-  transform: translateY(-1px);
+  background-color: var(--ink-soft);
+  border-color: var(--ink);
+  transform: translateY(-0.0625rem);
   box-shadow:
-    0 2px 4px rgba(20, 20, 15, 0.14),
-    0 4px 8px rgba(20, 20, 15, 0.10),
-    0 8px 16px rgba(20, 20, 15, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 14%, transparent),
+    0 0.25rem 0.5rem color-mix(in srgb, var(--ink) 10%, transparent),
+    0 0.5rem 1rem color-mix(in srgb, var(--ink) 6%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 22%, transparent);
 }
 
 .btn--primary:active:not(:disabled) {
   transform: translateY(0);
-  background-color: #0c0c09;
+  background-color: var(--ink-deep);
   box-shadow:
-    0 1px 1px rgba(20, 20, 15, 0.10),
-    inset 0 1px 2px rgba(0, 0, 0, 0.28);
+    0 0.0625rem 0.0625rem color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink-deep) 28%, transparent);
 }
 
 /* ─── Secondary Variant ────────────────────────────────────────────────────── */
 .btn--secondary {
-  background: linear-gradient(180deg, #FFFFFF 0%, var(--pearl-100) 100%);
+  background: var(--pearl-100);
   color: var(--ink);
-  border: 1px solid var(--paper-line);
+  border: 0.0625rem solid var(--paper-line);
   box-shadow:
-    0 1px 2px rgba(20, 20, 15, 0.05),
-    0 1px 3px rgba(20, 20, 15, 0.03),
-    0 2px 4px rgba(20, 20, 15, 0.02),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 5%, transparent),
+    0 0.0625rem 0.1875rem color-mix(in srgb, var(--ink) 3%, transparent),
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 2%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 95%, transparent);
 }
 
 .btn--secondary:hover:not(:disabled) {
   background: linear-gradient(180deg, var(--pearl-100) 0%, var(--pearl-200) 100%);
-  border-color: #CEC9BD;
+  border-color: var(--paper-line-strong);
   color: var(--ink);
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
   box-shadow:
-    0 2px 4px rgba(20, 20, 15, 0.08),
-    0 4px 8px rgba(20, 20, 15, 0.04),
-    inset 0 1px 0 rgba(255, 255, 255, 0.95);
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 8%, transparent),
+    0 0.25rem 0.5rem color-mix(in srgb, var(--ink) 4%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 95%, transparent);
 }
 
 .btn--secondary:active:not(:disabled) {
@@ -121,62 +121,62 @@
   background: var(--paper-dim);
   border-color: var(--paper-line);
   box-shadow:
-    0 1px 1px rgba(20, 20, 15, 0.04),
-    inset 0 1px 2px rgba(20, 20, 15, 0.08);
+    0 0.0625rem 0.0625rem color-mix(in srgb, var(--ink) 4%, transparent),
+    inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 /* ─── Danger Variant ───────────────────────────────────────────────────────── */
 .btn--danger {
-  background: linear-gradient(180deg, #E02830 0%, #C9141C 100%);
-  color: #FFFFFF;
-  border: 1px solid rgba(160, 10, 18, 0.4);
+  background: linear-gradient(180deg, var(--signal-400) 0%, var(--signal-600) 100%);
+  color: var(--pearl-100);
+  border: 0.0625rem solid color-mix(in srgb, var(--signal-900) 40%, transparent);
   box-shadow:
-    0 1px 2px rgba(215, 25, 33, 0.2),
-    0 2px 4px rgba(215, 25, 33, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--accent-signal) 20%, transparent),
+    0 0.125rem 0.25rem color-mix(in srgb, var(--accent-signal) 12%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 20%, transparent);
 }
 
 .btn--danger:hover:not(:disabled) {
-  background: linear-gradient(180deg, #EB343C 0%, #B81018 100%);
-  border-color: rgba(140, 8, 15, 0.5);
-  transform: translateY(-1px);
+  background: linear-gradient(180deg, var(--signal-300) 0%, var(--signal-800) 100%);
+  border-color: color-mix(in srgb, var(--signal-900) 50%, transparent);
+  transform: translateY(-0.0625rem);
   box-shadow:
-    0 2px 4px rgba(215, 25, 33, 0.25),
-    0 4px 8px rgba(215, 25, 33, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    0 0.125rem 0.25rem color-mix(in srgb, var(--accent-signal) 25%, transparent),
+    0 0.25rem 0.5rem color-mix(in srgb, var(--accent-signal) 16%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 25%, transparent);
 }
 
 .btn--danger:active:not(:disabled) {
   transform: translateY(0);
-  background: #A60E15;
+  background: var(--signal-900);
   box-shadow:
-    0 1px 1px rgba(215, 25, 33, 0.15),
-    inset 0 1px 2px rgba(0, 0, 0, 0.3);
+    0 0.0625rem 0.0625rem color-mix(in srgb, var(--accent-signal) 15%, transparent),
+    inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink-deep) 30%, transparent);
 }
 
 /* ─── Ghost Variant ────────────────────────────────────────────────────────── */
 .btn--ghost {
   background-color: transparent;
   color: var(--text-secondary);
-  border: 1px solid transparent;
+  border: 0.0625rem solid transparent;
   box-shadow: none;
 }
 
 .btn--ghost:hover:not(:disabled) {
-  background-color: #FFFFFF;
+  background-color: var(--pearl-100);
   border-color: var(--paper-line);
   color: var(--ink);
-  transform: translateY(-1px);
+  transform: translateY(-0.0625rem);
   box-shadow:
-    0 1px 2px rgba(20, 20, 15, 0.04),
-    0 2px 6px rgba(20, 20, 15, 0.02);
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 4%, transparent),
+    0 0.125rem 0.375rem color-mix(in srgb, var(--ink) 2%, transparent);
 }
 
 .btn--ghost:active:not(:disabled) {
   background-color: var(--pearl-200);
   border-color: var(--paper-line);
   transform: translateY(0);
-  box-shadow: inset 0 1px 2px rgba(20, 20, 15, 0.04);
+  box-shadow: inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 4%, transparent);
 }
 
 /* ─── Inner Elements: Spinner, Label, Arrow, Icons ──────────────────────────── */
@@ -224,13 +224,13 @@
 }
 
 .btn__arrow-svg {
-  width: 14px;
-  height: 14px;
-  transition: transform 160ms var(--ease-standard);
+  width: 0.875rem;
+  height: 0.875rem;
+  transition: transform var(--duration-fast) var(--ease-standard);
 }
 
 .btn:hover:not(:disabled) .btn__arrow-svg {
-  transform: translateX(2px);
+  transform: translateX(0.125rem);
 }
 
 @keyframes btn-spin {

@@ -45,7 +45,7 @@ export function PublishToggle({
       >
         <span
           className={`inline-block h-3.5 w-3.5 transform rounded-full bg-white transition-transform ${
-            isPublished ? 'translate-x-[18px]' : 'translate-x-[3px]'
+            isPublished ? 'translate-x-[1.125rem]' : 'translate-x-[0.1875rem]'
           }`}
         />
       </button>

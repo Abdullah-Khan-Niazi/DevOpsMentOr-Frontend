@@ -14,7 +14,9 @@ type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
       {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
     </span>
   );
@@ -165,8 +167,8 @@ export function OrgProfessorsPage() {
             />
           </div>
 
-          {/* Role Filter Tabs (Minimal Roundness + Inverted Active Hover) */}
-          <div className="flex items-center gap-1 border border-border/80 p-0.5 bg-surface/70 rounded-md text-[10px] sm:text-[11px] font-mono shrink-0 shadow-xs">
+          {/* Role Filter Tabs — universal .tab-switcher */}
+          <div className="tab-switcher shrink-0 text-[0.625rem] sm:text-[0.6875rem]">
             {(
               [
                 { key: 'ALL', label: `All (${roleCounts.all})` },
@@ -179,10 +181,8 @@ export function OrgProfessorsPage() {
                 key={tab.key}
                 type="button"
                 onClick={() => setRoleTab(tab.key)}
-                className={`px-3 py-1 transition-all duration-150 cursor-pointer rounded-md font-medium active:scale-[0.97] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-accent ${
-                  roleTab === tab.key
-                    ? 'bg-ink text-pearl-100 font-semibold shadow-xs hover:bg-white hover:text-ink hover:outline hover:outline-1 hover:outline-ink'
-                    : 'text-muted hover:text-card-foreground hover:bg-surface-hover/80'
+                className={`tab-switcher__tab ${
+                  roleTab === tab.key ? 'tab-switcher__tab--active' : ''
                 }`}
               >
                 {tab.label}
@@ -264,7 +264,9 @@ export function OrgProfessorsPage() {
                         <div className="text-xs text-muted font-mono">{member.email}</div>
                       </td>
                       <td className="px-4 py-3 text-xs font-mono">
-                        <span className={`px-2 py-0.5 rounded-sm uppercase text-[10px] tracking-wide ${roleBadge}`}>
+                        <span
+                          className={`px-2 py-0.5 rounded-sm uppercase text-[0.625rem] tracking-wide ${roleBadge}`}
+                        >
                           {roleLabel}
                         </span>
                       </td>
@@ -274,14 +276,14 @@ export function OrgProfessorsPage() {
                             {member.classes.map((c) => (
                               <span
                                 key={c.classId}
-                                className="border border-border px-1.5 py-0.5 rounded-sm bg-surface text-[10px]"
+                                className="border border-border px-1.5 py-0.5 rounded-sm bg-surface text-[0.625rem]"
                               >
                                 {c.className}
                               </span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-muted text-[11px]">—</span>
+                          <span className="text-muted text-[0.6875rem]">—</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">

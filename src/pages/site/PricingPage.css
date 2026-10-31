@@ -23,7 +23,7 @@
 
 .prc-subhead {
   margin: 0;
-  max-width: 640px;
+  max-width: 40rem;
   font-family: var(--font-body);
   font-size: var(--text-body-l);
   line-height: var(--leading-normal);
@@ -105,7 +105,7 @@
   display: flex;
   align-items: flex-start;
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
   font-family: var(--font-body);
   font-size: var(--text-body-m);
   color: var(--color-text-primary);
@@ -142,7 +142,7 @@
 }
 
 .prc-faq-container {
-  max-width: 840px;
+  max-width: 52.5rem;
 }
 
 .prc-faq-headline {
@@ -179,7 +179,7 @@
 .prc-faq-footer {
   margin-top: var(--space-12);
   padding-top: var(--space-6);
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
 }
 
 .prc-faq-footer-text {
@@ -196,7 +196,7 @@
   font-weight: 500;
   background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
   background-position: 0 100%;
-  background-size: 0% 1px;
+  background-size: 0% 0.0625rem;
   background-repeat: no-repeat;
   transition:
     color var(--duration-fast) var(--ease-standard),
@@ -205,12 +205,12 @@
 
 .prc-faq-contact-link:hover {
   color: var(--color-accent-400);
-  background-size: 100% 1px;
+  background-size: 100% 0.0625rem;
 }
 
 .prc-faq-contact-link:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--color-accent-500);
+  outline-offset: 0.125rem;
   border-radius: var(--radius-xs);
 }
 

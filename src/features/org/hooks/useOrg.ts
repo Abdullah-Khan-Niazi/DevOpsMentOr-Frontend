@@ -13,12 +13,13 @@ export function useCreateOrg() {
   });
 }
 
-export function useMyOrg() {
+export function useMyOrg(enabled = true) {
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: QUERY_KEYS.org.me,
     queryFn: () => orgService.getMyOrg(),
     retry: false,
+    enabled,
   });
 
   const update = useMutation({
@@ -34,11 +35,12 @@ export function useMyOrg() {
   return { query, update, setEmailDomain };
 }
 
-export function useOrgProfessors() {
+export function useOrgProfessors(enabled = true) {
   const queryClient = useQueryClient();
   const query = useQuery({
     queryKey: QUERY_KEYS.org.professors,
     queryFn: () => orgService.listProfessors(),
+    enabled,
   });
 
   const invite = useMutation({
@@ -49,10 +51,11 @@ export function useOrgProfessors() {
   return { query, invite };
 }
 
-export function useOrgUsers() {
+export function useOrgUsers(enabled = true) {
   return useQuery({
     queryKey: QUERY_KEYS.org.users,
     queryFn: () => orgService.listOrgUsers(),
+    enabled,
   });
 }
 
@@ -64,10 +67,11 @@ export function useOrgUserDetail(userId: number | string | null, enabled = true)
   });
 }
 
-export function useMyOrgAnalytics() {
+export function useMyOrgAnalytics(enabled = true) {
   return useQuery({
     queryKey: ['org', 'analytics'],
     queryFn: () => orgService.getMyOrgAnalytics(),
+    enabled,
   });
 }
 

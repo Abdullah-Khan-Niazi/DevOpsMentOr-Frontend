@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
+  ConfirmDialog,
   DetailFormSkeleton,
   EmptyState,
   ErrorState,
@@ -32,8 +33,10 @@ interface OrgDetailFormProps {
   org: OrgAdminDetailDto;
   onSave: (payload: UpdateOrgPayload, helpers: FormHelpers) => void;
   onAssign: (userId: number, helpers: FormHelpers) => void;
+  onDelete: (helpers: FormHelpers) => void;
   savePending: boolean;
   assignPending: boolean;
+  deletePending: boolean;
 }
 
 const TABS: TabItem[] = [
@@ -48,17 +51,21 @@ export function OrgDetailForm({
   org,
   onSave,
   onAssign,
+  onDelete,
   savePending,
   assignPending,
+  deletePending,
 }: OrgDetailFormProps) {
   const queryClient = useQueryClient();
   const location = useLocation();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const locationState = location.state as {
-    activeTab?: string;
-    selectedClassId?: number;
-  } | undefined;
+  const locationState = location.state as
+    | {
+        activeTab?: string;
+        selectedClassId?: number;
+      }
+    | undefined;
 
   const initialTab = searchParams.get('tab') || locationState?.activeTab || 'details';
   const initialClassId = searchParams.get('classId')
@@ -67,6 +74,7 @@ export function OrgDetailForm({
 
   const [activeTab, setActiveTabState] = useState(initialTab);
   const [selectedClassId, setSelectedClassIdState] = useState<number | null>(initialClassId);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
@@ -115,7 +123,9 @@ export function OrgDetailForm({
 
   // Org user invite drawer state
   const [isInviteDrawerOpen, setIsInviteDrawerOpen] = useState(false);
-  const [drawerRole, setDrawerRole] = useState<'org_student' | 'professor' | 'org_admin'>('org_student');
+  const [drawerRole, setDrawerRole] = useState<'org_student' | 'professor' | 'org_admin'>(
+    'org_student',
+  );
   const [drawerEmails, setDrawerEmails] = useState('');
   const [isDrawerDraggingCsv, setIsDrawerDraggingCsv] = useState(false);
   const [drawerCsvParsedCount, setDrawerCsvParsedCount] = useState<number | null>(null);
@@ -144,14 +154,20 @@ export function OrgDetailForm({
     const file = files[0];
     try {
       const text = await file.text();
-      const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
       const parsedEmails: string[] = [];
 
       for (const line of lines) {
         if (/^email\s*,/i.test(line)) continue;
         const parts = line.split(',');
         const emailCandidate = parts[0]?.trim();
-        if (emailCandidate && /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(emailCandidate)) {
+        if (
+          emailCandidate &&
+          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(emailCandidate)
+        ) {
           parsedEmails.push(emailCandidate.toLowerCase());
         } else {
           const matches = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi) || [];
@@ -180,7 +196,12 @@ export function OrgDetailForm({
   };
 
   const usersQuery = useAdminUsers(
-    { page: adminUserPage, pageSize: ADMIN_USERS_PAGE_SIZE, search: userSearch.trim() || undefined, isActive: 'true' },
+    {
+      page: adminUserPage,
+      pageSize: ADMIN_USERS_PAGE_SIZE,
+      search: userSearch.trim() || undefined,
+      isActive: 'true',
+    },
     activeTab === 'leadership',
   );
 
@@ -207,13 +228,18 @@ export function OrgDetailForm({
 
   // Admin invitation mutation
   const inviteAdminMutation = useMutation({
-    mutationFn: (target: string | number) => adminOrgService.inviteOrgAdmin(org.organizationId, target),
+    mutationFn: (target: string | number) =>
+      adminOrgService.inviteOrgAdmin(org.organizationId, target),
     onSuccess: (data) => {
-      toast.success(`Admin invitation dispatched to ${data.email}. The user will become Organization Admin once they click the link.`);
+      toast.success(
+        `Admin invitation dispatched to ${data.email}. The user will become Organization Admin once they click the link.`,
+      );
       setPendingInviteSentTo(data.email);
       setSelectedUser(null);
       setInviteEmailInput('');
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'org', String(org.organizationId)] });
+      void queryClient.invalidateQueries({
+        queryKey: ['admin', 'org', String(org.organizationId)],
+      });
     },
     onError: (err: { message?: string }) => {
       toast.error(err.message ?? 'Failed to send admin invitation.');
@@ -233,7 +259,9 @@ export function OrgDetailForm({
       toast.success(`Successfully dispatched ${res.sent} member invitation(s).`);
       setIsInviteDrawerOpen(false);
       setDrawerEmails('');
-      void queryClient.invalidateQueries({ queryKey: ['admin', 'org', org.organizationId, 'analytics'] });
+      void queryClient.invalidateQueries({
+        queryKey: ['admin', 'org', org.organizationId, 'analytics'],
+      });
     },
     onError: (err: { message?: string }) => {
       toast.error(err.message ?? 'Failed to invite members.');
@@ -298,7 +326,9 @@ export function OrgDetailForm({
     }
     onAssign(selectedUser.userId, {
       onSuccess: () => {
-        toast.success(`Assigned ${selectedUser.fullName ?? selectedUser.email} as Organization Admin directly.`);
+        toast.success(
+          `Assigned ${selectedUser.fullName ?? selectedUser.email} as Organization Admin directly.`,
+        );
         setSelectedUser(null);
         setUserSearch('');
       },
@@ -324,52 +354,82 @@ export function OrgDetailForm({
 
       {/* Tab 1: Organization Details */}
       {activeTab === 'details' ? (
-        <Card className="space-y-4 p-6 rounded-none">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-            <div>
-              <label className="input-label">URL slug</label>
-              <div className="input-field bg-surface text-muted cursor-not-allowed select-all rounded-none">
-                {org.slug}
+        <div className="space-y-6">
+          <Card className="space-y-4 p-6 rounded-none">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <div>
+                <label className="input-label">URL slug</label>
+                <div className="input-field bg-surface text-muted cursor-not-allowed select-all rounded-none">
+                  {org.slug}
+                </div>
+                <p className="mt-1 text-xs text-muted">Immutable tenant workspace identifier.</p>
               </div>
-              <p className="mt-1 text-xs text-muted">Immutable tenant workspace identifier.</p>
             </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Industry" value={industry} onChange={(e) => setIndustry(e.target.value)} />
-            <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} />
-          </div>
-          <Input
-            label="Billing email"
-            type="email"
-            value={billingEmail}
-            onChange={(e) => setBillingEmail(e.target.value)}
-          />
-          <div>
-            <label htmlFor="org-admin-desc" className="input-label">
-              Description
-            </label>
-            <textarea
-              id="org-admin-desc"
-              rows={3}
-              className="input-field w-full rounded-none"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Industry"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              />
+              <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </div>
+            <Input
+              label="Billing email"
+              type="email"
+              value={billingEmail}
+              onChange={(e) => setBillingEmail(e.target.value)}
             />
-          </div>
-          <div className="flex justify-end pt-4 border-t border-border">
-            <Button onClick={saveDetails} isLoading={savePending}>
-              Save details
-            </Button>
-          </div>
-        </Card>
+            <div>
+              <label htmlFor="org-admin-desc" className="input-label">
+                Description
+              </label>
+              <textarea
+                id="org-admin-desc"
+                rows={3}
+                className="input-field w-full rounded-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border">
+              <Button onClick={saveDetails} isLoading={savePending}>
+                Save details
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="space-y-4 border-signal/40 bg-signal/5 p-6 rounded-none">
+            <div>
+              <h3 className="text-base font-semibold text-signal">Danger Zone</h3>
+              <p className="mt-0.5 text-xs text-muted">
+                Irreversible platform administration actions for this organization.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-card-foreground">Delete Organization</p>
+                <p className="text-xs text-muted">
+                  Permanently delete this organization, all of its classes, rosters, invitations and
+                  active join codes. Organization role assignments and scopes are cleaned up; this
+                  cannot be undone.
+                </p>
+              </div>
+              <Button variant="danger" size="sm" onClick={() => setIsDeleteOpen(true)}>
+                Delete Organization
+              </Button>
+            </div>
+          </Card>
+        </div>
       ) : null}
 
       {/* Tab 2: Leadership & Admins */}
       {activeTab === 'leadership' ? (
         <div className="space-y-6">
           <Card className="p-6 rounded-none">
-            <h3 className="text-base font-semibold text-card-foreground">Current Organization Admin</h3>
+            <h3 className="text-base font-semibold text-card-foreground">
+              Current Organization Admin
+            </h3>
             <div className="mt-3 border border-border p-4 bg-surface rounded-none">
               {org.adminUserId && org.adminEmail ? (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -383,7 +443,8 @@ export function OrgDetailForm({
                 </div>
               ) : (
                 <p className="text-sm text-muted">
-                  No organization admin assigned yet. Dispatch an email invitation below to grant administrative access.
+                  No organization admin assigned yet. Dispatch an email invitation below to grant
+                  administrative access.
                 </p>
               )}
             </div>
@@ -392,7 +453,9 @@ export function OrgDetailForm({
               <div className="mt-3 border border-blue-200 bg-blue-50/50 p-3 text-xs text-blue-900 rounded-none">
                 <p className="font-semibold">Pending Invitation Sent</p>
                 <p className="mt-0.5">
-                  An email invitation link was dispatched to <span className="font-mono font-bold">{pendingInviteSentTo}</span>. The user will be automatically assigned as Organization Admin upon clicking the link.
+                  An email invitation link was dispatched to{' '}
+                  <span className="font-mono font-bold">{pendingInviteSentTo}</span>. The user will
+                  be automatically assigned as Organization Admin upon clicking the link.
                 </p>
               </div>
             )}
@@ -465,7 +528,8 @@ export function OrgDetailForm({
                           {selectedUser.fullName ?? selectedUser.username}
                         </p>
                         <p className="text-xs text-muted">
-                          @{selectedUser.username} · {selectedUser.email} · User #{selectedUser.userId}
+                          @{selectedUser.username} · {selectedUser.email} · User #
+                          {selectedUser.userId}
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -492,7 +556,9 @@ export function OrgDetailForm({
                       </div>
                     </div>
                     <p className="text-xs text-muted">
-                      Clicking "Send Invitation Link" dispatches an email with a secure link. Once the user clicks the link, they are automatically designated as the Organization Admin.
+                      Clicking "Send Invitation Link" dispatches an email with a secure link. Once
+                      the user clicks the link, they are automatically designated as the
+                      Organization Admin.
                     </p>
                   </div>
                 )}
@@ -515,7 +581,9 @@ export function OrgDetailForm({
 
                 <div className="max-h-56 overflow-y-auto border border-border divide-y divide-border/60 bg-card rounded-none">
                   {usersQuery.isLoading ? (
-                    <div className="p-3 text-center text-xs text-muted">Loading registered platform users…</div>
+                    <div className="p-3 text-center text-xs text-muted">
+                      Loading registered platform users…
+                    </div>
                   ) : (usersQuery.data?.data.length ?? 0) === 0 ? (
                     <div className="p-3 text-center text-xs text-muted">
                       No registered users found.
@@ -537,21 +605,25 @@ export function OrgDetailForm({
                           <div className="min-w-0 flex-1">
                             <p
                               className={`text-xs font-mono font-medium truncate ${
-                                isSelected ? 'text-accent font-bold' : 'text-card-foreground group-hover:text-accent transition-colors'
+                                isSelected
+                                  ? 'text-accent font-bold'
+                                  : 'text-card-foreground group-hover:text-accent transition-colors'
                               }`}
                             >
                               {u.fullName ?? u.username}
                             </p>
-                            <p className="text-[11px] font-mono text-muted truncate">
+                            <p className="text-xs font-mono text-muted truncate">
                               @{u.username} · {u.email}
                             </p>
                           </div>
                           <div className="flex items-center gap-2.5 shrink-0 text-xs font-mono">
-                            <span className="text-[11px] text-muted">#{u.userId}</span>
+                            <span className="text-xs text-muted">#{u.userId}</span>
                             {isSelected ? (
                               <span className="text-accent font-bold text-xs">✓</span>
                             ) : (
-                              <span className="text-muted/40 group-hover:text-muted transition-colors text-xs">→</span>
+                              <span className="text-muted/40 group-hover:text-muted transition-colors text-xs">
+                                →
+                              </span>
                             )}
                           </div>
                         </button>
@@ -593,13 +665,16 @@ export function OrgDetailForm({
               </Button>
               {classDetailQuery.data?.detail && (
                 <span className="font-mono text-xs text-muted">
-                  Class #{classDetailQuery.data.detail.classId} · {classDetailQuery.data.detail.studentCount} student(s) enrolled
+                  Class #{classDetailQuery.data.detail.classId} ·{' '}
+                  {classDetailQuery.data.detail.studentCount} student(s) enrolled
                 </span>
               )}
             </div>
 
             {classDetailQuery.isLoading ? (
-              <p className="py-6 text-sm text-muted">Loading class cohort details, students & telemetry…</p>
+              <p className="py-6 text-sm text-muted">
+                Loading class cohort details, students & telemetry…
+              </p>
             ) : classDetailQuery.isError ? (
               <ErrorState
                 message={classDetailQuery.error?.message ?? 'Failed to load class details.'}
@@ -619,7 +694,8 @@ export function OrgDetailForm({
                           /{classDetailQuery.data.detail.slug}
                         </span>
                         <span className="text-xs text-muted">
-                          Created {new Date(classDetailQuery.data.detail.createdAt).toLocaleDateString()}
+                          Created{' '}
+                          {new Date(classDetailQuery.data.detail.createdAt).toLocaleDateString()}
                         </span>
                       </div>
                       {classDetailQuery.data.detail.description && (
@@ -629,9 +705,12 @@ export function OrgDetailForm({
                       )}
                     </div>
                     <div className="text-left sm:text-right shrink-0">
-                      <span className="text-xs text-muted uppercase tracking-wider block">Roster Capacity</span>
+                      <span className="text-xs text-muted uppercase tracking-wider block">
+                        Roster Capacity
+                      </span>
                       <span className="text-lg font-mono font-bold text-card-foreground">
-                        {classDetailQuery.data.detail.studentCount} / {classDetailQuery.data.detail.maxStudents}
+                        {classDetailQuery.data.detail.studentCount} /{' '}
+                        {classDetailQuery.data.detail.maxStudents}
                       </span>
                     </div>
                   </div>
@@ -639,28 +718,38 @@ export function OrgDetailForm({
 
                 {/* Assigned Professor Card */}
                 <Card className="p-5 rounded-none">
-                  <div className="text-xs uppercase text-muted font-medium mb-2">Assigned Professor</div>
+                  <div className="text-xs uppercase text-muted font-medium mb-2">
+                    Assigned Professor
+                  </div>
                   {classDetailQuery.data.professor ? (
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-border p-3 bg-surface rounded-none">
                       <div>
                         <p className="font-medium text-card-foreground">
-                          {classDetailQuery.data.professor.fullName ?? classDetailQuery.data.professor.email}
+                          {classDetailQuery.data.professor.fullName ??
+                            classDetailQuery.data.professor.email}
                         </p>
                         <p className="text-xs text-muted font-mono">
-                          {classDetailQuery.data.professor.email} · User #{classDetailQuery.data.professor.userId}
+                          {classDetailQuery.data.professor.email} · User #
+                          {classDetailQuery.data.professor.userId}
                         </p>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() =>
-                          navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(classDetailQuery.data?.professor?.userId)), {
-                            state: {
-                              fromOrgId: org.organizationId,
-                              fromTab: 'cohorts',
-                              fromClassId: selectedClassId,
+                          navigate(
+                            ROUTES.ADMIN_USER_DETAIL.replace(
+                              ':userId',
+                              String(classDetailQuery.data?.professor?.userId),
+                            ),
+                            {
+                              state: {
+                                fromOrgId: org.organizationId,
+                                fromTab: 'cohorts',
+                                fromClassId: selectedClassId,
+                              },
                             },
-                          })
+                          )
                         }
                         className="rounded-none text-xs"
                       >
@@ -688,7 +777,9 @@ export function OrgDetailForm({
                       <div className="w-full bg-secondary h-1.5 mt-2 rounded-none">
                         <div
                           className="bg-brand-600 h-1.5 transition-all"
-                          style={{ width: `${Math.min(100, classDetailQuery.data.analytics.avgProgress)}%` }}
+                          style={{
+                            width: `${Math.min(100, classDetailQuery.data.analytics.avgProgress)}%`,
+                          }}
                         />
                       </div>
                     </Card>
@@ -723,10 +814,16 @@ export function OrgDetailForm({
                 <Card className="p-5 rounded-none space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-3">
                     <div>
-                      <h5 className="text-sm font-semibold text-card-foreground">Top Performing Student Leaderboard</h5>
-                      <p className="text-xs text-muted">Ranked by module completion, hands-on lab points, and total score.</p>
+                      <h5 className="text-sm font-semibold text-card-foreground">
+                        Top Performing Student Leaderboard
+                      </h5>
+                      <p className="text-xs text-muted">
+                        Ranked by module completion, hands-on lab points, and total score.
+                      </p>
                     </div>
-                    <span className="text-xs font-mono text-muted">{classDetailQuery.data.leaderboard.length} Ranked</span>
+                    <span className="text-xs font-mono text-muted">
+                      {classDetailQuery.data.leaderboard.length} Ranked
+                    </span>
                   </div>
 
                   {classDetailQuery.data.leaderboard.length === 0 ? (
@@ -748,13 +845,19 @@ export function OrgDetailForm({
                             <tr
                               key={student.userId}
                               onClick={() =>
-                                navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(student.userId)), {
-                                  state: {
-                                    fromOrgId: org.organizationId,
-                                    fromTab: 'cohorts',
-                                    fromClassId: selectedClassId,
+                                navigate(
+                                  ROUTES.ADMIN_USER_DETAIL.replace(
+                                    ':userId',
+                                    String(student.userId),
+                                  ),
+                                  {
+                                    state: {
+                                      fromOrgId: org.organizationId,
+                                      fromTab: 'cohorts',
+                                      fromClassId: selectedClassId,
+                                    },
                                   },
-                                })
+                                )
                               }
                               className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
                             >
@@ -767,8 +870,12 @@ export function OrgDetailForm({
                                 </div>
                                 <div className="text-xs text-muted font-mono">{student.email}</div>
                               </td>
-                              <td className="px-3 py-3 text-center text-xs font-mono">{student.completedModules}</td>
-                              <td className="px-3 py-3 text-center text-xs font-mono">{student.completedLabs}</td>
+                              <td className="px-3 py-3 text-center text-xs font-mono">
+                                {student.completedModules}
+                              </td>
+                              <td className="px-3 py-3 text-center text-xs font-mono">
+                                {student.completedLabs}
+                              </td>
                               <td className="px-3 py-3 text-right text-xs font-bold font-mono text-brand-600">
                                 {student.totalScore} pts
                               </td>
@@ -784,10 +891,17 @@ export function OrgDetailForm({
                 <Card className="p-5 rounded-none space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-3">
                     <div>
-                      <h5 className="text-sm font-semibold text-card-foreground">Enrolled Students Roster</h5>
-                      <p className="text-xs text-muted">Complete roster for this class. Click any learner to inspect user governance and progress.</p>
+                      <h5 className="text-sm font-semibold text-card-foreground">
+                        Enrolled Students Roster
+                      </h5>
+                      <p className="text-xs text-muted">
+                        Complete roster for this class. Click any learner to inspect user governance
+                        and progress.
+                      </p>
                     </div>
-                    <span className="text-xs font-mono text-muted">{classDetailQuery.data.roster.length} Enrolled</span>
+                    <span className="text-xs font-mono text-muted">
+                      {classDetailQuery.data.roster.length} Enrolled
+                    </span>
                   </div>
 
                   {classDetailQuery.data.roster.length === 0 ? (
@@ -807,13 +921,16 @@ export function OrgDetailForm({
                             <tr
                               key={st.userId}
                               onClick={() =>
-                                navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(st.userId)), {
-                                  state: {
-                                    fromOrgId: org.organizationId,
-                                    fromTab: 'cohorts',
-                                    fromClassId: selectedClassId,
+                                navigate(
+                                  ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(st.userId)),
+                                  {
+                                    state: {
+                                      fromOrgId: org.organizationId,
+                                      fromTab: 'cohorts',
+                                      fromClassId: selectedClassId,
+                                    },
                                   },
-                                })
+                                )
                               }
                               className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
                             >
@@ -840,7 +957,9 @@ export function OrgDetailForm({
           <Card className="p-6 space-y-4 rounded-none">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4">
               <div>
-                <h3 className="text-base font-semibold text-card-foreground">Workspaces & Class Rosters</h3>
+                <h3 className="text-base font-semibold text-card-foreground">
+                  Workspaces & Class Rosters
+                </h3>
               </div>
             </div>
 
@@ -879,9 +998,13 @@ export function OrgDetailForm({
                           <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
                             {cls.className}
                           </div>
-                          {cls.description && <div className="text-xs text-muted">{cls.description}</div>}
+                          {cls.description && (
+                            <div className="text-xs text-muted">{cls.description}</div>
+                          )}
                         </td>
-                        <td className="px-3 py-3 font-mono text-xs text-muted-foreground">{cls.slug}</td>
+                        <td className="px-3 py-3 font-mono text-xs text-muted-foreground">
+                          {cls.slug}
+                        </td>
                         <td className="px-3 py-3 text-muted-foreground">
                           {cls.professorName ?? 'Unassigned'}
                         </td>
@@ -907,7 +1030,9 @@ export function OrgDetailForm({
       {activeTab === 'analytics' ? (
         <div className="space-y-6">
           {analyticsQuery.isLoading ? (
-            <p className="py-6 text-sm text-muted">Calculating organization analytics & telemetry…</p>
+            <p className="py-6 text-sm text-muted">
+              Calculating organization analytics & telemetry…
+            </p>
           ) : analyticsQuery.isError ? (
             <ErrorState
               message={analyticsQuery.error?.message ?? 'Unable to load analytics.'}
@@ -923,7 +1048,8 @@ export function OrgDetailForm({
                     ${analyticsQuery.data?.revenue.totalRevenue.toLocaleString() ?? 0}
                   </p>
                   <p className="text-xs text-muted mt-1">
-                    {analyticsQuery.data?.revenue.paidOrdersCount ?? 0} paid order(s) · {analyticsQuery.data?.revenue.subscriptionPlan} Plan
+                    {analyticsQuery.data?.revenue.paidOrdersCount ?? 0} paid order(s) ·{' '}
+                    {analyticsQuery.data?.revenue.subscriptionPlan} Plan
                   </p>
                 </Card>
 
@@ -933,7 +1059,9 @@ export function OrgDetailForm({
                     {analyticsQuery.data?.members.totalMembers ?? 0}
                   </p>
                   <p className="text-xs text-muted mt-1">
-                    {analyticsQuery.data?.members.studentsCount ?? 0} Students · {analyticsQuery.data?.members.professorsCount ?? 0} Professors · {analyticsQuery.data?.members.adminsCount ?? 0} Admins
+                    {analyticsQuery.data?.members.studentsCount ?? 0} Students ·{' '}
+                    {analyticsQuery.data?.members.professorsCount ?? 0} Professors ·{' '}
+                    {analyticsQuery.data?.members.adminsCount ?? 0} Admins
                   </p>
                 </Card>
 
@@ -943,7 +1071,8 @@ export function OrgDetailForm({
                     {analyticsQuery.data?.dau.avgDau ?? 0}
                   </p>
                   <p className="text-xs text-muted mt-1">
-                    Range: {analyticsQuery.data?.dau.minDau ?? 0} min · {analyticsQuery.data?.dau.maxDau ?? 0} peak
+                    Range: {analyticsQuery.data?.dau.minDau ?? 0} min ·{' '}
+                    {analyticsQuery.data?.dau.maxDau ?? 0} peak
                   </p>
                 </Card>
 
@@ -953,7 +1082,8 @@ export function OrgDetailForm({
                     {analyticsQuery.data?.compute.activePods ?? 0}
                   </p>
                   <p className="text-xs text-muted mt-1">
-                    Avg RAM: {analyticsQuery.data?.compute.avgRam ?? 0} GB · Avg CPU: {analyticsQuery.data?.compute.avgCpu ?? 0} cores
+                    Avg RAM: {analyticsQuery.data?.compute.avgRam ?? 0} GB · Avg CPU:{' '}
+                    {analyticsQuery.data?.compute.avgCpu ?? 0} cores
                   </p>
                 </Card>
               </div>
@@ -961,17 +1091,23 @@ export function OrgDetailForm({
               {/* Curriculum Progress & Resource Consumption Grid */}
               <div className="grid gap-6 lg:grid-cols-2">
                 <Card className="p-6 rounded-none space-y-4">
-                  <h3 className="text-sm font-semibold text-card-foreground">Curriculum & Lab Progress</h3>
+                  <h3 className="text-sm font-semibold text-card-foreground">
+                    Curriculum & Lab Progress
+                  </h3>
                   <div className="space-y-4">
                     <div>
                       <div className="flex justify-between text-xs font-medium mb-1">
                         <span className="text-muted">Module Completion Rate</span>
-                        <span className="text-card-foreground font-bold">{analyticsQuery.data?.progress.avgModuleCompletionRate ?? 0}%</span>
+                        <span className="text-card-foreground font-bold">
+                          {analyticsQuery.data?.progress.avgModuleCompletionRate ?? 0}%
+                        </span>
                       </div>
                       <div className="h-2 w-full bg-secondary overflow-hidden rounded-none">
                         <div
                           className="h-full bg-brand-600 transition-all duration-300 rounded-none"
-                          style={{ width: `${analyticsQuery.data?.progress.avgModuleCompletionRate ?? 0}%` }}
+                          style={{
+                            width: `${analyticsQuery.data?.progress.avgModuleCompletionRate ?? 0}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -979,25 +1115,29 @@ export function OrgDetailForm({
                     <div>
                       <div className="flex justify-between text-xs font-medium mb-1">
                         <span className="text-muted">Lab Progression Rate</span>
-                        <span className="text-card-foreground font-bold">{analyticsQuery.data?.progress.avgLabCompletionRate ?? 0}%</span>
+                        <span className="text-card-foreground font-bold">
+                          {analyticsQuery.data?.progress.avgLabCompletionRate ?? 0}%
+                        </span>
                       </div>
                       <div className="h-2 w-full bg-secondary overflow-hidden rounded-none">
                         <div
                           className="h-full bg-cyan-600 transition-all duration-300 rounded-none"
-                          style={{ width: `${analyticsQuery.data?.progress.avgLabCompletionRate ?? 0}%` }}
+                          style={{
+                            width: `${analyticsQuery.data?.progress.avgLabCompletionRate ?? 0}%`,
+                          }}
                         />
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div className="border border-border p-3 bg-surface rounded-none">
-                        <span className="text-[10px] uppercase text-muted">Completed Modules</span>
+                        <span className="text-xs uppercase text-muted">Completed Modules</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalModuleCompletions ?? 0}
                         </p>
                       </div>
                       <div className="border border-border p-3 bg-surface rounded-none">
-                        <span className="text-[10px] uppercase text-muted">Completed Labs</span>
+                        <span className="text-xs uppercase text-muted">Completed Labs</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalLabCompletions ?? 0}
                         </p>
@@ -1007,25 +1147,31 @@ export function OrgDetailForm({
                 </Card>
 
                 <Card className="p-6 rounded-none space-y-4">
-                  <h3 className="text-sm font-semibold text-card-foreground">Compute Resource Consumption</h3>
+                  <h3 className="text-sm font-semibold text-card-foreground">
+                    Compute Resource Consumption
+                  </h3>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="border border-border p-4 bg-surface rounded-none">
                       <span className="text-xs font-medium text-muted">RAM Consumption</span>
                       <p className="mt-2 text-xl font-bold text-card-foreground">
-                        {analyticsQuery.data?.compute.avgRam ?? 0} GB <span className="text-xs font-normal text-muted">avg</span>
+                        {analyticsQuery.data?.compute.avgRam ?? 0} GB{' '}
+                        <span className="text-xs font-normal text-muted">avg</span>
                       </p>
                       <p className="mt-1 text-xs text-muted">
-                        Min: {analyticsQuery.data?.compute.minRam ?? 0} GB · Max: {analyticsQuery.data?.compute.maxRam ?? 0} GB
+                        Min: {analyticsQuery.data?.compute.minRam ?? 0} GB · Max:{' '}
+                        {analyticsQuery.data?.compute.maxRam ?? 0} GB
                       </p>
                     </div>
 
                     <div className="border border-border p-4 bg-surface rounded-none">
                       <span className="text-xs font-medium text-muted">CPU Allocation</span>
                       <p className="mt-2 text-xl font-bold text-card-foreground">
-                        {analyticsQuery.data?.compute.avgCpu ?? 0} <span className="text-xs font-normal text-muted">cores avg</span>
+                        {analyticsQuery.data?.compute.avgCpu ?? 0}{' '}
+                        <span className="text-xs font-normal text-muted">cores avg</span>
                       </p>
                       <p className="mt-1 text-xs text-muted">
-                        Min: {analyticsQuery.data?.compute.minCpu ?? 0} · Max: {analyticsQuery.data?.compute.maxCpu ?? 0} cores
+                        Min: {analyticsQuery.data?.compute.minCpu ?? 0} · Max:{' '}
+                        {analyticsQuery.data?.compute.maxCpu ?? 0} cores
                       </p>
                     </div>
                   </div>
@@ -1036,7 +1182,9 @@ export function OrgDetailForm({
               <Card className="p-6 rounded-none">
                 <div className="flex items-center justify-between mb-4">
                   <div>
-                    <h3 className="text-sm font-semibold text-card-foreground">14-Day Daily Active Learners</h3>
+                    <h3 className="text-sm font-semibold text-card-foreground">
+                      14-Day Daily Active Learners
+                    </h3>
                   </div>
                   <Button variant="secondary" size="sm" onClick={() => setIsInviteDrawerOpen(true)}>
                     + Invite More Learners
@@ -1055,8 +1203,10 @@ export function OrgDetailForm({
                           title={`${pt.date}: ${pt.activeUsers} active learner(s), ${pt.labCompletions} lab completion(s)`}
                         />
                       </div>
-                      <span className="mt-1 text-[10px] font-mono text-muted">{pt.date}</span>
-                      <span className="text-[10px] font-bold text-card-foreground tabular-nums">{pt.activeUsers}</span>
+                      <span className="mt-1 text-xs font-mono text-muted">{pt.date}</span>
+                      <span className="text-xs font-bold text-card-foreground tabular-nums">
+                        {pt.activeUsers}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -1088,7 +1238,12 @@ export function OrgDetailForm({
                     aria-label="Close drawer"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -1155,8 +1310,10 @@ export function OrgDetailForm({
                         Drag & drop a CSV file here, or{' '}
                         <span className="text-brand-600 underline">browse</span>
                       </div>
-                      <div className="text-[11px] text-muted mt-0.5">
-                        Accepts format: <span className="font-mono text-card-foreground">email,role,fullName</span> (roles: student, professor, admin) or plain list of emails.
+                      <div className="text-xs text-muted mt-0.5">
+                        Accepts format:{' '}
+                        <span className="font-mono text-card-foreground">email,role,fullName</span>{' '}
+                        (roles: student, professor, admin) or plain list of emails.
                       </div>
                       {drawerCsvParsedCount !== null && (
                         <div className="mt-1.5 text-xs text-card-foreground font-mono font-medium">
@@ -1186,13 +1343,36 @@ export function OrgDetailForm({
                 <Button variant="secondary" onClick={() => setIsInviteDrawerOpen(false)}>
                   Cancel
                 </Button>
-                <Button onClick={handleSendDrawerInvites} isLoading={inviteMembersMutation.isPending}>
+                <Button
+                  onClick={handleSendDrawerInvites}
+                  isLoading={inviteMembersMutation.isPending}
+                >
                   Send Invitations
                 </Button>
               </div>
             </div>
           </div>
         </div>
+      )}
+
+      {isDeleteOpen && (
+        <ConfirmDialog
+          open
+          title="Delete organization"
+          onCancel={() => setIsDeleteOpen(false)}
+          onConfirm={() =>
+            onDelete({
+              onSuccess: () => {
+                setIsDeleteOpen(false);
+                navigate(ROUTES.ADMIN_ORGANIZATIONS);
+              },
+              onError: (error) => toast.error(error.message ?? 'Failed to delete organization.'),
+            })
+          }
+          confirmLabel="Delete Organization"
+          isLoading={deletePending}
+          message={`Permanently delete "${org.name}"? All classes, rosters, invitations, active join codes and organization scopes will be removed. This cannot be undone.`}
+        />
       )}
     </div>
   );
@@ -1201,7 +1381,7 @@ export function OrgDetailForm({
 /** Platform admin org detail page (contract SCR-F3-02). */
 export function AdminOrganizationDetailPage() {
   const { orgId } = useParams<{ orgId: string }>();
-  const { query, update, assignAdmin } = useAdminOrganizationDetail(orgId);
+  const { query, update, assignAdmin, remove } = useAdminOrganizationDetail(orgId);
 
   if (query.isLoading || !query.data) {
     return <DetailFormSkeleton />;
@@ -1226,8 +1406,18 @@ export function AdminOrganizationDetailPage() {
       org={org}
       onSave={(payload, helpers) => update.mutate(payload, helpers)}
       onAssign={(userId, helpers) => assignAdmin.mutate(userId, helpers)}
+      onDelete={(helpers) =>
+        remove.mutate(undefined, {
+          onSuccess: (result) => {
+            toast.success(`${result.name} was deleted.`);
+            helpers.onSuccess();
+          },
+          onError: (error) => helpers.onError({ message: error.message }),
+        })
+      }
       savePending={update.isPending}
       assignPending={assignAdmin.isPending}
+      deletePending={remove.isPending}
     />
   );
 }

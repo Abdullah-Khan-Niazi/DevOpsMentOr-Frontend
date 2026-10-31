@@ -384,9 +384,11 @@ export function AppRoutes() {
           <Route
             path={ROUTES.STUDENT_MY_CLASS}
             element={
-              <LazyPage skeleton={<CurriculumSkeleton />}>
-                <StudentMyClassPage />
-              </LazyPage>
+              <PermissionRouteGuard permission="enrollment:read" roles="org_student">
+                <LazyPage skeleton={<CurriculumSkeleton />}>
+                  <StudentMyClassPage />
+                </LazyPage>
+              </PermissionRouteGuard>
             }
           />
           {/* ─── F4 learner curriculum (AppShell, permission-gated) ─────── */}
@@ -842,7 +844,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_DASHBOARD}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission={['org:manage', 'org:classes:manage', 'class:manage']}>
             <Suspense fallback={<OrgDashboardSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<OrgDashboardSkeleton />}>
@@ -856,7 +858,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_CLASSES}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission={['org:manage', 'org:classes:manage', 'class:manage']}>
             <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<TablePageSkeleton />}>
@@ -870,7 +872,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_CLASS_NEW}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission={['org:classes:manage', 'class:manage']}>
             <Suspense fallback={<DetailFormSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<DetailFormSkeleton />}>
@@ -884,7 +886,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_CLASS_DETAIL}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission={['org:manage', 'org:classes:manage', 'class:manage']}>
             <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<TablePageSkeleton />}>
@@ -898,7 +900,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_CLASS_ROSTER}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission={['class:students:read', 'org:manage']}>
             <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<TablePageSkeleton />}>
@@ -912,7 +914,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_CLASS_INVITE}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission={['class:students:invite', 'org:students:invite']}>
             <Suspense fallback={<DetailFormSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<DetailFormSkeleton />}>
@@ -926,7 +928,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_PROFESSORS}
         element={
-          <PermissionRouteGuard permission="org:professors:invite">
+          <PermissionRouteGuard permission="org:manage">
             <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<TablePageSkeleton />}>
@@ -940,7 +942,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_SETTINGS}
         element={
-          <PermissionRouteGuard permission="org:read">
+          <PermissionRouteGuard permission="org:manage">
             <Suspense fallback={<DetailFormSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<DetailFormSkeleton />}>
@@ -955,7 +957,7 @@ export function AppRoutes() {
       <Route
         path={ROUTES.ORG_STUDENTS_PROGRESS}
         element={
-          <PermissionRouteGuard permission={['progress.org.read', 'progress.class.read']}>
+          <PermissionRouteGuard permission="progress.org.read">
             <Suspense fallback={<TablePageSkeleton />}>
               <OrgAdminShell>
                 <LazyPage skeleton={<TablePageSkeleton />}>

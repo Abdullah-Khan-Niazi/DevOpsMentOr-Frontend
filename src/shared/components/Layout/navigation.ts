@@ -2,18 +2,19 @@ import type { IconName } from '@/shared/components/Icon';
 import { ROUTES } from '@/shared/constants';
 import type { AuthUser } from '@/features/auth/types';
 
-// Single source of truth for the authenticated sidebar.
+// Single source of truth for authenticated navigation.
 // Items are strictly permission-gated (§04 RBAC surface control):
 // unauthorized nav is completely unrendered.
 //
 // Role & Capability Design:
-// - platform_admin: complete platform administration, system settings & account governance.
-// - org_admin: organization governance, classes, professors & student progress.
-//   Also includes curriculum and labs so an admin/lead who wants to learn or teach
-//   can access learning resources directly without artificial restrictions.
-// - professor: class rosters, student progression, curriculum and lab sessions.
-// - org_student: cohort syllabus, class progress, curriculum and labs.
-// - individual_learner: personal dashboard, tracks, labs, progress and personal billing.
+// - platform_admin: platform administration only. No personal/org switcher.
+// - org_admin: organization governance, cohorts, staff, progress, billing.
+// - professor: assigned cohorts, rosters, class progress, curriculum.
+// - org_student: personal dashboard, own class, curriculum, achievements.
+// - individual_learner: personal dashboard, curriculum, achievements, billing.
+//
+// `context` is derived from the current URL (see workspaceContext.ts). It
+// scopes the menu to the workspace being viewed; it never grants access.
 
 export type NavSection = 'Workspace' | 'Administration';
 
@@ -24,35 +25,28 @@ export interface AppNavItem {
   section: NavSection;
 }
 
+function hasAny(permissions: Set<string>, names: string[]): boolean {
+  return names.some((name) => permissions.has(name));
+}
+
 export function buildNavItems(
   user: AuthUser | null,
-  context?: 'personal' | 'org' | 'platform',
+  context: 'personal' | 'org' | 'class' | 'platform' = 'personal',
 ): AppNavItem[] {
   if (!user) return [];
 
   const permissions = new Set(user.permissions ?? []);
   const roles = new Set(user.roles ?? []);
   const items: AppNavItem[] = [];
-
-  // When context is strictly 'personal', return personal learning workspace items
-  if (context === 'personal') {
-    items.push(
-      { to: ROUTES.DASHBOARD, label: 'Dashboard', icon: 'dashboard', section: 'Workspace' },
-      { to: ROUTES.LEARN, label: 'Curriculum', icon: 'roles', section: 'Workspace' },
-      { to: ROUTES.LABS, label: 'Sandboxes', icon: 'terminal', section: 'Workspace' },
-      { to: ROUTES.TRACKS, label: 'Career Paths', icon: 'track', section: 'Workspace' },
-      { to: ROUTES.ACHIEVEMENTS, label: 'Achievements', icon: 'award', section: 'Workspace' },
-      { to: ROUTES.LEADERBOARD, label: 'Leaderboard', icon: 'leaderboard', section: 'Workspace' },
-      { to: ROUTES.SETTINGS, label: 'Settings', icon: 'settings', section: 'Workspace' },
-      { to: ROUTES.BILLING, label: 'Billing', icon: 'card', section: 'Workspace' },
-    );
-    return items;
-  }
-
-  const isPlatformAdmin = roles.has('platform_admin');
+  const isPlatformAdmin = roles.has('platform_admin') || permissions.has('platform.admin.access');
+  const isOrgStudent = roles.has('org_student');
 
   // ─── Platform Administration ──────────────────────────────────────────────
-  if (isPlatformAdmin) {
+  // Platform admins only ever see the platform surface. No personal or org
+  // navigation leaks into their shell.
+  if (context === 'platform' || isPlatformAdmin) {
+    if (!isPlatformAdmin) return [];
+
     items.push(
       {
         to: ROUTES.ADMIN_DASHBOARD,
@@ -173,7 +167,6 @@ export function buildNavItems(
         section: 'Administration',
       });
     }
-    // Platform admin account preferences and security
     items.push({
       to: ROUTES.SETTINGS,
       label: 'Account settings',
@@ -184,73 +177,81 @@ export function buildNavItems(
   }
 
   // ─── Organization Administration & Management ─────────────────────────────
-  if (roles.has('org_admin')) {
-    items.push({
-      to: ROUTES.ORG_DASHBOARD,
-      label: 'Overview',
-      icon: 'organization',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ORG_CLASSES,
-      label: 'Cohorts',
-      icon: 'classes',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ORG_PROFESSORS,
-      label: 'Students & Professors',
-      icon: 'professors',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ORG_STUDENTS_PROGRESS,
-      label: 'Student progress',
-      icon: 'reports',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ORG_SETTINGS,
-      label: 'Settings',
-      icon: 'settings',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.BILLING,
-      label: 'Billing & seats',
-      icon: 'card',
-      section: 'Workspace',
-    });
-
-    // An Org Admin who also teaches or learns has full access to curriculum & labs
-    items.push({
-      to: ROUTES.LEARN,
-      label: 'Curriculum',
-      icon: 'roles',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ACHIEVEMENTS,
-      label: 'Achievements',
-      icon: 'award',
-      section: 'Workspace',
-    });
+  if (context === 'org' && roles.has('org_admin')) {
+    if (hasAny(permissions, ['org:manage', 'org:read'])) {
+      items.push({
+        to: ROUTES.ORG_DASHBOARD,
+        label: 'Overview',
+        icon: 'organization',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('org:classes:manage')) {
+      items.push({
+        to: ROUTES.ORG_CLASSES,
+        label: 'Cohorts',
+        icon: 'classes',
+        section: 'Workspace',
+      });
+    }
+    if (
+      hasAny(permissions, [
+        'org:professors:invite',
+        'org:students:invite',
+        'class:students:read',
+      ])
+    ) {
+      items.push({
+        to: ROUTES.ORG_PROFESSORS,
+        label: 'Students & Professors',
+        icon: 'professors',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('progress.org.read')) {
+      items.push({
+        to: ROUTES.ORG_STUDENTS_PROGRESS,
+        label: 'Student progress',
+        icon: 'reports',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('org:manage')) {
+      items.push({
+        to: ROUTES.ORG_SETTINGS,
+        label: 'Settings',
+        icon: 'settings',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('billing:org:manage')) {
+      items.push({
+        to: ROUTES.BILLING,
+        label: 'Billing & seats',
+        icon: 'card',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
+      items.push({
+        to: ROUTES.LEARN,
+        label: 'Curriculum',
+        icon: 'roles',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('gamification:profile:read')) {
+      items.push({
+        to: ROUTES.ACHIEVEMENTS,
+        label: 'Achievements',
+        icon: 'award',
+        section: 'Workspace',
+      });
+    }
     items.push({
       to: ROUTES.LEADERBOARD,
       label: 'Leaderboard',
       icon: 'leaderboard',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.EVENTS,
-      label: 'Events',
-      icon: 'calendar',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ANNOUNCEMENTS,
-      label: 'Announcements',
-      icon: 'megaphone',
       section: 'Workspace',
     });
     items.push({
@@ -263,7 +264,7 @@ export function buildNavItems(
   }
 
   // ─── Professor / Faculty ──────────────────────────────────────────────────
-  if (roles.has('professor')) {
+  if (context === 'org' && roles.has('professor')) {
     items.push({
       to: ROUTES.ORG_DASHBOARD,
       label: 'Dashboard',
@@ -276,36 +277,14 @@ export function buildNavItems(
       icon: 'classes',
       section: 'Workspace',
     });
-    items.push({
-      to: ROUTES.ORG_PROFESSORS,
-      label: 'Students & Professors',
-      icon: 'professors',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ORG_STUDENTS_PROGRESS,
-      label: 'Student progress',
-      icon: 'reports',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.LEARN,
-      label: 'Curriculum',
-      icon: 'roles',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.EVENTS,
-      label: 'Events',
-      icon: 'calendar',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ANNOUNCEMENTS,
-      label: 'Announcements',
-      icon: 'megaphone',
-      section: 'Workspace',
-    });
+    if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
+      items.push({
+        to: ROUTES.LEARN,
+        label: 'Curriculum',
+        icon: 'roles',
+        section: 'Workspace',
+      });
+    }
     items.push({
       to: ROUTES.SETTINGS,
       label: 'Settings',
@@ -315,32 +294,43 @@ export function buildNavItems(
     return items;
   }
 
-  // ─── Org Student ──────────────────────────────────────────────────────────
-  if (roles.has('org_student')) {
-    items.push({
-      to: ROUTES.DASHBOARD,
-      label: 'Dashboard',
-      icon: 'dashboard',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.STUDENT_MY_CLASS,
-      label: 'My class',
-      icon: 'my-class',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.LEARN,
-      label: 'Learn',
-      icon: 'roles',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ACHIEVEMENTS,
-      label: 'Achievements',
-      icon: 'award',
-      section: 'Workspace',
-    });
+  // ─── Student workspace (personal or class context) ────────────────────────
+  // Only student-applicable links. No hardcoded Events/Announcements and no
+  // staff/personal billing links unless the account actually holds the
+  // matching permission.
+  if (isOrgStudent || context === 'class') {
+    if (permissions.has('dashboard:read')) {
+      items.push({
+        to: ROUTES.DASHBOARD,
+        label: 'Dashboard',
+        icon: 'dashboard',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('enrollment:read')) {
+      items.push({
+        to: ROUTES.STUDENT_MY_CLASS,
+        label: 'My class',
+        icon: 'my-class',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
+      items.push({
+        to: ROUTES.LEARN,
+        label: 'Learn',
+        icon: 'roles',
+        section: 'Workspace',
+      });
+    }
+    if (permissions.has('gamification:profile:read')) {
+      items.push({
+        to: ROUTES.ACHIEVEMENTS,
+        label: 'Achievements',
+        icon: 'award',
+        section: 'Workspace',
+      });
+    }
     items.push({
       to: ROUTES.LEADERBOARD,
       label: 'Leaderboard',
@@ -348,28 +338,25 @@ export function buildNavItems(
       section: 'Workspace',
     });
     items.push({
-      to: ROUTES.EVENTS,
-      label: 'Events',
-      icon: 'calendar',
-      section: 'Workspace',
-    });
-    items.push({
-      to: ROUTES.ANNOUNCEMENTS,
-      label: 'Announcements',
-      icon: 'megaphone',
-      section: 'Workspace',
-    });
-    items.push({
       to: ROUTES.SETTINGS,
       label: 'Settings',
       icon: 'settings',
       section: 'Workspace',
     });
+    if (permissions.has('billing:subscription:read')) {
+      items.push({
+        to: ROUTES.BILLING,
+        label: 'Billing',
+        icon: 'card',
+        section: 'Workspace',
+      });
+    }
     return items;
   }
 
-  // ─── Individual Learner (Default Member Navigation) ───────────────────────
-  if (permissions.has('dashboard:read') || roles.has('individual_learner')) {
+  // ─── Individual learner / staff personal space ────────────────────────────
+  // Staff reach this branch only when they are in the personal context.
+  if (permissions.has('dashboard:read')) {
     items.push({
       to: ROUTES.DASHBOARD,
       label: 'Dashboard',
@@ -377,34 +364,26 @@ export function buildNavItems(
       section: 'Workspace',
     });
   }
-  items.push({
-    to: ROUTES.LEARN,
-    label: 'Learn',
-    icon: 'roles',
-    section: 'Workspace',
-  });
-  items.push({
-    to: ROUTES.ACHIEVEMENTS,
-    label: 'Achievements',
-    icon: 'award',
-    section: 'Workspace',
-  });
+  if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
+    items.push({
+      to: ROUTES.LEARN,
+      label: 'Learn',
+      icon: 'roles',
+      section: 'Workspace',
+    });
+  }
+  if (permissions.has('gamification:profile:read')) {
+    items.push({
+      to: ROUTES.ACHIEVEMENTS,
+      label: 'Achievements',
+      icon: 'award',
+      section: 'Workspace',
+    });
+  }
   items.push({
     to: ROUTES.LEADERBOARD,
     label: 'Leaderboard',
     icon: 'leaderboard',
-    section: 'Workspace',
-  });
-  items.push({
-    to: ROUTES.EVENTS,
-    label: 'Events',
-    icon: 'calendar',
-    section: 'Workspace',
-  });
-  items.push({
-    to: ROUTES.ANNOUNCEMENTS,
-    label: 'Announcements',
-    icon: 'megaphone',
     section: 'Workspace',
   });
   items.push({
@@ -413,7 +392,7 @@ export function buildNavItems(
     icon: 'settings',
     section: 'Workspace',
   });
-  if (permissions.has('billing:subscription:read') || roles.has('individual_learner')) {
+  if (permissions.has('billing:subscription:read')) {
     items.push({
       to: ROUTES.BILLING,
       label: 'Billing',

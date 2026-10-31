@@ -1,17 +1,30 @@
-import { useEffect, useRef, useState, type ChangeEvent } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button, Input, toast } from '@/shared/components';
-import { Icon } from '@/shared/components/Icon';
-import { ROUTES } from '@/shared/constants';
+import { useCallback, useState, type ChangeEvent, type FormEvent } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
+import { useQueryClient } from '@tanstack/react-query';
+import { Button, Input, Modal, toast } from '@/shared/components';
+import { Icon, type IconName } from '@/shared/components/Icon';
+import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import type { AuthUser } from '@/features/auth/types';
-import { authService } from '@/features/auth/services';
+import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
 import { useMyOrg, useCreateOrg } from '@/features/org/hooks/useOrg';
-import { useMyClass } from '@/features/enrollment/hooks';
+import { useMyClasses } from '@/features/enrollment/hooks';
+import { enrollmentService } from '@/features/enrollment/services';
+import { cn } from '@/shared/utils';
+import {
+  hasMultipleWorkspaces,
+  isOrgStaff,
+  isOrgStudent,
+  isPlatformAdmin,
+  resolveWorkspaceKind,
+  type WorkspaceKind,
+} from './workspaceContext';
 
 interface WorkspaceSwitcherProps {
   variant?: 'topbar' | 'sidebar' | 'mobile';
   isCollapsed?: boolean;
+  /** Called after a successful workspace switch (e.g. to close the mobile drawer). */
+  onAfterSwitch?: () => void;
 }
 
 function slugify(val: string): string {
@@ -22,87 +35,183 @@ function slugify(val: string): string {
     .slice(0, 50);
 }
 
-export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: WorkspaceSwitcherProps) {
+function workspaceIcon(kind: WorkspaceKind): IconName {
+  switch (kind) {
+    case 'org':
+      return 'organization';
+    case 'class':
+      return 'my-class';
+    case 'platform':
+      return 'platform-admins';
+    case 'personal':
+    default:
+      return 'dashboard';
+  }
+}
+
+interface WorkspaceItemProps {
+  icon: IconName;
+  label: string;
+  description?: string;
+  active: boolean;
+  onSelect: () => void;
+}
+
+function WorkspaceItem({ icon, label, description, active, onSelect }: WorkspaceItemProps) {
+  return (
+    <DropdownMenu.Item
+      onSelect={onSelect}
+      aria-current={active ? 'page' : undefined}
+      className={cn(
+        'flex cursor-pointer select-none items-center justify-between gap-3 rounded-lg px-3 py-2 text-xs outline-none transition-colors',
+        'data-[highlighted]:bg-surface-hover',
+        active && 'bg-surface',
+      )}
+    >
+      <span className="flex min-w-0 items-center gap-2.5">
+        <Icon name={icon} size={14} className="shrink-0 text-muted" />
+        <span className="min-w-0">
+          <span className="block truncate font-medium text-card-foreground">{label}</span>
+          {description ? (
+            <span className="block truncate font-mono text-xs text-muted">{description}</span>
+          ) : null}
+        </span>
+      </span>
+      {active ? <Icon name="check" size={14} className="shrink-0 text-ink" /> : null}
+    </DropdownMenu.Item>
+  );
+}
+
+interface WorkspaceActionProps {
+  icon: IconName;
+  label: string;
+  onSelect: () => void;
+}
+
+function WorkspaceAction({ icon, label, onSelect }: WorkspaceActionProps) {
+  return (
+    <DropdownMenu.Item
+      onSelect={onSelect}
+      className="flex cursor-pointer select-none items-center gap-2.5 rounded-lg px-3 py-2 text-xs text-muted outline-none transition-colors data-[highlighted]:bg-surface-hover data-[highlighted]:text-card-foreground"
+    >
+      <Icon name={icon} size={14} className="shrink-0" />
+      <span>{label}</span>
+    </DropdownMenu.Item>
+  );
+}
+
+/**
+ * URL-first workspace switcher.
+ *
+ * There is deliberately no persisted "active workspace" value. The current
+ * workspace is derived from the route, and switching is just navigation.
+ * Server-side authorization remains the only thing that can grant access.
+ */
+export function WorkspaceSwitcher({
+  variant = 'topbar',
+  isCollapsed = false,
+  onAfterSwitch,
+}: WorkspaceSwitcherProps) {
   const navigate = useNavigate();
+  const location = useLocation();
+  const queryClient = useQueryClient();
   const user = useAuthStore((state) => state.user);
 
-  const [isOpen, setIsOpen] = useState(false);
   const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
-  const [isJoinCohortOpen, setIsJoinCohortOpen] = useState(false);
-  const [cohortCode, setCohortCode] = useState('');
+  const [isJoinClassOpen, setIsJoinClassOpen] = useState(false);
+  const [isJoining, setIsJoining] = useState(false);
 
-  // Active workspace stored in localStorage
-  const [activeMode, setActiveMode] = useState<string>(() => {
-    try {
-      return localStorage.getItem('stardust_active_workspace') || 'default';
-    } catch {
-      return 'default';
-    }
-  });
-
-  // Create Org Form State
   const [orgName, setOrgName] = useState('');
   const [orgSlug, setOrgSlug] = useState('');
   const [slugTouched, setSlugTouched] = useState(false);
   const [industry, setIndustry] = useState('');
   const [description, setDescription] = useState('');
+  const [classCode, setClassCode] = useState('');
 
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const platformAdmin = isPlatformAdmin(user);
+  const staff = isOrgStaff(user);
+  const student = isOrgStudent(user);
 
-  const roles = new Set(user?.roles ?? []);
-  const isPlatformAdmin = roles.has('platform_admin');
-  const isOrgAdmin = roles.has('org_admin');
-  const isProfessor = roles.has('professor');
-  const isOrgStudent = roles.has('org_student');
-
-  // Queries
-  const { query: orgQuery } = useMyOrg();
-  const classQuery = useMyClass();
+  // Only ask the API for data the user can actually own. This prevents
+  // 403/404 noise for learners and avoids fetching an org directory they
+  // can never switch to. Learners can belong to several classes, so the full
+  // list is the switcher's source of truth.
+  const orgQuery = useMyOrg(staff).query;
+  const classQuery = useMyClasses(student);
   const createOrg = useCreateOrg();
 
-  useEffect(() => {
-    if (!isOpen) return;
-    const onClickOutside = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', onClickOutside);
-    return () => document.removeEventListener('mousedown', onClickOutside);
-  }, [isOpen]);
+  const org = orgQuery.data ?? null;
+  const myClasses = classQuery.data ?? [];
+  const requestedClassId = Number(new URLSearchParams(location.search).get('classId'));
+  const selectedClass =
+    myClasses.find((entry) => entry.classId === requestedClassId) ?? myClasses[0] ?? null;
+  const activeKind = resolveWorkspaceKind(location.pathname, user);
 
-  const enrolledClass = classQuery.data ?? null;
-  const myOrg = orgQuery.data ?? null;
+  // Learners and individual accounts may always join another class. Staff and
+  // platform admins cannot redeem a student code.
+  const canJoinClass = !platformAdmin && !staff;
+  const canCreateOrg = !platformAdmin && !staff && !student;
+  const showOrg = staff && Boolean(org);
 
-  // Active workspace label calculation
-  let activeWorkspaceName = 'Personal Space';
-  if (activeMode === 'personal') {
-    activeWorkspaceName = 'Personal Space';
-  } else if (isPlatformAdmin) {
-    activeWorkspaceName = 'Platform Admin';
-  } else if (isOrgAdmin || isProfessor) {
-    activeWorkspaceName = myOrg?.name ?? 'Organization Space';
-  } else if (isOrgStudent && enrolledClass) {
-    activeWorkspaceName = enrolledClass.className;
+  const closeCreateOrg = useCallback(() => setIsCreateOrgOpen(false), []);
+  const closeJoinClass = useCallback(() => setIsJoinClassOpen(false), []);
+
+  // Platform administrators have one platform surface: no switcher at all.
+  // Placed after hooks so hook order is stable.
+  if (platformAdmin) {
+    return null;
   }
 
-  const switchWorkspace = (mode: string, route: string) => {
-    setActiveMode(mode);
-    try {
-      localStorage.setItem('stardust_active_workspace', mode);
-    } catch {
-      // storage quota or private mode
-    }
-    setIsOpen(false);
+  // Always keep a way back to Personal while standing on an org/class URL.
+  // The org/class lookup may fail when the record was deleted or the scope is
+  // stale; hiding the switcher in that state would strand the user.
+  const isWorkspaceRoute = activeKind === 'org' || activeKind === 'class';
+
+  if (
+    !isWorkspaceRoute &&
+    !hasMultipleWorkspaces({
+      isStaff: staff,
+      hasOrg: Boolean(org),
+      hasClass: myClasses.length > 0,
+      canCreateOrg,
+      canJoinClass,
+    })
+  ) {
+    return null;
+  }
+
+  const switchTo = (route: string) => {
+    // Navigation is the switch. Invalidate the destination's server state so
+    // a previously visited workspace cannot paint stale data while refetching.
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
+    onAfterSwitch?.();
     navigate(route);
   };
 
-  const handleCreateOrg = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const refreshIdentity = async (): Promise<boolean> => {
+    const refreshed = await refreshAuthSession();
+    if (!refreshed) {
+      return false;
+    }
+
+    await Promise.all([
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses }),
+      queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() }),
+      queryClient.invalidateQueries({ queryKey: ['auth', 'me'] }),
+    ]);
+    return true;
+  };
+
+  const handleCreateOrg = async (event: FormEvent) => {
+    event.preventDefault();
     if (!orgName.trim()) {
       toast.error('Organization name is required.');
       return;
     }
+
     const finalSlug = orgSlug.trim() || slugify(orgName);
     try {
       await createOrg.mutateAsync({
@@ -111,323 +220,263 @@ export function WorkspaceSwitcher({ variant = 'topbar', isCollapsed = false }: W
         industry: industry.trim() || undefined,
         description: description.trim() || undefined,
       });
-
-      // Refresh session user state so org permissions are instantly updated
-      const freshMe = await authService.getMe();
-      useAuthStore.getState().setUser(freshMe as unknown as AuthUser);
-
-      try {
-        localStorage.setItem('stardust_active_workspace', 'org');
-      } catch {
-        // ignore
-      }
-      setActiveMode('org');
-      toast.success('Organization created successfully!');
-      setIsCreateOrgOpen(false);
-      setOrgName('');
-      setOrgSlug('');
-      setDescription('');
-      navigate(ROUTES.ORG_DASHBOARD);
-    } catch (err: unknown) {
-      toast.error((err as Error).message || 'Failed to create organization.');
-    }
-  };
-
-  const handleJoinCohort = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!cohortCode.trim()) {
-      toast.error('Enter an invitation or cohort code.');
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Failed to create organization.');
       return;
     }
-    setIsJoinCohortOpen(false);
-    navigate(`${ROUTES.ENROLL_ACCEPT}?token=${encodeURIComponent(cohortCode.trim())}`);
+
+    const identityReady = await refreshIdentity();
+    setOrgName('');
+    setOrgSlug('');
+    setSlugTouched(false);
+    setIndustry('');
+    setDescription('');
+    setIsCreateOrgOpen(false);
+    toast.success('Organization created successfully.');
+    onAfterSwitch?.();
+    navigate(identityReady ? ROUTES.ORG_DASHBOARD : ROUTES.DASHBOARD);
   };
 
+  const handleJoinClass = async (event: FormEvent) => {
+    event.preventDefault();
+    const code = classCode.trim().toUpperCase();
+    if (!/^[A-Z0-9]{6,12}$/.test(code)) {
+      toast.error('Enter a valid class code (6–12 letters and digits).');
+      return;
+    }
+
+    setIsJoining(true);
+    try {
+      const result = await enrollmentService.joinWithCode(code);
+      const identityReady = await refreshIdentity();
+      setClassCode('');
+      setIsJoinClassOpen(false);
+      toast.success(
+        result.alreadyEnrolled
+          ? `You are already enrolled in ${result.className}.`
+          : `Joined ${result.className}.`,
+      );
+      onAfterSwitch?.();
+      navigate(
+        identityReady ? `${ROUTES.STUDENT_MY_CLASS}?classId=${result.classId}` : ROUTES.DASHBOARD,
+      );
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : 'Unable to join this class.');
+    } finally {
+      setIsJoining(false);
+    }
+  };
+
+  let activeLabel = 'Personal';
+  let activeDescription: string | undefined;
+  if (activeKind === 'org') {
+    activeLabel = org?.name ?? 'Organization';
+    activeDescription = 'Organization workspace';
+  } else if (activeKind === 'class') {
+    activeLabel = selectedClass?.className ?? 'My class';
+    activeDescription = selectedClass?.organizationName;
+  }
+
+  const triggerContent = (
+    <>
+      <span className="flex min-w-0 items-center gap-2">
+        <Icon name={workspaceIcon(activeKind)} size={14} className="shrink-0 text-muted" />
+        <span className="truncate font-medium">{activeLabel}</span>
+      </span>
+      <Icon name="chevron-down" size={12} className="shrink-0 text-muted" />
+    </>
+  );
+
+  const triggerClassName =
+    variant === 'topbar'
+      ? 'flex max-w-48 cursor-pointer items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-xs text-card-foreground transition-colors hover:bg-surface-hover'
+      : isCollapsed
+        ? 'mx-auto flex size-10 cursor-pointer items-center justify-center rounded-lg border border-border bg-card text-card-foreground transition-colors hover:bg-surface-hover'
+        : 'flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-card px-3 py-2 text-xs text-card-foreground transition-colors hover:bg-surface-hover';
+
   return (
-    <div
-      className="relative inline-block"
-      ref={dropdownRef}
-      data-dropdown-open={isOpen ? 'true' : undefined}
-    >
-      {/* ─── Trigger Button ──────────────────────────────────────────────── */}
-      {variant === 'topbar' ? (
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="flex items-center gap-2 px-3 py-1.5 rounded-full border border-white/15 bg-white/5 hover:bg-white/10 text-pearl-100 text-xs font-medium transition-all cursor-pointer max-w-[200px]"
-          aria-expanded={isOpen}
-          aria-label="Switch workspace"
-        >
-          <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
-          <span className="truncate">{activeWorkspaceName}</span>
-          <span className="text-[10px] text-pearl-100/60 font-mono">▾</span>
-        </button>
-      ) : isCollapsed ? (
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-10 h-10 mx-auto rounded-lg border border-border bg-card flex items-center justify-center text-card-foreground hover:bg-surface-hover transition-colors cursor-pointer"
-          title={`Active Workspace: ${activeWorkspaceName}`}
-          aria-label="Switch workspace"
-        >
-          <Icon name="organization" size={16} />
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={() => setIsOpen(!isOpen)}
-          className="w-full flex items-center justify-between gap-2 px-3 py-2 rounded-lg border border-border bg-card hover:bg-surface-hover text-card-foreground text-xs font-medium transition-all cursor-pointer"
-          aria-expanded={isOpen}
-          aria-label="Switch workspace"
-        >
-          <div className="flex items-center gap-2 min-w-0">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 shrink-0" />
-            <span className="truncate font-semibold">{activeWorkspaceName}</span>
-          </div>
-          <span className="text-muted text-[10px] font-mono shrink-0">▾</span>
-        </button>
-      )}
-
-      {/* ─── Dropdown Menu ───────────────────────────────────────────────── */}
-      {isOpen && (
-        <div
-          className={`absolute z-50 mt-2 w-64 rounded-xl border border-border bg-card shadow-xl py-1.5 text-card-foreground animate-in fade-in zoom-in-95 duration-100 ${
-            variant === 'sidebar' && isCollapsed ? 'left-14 top-0' : 'left-0'
-          }`}
-        >
-          <div className="px-3.5 py-1.5 text-[11px] font-mono uppercase tracking-wider text-muted border-b border-border">
-            Workspaces
-          </div>
-
-          <div className="py-1">
-            {/* Personal Space (always available to everyone) */}
-            <button
-              type="button"
-              onClick={() => switchWorkspace('personal', ROUTES.DASHBOARD)}
-              className="w-full flex items-center justify-between px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer"
-            >
-              <div className="flex items-center gap-2.5 truncate">
-                <Icon name="dashboard" size={14} className="text-muted shrink-0" />
-                <span className="truncate">Personal Learning Space</span>
-              </div>
-              {activeWorkspaceName === 'Personal Space' && (
-                <span className="text-xs font-bold text-emerald-500">✓</span>
-              )}
-            </button>
-
-            {/* Platform Admin Console (if platform admin) */}
-            {isPlatformAdmin && (
-              <button
-                type="button"
-                onClick={() => switchWorkspace('platform', ROUTES.ADMIN_DASHBOARD)}
-                className="w-full flex items-center justify-between px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5 truncate">
-                  <Icon name="settings" size={14} className="text-muted shrink-0" />
-                  <span className="truncate">Platform Administration</span>
-                </div>
-                {activeWorkspaceName === 'Platform Admin' && (
-                  <span className="text-xs font-bold text-emerald-500">✓</span>
-                )}
-              </button>
+    <>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className={triggerClassName}
+            aria-label={`Switch workspace. Current: ${activeLabel}`}
+            title={activeDescription ? `${activeLabel} — ${activeDescription}` : activeLabel}
+          >
+            {isCollapsed && variant !== 'topbar' ? (
+              <Icon name={workspaceIcon(activeKind)} size={16} />
+            ) : (
+              triggerContent
             )}
+          </button>
+        </DropdownMenu.Trigger>
 
-            {/* Organization Workspace (if org admin, professor, or has org) */}
-            {(isOrgAdmin || isProfessor || myOrg) && (
-              <button
-                type="button"
-                onClick={() => switchWorkspace('org', ROUTES.ORG_DASHBOARD)}
-                className="w-full flex items-center justify-between px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5 truncate">
-                  <Icon name="organization" size={14} className="text-muted shrink-0" />
-                  <span className="truncate">{myOrg?.name ?? 'Organization Space'}</span>
-                </div>
-                {activeWorkspaceName === (myOrg?.name ?? 'Organization Space') && (
-                  <span className="text-xs font-bold text-emerald-500">✓</span>
-                )}
-              </button>
-            )}
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            side={variant === 'sidebar' && isCollapsed ? 'right' : 'bottom'}
+            align="start"
+            sideOffset={8}
+            onCloseAutoFocus={(event) => event.preventDefault()}
+            className="z-50 min-w-72 rounded-xl border border-border bg-card p-1.5 text-card-foreground shadow-xl"
+          >
+            <DropdownMenu.Label className="px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-muted">
+              Workspaces
+            </DropdownMenu.Label>
 
-            {/* Enrolled Class Cohort (if student) */}
-            {enrolledClass && (
-              <button
-                type="button"
-                onClick={() => switchWorkspace('class', ROUTES.STUDENT_MY_CLASS)}
-                className="w-full flex items-center justify-between px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer"
-              >
-                <div className="flex items-center gap-2.5 truncate">
-                  <Icon name="my-class" size={14} className="text-muted shrink-0" />
-                  <span className="truncate">{enrolledClass.className}</span>
-                </div>
-                {activeWorkspaceName === enrolledClass.className && (
-                  <span className="text-xs font-bold text-emerald-500">✓</span>
-                )}
-              </button>
-            )}
-          </div>
+            <WorkspaceItem
+              icon="dashboard"
+              label="Personal"
+              description="Your own learning space"
+              active={activeKind === 'personal'}
+              onSelect={() => switchTo(ROUTES.DASHBOARD)}
+            />
 
-          {/* Action Links */}
-          <div className="pt-1 border-t border-border">
-            <button
+            {showOrg ? (
+              <WorkspaceItem
+                icon="organization"
+                label={org?.name ?? 'Organization'}
+                description="Organization workspace"
+                active={activeKind === 'org'}
+                onSelect={() => switchTo(ROUTES.ORG_DASHBOARD)}
+              />
+            ) : null}
+
+            {myClasses.map((entry) => (
+              <WorkspaceItem
+                key={entry.classId}
+                icon="my-class"
+                label={entry.className}
+                description={entry.organizationName}
+                active={activeKind === 'class' && selectedClass?.classId === entry.classId}
+                onSelect={() => switchTo(`${ROUTES.STUDENT_MY_CLASS}?classId=${entry.classId}`)}
+              />
+            ))}
+
+            {canJoinClass || canCreateOrg ? (
+              <DropdownMenu.Separator className="my-1 h-px bg-border" />
+            ) : null}
+
+            {canJoinClass ? (
+              <WorkspaceAction
+                icon="my-class"
+                label="Join class with code"
+                onSelect={() => setIsJoinClassOpen(true)}
+              />
+            ) : null}
+
+            {canCreateOrg ? (
+              <WorkspaceAction
+                icon="organization"
+                label="Create organization"
+                onSelect={() => setIsCreateOrgOpen(true)}
+              />
+            ) : null}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
+
+      <Modal open={isJoinClassOpen} onClose={closeJoinClass} title="Join a class">
+        <form onSubmit={handleJoinClass} className="space-y-5">
+          <p className="text-xs leading-relaxed text-muted">
+            Enter the reusable class code shared by your instructor. Codes expire automatically.
+            Staff accounts cannot join a class as students.
+          </p>
+
+          <Input
+            label="Class code"
+            placeholder="e.g. A7K2M9QX"
+            value={classCode}
+            onChange={(event: ChangeEvent<HTMLInputElement>) =>
+              setClassCode(event.target.value.toUpperCase())
+            }
+            hint="6–12 letters and digits."
+            autoFocus
+            required
+          />
+
+          <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
+            <Button
               type="button"
-              onClick={() => {
-                setIsOpen(false);
-                setIsJoinCohortOpen(true);
-              }}
-              className="w-full flex items-center gap-2 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer text-muted hover:text-card-foreground"
+              variant="secondary"
+              size="sm"
+              onClick={closeJoinClass}
+              disabled={isJoining}
             >
-              <span className="font-bold">＋</span>
-              <span>Join Cohort with Code</span>
-            </button>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={isJoining}>
+              Join class
+            </Button>
+          </div>
+        </form>
+      </Modal>
 
-            <button
+      <Modal open={isCreateOrgOpen} onClose={closeCreateOrg} title="Create organization">
+        <form onSubmit={handleCreateOrg} className="space-y-4">
+          <p className="text-xs leading-relaxed text-muted">
+            An organization workspace lets you manage cohorts, invite instructors, and track learner
+            progress. An account can belong to one organization at a time.
+          </p>
+
+          <Input
+            label="Organization name"
+            placeholder="e.g. FAST NUCES Computer Science"
+            value={orgName}
+            onChange={(event) => {
+              const value = event.target.value;
+              setOrgName(value);
+              if (!slugTouched) {
+                setOrgSlug(slugify(value));
+              }
+            }}
+            required
+          />
+
+          <Input
+            label="Organization slug"
+            placeholder="e.g. fast-nuces"
+            value={orgSlug}
+            onChange={(event) => {
+              setSlugTouched(true);
+              setOrgSlug(slugify(event.target.value));
+            }}
+            hint="Used in URLs. Lowercase letters, numbers, and hyphens."
+            required
+          />
+
+          <Input
+            label="Industry or field (optional)"
+            placeholder="e.g. Higher education"
+            value={industry}
+            onChange={(event) => setIndustry(event.target.value)}
+          />
+
+          <Input
+            label="Description (optional)"
+            placeholder="A short description of your organization"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+          />
+
+          <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
+            <Button
               type="button"
-              onClick={() => {
-                setIsOpen(false);
-                setIsCreateOrgOpen(true);
-              }}
-              className="w-full flex items-center gap-2 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors text-left cursor-pointer text-muted hover:text-card-foreground"
+              variant="secondary"
+              size="sm"
+              onClick={closeCreateOrg}
+              disabled={createOrg.isPending}
             >
-              <span className="font-bold">＋</span>
-              <span>Create Organization</span>
-            </button>
+              Cancel
+            </Button>
+            <Button type="submit" variant="primary" size="sm" isLoading={createOrg.isPending}>
+              Create organization
+            </Button>
           </div>
-        </div>
-      )}
-
-      {/* ─── Modal 1: Join Cohort with Code ──────────────────────────────── */}
-      {isJoinCohortOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-md bg-card border border-border rounded-2xl p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-card-foreground tracking-tight">
-                Join a Class or Cohort
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsJoinCohortOpen(false)}
-                className="text-muted hover:text-card-foreground p-1 rounded-md"
-              >
-                <Icon name="x" size={16} />
-              </button>
-            </div>
-
-            <p className="text-xs text-muted leading-relaxed">
-              Enter the invitation code or token provided by your instructor or organization administrator.
-            </p>
-
-            <form onSubmit={handleJoinCohort} className="space-y-4">
-              <Input
-                label="Invitation Code / Token"
-                placeholder="e.g. cs401-fall2026-xyz"
-                value={cohortCode}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setCohortCode(e.target.value)}
-                autoFocus
-                required
-              />
-
-              <div className="flex items-center justify-end gap-3 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsJoinCohortOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit" variant="primary" size="sm">
-                  Join Cohort
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* ─── Modal 2: Create Organization ─────────────────────────────────── */}
-      {isCreateOrgOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-          <div className="w-full max-w-lg bg-card border border-border rounded-2xl p-6 shadow-xl space-y-5 animate-in fade-in zoom-in-95">
-            <div className="flex items-center justify-between">
-              <h3 className="text-base font-bold text-card-foreground tracking-tight">
-                Create Organization Workspace
-              </h3>
-              <button
-                type="button"
-                onClick={() => setIsCreateOrgOpen(false)}
-                className="text-muted hover:text-card-foreground p-1 rounded-md"
-              >
-                <Icon name="x" size={16} />
-              </button>
-            </div>
-
-            <p className="text-xs text-muted leading-relaxed">
-              Create an isolated organization workspace to manage cohorts, invite instructors, and track student progression.
-            </p>
-
-            <form onSubmit={handleCreateOrg} className="space-y-4">
-              <Input
-                label="Organization Name"
-                placeholder="e.g. FAST NUCES Computer Science"
-                value={orgName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  const val = e.target.value;
-                  setOrgName(val);
-                  if (!slugTouched) {
-                    setOrgSlug(slugify(val));
-                  }
-                }}
-                required
-              />
-
-              <Input
-                label="Organization Slug (URL identifier)"
-                placeholder="e.g. fast-nuces"
-                value={orgSlug}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => {
-                  setSlugTouched(true);
-                  setOrgSlug(slugify(e.target.value));
-                }}
-                required
-              />
-
-              <Input
-                label="Industry / Field (Optional)"
-                placeholder="e.g. Higher Education, Software Engineering"
-                value={industry}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setIndustry(e.target.value)}
-              />
-
-              <Input
-                label="Description (Optional)"
-                placeholder="Brief description of your school or company workspace"
-                value={description}
-                onChange={(e: ChangeEvent<HTMLInputElement>) => setDescription(e.target.value)}
-              />
-
-              <div className="flex items-center justify-end gap-3 pt-3 border-t border-border">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsCreateOrgOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                  disabled={createOrg.isPending}
-                >
-                  {createOrg.isPending ? 'Creating…' : 'Create Workspace'}
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-    </div>
+        </form>
+      </Modal>
+    </>
   );
 }
+
+export default WorkspaceSwitcher;

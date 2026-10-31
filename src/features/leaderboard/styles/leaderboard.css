@@ -2,7 +2,7 @@
 /* Dual-theme tokens only — zero hardcoded hex values. */
 
 .leaderboard-filter {
-  min-width: 220px;
+  min-width: 13.75rem;
 }
 
 .leaderboard-filter-row {
@@ -18,11 +18,11 @@
   gap: var(--space-3);
   margin: 0 0 var(--space-4);
   padding: var(--space-3) var(--space-4);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   background-color: var(--color-bg-raised);
   color: var(--color-text-secondary);
-  font-size: 14px;
+  font-size: var(--text-body-s);
 }
 
 .leaderboard-viewer-note strong {
@@ -42,7 +42,7 @@
 /* Ranked table */
 .leaderboard-table-wrap {
   overflow: hidden;
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   background-color: var(--color-bg-raised);
 }
@@ -50,22 +50,22 @@
 .leaderboard-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: var(--text-body-s);
 }
 
 .leaderboard-table th {
   text-align: left;
   color: var(--color-text-tertiary);
-  font-size: 12px;
+  font-size: var(--text-caption);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: var(--space-2) var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .leaderboard-table td {
   padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
   color: var(--color-text-primary);
   vertical-align: middle;
 }
@@ -75,7 +75,7 @@
 }
 
 .leaderboard-table__rank {
-  width: 72px;
+  width: 4.5rem;
   font-variant-numeric: tabular-nums;
   color: var(--color-text-secondary);
 }
@@ -87,7 +87,7 @@
 }
 
 .leaderboard-table__flag {
-  width: 80px;
+  width: 5rem;
 }
 
 .leaderboard-table__learner {
@@ -101,13 +101,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   border-radius: var(--radius-full);
   background-color: var(--color-bg-sunken);
-  border: 1px solid var(--color-border-subtle);
+  border: 0.0625rem solid var(--color-border-subtle);
   color: var(--color-text-secondary);
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 600;
 }
 
@@ -122,13 +122,13 @@
 
 .leaderboard-table__self-label {
   margin-left: var(--space-1);
-  font-size: 12px;
+  font-size: var(--text-caption);
   color: var(--color-accent-400);
   font-weight: 600;
 }
 
 .leaderboard-table--skeleton {
-  height: 420px;
+  height: 26.25rem;
   border-radius: var(--radius-md);
   background-color: var(--color-bg-sunken);
   animation: leaderboard-pulse var(--duration-base) ease-in-out infinite alternate;
@@ -150,22 +150,22 @@
   justify-content: center;
   gap: var(--space-2);
   padding: var(--space-12) var(--space-6);
-  border: 1px dashed var(--color-border-default);
+  border: 0.0625rem dashed var(--color-border-default);
   border-radius: var(--radius-md);
   text-align: center;
 }
 
 .leaderboard-empty__title {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--text-body-m);
   font-weight: 600;
   color: var(--color-text-primary);
 }
 
 .leaderboard-empty__description {
   margin: 0;
-  max-width: 420px;
-  font-size: 14px;
+  max-width: 26.25rem;
+  font-size: var(--text-body-s);
   line-height: 1.5;
   color: var(--color-text-secondary);
 }

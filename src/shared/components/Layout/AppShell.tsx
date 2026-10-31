@@ -1,12 +1,13 @@
 import { Outlet } from 'react-router-dom';
 import { AppChrome } from './AppChrome';
-import { useAuthStore } from '@/features/auth/stores/authStore';
-import { getDefaultRouteForUser } from '@/features/auth/utils/rbac';
 
+/**
+ * Personal/class shell. The logo target is derived from the active URL
+ * context by AppChrome, so it always points at the workspace being viewed.
+ */
 export function AppShell() {
-  const user = useAuthStore((state) => state.user);
   return (
-    <AppChrome logoTo={getDefaultRouteForUser(user)}>
+    <AppChrome>
       <Outlet />
     </AppChrome>
   );

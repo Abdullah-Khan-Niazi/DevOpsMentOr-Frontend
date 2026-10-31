@@ -49,7 +49,7 @@
   font-weight: 500;
   background-image: linear-gradient(var(--color-text-link), var(--color-text-link));
   background-position: 0 100%;
-  background-size: 0% 1px;
+  background-size: 0% 0.0625rem;
   background-repeat: no-repeat;
   transition:
     color var(--duration-fast) var(--ease-standard),
@@ -58,12 +58,12 @@
 
 .ssp-text-link:hover {
   color: var(--color-accent-400);
-  background-size: 100% 1px;
+  background-size: 100% 0.0625rem;
 }
 
 .ssp-text-link:focus-visible {
-  outline: 2px solid var(--color-accent-500);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--color-accent-500);
+  outline-offset: 0.125rem;
   border-radius: var(--radius-xs);
 }
 
@@ -95,7 +95,7 @@
   gap: var(--space-3);
   padding: var(--space-8);
   background-color: var(--color-bg-raised);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   transition:
     border-color var(--duration-base) var(--ease-decelerate),
@@ -104,7 +104,7 @@
 
 .ssp-card:hover {
   border-color: var(--color-border-strong);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 .ssp-card__title {
@@ -132,7 +132,7 @@
 /* ─── Closing CTA ────────────────────────────────────────────────────────── */
 .ssp-cta-section {
   padding: var(--space-24) 0 var(--space-32);
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
 }
 
 .ssp-cta-inner {

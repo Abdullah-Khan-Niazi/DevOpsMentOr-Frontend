@@ -3,6 +3,13 @@ import { persist } from 'zustand/middleware';
 import { AUTH_REFRESH_TOKEN_KEY, AUTH_TOKEN_KEY } from '@/shared/services';
 import type { AuthState, LoginResponse } from '../types';
 
+/**
+ * Legacy key written by the removed persisted workspace store. Removing it on
+ * every session end prevents a stale value from lingering in browsers that
+ * used the old build.
+ */
+const LEGACY_WORKSPACE_KEY = 'stardust_active_workspace';
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
@@ -21,9 +28,20 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       setUser: (user) => set({ user }),
+      setTokens: (tokens) => {
+        localStorage.setItem(AUTH_TOKEN_KEY, tokens.accessToken);
+        localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, tokens.refreshToken);
+        set({
+          accessToken: tokens.accessToken,
+          refreshToken: tokens.refreshToken,
+        });
+      },
       clearSession: () => {
         localStorage.removeItem(AUTH_TOKEN_KEY);
         localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
+        // Context is URL-derived now, but purge the old persisted value so a
+        // previous account's workspace name can never survive in storage.
+        localStorage.removeItem(LEGACY_WORKSPACE_KEY);
         set({
           user: null,
           accessToken: null,

@@ -43,7 +43,22 @@ export function useAdminOrganizationDetail(orgId: string | number | undefined, e
       }),
   });
 
-  return { query, update, assignAdmin };
+  const remove = useMutation({
+    mutationFn: () => adminOrgService.deleteOrg(orgId as string | number),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['admin', 'organizations'] });
+      void queryClient.invalidateQueries({
+        queryKey: QUERY_KEYS.admin.organizationDetail(orgId ?? ''),
+      });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
+    },
+  });
+
+  return { query, update, assignAdmin, remove };
 }
 
 export function useCreateOrganization() {
