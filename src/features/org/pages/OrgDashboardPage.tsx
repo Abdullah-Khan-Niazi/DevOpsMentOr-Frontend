@@ -29,24 +29,26 @@ export function OrgDashboardPage() {
 
   const { query } = useMyOrg();
   const classesQuery = useOrgClasses();
-  const orgUsersQuery = useOrgUsers();
-
-  const canInvite = useAuthStore((state) =>
-    Boolean(
-      state.user?.permissions?.some((p) =>
-        ['org:professors:invite', 'org:students:invite', 'org:manage'].includes(p),
-      ),
-    ),
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const canManageOrg = permissions.includes('org:manage');
+  const canCreateCohort = permissions.some((p) =>
+    ['org:manage', 'org:classes:manage', 'class:manage'].includes(p),
   );
-  const canViewSettings = useAuthStore((state) =>
-    (state.user?.permissions ?? []).includes('org:manage'),
-  );
+  const orgUsersQuery = useOrgUsers(canManageOrg);
 
-  // Synchronize active tab with URL query parameters
+  const canInvite = permissions.some((p) =>
+    ['org:professors:invite', 'org:students:invite', 'class:students:invite', 'org:manage'].includes(p),
+  );
+  const canViewSettings = canManageOrg;
+
+  // Synchronize active tab with URL query parameters. Professors do not receive
+  // the org-directory tab; only org admins may see organization members.
+  const tabs = canManageOrg ? TABS : TABS.slice(0, 1);
   const tabParam = searchParams.get('tab') || 'cohorts';
-  const activeTab = tabParam === 'members' ? 'members' : 'cohorts';
+  const activeTab = canManageOrg && tabParam === 'members' ? 'members' : 'cohorts';
 
   const setActiveTab = (tabId: string) => {
+    if (tabId === 'members' && !canManageOrg) return;
     setSearchParams(
       (prev) => {
         const next = new URLSearchParams(prev);
@@ -153,9 +155,11 @@ export function OrgDashboardPage() {
         title="Organization Dashboard"
         actions={
           <div className="flex items-center gap-2">
-            <Button variant="primary" size="sm" onClick={openCohortDrawer}>
-              + New Cohort
-            </Button>
+            {canCreateCohort ? (
+              <Button variant="primary" size="sm" onClick={openCohortDrawer}>
+                + New Cohort
+              </Button>
+            ) : null}
             {canInvite ? (
               <Button variant="secondary" size="sm" onClick={openInviteDrawer}>
                 Invite Users
@@ -220,28 +224,32 @@ export function OrgDashboardPage() {
         </div>
         <div
           onClick={() => {
+            if (!canManageOrg) return;
             setActiveTab('members');
             setMemberRoleFilter('org_student');
           }}
-          className="cursor-pointer"
+          className={canManageOrg ? 'cursor-pointer' : undefined}
         >
           <OrgKpiTile
             label="Enrolled Students"
             value={org.stats.studentCount}
             subtext="Active learners across all rosters"
+            interactive={canManageOrg}
           />
         </div>
         <div
           onClick={() => {
+            if (!canManageOrg) return;
             setActiveTab('members');
             setMemberRoleFilter('professor');
           }}
-          className="cursor-pointer"
+          className={canManageOrg ? 'cursor-pointer' : undefined}
         >
           <OrgKpiTile
             label="Students & Professors"
             value={org.stats.professorCount}
             subtext="Academic professors and cohort educators"
+            interactive={canManageOrg}
           />
         </div>
         <div>
@@ -259,7 +267,7 @@ export function OrgDashboardPage() {
       </div>
 
       {/* Workspace Navigation Tabs */}
-      <TabRow items={TABS} activeId={activeTab} onChange={setActiveTab} />
+      <TabRow items={tabs} activeId={activeTab} onChange={setActiveTab} />
 
       {/* ─── TAB 1: Cohorts Workspaces ─── */}
       {activeTab === 'cohorts' && (
@@ -370,8 +378,8 @@ export function OrgDashboardPage() {
         </Card>
       )}
 
-      {/* ─── TAB 2: Organization Members & Telemetry ─── */}
-      {activeTab === 'members' && (
+      {/* ─── TAB 2: Organization Members & Telemetry (org admins only) ─── */}
+      {canManageOrg && activeTab === 'members' && (
         <Card className="p-6 space-y-4">
           <div className="border-b border-border pb-4">
             <h3 className="text-base font-semibold text-card-foreground">Organization Members</h3>
@@ -525,8 +533,8 @@ export function OrgDashboardPage() {
       />
 
       <OrgMemberDetailDrawer
-        userId={selectedUserId}
-        isOpen={Boolean(selectedUserId)}
+        userId={canManageOrg ? selectedUserId : null}
+        isOpen={canManageOrg && Boolean(selectedUserId)}
         onClose={closeDrawer}
         onUpdate={() => {
           void orgUsersQuery.refetch();

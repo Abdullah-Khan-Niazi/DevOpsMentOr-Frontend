@@ -6,4 +6,5 @@ export {
   getRefreshToken,
   setAuthTokens,
   clearAuthTokens,
+  rotateAuthTokens,
 } from './apiClient';

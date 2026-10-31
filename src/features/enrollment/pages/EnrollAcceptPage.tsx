@@ -5,9 +5,7 @@ import { Button, Card, ErrorState, Input, LoadingState, toast } from '@/shared/c
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import type { AuthUser } from '@/features/auth/types';
-import { authService } from '@/features/auth/services';
-import { useWorkspaceStore } from '@/shared/stores';
+import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
 import { extractInvitationToken } from '@/features/auth/utils/invitation';
 import { useAcceptInvitation, useValidateInvitation } from '../hooks';
 
@@ -51,20 +49,16 @@ export function EnrollAcceptPage() {
         setAccepted(true);
 
         // Refresh identity so the new role (org_student / professor) shows up
-        // immediately in nav, switcher and route guards — best-effort.
-        try {
-          const freshMe = await authService.getMe();
-          useAuthStore.getState().setUser(freshMe as unknown as AuthUser);
-        } catch {
-          // Roles sync on the next session validation.
-        }
+        // immediately in nav, switcher and route guards. This also rotates the
+        // JWT because roles and permissions are embedded in it — updating the
+        // store alone would leave the API denying the new workspace.
+        await refreshAuthSession();
 
-        // Refetch context-scoped data and switch into the new workspace so
-        // the user lands in it instead of a stale personal context.
+        // Refetch context-scoped data so the success screen and the next
+        // workspace the user opens show the freshly granted scope.
         void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
-        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass });
-        const mode = preview.data?.kind === 'class' ? 'class' : 'org';
-        useWorkspaceStore.getState().setActiveWorkspace(mode);
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
       },
       onError: (error) => toast.error(error.message),
     });

@@ -27,6 +27,16 @@ export interface UpdateOrgPayload {
   billingEmail?: string | null;
 }
 
+export interface DeleteOrgResult {
+  organizationId: number;
+  name: string;
+  slug: string;
+  classCount: number;
+  affectedUserCount: number;
+  clearedScopes: number;
+  cleanedRoles: number;
+}
+
 /** Contract §07 ORG-01..ORG-05 platform-admin organization management. */
 export const adminOrgService = {
   /** ORG-01 */
@@ -69,6 +79,14 @@ export const adminOrgService = {
     const { data } = await apiClient.post<{ data: OrgAdminDetailDto }>(
       `/admin/organizations/${orgId}/admins`,
       { userId },
+    );
+    return unwrap(data);
+  },
+
+  /** Destructive organization deletion (platform administrators only). */
+  async deleteOrg(orgId: string | number): Promise<DeleteOrgResult> {
+    const { data } = await apiClient.delete<{ data: DeleteOrgResult }>(
+      `/admin/organizations/${orgId}`,
     );
     return unwrap(data);
   },

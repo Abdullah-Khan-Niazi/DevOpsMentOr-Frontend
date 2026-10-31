@@ -4,6 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
+  ConfirmDialog,
   DetailFormSkeleton,
   EmptyState,
   ErrorState,
@@ -32,8 +33,10 @@ interface OrgDetailFormProps {
   org: OrgAdminDetailDto;
   onSave: (payload: UpdateOrgPayload, helpers: FormHelpers) => void;
   onAssign: (userId: number, helpers: FormHelpers) => void;
+  onDelete: (helpers: FormHelpers) => void;
   savePending: boolean;
   assignPending: boolean;
+  deletePending: boolean;
 }
 
 const TABS: TabItem[] = [
@@ -48,8 +51,10 @@ export function OrgDetailForm({
   org,
   onSave,
   onAssign,
+  onDelete,
   savePending,
   assignPending,
+  deletePending,
 }: OrgDetailFormProps) {
   const queryClient = useQueryClient();
   const location = useLocation();
@@ -69,6 +74,7 @@ export function OrgDetailForm({
 
   const [activeTab, setActiveTabState] = useState(initialTab);
   const [selectedClassId, setSelectedClassIdState] = useState<number | null>(initialClassId);
+  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
 
   const setActiveTab = (tab: string) => {
     setActiveTabState(tab);
@@ -348,49 +354,73 @@ export function OrgDetailForm({
 
       {/* Tab 1: Organization Details */}
       {activeTab === 'details' ? (
-        <Card className="space-y-4 p-6 rounded-none">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
-            <div>
-              <label className="input-label">URL slug</label>
-              <div className="input-field bg-surface text-muted cursor-not-allowed select-all rounded-none">
-                {org.slug}
+        <div className="space-y-6">
+          <Card className="space-y-4 p-6 rounded-none">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
+              <div>
+                <label className="input-label">URL slug</label>
+                <div className="input-field bg-surface text-muted cursor-not-allowed select-all rounded-none">
+                  {org.slug}
+                </div>
+                <p className="mt-1 text-xs text-muted">Immutable tenant workspace identifier.</p>
               </div>
-              <p className="mt-1 text-xs text-muted">Immutable tenant workspace identifier.</p>
             </div>
-          </div>
-          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
+              <Input
+                label="Industry"
+                value={industry}
+                onChange={(e) => setIndustry(e.target.value)}
+              />
+              <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} />
+            </div>
             <Input
-              label="Industry"
-              value={industry}
-              onChange={(e) => setIndustry(e.target.value)}
+              label="Billing email"
+              type="email"
+              value={billingEmail}
+              onChange={(e) => setBillingEmail(e.target.value)}
             />
-            <Input label="Website" value={website} onChange={(e) => setWebsite(e.target.value)} />
-          </div>
-          <Input
-            label="Billing email"
-            type="email"
-            value={billingEmail}
-            onChange={(e) => setBillingEmail(e.target.value)}
-          />
-          <div>
-            <label htmlFor="org-admin-desc" className="input-label">
-              Description
-            </label>
-            <textarea
-              id="org-admin-desc"
-              rows={3}
-              className="input-field w-full rounded-none"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-            />
-          </div>
-          <div className="flex justify-end pt-4 border-t border-border">
-            <Button onClick={saveDetails} isLoading={savePending}>
-              Save details
-            </Button>
-          </div>
-        </Card>
+            <div>
+              <label htmlFor="org-admin-desc" className="input-label">
+                Description
+              </label>
+              <textarea
+                id="org-admin-desc"
+                rows={3}
+                className="input-field w-full rounded-none"
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+            </div>
+            <div className="flex justify-end pt-4 border-t border-border">
+              <Button onClick={saveDetails} isLoading={savePending}>
+                Save details
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="space-y-4 border-signal/40 bg-signal/5 p-6 rounded-none">
+            <div>
+              <h3 className="text-base font-semibold text-signal">Danger Zone</h3>
+              <p className="mt-0.5 text-xs text-muted">
+                Irreversible platform administration actions for this organization.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-card-foreground">Delete Organization</p>
+                <p className="text-xs text-muted">
+                  Permanently delete this organization, all of its classes, rosters, invitations and
+                  active join codes. Organization role assignments and scopes are cleaned up; this
+                  cannot be undone.
+                </p>
+              </div>
+              <Button variant="danger" size="sm" onClick={() => setIsDeleteOpen(true)}>
+                Delete Organization
+              </Button>
+            </div>
+          </Card>
+        </div>
       ) : null}
 
       {/* Tab 2: Leadership & Admins */}
@@ -582,12 +612,12 @@ export function OrgDetailForm({
                             >
                               {u.fullName ?? u.username}
                             </p>
-                            <p className="text-[0.6875rem] font-mono text-muted truncate">
+                            <p className="text-xs font-mono text-muted truncate">
                               @{u.username} · {u.email}
                             </p>
                           </div>
                           <div className="flex items-center gap-2.5 shrink-0 text-xs font-mono">
-                            <span className="text-[0.6875rem] text-muted">#{u.userId}</span>
+                            <span className="text-xs text-muted">#{u.userId}</span>
                             {isSelected ? (
                               <span className="text-accent font-bold text-xs">✓</span>
                             ) : (
@@ -1101,15 +1131,13 @@ export function OrgDetailForm({
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div className="border border-border p-3 bg-surface rounded-none">
-                        <span className="text-[0.625rem] uppercase text-muted">
-                          Completed Modules
-                        </span>
+                        <span className="text-xs uppercase text-muted">Completed Modules</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalModuleCompletions ?? 0}
                         </p>
                       </div>
                       <div className="border border-border p-3 bg-surface rounded-none">
-                        <span className="text-[0.625rem] uppercase text-muted">Completed Labs</span>
+                        <span className="text-xs uppercase text-muted">Completed Labs</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalLabCompletions ?? 0}
                         </p>
@@ -1175,8 +1203,8 @@ export function OrgDetailForm({
                           title={`${pt.date}: ${pt.activeUsers} active learner(s), ${pt.labCompletions} lab completion(s)`}
                         />
                       </div>
-                      <span className="mt-1 text-[0.625rem] font-mono text-muted">{pt.date}</span>
-                      <span className="text-[0.625rem] font-bold text-card-foreground tabular-nums">
+                      <span className="mt-1 text-xs font-mono text-muted">{pt.date}</span>
+                      <span className="text-xs font-bold text-card-foreground tabular-nums">
                         {pt.activeUsers}
                       </span>
                     </div>
@@ -1282,7 +1310,7 @@ export function OrgDetailForm({
                         Drag & drop a CSV file here, or{' '}
                         <span className="text-brand-600 underline">browse</span>
                       </div>
-                      <div className="text-[0.6875rem] text-muted mt-0.5">
+                      <div className="text-xs text-muted mt-0.5">
                         Accepts format:{' '}
                         <span className="font-mono text-card-foreground">email,role,fullName</span>{' '}
                         (roles: student, professor, admin) or plain list of emails.
@@ -1326,6 +1354,26 @@ export function OrgDetailForm({
           </div>
         </div>
       )}
+
+      {isDeleteOpen && (
+        <ConfirmDialog
+          open
+          title="Delete organization"
+          onCancel={() => setIsDeleteOpen(false)}
+          onConfirm={() =>
+            onDelete({
+              onSuccess: () => {
+                setIsDeleteOpen(false);
+                navigate(ROUTES.ADMIN_ORGANIZATIONS);
+              },
+              onError: (error) => toast.error(error.message ?? 'Failed to delete organization.'),
+            })
+          }
+          confirmLabel="Delete Organization"
+          isLoading={deletePending}
+          message={`Permanently delete "${org.name}"? All classes, rosters, invitations, active join codes and organization scopes will be removed. This cannot be undone.`}
+        />
+      )}
     </div>
   );
 }
@@ -1333,7 +1381,7 @@ export function OrgDetailForm({
 /** Platform admin org detail page (contract SCR-F3-02). */
 export function AdminOrganizationDetailPage() {
   const { orgId } = useParams<{ orgId: string }>();
-  const { query, update, assignAdmin } = useAdminOrganizationDetail(orgId);
+  const { query, update, assignAdmin, remove } = useAdminOrganizationDetail(orgId);
 
   if (query.isLoading || !query.data) {
     return <DetailFormSkeleton />;
@@ -1358,8 +1406,18 @@ export function AdminOrganizationDetailPage() {
       org={org}
       onSave={(payload, helpers) => update.mutate(payload, helpers)}
       onAssign={(userId, helpers) => assignAdmin.mutate(userId, helpers)}
+      onDelete={(helpers) =>
+        remove.mutate(undefined, {
+          onSuccess: (result) => {
+            toast.success(`${result.name} was deleted.`);
+            helpers.onSuccess();
+          },
+          onError: (error) => helpers.onError({ message: error.message }),
+        })
+      }
       savePending={update.isPending}
       assignPending={assignAdmin.isPending}
+      deletePending={remove.isPending}
     />
   );
 }

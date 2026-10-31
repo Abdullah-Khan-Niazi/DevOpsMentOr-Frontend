@@ -141,6 +141,20 @@ export interface StudentClassDto {
   enrolledAt: string;
 }
 
+/** Task 3 class-code self-enrollment result */
+export interface ClassJoinResultDto {
+  classId: number;
+  className: string;
+  organizationName: string;
+  alreadyEnrolled: boolean;
+}
+
+/** Task 3 reusable class join code */
+export interface ClassJoinCodeDto {
+  code: string;
+  expiresAt: string;
+}
+
 /** ORG-01 create org response (platform admin) */
 export interface OrgCreatedDto {
   organizationId: number;

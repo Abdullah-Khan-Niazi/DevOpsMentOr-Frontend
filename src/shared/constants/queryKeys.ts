@@ -50,7 +50,12 @@ export const QUERY_KEYS = {
   },
   enrollment: {
     validate: (token: string) => ['enroll', 'validate', token] as const,
-    myClass: ['student', 'my-class'] as const,
+    /** Prefix key for every enrolled-class query (also invalidates details). */
+    myClass: (classId?: string | number) =>
+      classId === undefined
+        ? (['student', 'my-class'] as const)
+        : (['student', 'my-class', String(classId)] as const),
+    myClasses: ['student', 'my-classes'] as const,
   },
   curriculum: {
     adminCourse: ['admin', 'curriculum', 'course'] as const,

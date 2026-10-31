@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button, toast } from '@/shared/components';
 import { cn } from '@/shared/utils';
+import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useOrgClasses, useOrgProfessors } from '../hooks';
 import { classService, orgService } from '../services';
 
@@ -12,6 +13,11 @@ interface OrgInviteDrawerProps {
   defaultClassId?: number;
 }
 
+/**
+ * Drawer wrapper: the form is mounted only while the drawer is open, so the
+ * draft and role/cohort presets are rebuilt from props on every opening
+ * without a state-resetting effect.
+ */
 export function OrgInviteDrawer({
   isOpen,
   onClose,
@@ -19,7 +25,29 @@ export function OrgInviteDrawer({
   defaultRole = 'student',
   defaultClassId,
 }: OrgInviteDrawerProps) {
-  const [role, setRole] = useState<'student' | 'professor'>(defaultRole);
+  if (!isOpen) return null;
+  return (
+    <OrgInviteDrawerForm
+      onClose={onClose}
+      onSuccess={onSuccess}
+      defaultRole={defaultRole}
+      defaultClassId={defaultClassId}
+    />
+  );
+}
+
+function OrgInviteDrawerForm({
+  onClose,
+  onSuccess,
+  defaultRole,
+  defaultClassId,
+}: Omit<OrgInviteDrawerProps, 'isOpen'> & { defaultRole: 'student' | 'professor' }) {
+  const permissions = useAuthStore((state) => state.user?.permissions ?? []);
+  const canInviteProfessors = permissions.includes('org:professors:invite');
+
+  const [role, setRole] = useState<'student' | 'professor'>(
+    defaultRole === 'professor' && !canInviteProfessors ? 'student' : defaultRole,
+  );
   const [selectedCohortId, setSelectedCohortId] = useState<string>(
     defaultClassId ? String(defaultClassId) : '',
   );
@@ -35,40 +63,25 @@ export function OrgInviteDrawer({
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const classesQuery = useOrgClasses();
-  const professorsQuery = useOrgProfessors();
+  // Faculty invitations require the org-level invite permission. Professors
+  // can still invite students to their own cohorts, but must never see the
+  // faculty option or fetch the professor directory.
+  const professorsQuery = useOrgProfessors(canInviteProfessors);
   const cohorts = classesQuery.data?.data ?? [];
-
-  // Reset or preset state when drawer opens
-  useEffect(() => {
-    if (isOpen) {
-      setRole(defaultRole);
-      setSelectedCohortId(
-        defaultClassId
-          ? String(defaultClassId)
-          : cohorts[0]?.classId
-            ? String(cohorts[0].classId)
-            : '',
-      );
-      setAssignedCohortIds(defaultClassId ? [defaultClassId] : []);
-      setEmailsInput('');
-      setEmailError(null);
-      setCohortError(null);
-      setCsvParsedCount(null);
-    }
-  }, [isOpen, defaultRole, defaultClassId, cohorts]);
+  // Cohorts load asynchronously; fall back to the first one until the user
+  // chooses explicitly so the required selector is never left empty.
+  const resolvedCohortId = selectedCohortId || (cohorts[0] ? String(cohorts[0].classId) : '');
 
   // Handle ESC key press
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (e.key === 'Escape') {
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen) return null;
+  }, [onClose]);
 
   const handleDownloadSampleCsv = () => {
     const content =
@@ -157,7 +170,12 @@ export function OrgInviteDrawer({
       hasError = true;
     }
 
-    if (role === 'student' && !selectedCohortId) {
+    if (role === 'professor' && !canInviteProfessors) {
+      toast.error('You do not have permission to invite faculty members.');
+      hasError = true;
+    }
+
+    if (role === 'student' && !resolvedCohortId) {
       setCohortError('Please select a target cohort for student enrollment.');
       hasError = true;
     }
@@ -211,7 +229,7 @@ export function OrgInviteDrawer({
           );
         }
       } else {
-        const res = await classService.inviteStudents(Number(selectedCohortId), { emails });
+        const res = await classService.inviteStudents(Number(resolvedCohortId), { emails });
         const invitedCount = res.invited?.length ?? 0;
         const skippedCount = res.skipped?.length ?? 0;
         if (skippedCount > 0) {
@@ -273,7 +291,12 @@ export function OrgInviteDrawer({
               {/* Role Selection (strictly student or professor - no admin) */}
               <div>
                 <label className="input-label">Member Role</label>
-                <div className="grid grid-cols-2 gap-2 mt-1">
+                <div
+                  className={cn(
+                    'grid gap-2 mt-1',
+                    canInviteProfessors ? 'grid-cols-2' : 'grid-cols-1',
+                  )}
+                >
                   <button
                     type="button"
                     onClick={() => setRole('student')}
@@ -286,17 +309,19 @@ export function OrgInviteDrawer({
                     <div className="text-sm font-medium">Student Learner</div>
                   </button>
 
-                  <button
-                    type="button"
-                    onClick={() => setRole('professor')}
-                    className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
-                      role === 'professor'
-                        ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
-                        : 'border-border bg-surface text-card-foreground hover:bg-surface/80'
-                    }`}
-                  >
-                    <div className="text-sm font-medium">Faculty / Professor</div>
-                  </button>
+                  {canInviteProfessors && (
+                    <button
+                      type="button"
+                      onClick={() => setRole('professor')}
+                      className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
+                        role === 'professor'
+                          ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold'
+                          : 'border-border bg-surface text-card-foreground hover:bg-surface/80'
+                      }`}
+                    >
+                      <div className="text-sm font-medium">Faculty / Professor</div>
+                    </button>
+                  )}
                 </div>
               </div>
 
@@ -319,7 +344,7 @@ export function OrgInviteDrawer({
                           cohortError &&
                             'border-signal outline-signal focus:border-signal bg-signal/5',
                         )}
-                        value={selectedCohortId}
+                        value={resolvedCohortId}
                         onChange={(e) => {
                           setSelectedCohortId(e.target.value);
                           if (cohortError) setCohortError(null);
@@ -376,7 +401,7 @@ export function OrgInviteDrawer({
                       {assignedCohortIds.length} selected
                     </span>
                   </div>
-                  <p className="text-[0.6875rem] text-muted mb-1.5 font-mono">
+                  <p className="text-xs text-muted mb-1.5 font-mono">
                     Optionally assign this professor to lead one or multiple cohorts.
                   </p>
                   {cohorts.length === 0 ? (
@@ -397,7 +422,7 @@ export function OrgInviteDrawer({
                             className="rounded-xs border-border"
                           />
                           <span className="font-medium text-card-foreground">{c.className}</span>
-                          <span className="text-muted font-mono text-[0.625rem]">
+                          <span className="text-muted font-mono text-xs">
                             ({c.studentCount}/{c.maxStudents} enrolled)
                           </span>
                         </label>
@@ -498,11 +523,9 @@ export function OrgInviteDrawer({
                     <p className="text-xs font-medium text-card-foreground">
                       Click to upload or drag &amp; drop CSV file
                     </p>
-                    <p className="text-[0.6875rem] text-muted font-mono">
-                      Format: email, role, fullName
-                    </p>
+                    <p className="text-xs text-muted font-mono">Format: email, role, fullName</p>
                     {csvParsedCount !== null && (
-                      <p className="text-[0.6875rem] font-mono text-brand-600 font-semibold mt-1">
+                      <p className="text-xs font-mono text-brand-600 font-semibold mt-1">
                         &check; {csvParsedCount} email(s) loaded from CSV
                       </p>
                     )}
@@ -530,7 +553,7 @@ export function OrgInviteDrawer({
               type="submit"
               form="org-invite-form"
               isLoading={isSubmitting}
-              disabled={role === 'student' && !selectedCohortId}
+              disabled={role === 'student' && !resolvedCohortId}
             >
               Send invitation
             </Button>

@@ -58,9 +58,9 @@ interface RefreshEnvelope {
 }
 
 // Single-flight refresh — all concurrent 401s wait on one rotation.
-let refreshPromise: Promise<string | null> | null = null;
+let refreshPromise: Promise<TokenPair | null> | null = null;
 
-async function rotateAccessToken(): Promise<string | null> {
+async function requestTokenRotation(): Promise<TokenPair | null> {
   const refreshToken = getRefreshToken();
   if (!refreshToken) {
     return null;
@@ -74,21 +74,38 @@ async function rotateAccessToken(): Promise<string | null> {
     );
     const tokens = data.data;
     setAuthTokens(tokens);
-    return tokens.accessToken;
+    return tokens;
   } catch {
     clearAuthTokens();
     return null;
   }
 }
 
+/**
+ * Rotate the token pair, sharing one in-flight request between the 401
+ * interceptor and explicit post-mutation refreshes. Callers that hold auth
+ * state must also persist the returned pair in the auth store.
+ */
+export function rotateAuthTokens(): Promise<TokenPair | null> {
+  if (!refreshPromise) {
+    refreshPromise = requestTokenRotation().finally(() => {
+      refreshPromise = null;
+    });
+  }
+  return refreshPromise;
+}
+
 function toApiError(error: AxiosError<ApiError>): ApiError {
-  const backendErrors = error.response?.data?.errors as Array<{ path: string; message: string }> | undefined;
-  const detailMsg = Array.isArray(backendErrors) && backendErrors.length > 0
-    ? backendErrors.map((e) => e.message).join(' ')
-    : undefined;
+  const backendErrors = error.response?.data?.errors as
+    Array<{ path: string; message: string }> | undefined;
+  const detailMsg =
+    Array.isArray(backendErrors) && backendErrors.length > 0
+      ? backendErrors.map((e) => e.message).join(' ')
+      : undefined;
 
   return {
-    message: detailMsg ?? error.response?.data?.message ?? error.message ?? 'An unexpected error occurred',
+    message:
+      detailMsg ?? error.response?.data?.message ?? error.message ?? 'An unexpected error occurred',
     statusCode: error.response?.status,
     errors: error.response?.data?.errors,
   };
@@ -103,16 +120,10 @@ apiClient.interceptors.response.use(
     if (error.response?.status === 401 && config && !config._retried && !isRefreshRequest) {
       config._retried = true;
 
-      if (!refreshPromise) {
-        refreshPromise = rotateAccessToken().finally(() => {
-          refreshPromise = null;
-        });
-      }
+      const tokens = await rotateAuthTokens();
 
-      const accessToken = await refreshPromise;
-
-      if (accessToken) {
-        config.headers.Authorization = `Bearer ${accessToken}`;
+      if (tokens) {
+        config.headers.Authorization = `Bearer ${tokens.accessToken}`;
         return apiClient(config);
       }
     }

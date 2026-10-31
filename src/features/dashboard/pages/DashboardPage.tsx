@@ -4,7 +4,6 @@ import { Button, ErrorState, PageHeader } from '@/shared/components';
 import { Icon } from '@/shared/components/Icon';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
-import { useWorkspaceStore } from '@/shared/stores';
 import {
   useActivityHistory,
   useContinueLearning,
@@ -18,6 +17,7 @@ import {
 import { useCourseOverview } from '@/features/curriculum/hooks';
 import { useLabCatalog } from '@/features/labs/hooks';
 import { AiMentorDrawer } from '@/features/labs/components/AiMentorDrawer';
+import { useMyClass } from '@/features/enrollment/hooks';
 import { StatsGrid } from '../components';
 import { useDashboardStats } from '../hooks';
 
@@ -80,6 +80,9 @@ type DifficultyFilter = 'all' | 'beginner' | 'intermediate' | 'advanced';
 function LearnerDashboard() {
   const navigate = useNavigate();
   const user = useAuthStore((state) => state.user);
+  const roles = new Set(user?.roles ?? []);
+  const myClassQuery = useMyClass(roles.has('org_student'));
+  const enrolledClass = myClassQuery.data ?? null;
 
   const course = useCourseProgress();
   const modules = useModulesProgress();
@@ -142,22 +145,6 @@ function LearnerDashboard() {
     void courseOverview.refetch();
     void labCatalog.refetch();
   };
-
-  if (isError) {
-    return (
-      <div className="space-y-6 w-full min-w-0 max-w-full">
-        <PageHeader title="Dashboard" />
-        <ErrorState
-          message={
-            course.error?.message ??
-            continueLearning.error?.message ??
-            'Unable to load your progress.'
-          }
-          onRetry={retry}
-        />
-      </div>
-    );
-  }
 
   const pointer = continueLearning.data ?? null;
   const progressPct = pointer?.progressPct ?? course.data?.progressPercentage ?? 0;
@@ -257,6 +244,22 @@ function LearnerDashboard() {
     }));
   }, [modules.data, progressPct, totalPoints]);
 
+  if (isError) {
+    return (
+      <div className="space-y-6 w-full min-w-0 max-w-full">
+        <PageHeader title="Dashboard" />
+        <ErrorState
+          message={
+            course.error?.message ??
+            continueLearning.error?.message ??
+            'Unable to load your progress.'
+          }
+          onRetry={retry}
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-8 w-full min-w-0 max-w-full pb-16 select-none">
       {/* ─── 1. TOP HEADER & METRICS ROW (MATCHING d.webp) ────────────────── */}
@@ -327,6 +330,27 @@ function LearnerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* ─── Class context: one learner dashboard, no separate class workspace ─ */}
+      {enrolledClass && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-2xs">
+          <div className="flex items-center gap-3 min-w-0">
+            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+              <Icon name="my-class" size={18} />
+            </div>
+            <div className="min-w-0">
+              <p className="text-xs font-mono uppercase tracking-wider text-muted">My class</p>
+              <p className="text-sm font-bold text-card-foreground truncate">
+                {enrolledClass.className}
+              </p>
+              <p className="text-xs text-muted truncate">{enrolledClass.organizationName}</p>
+            </div>
+          </div>
+          <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.STUDENT_MY_CLASS)}>
+            View class
+          </Button>
+        </div>
+      )}
 
       {/* ─── 2. MAIN 2-COLUMN LAYOUT (LEFT 65%, RIGHT 35%) ─────────────────── */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
@@ -650,28 +674,15 @@ function AdminStatsDashboard() {
 
 export default function DashboardPage() {
   const user = useAuthStore((state) => state.user);
-  // Reactive workspace context: a switch elsewhere updates this page without
-  // a reload or remount.
-  const activeWorkspace = useWorkspaceStore((state) => state.activeWorkspace);
 
   if (user) {
     const roles = new Set(user.roles ?? []);
     const permissions = new Set(user.permissions ?? []);
 
-    // If user has explicitly selected Personal Space via the context switcher,
-    // let them stay and learn in the LearnerDashboard rather than auto-bouncing them!
-    if (activeWorkspace !== 'personal') {
-      if (roles.has('platform_admin') || permissions.has('platform.admin.access')) {
-        return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
-      }
-      if (
-        roles.has('org_admin') ||
-        permissions.has('org:manage') ||
-        roles.has('professor') ||
-        permissions.has('progress.org.read')
-      ) {
-        return <Navigate to={ROUTES.ORG_DASHBOARD} replace />;
-      }
+    // Platform administrators have a dedicated surface. Everyone else —
+    // including org admins and professors — may use their personal space.
+    if (roles.has('platform_admin') || permissions.has('platform.admin.access')) {
+      return <Navigate to={ROUTES.ADMIN_DASHBOARD} replace />;
     }
   }
 

@@ -134,3 +134,28 @@ export function useResendInvitation(classId: string | number) {
     },
   });
 }
+
+/** Task 3: mint a reusable join code for the class. */
+export function useGenerateJoinCode(classId: string | number) {
+  return useMutation({
+    mutationFn: () => classService.generateJoinCode(classId),
+  });
+}
+
+export function useDeleteClass(classId: string | number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: () => classService.deleteClass(classId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classDetail(classId) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.roster(classId) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.invitations(classId) });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+      void queryClient.invalidateQueries({ queryKey: ['org', 'analytics'] });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
+    },
+  });
+}

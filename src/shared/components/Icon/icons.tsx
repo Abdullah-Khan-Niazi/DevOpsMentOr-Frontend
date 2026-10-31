@@ -25,6 +25,8 @@ export const iconNames = [
   'logout',
   'chevrons-left',
   'chevrons-right',
+  'chevron-down',
+  'check',
   'bell',
   'megaphone',
   'calendar',
@@ -157,6 +159,8 @@ export const ICONS: Record<IconName, ReactNode> = {
       <path d="M6 6l6 6-6 6" />
     </>
   ),
+  'chevron-down': <path d="M6 9l6 6 6-6" />,
+  check: <path d="M4.5 12.5l5 5 10-11" />,
   award: (
     <>
       <circle cx="12" cy="9" r="5" />

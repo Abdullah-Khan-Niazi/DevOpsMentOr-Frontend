@@ -33,6 +33,19 @@
   box-shadow: var(--shadow-xs);
 }
 
+/* Match the public site header: same max width, gutter and height. */
+.app-chrome__topbar-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: var(--container-max);
+  height: var(--space-16);
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
 .app-chrome__topbar .logo--full {
   display: inline-flex;
   align-items: center;

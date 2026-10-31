@@ -10,4 +10,6 @@ export {
   useResendInvitation,
   useWithdrawStudent,
   useEnrollStudent,
+  useGenerateJoinCode,
+  useDeleteClass,
 } from './useClasses';

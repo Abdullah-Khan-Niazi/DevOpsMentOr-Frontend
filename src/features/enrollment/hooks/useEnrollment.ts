@@ -17,10 +17,20 @@ export function useAcceptInvitation() {
   });
 }
 
-export function useMyClass() {
+export function useMyClass(enabled = true, classId?: string | number) {
   return useQuery({
-    queryKey: QUERY_KEYS.enrollment.myClass,
-    queryFn: () => enrollmentService.getMyClass(),
+    queryKey: QUERY_KEYS.enrollment.myClass(classId),
+    queryFn: () => enrollmentService.getMyClass(classId),
     retry: false,
+    enabled,
+  });
+}
+
+export function useMyClasses(enabled = true) {
+  return useQuery({
+    queryKey: QUERY_KEYS.enrollment.myClasses,
+    queryFn: () => enrollmentService.listMyClasses(),
+    retry: false,
+    enabled,
   });
 }
