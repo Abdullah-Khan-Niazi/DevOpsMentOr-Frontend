@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { ROUTES } from '@/shared/constants';
 import { useScrollReveal } from './hooks';
 import { SiteLayout } from './components/SiteLayout';
 import { Card } from '@/shared/components';
@@ -88,13 +87,6 @@ export default function ContactPage() {
               <h1 id="contact-headline" className="contact-headline">
                 Contact
               </h1>
-              <p className="contact-subhead">
-                For universities and programs,{' '}
-                <Link to={ROUTES.FOR_INSTITUTIONS} className="contact-subhead-link">
-                  see For Institutions
-                </Link>
-                .
-              </p>
             </div>
           </div>
         </section>

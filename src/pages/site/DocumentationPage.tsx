@@ -18,18 +18,6 @@ const GUIDES = [
     label: 'Read the curriculum',
   },
   {
-    title: 'Student labs',
-    body: 'Sessions, environments, and the live assertion pipeline that grades every lab.',
-    to: ROUTES.HOW_IT_WORKS,
-    label: 'How labs work',
-  },
-  {
-    title: 'Instructor console',
-    body: 'Cohorts, grading, and lab authoring for university programs.',
-    to: ROUTES.INSTRUCTOR_TOOLS,
-    label: 'Instructor tools',
-  },
-  {
     title: 'Security & compliance',
     body: 'Architecture, environment isolation, and data handling.',
     to: ROUTES.SECURITY_TRUST,

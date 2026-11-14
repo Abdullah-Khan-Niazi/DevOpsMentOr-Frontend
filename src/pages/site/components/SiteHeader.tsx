@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Button } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { SiteLogo } from '@/shared/components/Logo';
@@ -14,37 +14,25 @@ import './SiteHeader.css';
 // Mobile (<768px): logo left, 3-line icon button right, slide-in panel (solid --color-bg-base,
 //                  no blur, 48px min tap targets).
 
-const platformItems = [
-  {
-    label: 'Student Labs',
-    description: 'Browser-based container and Kubernetes labs',
-    href: ROUTES.HOW_IT_WORKS,
-  },
-  {
-    label: 'Instructor Tools',
-    description: 'Cohort dashboards and assertion analytics',
-    href: ROUTES.FOR_INSTITUTIONS,
-  },
-  {
-    label: 'Institution & Admin',
-    description: 'Multi-tenant namespace management',
-    href: ROUTES.FOR_INSTITUTIONS,
-  },
-];
-
 const navItems = [
+  { label: 'Home', href: ROUTES.HOME },
   { label: 'Curriculum', href: ROUTES.CURRICULUM },
   { label: 'Pricing', href: ROUTES.PRICING },
   { label: 'About', href: ROUTES.ABOUT },
 ];
 
 export function SiteHeader() {
+  const location = useLocation();
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
-  const [platformOpen, setPlatformOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const lastScrollY = useRef(0);
   const ticking = useRef(false);
+
+  const isActiveItem = (href: string) =>
+    href === ROUTES.HOME
+      ? location.pathname === ROUTES.HOME
+      : location.pathname === href || location.pathname.startsWith(`${href}/`);
 
   useEffect(() => {
     function handleScroll() {
@@ -67,19 +55,6 @@ export function SiteHeader() {
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  // Close dropdown on outside click
-  useEffect(() => {
-    if (!platformOpen) return;
-    function handleOutside(e: MouseEvent) {
-      const target = e.target as Element;
-      if (!target.closest('.site-header__dropdown-wrapper')) {
-        setPlatformOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleOutside);
-    return () => document.removeEventListener('mousedown', handleOutside);
-  }, [platformOpen]);
 
   // Lock body scroll while the mobile panel is open
   useEffect(() => {
@@ -112,43 +87,19 @@ export function SiteHeader() {
 
         {/* Desktop nav — true horizontal center */}
         <nav className="site-header__nav" aria-label="Main navigation">
-          {/* Platform dropdown */}
-          <div className="site-header__dropdown-wrapper">
-            <button
-              id="nav-platform"
-              className="site-header__nav-item"
-              aria-haspopup="true"
-              aria-expanded={platformOpen}
-              onClick={() => setPlatformOpen((v) => !v)}
-            >
-              Platform
-              <span className="site-header__caret" aria-hidden="true">
-                ▾
-              </span>
-            </button>
-            {platformOpen && (
-              <div className="site-header__dropdown" role="menu" aria-labelledby="nav-platform">
-                {platformItems.map((item) => (
-                  <Link
-                    key={item.label}
-                    to={item.href}
-                    className="site-header__dropdown-item"
-                    role="menuitem"
-                    onClick={() => setPlatformOpen(false)}
-                  >
-                    <span className="site-header__dropdown-label">{item.label}</span>
-                    <span className="site-header__dropdown-desc">{item.description}</span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
-
-          {navItems.map((item) => (
-            <Link key={item.label} to={item.href} className="site-header__nav-item">
-              {item.label}
-            </Link>
-          ))}
+          {navItems.map((item) => {
+            const active = isActiveItem(item.href);
+            return (
+              <Link
+                key={item.label}
+                to={item.href}
+                className={`site-header__nav-item ${active ? 'site-header__nav-item--active' : ''}`}
+                aria-current={active ? 'page' : undefined}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         {/* Auth CTAs */}
@@ -200,37 +151,20 @@ export function SiteHeader() {
           </div>
           <nav className="site-mobile-menu__nav" aria-label="Mobile navigation">
             <div className="site-mobile-menu__group">
-              <p className="site-mobile-menu__group-label">Platform</p>
-              {platformItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="site-mobile-menu__link"
-                  onClick={closeMobile}
-                >
-                  {item.label}
-                  <span className="site-mobile-menu__desc">{item.description}</span>
-                </Link>
-              ))}
-            </div>
-            <div className="site-mobile-menu__group">
-              {navItems.map((item) => (
-                <Link
-                  key={item.label}
-                  to={item.href}
-                  className="site-mobile-menu__link"
-                  onClick={closeMobile}
-                >
-                  {item.label}
-                </Link>
-              ))}
-              <Link
-                to={ROUTES.HOW_IT_WORKS}
-                className="site-mobile-menu__link"
-                onClick={closeMobile}
-              >
-                How It Works
-              </Link>
+              {navItems.map((item) => {
+                const active = isActiveItem(item.href);
+                return (
+                  <Link
+                    key={item.label}
+                    to={item.href}
+                    className={`site-mobile-menu__link ${active ? 'site-mobile-menu__link--active' : ''}`}
+                    aria-current={active ? 'page' : undefined}
+                    onClick={closeMobile}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
             </div>
           </nav>
           <div className="site-mobile-menu__footer flex flex-col gap-2">

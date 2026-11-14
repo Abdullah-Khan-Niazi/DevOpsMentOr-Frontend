@@ -327,7 +327,6 @@
 .hp-hero__asset {
   position: absolute;
   transform-origin: center center;
-  will-change: transform, filter;
   cursor: pointer;
   pointer-events: auto;
   user-select: none;
@@ -341,6 +340,8 @@
   width: 100%;
   height: auto;
   pointer-events: none;
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
   transition:
     transform 220ms cubic-bezier(0.16, 1, 0.3, 1),
     filter 220ms ease;
@@ -602,7 +603,7 @@
 /* ─── Continuous Ambient Floating (Mid-Air Levitation) ────────────────── */
 
 .hp-hero__drift {
-  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .hp-hero__drift--cloud-3 {
@@ -1739,6 +1740,7 @@
   height: 100%;
   overflow: visible;
   pointer-events: none;
+  shape-rendering: geometricPrecision;
 }
 
 .hp-road__bed {
@@ -1815,11 +1817,12 @@
   width: 5rem;
   height: 5rem;
   object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
   filter: drop-shadow(0 0.625rem 1.125rem color-mix(in srgb, var(--ink) 16%, transparent));
   transition:
     transform var(--duration-base) var(--ease-standard),
     filter var(--duration-base) var(--ease-standard);
-  will-change: transform, filter;
   cursor: pointer;
   pointer-events: auto;
 }
@@ -2028,6 +2031,8 @@
     width: 2.5rem;
     height: 2.5rem;
     object-fit: contain;
+    image-rendering: -webkit-optimize-contrast;
+    backface-visibility: hidden;
     flex-shrink: 0;
   }
 

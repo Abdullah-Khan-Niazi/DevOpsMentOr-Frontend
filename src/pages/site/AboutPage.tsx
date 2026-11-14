@@ -1,8 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { ROUTES } from '@/shared/constants/routes';
 import { SiteLayout } from './components/SiteLayout';
-import { Button } from '@/shared/components';
 import { useScrollReveal } from './hooks';
 import './AboutPage.css';
 
@@ -96,7 +93,6 @@ function TeamRow({ member, flipped }: { member: TeamMember; flipped: boolean }) 
 export default function AboutPage() {
   const openingRevealRef = useScrollReveal<HTMLDivElement>();
   const contextRevealRef = useScrollReveal<HTMLDivElement>();
-  const ctaRevealRef = useScrollReveal<HTMLDivElement>();
 
   return (
     <SiteLayout>
@@ -143,23 +139,6 @@ export default function AboutPage() {
                 A final year project at FAST-NUCES, Department of Data Science &amp; Artificial
                 Intelligence, supervised by Dr. Anwar Shah.
               </p>
-            </div>
-          </div>
-        </section>
-
-        {/* ── §5.4.4 Closing — soft CTA to How It Works ───────────────── */}
-        <section className="abt-cta site-section--void" aria-label="Next step">
-          <div className="site-container abt-cta-inner">
-            <div className="site-reveal" ref={ctaRevealRef}>
-              <Link
-                to={ROUTES.HOW_IT_WORKS}
-                className="abt-cta-link"
-                aria-label="See what we built — opens how it works page"
-              >
-                <Button variant="primary" withArrow size="lg">
-                  See what we built
-                </Button>
-              </Link>
             </div>
           </div>
         </section>

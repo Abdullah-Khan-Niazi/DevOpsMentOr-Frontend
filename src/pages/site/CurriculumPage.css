@@ -586,11 +586,12 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
   width: 4.5rem;
   height: 4.5rem;
   object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
   filter: drop-shadow(0 0.5rem 0.875rem color-mix(in srgb, var(--ink) 8%, transparent));
   transition:
     transform var(--duration-base) var(--ease-standard),
     filter var(--duration-base) var(--ease-standard);
-  will-change: transform, filter;
   flex-shrink: 0;
 }
 
@@ -674,11 +675,12 @@ body:has(.cur-slideshow)::-webkit-scrollbar {
   width: clamp(8.125rem, 17vh, 10.5rem);
   height: clamp(8.125rem, 17vh, 10.5rem);
   object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  backface-visibility: hidden;
   filter: drop-shadow(0 1rem 1.75rem color-mix(in srgb, var(--ink) 14%, transparent));
   transition:
     transform var(--duration-base) var(--ease-standard),
     filter var(--duration-base) var(--ease-standard);
-  will-change: transform, filter;
   cursor: pointer;
 }
 
