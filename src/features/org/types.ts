@@ -65,6 +65,40 @@ export interface ClassDto {
 /** CLS-03 class detail */
 export type ClassDetailDto = ClassDto;
 
+/** chaos sprint: cohort course assignment (staff view). */
+export interface ClassAssignmentDto {
+  assignmentId: number;
+  classId: number;
+  courseId: number;
+  courseTitle: string;
+  courseSlug: string;
+  courseIsPremium: boolean;
+  assignedBy: number;
+  assignedAt: string;
+  dueDate: string | null;
+  isMandatory: boolean;
+}
+
+export type AssignmentDeadlineState =
+  'completed' | 'overdue' | 'due_soon' | 'on_track' | 'no_deadline';
+
+export interface ClassAssignmentWithStatsDto extends ClassAssignmentDto {
+  rosterCount: number;
+  completedCount: number;
+  overdueCount: number;
+  state: AssignmentDeadlineState;
+}
+
+/** Course catalog row used by the assignment picker (curriculum read model). */
+export interface CourseCatalogItemDto {
+  courseId: number;
+  title: string;
+  slug: string;
+  isPremium: boolean;
+  totalLessons: number;
+  totalQuizzes: number;
+}
+
 /** CLS-06 roster row */
 export interface RosterStudentDto {
   userId: number;

@@ -41,9 +41,10 @@ import {
   OrgInviteDrawer,
   ProfessorAssignmentSelector,
 } from '../components';
+import { ClassAssignmentsPanel } from '../components/ClassAssignmentsPanel';
 import type { ClassDetailDto, ClassJoinCodeDto, InvitationDto } from '../types';
 
-type ClassTab = 'overview' | 'students' | 'progress' | 'invitations' | 'settings';
+type ClassTab = 'overview' | 'students' | 'progress' | 'assignments' | 'invitations' | 'settings';
 const ROSTER_PAGE_SIZE = 20;
 const INVITES_PAGE_SIZE = 20;
 
@@ -409,6 +410,7 @@ export function OrgClassDetailPage() {
           { id: 'overview', label: 'Overview' },
           { id: 'students', label: 'Students' },
           { id: 'progress', label: 'Progress' },
+          { id: 'assignments', label: 'Assignments' },
           { id: 'invitations', label: 'Invitations' },
           { id: 'settings', label: 'Settings' },
         ]}
@@ -658,6 +660,11 @@ export function OrgClassDetailPage() {
       )}
 
       {/* ─── Invitations Tab ─── */}
+      {/* ─── Assignments Tab (chaos sprint) ─── */}
+      {activeTab === 'assignments' && (
+        <ClassAssignmentsPanel classId={classId} canManage={canManage} />
+      )}
+
       {activeTab === 'invitations' && (
         <div className="space-y-6">
           <Card className="p-6 space-y-5">

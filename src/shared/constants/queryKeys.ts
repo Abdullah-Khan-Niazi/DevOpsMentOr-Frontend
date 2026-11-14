@@ -39,6 +39,8 @@ export const QUERY_KEYS = {
   },
   org: {
     me: ['org', 'me'] as const,
+    /** Multi-org: every active membership for the signed-in user. */
+    memberships: ['org', 'my-memberships'] as const,
     professors: ['org', 'professors'] as const,
     classes: ['org', 'classes'] as const,
     classDetail: (classId: string | number) => ['org', 'classes', String(classId)] as const,

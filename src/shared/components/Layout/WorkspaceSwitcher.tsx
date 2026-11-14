@@ -7,7 +7,12 @@ import { Icon, type IconName } from '@/shared/components/Icon';
 import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
-import { useMyOrg, useCreateOrg } from '@/features/org/hooks/useOrg';
+import {
+  useMyOrg,
+  useMyMemberships,
+  useSwitchOrg,
+  useCreateOrg,
+} from '@/features/org/hooks/useOrg';
 import { useMyClasses } from '@/features/enrollment/hooks';
 import { enrollmentService } from '@/features/enrollment/services';
 import { cn } from '@/shared/utils';
@@ -137,10 +142,13 @@ export function WorkspaceSwitcher({
   // can never switch to. Learners can belong to several classes, so the full
   // list is the switcher's source of truth.
   const orgQuery = useMyOrg(staff).query;
+  const membershipsQuery = useMyMemberships(!platformAdmin);
+  const switchOrg = useSwitchOrg();
   const classQuery = useMyClasses(student);
   const createOrg = useCreateOrg();
 
   const org = orgQuery.data ?? null;
+  const memberships = membershipsQuery.data ?? [];
   const myClasses = classQuery.data ?? [];
   const requestedClassId = Number(new URLSearchParams(location.search).get('classId'));
   const selectedClass =
@@ -150,8 +158,10 @@ export function WorkspaceSwitcher({
   // Learners and individual accounts may always join another class. Staff and
   // platform admins cannot redeem a student code.
   const canJoinClass = !platformAdmin && !staff;
-  const canCreateOrg = !platformAdmin && !staff && !student;
-  const showOrg = staff && Boolean(org);
+  // Multi-org: a student/professor of another org may still found their own
+  // (the server blocks only users who already administer an organization).
+  const canCreateOrg = !platformAdmin && !staff;
+  const showOrg = staff && (Boolean(org) || memberships.length > 0);
 
   const closeCreateOrg = useCallback(() => setIsCreateOrgOpen(false), []);
   const closeJoinClass = useCallback(() => setIsJoinClassOpen(false), []);
@@ -188,6 +198,25 @@ export function WorkspaceSwitcher({
     void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
     onAfterSwitch?.();
     navigate(route);
+  };
+
+  /**
+   * Multi-org switch: the backend validates the membership and repoints the
+   * active scope; org guards then resolve the per-org role from
+   * `organization_memberships`, so no privilege can leak across tenants.
+   */
+  const handleSwitchOrg = (organizationId: number) => {
+    if (org?.organizationId === organizationId) {
+      switchTo(ROUTES.ORG_DASHBOARD);
+      return;
+    }
+    switchOrg.mutate(organizationId, {
+      onSuccess: (result) => {
+        toast.success(`Switched to ${result.organizationName}.`);
+        switchTo(ROUTES.ORG_DASHBOARD);
+      },
+      onError: (error) => toast.error(error.message),
+    });
   };
 
   const refreshIdentity = async (): Promise<boolean> => {
@@ -332,15 +361,39 @@ export function WorkspaceSwitcher({
               onSelect={() => switchTo(ROUTES.DASHBOARD)}
             />
 
-            {showOrg ? (
-              <WorkspaceItem
-                icon="organization"
-                label={org?.name ?? 'Organization'}
-                description="Organization workspace"
-                active={activeKind === 'org'}
-                onSelect={() => switchTo(ROUTES.ORG_DASHBOARD)}
-              />
-            ) : null}
+            {showOrg
+              ? memberships.length > 0
+                ? memberships.map((membership) => (
+                    <WorkspaceItem
+                      key={membership.organizationId}
+                      icon="organization"
+                      label={membership.organizationName}
+                      description={
+                        membership.role === 'org_admin'
+                          ? 'Organization admin'
+                          : membership.role === 'professor'
+                            ? 'Professor workspace'
+                            : 'Organization workspace'
+                      }
+                      active={
+                        activeKind === 'org' && org?.organizationId === membership.organizationId
+                      }
+                      onSelect={() => handleSwitchOrg(membership.organizationId)}
+                    />
+                  ))
+                : org
+                  ? [
+                      <WorkspaceItem
+                        key={org.organizationId}
+                        icon="organization"
+                        label={org.name}
+                        description="Organization workspace"
+                        active={activeKind === 'org'}
+                        onSelect={() => switchTo(ROUTES.ORG_DASHBOARD)}
+                      />,
+                    ]
+                  : null
+              : null}
 
             {myClasses.map((entry) => (
               <WorkspaceItem

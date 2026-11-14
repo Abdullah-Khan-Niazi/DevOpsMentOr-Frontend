@@ -3,7 +3,7 @@ import './Card.css';
 
 // Global Card primitive.
 // Surface: --color-bg-raised; Border: 1px solid --color-border-default;
-// Radius: --radius-md (10px); Padding: --space-6/--space-8.
+// Radius: --radius-md (8px); Padding: --space-6/--space-8.
 // Interactive hover: translateY(-2px), border brightens, --shadow-md.
 
 export interface CardProps extends HTMLAttributes<HTMLDivElement> {

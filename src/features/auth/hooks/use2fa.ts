@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import type { ApiError } from '@/shared/types';
 import { authService } from '../services';
-import type { MessageResponse, Verify2faPayload } from '../types';
+import type { Disable2faPayload, MessageResponse, Verify2faPayload } from '../types';
 
 export function use2fa() {
   const enable = useMutation<TwoFactorSetup, ApiError, void>({
@@ -12,7 +12,7 @@ export function use2fa() {
     mutationFn: (payload) => authService.verify2fa(payload),
   });
 
-  const disable = useMutation<MessageResponse, ApiError, Verify2faPayload>({
+  const disable = useMutation<MessageResponse, ApiError, Disable2faPayload>({
     mutationFn: (payload) => authService.disable2fa(payload),
   });
 

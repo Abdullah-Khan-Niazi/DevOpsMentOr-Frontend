@@ -5,6 +5,7 @@ import { ROUTES } from '@/shared/constants';
 import { TerminalIframe } from './TerminalIframe';
 import { LabTimerCountdown } from './LabTimerCountdown';
 import { AiMentorDrawer } from './AiMentorDrawer';
+import { WorkspaceAssetPanel } from './WorkspaceAssetPanel';
 import {
   useActiveInstance,
   useExtendInstance,
@@ -46,7 +47,7 @@ export function LabWorkspace({
 }: LabWorkspaceProps) {
   const navigate = useNavigate();
   const activeRegion: VpnRegion = 'US';
-  const [activeTab, setActiveTab] = useState<'terminal' | 'docs'>('terminal');
+  const [activeTab, setActiveTab] = useState<'terminal' | 'slides' | 'walkthrough'>('terminal');
   const [confirmTerminate, setConfirmTerminate] = useState(false);
   const [mentorOpen, setMentorOpen] = useState(false);
   const [instructionsCollapsed, setInstructionsCollapsed] = useState(false);
@@ -478,56 +479,63 @@ export function LabWorkspace({
         <main className="flex-1 bg-ink flex flex-col relative min-h-0 overflow-hidden">
           {/* Terminal Tabs Bar */}
           <div className="h-9 border-b border-pearl-100/10 bg-ink-soft px-3 flex items-center justify-between shrink-0">
-            <div className="inline-flex items-center rounded-xs bg-ink-deep/40 border border-pearl-100/10 p-0.5 text-xs font-mono">
-              <button
-                type="button"
-                onClick={() => setActiveTab('terminal')}
-                className={`px-3 py-0.5 rounded-xs transition-colors cursor-pointer ${
-                  activeTab === 'terminal'
-                    ? 'bg-pearl-100/20 text-pearl-100 font-semibold'
-                    : 'text-pearl-100/60 hover:text-pearl-100'
-                }`}
-              >
-                Terminal
-              </button>
-              <button
-                type="button"
-                onClick={() => setActiveTab('docs')}
-                className={`px-3 py-0.5 rounded-xs transition-colors cursor-pointer ${
-                  activeTab === 'docs'
-                    ? 'bg-pearl-100/20 text-pearl-100 font-semibold'
-                    : 'text-pearl-100/60 hover:text-pearl-100'
-                }`}
-              >
-                Architecture & Docs
-              </button>
+            <div
+              className="inline-flex items-center rounded-xs bg-ink-deep/40 border border-pearl-100/10 p-0.5 text-xs font-mono"
+              role="tablist"
+              aria-label="Lab workspace panels"
+            >
+              {(
+                [
+                  { id: 'terminal', label: 'Terminal' },
+                  { id: 'slides', label: 'Slides' },
+                  { id: 'walkthrough', label: 'Walkthrough' },
+                ] as const
+              ).map((tab) => (
+                <button
+                  key={tab.id}
+                  type="button"
+                  role="tab"
+                  aria-selected={activeTab === tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`px-3 py-0.5 rounded-xs transition-colors cursor-pointer ${
+                    activeTab === tab.id
+                      ? 'bg-pearl-100/20 text-pearl-100 font-semibold'
+                      : 'text-pearl-100/60 hover:text-pearl-100'
+                  }`}
+                >
+                  {tab.label}
+                </button>
+              ))}
             </div>
 
-            <div className="flex items-center gap-2 text-[0.6875rem] font-mono text-pearl-100/40">
+            <div className="flex items-center gap-2 text-xs font-mono text-pearl-100/40">
               <span
-                className={`w-1.5 h-1.5 rounded-full inline-block ${isRunning ? 'bg-signal animate-pulse' : 'bg-pearl-100/30'}`}
+                className={`w-1.5 h-1.5 rounded-full inline-block ${
+                  activeTab === 'terminal' && isRunning
+                    ? 'bg-signal animate-pulse'
+                    : 'bg-pearl-100/30'
+                }`}
               />
-              <span>{isRunning ? 'Connected · Live Shell' : 'Interactive Sandbox'}</span>
+              <span>
+                {activeTab === 'slides'
+                  ? 'Slides · PDF Deck'
+                  : activeTab === 'walkthrough'
+                    ? 'Walkthrough · PDF Guide'
+                    : isRunning
+                      ? 'Connected · Live Shell'
+                      : 'Interactive Sandbox'}
+              </span>
             </div>
           </div>
 
-          {activeTab === 'docs' ? (
-            <div className="flex-1 p-6 text-pearl-100 overflow-y-auto space-y-4 font-sans text-xs max-w-3xl">
-              <h2 className="text-base font-bold text-pearl-100 font-mono">
-                System Topology & Target State
-              </h2>
-              <p className="text-pearl-100/80 leading-relaxed">
-                This lab instance operates inside an isolated container namespace. The ingress port
-                forwards traffic directly from your terminal session to port 30080 on the internal
-                bridge.
-              </p>
-              <div className="p-4 rounded-xs border border-pearl-100/10 bg-pearl-100/5 font-mono space-y-2 text-pearl-100/90">
-                <p className="text-pearl-200 font-bold">Cluster Network Spec:</p>
-                <p>• Internal CIDR: 10.244.0.0/16</p>
-                <p>• Health Probe Endpoint: GET /health</p>
-                <p>• Target Deployment: devops-core-app</p>
-              </div>
-            </div>
+          {activeTab === 'slides' ? (
+            <WorkspaceAssetPanel kind="slides" slug={lesson.slug} lessonTitle={lesson.title} />
+          ) : activeTab === 'walkthrough' ? (
+            <WorkspaceAssetPanel
+              kind="walkthroughs"
+              slug={lesson.slug}
+              lessonTitle={lesson.title}
+            />
           ) : isRunning && instance ? (
             <div className="flex-1 flex flex-col min-h-0 relative">
               <TerminalIframe

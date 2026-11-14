@@ -30,6 +30,7 @@ export const ROUTES = {
   ADMIN_ORGANIZATION_DETAIL: '/admin/organizations/:orgId',
   // ─── F3 organization workspace (OrgAdminShell) ──────────────────────────────
   ORG_DASHBOARD: '/org/dashboard',
+  ORG_CURRICULUM: '/org/curriculum',
   ORG_CLASSES: '/org/classes',
   ORG_CLASS_NEW: '/org/classes/new',
   ORG_CLASS_DETAIL: '/org/classes/:classId',

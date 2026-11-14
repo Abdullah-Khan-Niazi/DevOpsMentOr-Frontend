@@ -132,17 +132,21 @@ export interface QuizAttemptResultDto {
   breakdown: QuestionResultDto[];
 }
 
-export type QuizQuestionType = 'multiple_choice' | 'true_false' | 'fill_blank' | 'multiple_select';
+export type QuizQuestionType =
+  'multiple_choice' | 'true_false' | 'fill_blank' | 'multiple_select' | 'bucket_sort' | 'ordering';
 
 export interface QuizQuestionDto {
   questionId: number;
   questionText: string;
   questionType: QuizQuestionType;
+  /** Presentation metadata for rich types (e.g. `{ buckets: string[] }`); never correctness. */
+  config: Record<string, unknown> | null;
   points: number;
   questionOrder: number;
   answers: Array<{
     answerId: number;
     answerText: string;
+    /** Shuffled placeholder order for rich types — never the solution order. */
     answerOrder: number;
   }>;
 }

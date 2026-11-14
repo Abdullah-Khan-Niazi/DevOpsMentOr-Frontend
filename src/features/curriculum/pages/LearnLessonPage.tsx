@@ -4,11 +4,21 @@ import { Button, ErrorState, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { CONTENT_TYPE_LABELS } from '../components/ContentTypeIcon';
 import { CourseOutlineModal } from '../components/CourseOutlineModal';
+import { SlideDeckViewer } from '../components/SlideDeckViewer';
 import { useLearnLesson, useLearnModule, useLearnModuleLessons } from '../hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useCompleteLesson, useStartLesson } from '@/features/progress/hooks';
 import { useGamificationProfile } from '@/features/achievements/hooks/useGamification';
 import { LabWorkspace } from '@/features/labs';
+
+/** Authored interactive lessons split slides on the `<!-- slide -->` marker. */
+function parseSlideDeck(content: string | null): string[] {
+  if (!content || !/<!--\s*slide\s*-->/i.test(content)) return [];
+  return content
+    .split(/<!--\s*slide\s*-->/i)
+    .map((segment) => segment.trim())
+    .filter((segment) => segment.length > 0);
+}
 
 /**
  * DataCamp-Inspired Unified Learner Screen (Video, Lecture, and Labs).
@@ -41,6 +51,9 @@ export function LearnLessonPage() {
   const [isSidePanelHidden, setIsSidePanelHidden] = useState(false);
   const [activeTimestamp, setActiveTimestamp] = useState<number>(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  // Interactive lessons authored with `<!-- slide -->` render as a slide deck.
+  const slideDeck = lesson?.contentType === 'interactive' ? parseSlideDeck(lesson.content) : [];
 
   useEffect(() => {
     if (!canWriteProgress || !lesson) return;
@@ -345,6 +358,12 @@ export function LearnLessonPage() {
                   </div>
                 )}
               </div>
+            ) : lesson.contentType === 'interactive' && slideDeck.length > 0 ? (
+              <SlideDeckViewer
+                key={lesson.lessonId}
+                slides={slideDeck}
+                lessonTitle={lesson.title}
+              />
             ) : (
               <div className="p-8 rounded-sm border border-border bg-card shadow-sm space-y-4">
                 <span className="text-xs font-mono uppercase tracking-wider text-muted font-bold">

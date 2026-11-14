@@ -1,5 +1,11 @@
 import { apiClient } from '@/shared/services';
-import type { MyOrgDto, OrgAnalyticsDto, OrgUserDetailDto, OrgUserDto, ProfessorDto } from '../types';
+import type {
+  MyOrgDto,
+  OrgAnalyticsDto,
+  OrgUserDetailDto,
+  OrgUserDto,
+  ProfessorDto,
+} from '../types';
 
 function unwrap<T>(envelope: { data: T }): T {
   return envelope.data;
@@ -29,17 +35,60 @@ export interface InviteProfessorPayload {
 /** Contract §07 ORG-06..ORG-10 org workspace + enrollment endpoints. */
 export const orgService = {
   /** Create a new organization */
-  async createOrg(payload: CreateOrgPayload): Promise<{ organizationId: number; name: string; slug: string }> {
-    const { data } = await apiClient.post<{ data: { organizationId: number; name: string; slug: string } }>(
-      '/org',
-      payload,
-    );
+  async createOrg(
+    payload: CreateOrgPayload,
+  ): Promise<{ organizationId: number; name: string; slug: string }> {
+    const { data } = await apiClient.post<{
+      data: { organizationId: number; name: string; slug: string };
+    }>('/org', payload);
     return unwrap(data);
   },
 
   /** ORG-06 */
   async getMyOrg(): Promise<MyOrgDto> {
     const { data } = await apiClient.get<{ data: MyOrgDto }>('/org/me');
+    return unwrap(data);
+  },
+
+  /** Multi-org: every active membership for the signed-in user. */
+  async listMyMemberships(): Promise<
+    Array<{
+      organizationId: number;
+      organizationName: string;
+      organizationSlug: string;
+      role: 'org_admin' | 'professor' | 'org_student';
+      isPrimary: boolean;
+      joinedAt: string;
+    }>
+  > {
+    const { data } = await apiClient.get<{
+      data: Array<{
+        organizationId: number;
+        organizationName: string;
+        organizationSlug: string;
+        role: 'org_admin' | 'professor' | 'org_student';
+        isPrimary: boolean;
+        joinedAt: string;
+      }>;
+    }>('/org/my-memberships');
+    return unwrap(data);
+  },
+
+  /** Multi-org: make one of the memberships the active organization. */
+  async switchOrg(organizationId: number): Promise<{
+    organizationId: number;
+    organizationName: string;
+    role: 'org_admin' | 'professor' | 'org_student';
+    switched: true;
+  }> {
+    const { data } = await apiClient.post<{
+      data: {
+        organizationId: number;
+        organizationName: string;
+        role: 'org_admin' | 'professor' | 'org_student';
+        switched: true;
+      };
+    }>('/org/switch', { organizationId });
     return unwrap(data);
   },
 

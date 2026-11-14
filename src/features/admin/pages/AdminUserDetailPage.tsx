@@ -211,7 +211,7 @@ export function AdminUserDetailPage() {
                 {user.skills.map((skill) => (
                   <span
                     key={skill.skillId}
-                    className="rounded bg-surface px-2.5 py-1 text-xs text-card-foreground"
+                    className="rounded-xs bg-surface px-2.5 py-1 text-xs text-card-foreground"
                   >
                     {skill.skillName} · {skill.proficiencyLevel}
                   </span>
@@ -326,25 +326,25 @@ export function AdminUserDetailPage() {
               Engagement Metrics
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-              <div className="border border-border p-4 bg-surface rounded-none">
+              <div className="border border-border p-4 bg-surface rounded-md">
                 <span className="text-xs uppercase text-muted">Followers</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.followersCount}
                 </p>
               </div>
-              <div className="border border-border p-4 bg-surface rounded-none">
+              <div className="border border-border p-4 bg-surface rounded-md">
                 <span className="text-xs uppercase text-muted">Following</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.followingCount}
                 </p>
               </div>
-              <div className="border border-border p-4 bg-surface rounded-none">
+              <div className="border border-border p-4 bg-surface rounded-md">
                 <span className="text-xs uppercase text-muted">Profile Views</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.profile?.profileViews ?? 0}
                 </p>
               </div>
-              <div className="border border-border p-4 bg-surface rounded-none">
+              <div className="border border-border p-4 bg-surface rounded-md">
                 <span className="text-xs uppercase text-muted">Reputation Score</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.profile?.reputationScore ?? 0}
@@ -367,12 +367,12 @@ export function AdminUserDetailPage() {
                   course={progressQuery.data?.course ?? null}
                   isLoading={progressQuery.isLoading}
                 />
-                <Card className="p-6 rounded-none">
+                <Card className="p-6">
                   <h3 className="text-sm font-semibold text-card-foreground">Quiz Attempts</h3>
                   {progressQuery.isLoading ? (
                     <div className="mt-4 space-y-2">
-                      <div className="h-3 w-2/3 bg-border animate-pulse rounded-none" />
-                      <div className="h-3 w-1/2 bg-border animate-pulse rounded-none" />
+                      <div className="h-3 w-2/3 bg-border animate-pulse rounded-xs" />
+                      <div className="h-3 w-1/2 bg-border animate-pulse rounded-xs" />
                     </div>
                   ) : (progressQuery.data?.quizAttempts.length ?? 0) === 0 ? (
                     <p className="mt-4 text-sm text-muted">No quiz attempts recorded yet.</p>
@@ -405,7 +405,7 @@ export function AdminUserDetailPage() {
                 </Card>
               </div>
 
-              <Card className="p-6 rounded-none">
+              <Card className="p-6">
                 <h3 className="mb-4 text-sm font-semibold text-card-foreground">
                   Module Breakdown
                 </h3>
@@ -415,7 +415,7 @@ export function AdminUserDetailPage() {
                 />
               </Card>
 
-              <Card className="p-6 rounded-none">
+              <Card className="p-6">
                 <h3 className="mb-4 text-sm font-semibold text-card-foreground">
                   Curriculum & Lab Activity Log
                 </h3>
