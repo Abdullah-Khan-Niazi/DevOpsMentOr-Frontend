@@ -9,7 +9,6 @@ export {
   DashboardSkeleton,
   CurriculumSkeleton,
   LabWorkspaceSkeleton,
-  HomePageSkeleton,
   PublicPageSkeleton,
   AuthPageSkeleton,
   type SkeletonProps,

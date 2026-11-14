@@ -12,12 +12,12 @@ import {
   GridCardsSkeleton,
   DashboardSkeleton,
   CurriculumSkeleton,
-  HomePageSkeleton,
   PublicPageSkeleton,
   AuthPageSkeleton,
 } from '@/shared/components';
 import { PermissionRouteGuard } from '@/shared/guards';
 import { ROUTES } from '@/shared/constants';
+import HomePage from '@/pages/site/HomePage';
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/features/auth/pages/SignupPage'));
@@ -132,20 +132,16 @@ const AdminAnalyticsPage = lazy(
 );
 const AdminFilesPage = lazy(() => import('@/features/admin/files/pages/AdminFilesPage'));
 // ─── Public site pages (public, no auth) — add one per session ─────────────────
-const HomePage = lazy(() => import('@/pages/site/HomePage'));
-const HowItWorksPage = lazy(() => import('@/pages/site/HowItWorksPage'));
 const CurriculumPage = lazy(() => import('@/pages/site/CurriculumPage'));
 const PricingPage = lazy(() => import('@/pages/site/PricingPage'));
 const AboutPage = lazy(() => import('@/pages/site/AboutPage'));
 const ContactPage = lazy(() => import('@/pages/site/ContactPage'));
-const ForInstitutionsPage = lazy(() => import('@/pages/site/ForInstitutionsPage'));
 const SecurityTrustPage = lazy(() => import('@/pages/site/SecurityTrustPage'));
 const FaqPage = lazy(() => import('@/pages/site/FaqPage'));
 const NotFoundPage = lazy(() => import('@/pages/site/NotFoundPage'));
 // ─── Secondary site pages (footer destinations) ──────────────────────────────
 const CareersPage = lazy(() => import('@/pages/site/CareersPage'));
 const DocumentationPage = lazy(() => import('@/pages/site/DocumentationPage'));
-const InstructorToolsPage = lazy(() => import('@/pages/site/InstructorToolsPage'));
 const PrivacyPage = lazy(() => import('@/pages/site/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/site/TermsPage'));
 
@@ -1019,23 +1015,8 @@ export function AppRoutes() {
         }
       />
 
-      <Route
-        path={ROUTES.HOME}
-        element={
-          <LazyPage skeleton={<HomePageSkeleton />}>
-            <HomePage />
-          </LazyPage>
-        }
-      />
+      <Route path={ROUTES.HOME} element={<HomePage />} />
       {/* ─── Public site routes — one added per session ──────────────── */}
-      <Route
-        path={ROUTES.HOW_IT_WORKS}
-        element={
-          <LazyPage skeleton={<PublicPageSkeleton />}>
-            <HowItWorksPage />
-          </LazyPage>
-        }
-      />
       <Route
         path={ROUTES.CURRICULUM}
         element={
@@ -1065,14 +1046,6 @@ export function AppRoutes() {
         element={
           <LazyPage skeleton={<PublicPageSkeleton />}>
             <ContactPage />
-          </LazyPage>
-        }
-      />
-      <Route
-        path={ROUTES.FOR_INSTITUTIONS}
-        element={
-          <LazyPage skeleton={<PublicPageSkeleton />}>
-            <ForInstitutionsPage />
           </LazyPage>
         }
       />
@@ -1115,14 +1088,6 @@ export function AppRoutes() {
       <Route
         path={ROUTES.LEARNING_PATH}
         element={<Navigate to={ROUTES.CURRICULUM} replace />}
-      />
-      <Route
-        path={ROUTES.INSTRUCTOR_TOOLS}
-        element={
-          <LazyPage skeleton={<PublicPageSkeleton />}>
-            <InstructorToolsPage />
-          </LazyPage>
-        }
       />
       <Route
         path={ROUTES.PRIVACY}

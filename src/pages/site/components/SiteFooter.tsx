@@ -10,14 +10,6 @@ import './SiteFooter.css';
 
 const footerColumns = [
   {
-    heading: 'Platform',
-    links: [
-      { label: 'Student Labs', to: ROUTES.HOW_IT_WORKS },
-      { label: 'Instructor Tools', to: ROUTES.INSTRUCTOR_TOOLS },
-      { label: 'Institutions', to: ROUTES.FOR_INSTITUTIONS },
-    ],
-  },
-  {
     heading: 'Curriculum',
     links: [
       { label: 'Module Catalog', to: ROUTES.CURRICULUM },

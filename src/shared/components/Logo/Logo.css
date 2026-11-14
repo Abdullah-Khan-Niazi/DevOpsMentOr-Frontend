@@ -13,6 +13,16 @@
   display: block;
   height: 100%;
   width: auto;
+  shape-rendering: geometricPrecision;
+  text-rendering: geometricPrecision;
+}
+
+.logo img,
+.logo--full img {
+  display: block;
+  height: 100%;
+  width: auto;
+  image-rendering: -webkit-optimize-contrast;
 }
 
 /* Icon mark — header scale */

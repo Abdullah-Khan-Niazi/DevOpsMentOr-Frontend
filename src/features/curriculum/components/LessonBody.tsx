@@ -5,6 +5,44 @@ interface LessonBodyProps {
   lesson: LessonDto;
 }
 
+const ALL_LAB_SLUGS: string[] = [
+  "01-os-linux-basics",
+  "02-linux-filesystem-hierarchy",
+  "03-cli-fundamentals",
+  "04-package-management-vim",
+  "05-users-groups-permissions",
+  "06-pipes-redirection-shell-scripting",
+  "07-networking-ssh-security",
+  "m06-lab01-ephemeral-environment",
+  "m06-lab02-network-bridging-env",
+  "m06-lab03-diagnostics-telemetry",
+  "m06-lab04-immutable-blueprint-dockerfile",
+  "m06-lab05-data-persistence-volumes",
+  "m06-lab06-docker-compose-orchestration",
+  "m06-lab07-private-registry-gateway",
+  "m06-lab08-deploying-nexus",
+  "m09-lab01-control-plane-mechanics",
+  "m09-lab02-declarative-topologies-services",
+  "m09-lab03-state-secrets-volumes",
+  "m09-lab04-namespaces-ingress-routing",
+  "m09-lab05-api-security-rbac",
+  "m09-lab06-production-hardening-probes",
+  "m09-lab07-custom-helm-chart",
+  "m09-lab08-helmfile-orchestration",
+  "m12-lab01-execution-environment",
+  "m12-lab02-deterministic-control-flow",
+  "m12-lab03-structural-aggregation",
+  "m12-lab04-iteration-functional-abstraction",
+  "m12-lab05-anticipating-catastrophe",
+  "m12-lab06-os-interface",
+  "m12-lab07-data-serialization-json",
+  "m12-lab08-architectural-modularity",
+  "m12-lab09-object-oriented-infrastructure",
+  "m12-lab10-advanced-execution-control",
+  "m12-lab11-remote-api-gateway",
+  "m12-lab12-infrastructure-as-a-service"
+];
+
 const MODULE_1_LAB_SLUGS: Record<number, string> = {
   1: '01-os-linux-basics',
   2: '02-linux-filesystem-hierarchy',
@@ -17,7 +55,7 @@ const MODULE_1_LAB_SLUGS: Record<number, string> = {
 
 function resolveLabSlugForLesson(lesson: LessonDto): string {
   const text = `${lesson.title} ${lesson.content ?? ''}`.toLowerCase();
-  for (const slug of Object.values(MODULE_1_LAB_SLUGS)) {
+  for (const slug of ALL_LAB_SLUGS) {
     if (text.includes(slug)) {
       return slug;
     }

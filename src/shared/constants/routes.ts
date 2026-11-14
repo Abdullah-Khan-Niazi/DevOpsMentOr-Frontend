@@ -91,20 +91,17 @@ export const ROUTES = {
   ADMIN_ANALYTICS: '/admin/analytics',
   ADMIN_FILES: '/admin/files',
   // ─── Public site routes (public, no auth) ───────────────────────────────────
-  HOW_IT_WORKS: '/how-it-works',
   CURRICULUM: '/curriculum',
   PRICING: '/pricing',
   ABOUT: '/about',
   SECURITY_TRUST: '/security',
   CONTACT: '/contact',
-  FOR_INSTITUTIONS: '/for-institutions',
   FAQ: '/faq',
   // ─── Secondary site pages (footer destinations, no orphans) ───────────────
   CAREERS: '/careers',
   DOCUMENTATION: '/docs',
   MODULE_CATALOG: '/catalog',
   LEARNING_PATH: '/learning-path',
-  INSTRUCTOR_TOOLS: '/instructor-tools',
   PRIVACY: '/privacy',
   TERMS: '/terms',
 } as const;

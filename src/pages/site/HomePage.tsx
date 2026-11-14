@@ -1216,8 +1216,8 @@ interface AudienceItem {
   title: string;
   body: string;
   highlights: string[];
-  linkTo: string;
-  linkLabel: string;
+  linkTo?: string;
+  linkLabel?: string;
 }
 
 const TARGET_AUDIENCES: AudienceItem[] = [
@@ -1244,8 +1244,6 @@ const TARGET_AUDIENCES: AudienceItem[] = [
       'Zero hypervisor, Docker Desktop, or driver issues',
       'Automated roster and gradebook sync with Canvas and LMS',
     ],
-    linkTo: ROUTES.FOR_INSTITUTIONS,
-    linkLabel: 'Explore institutional access',
   },
   {
     id: 'teams',
@@ -1257,8 +1255,6 @@ const TARGET_AUDIENCES: AudienceItem[] = [
       'Objective assertion rubrics evaluate actual fixes',
       'Zero risk of staging or production environment drift',
     ],
-    linkTo: ROUTES.HOW_IT_WORKS,
-    linkLabel: 'How the evaluation engine works',
   },
 ];
 
@@ -1295,12 +1291,14 @@ function TargetAudiencesSection() {
                   </ul>
                 </div>
 
-                <div className="hp-audiences-card__bottom">
-                  <Link to={item.linkTo} className="hp-audiences-card__link">
-                    <span>{item.linkLabel}</span>
-                    <span aria-hidden="true">→</span>
-                  </Link>
-                </div>
+                {item.linkTo && item.linkLabel && (
+                  <div className="hp-audiences-card__bottom">
+                    <Link to={item.linkTo} className="hp-audiences-card__link">
+                      <span>{item.linkLabel}</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -1401,15 +1399,6 @@ function EducatorSpotlightSection() {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Action CTA Button */}
-          <div className="hp-educator__cta">
-            <Link to={ROUTES.FOR_INSTITUTIONS} className="hp-educator__cta-link">
-              <Button variant="secondary" size="lg">
-                Teach with DevOpsMentOr →
-              </Button>
-            </Link>
           </div>
         </div>
       </div>
