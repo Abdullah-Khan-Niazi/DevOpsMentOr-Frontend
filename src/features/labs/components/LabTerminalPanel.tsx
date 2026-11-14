@@ -1,7 +1,7 @@
 import { useState, useRef } from 'react';
 
 interface LabTerminalPanelProps {
-  terminalWsUrl?: string;
+  terminalWsUrl?: string | null;
   status: string;
   sshPort?: number;
 }
