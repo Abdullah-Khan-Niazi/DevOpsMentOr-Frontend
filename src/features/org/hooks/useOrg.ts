@@ -13,6 +13,30 @@ export function useCreateOrg() {
   });
 }
 
+/** Multi-org: all active memberships for the signed-in user. */
+export function useMyMemberships(enabled = true) {
+  return useQuery({
+    queryKey: QUERY_KEYS.org.memberships,
+    queryFn: () => orgService.listMyMemberships(),
+    retry: false,
+    enabled,
+  });
+}
+
+/** Multi-org: switch the active organization (validated server-side). */
+export function useSwitchOrg() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (organizationId: number) => orgService.switchOrg(organizationId),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.memberships });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes });
+      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users });
+    },
+  });
+}
+
 export function useMyOrg(enabled = true) {
   const queryClient = useQueryClient();
   const query = useQuery({

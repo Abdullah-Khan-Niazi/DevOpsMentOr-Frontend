@@ -1,15 +1,25 @@
-import { useState, useEffect } from 'react';
-import { Button, ErrorState, Input, LoadingState, Modal, toast } from '@/shared/components';
+import { useState } from 'react';
+import {
+  Button,
+  ErrorState,
+  Input,
+  LoadingState,
+  Modal,
+  EmptyState,
+  toast,
+} from '@/shared/components';
 import { CourseMetaCard } from './CourseMetaCard';
-import { ModuleForm } from './ModuleForm';
-import { LessonForm } from './LessonForm';
+import { CurriculumDrawerShell } from './CurriculumDrawerShell';
 import { LabConfigForm } from './LabConfigForm';
-import { QuizBuilderPanel } from './QuizBuilderPanel';
+import { LessonForm } from './LessonForm';
+import { ModuleForm } from './ModuleForm';
 import { PublishToggle } from './PublishToggle';
+import { QuizBuilderPanel } from './QuizBuilderPanel';
 import {
   useAdminCourse,
   useAdminLessonEditor,
   useAdminModuleEditor,
+  useAdminModules,
   useAdminModuleMutations,
   useAdminQuizEditor,
 } from '../hooks';
@@ -19,122 +29,90 @@ import type { CreateAction, TreeNodeSelection } from './CurriculumTree';
 interface CurriculumDrawerProps {
   isOpen: boolean;
   onClose: () => void;
+  /** Edit task. Ignored while a create task is present (one task per drawer). */
   selectedNode: TreeNodeSelection | null;
+  /**
+   * Create task. A create drawer only creates: on success it closes and the
+   * form state resets, it never flips into edit mode.
+   */
   createAction: CreateAction | null;
-  course: CourseDto;
-  onNodeCreated?: (selection: TreeNodeSelection) => void;
+  /** Canonical course fallback while the admin course query resolves. */
+  course: CourseDto | null;
 }
 
+const CREATE_TITLES: Record<CreateAction['type'], string> = {
+  module: 'New Curriculum Module',
+  lesson: 'New Theory Lesson',
+  lab: 'Configure Hands-On Lab Sandbox',
+  quiz: 'New Knowledge Quiz',
+};
+
+function editTitle(selection: TreeNodeSelection): string {
+  switch (selection.type) {
+    case 'course':
+      return 'Course Settings & Architecture';
+    case 'module':
+      return 'Module Settings';
+    case 'lab':
+      return 'Lab Sandbox Configuration';
+    case 'quiz':
+      return 'Quiz Builder';
+    default:
+      return 'Lesson Editor';
+  }
+}
+
+/**
+ * The single curriculum task drawer. It renders exactly one task at a time
+ * (create OR edit), keyed by task identity so switching nodes remounts the
+ * form instead of leaking stale field state. On a successful create/edit the
+ * drawer closes immediately; only the matching lists are invalidated.
+ */
 export function CurriculumDrawer({
   isOpen,
   onClose,
   selectedNode,
   createAction,
   course,
-  onNodeCreated,
 }: CurriculumDrawerProps) {
-  // ESC key listener to close drawer
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
   if (!isOpen) return null;
 
+  const activeCreate = createAction;
+  const activeSelection = activeCreate ? null : selectedNode;
+
+  if (!activeCreate && !activeSelection) return null;
+
+  const taskKey = activeCreate
+    ? `create-${activeCreate.type}-${activeCreate.type === 'module' ? 'root' : activeCreate.moduleId}`
+    : activeSelection
+      ? `edit-${activeSelection.type}-${activeSelection.id}`
+      : '';
+  const eyebrow = activeCreate
+    ? `CREATE · ${activeCreate.type.toUpperCase()}`
+    : activeSelection
+      ? `EDIT · ${activeSelection.type.toUpperCase()}`
+      : '';
+  const title = activeCreate
+    ? CREATE_TITLES[activeCreate.type]
+    : activeSelection
+      ? editTitle(activeSelection)
+      : '';
+
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-        aria-hidden="true"
-      />
-
-      {/* Slide-over panel */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-6 sm:pl-10">
-        <div className="w-screen max-w-2xl bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-md">
-          <div className="space-y-6">
-            {/* Drawer Header */}
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div>
-                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted font-bold block">
-                  {createAction
-                    ? `CREATE · ${createAction.type.toUpperCase()}`
-                    : selectedNode
-                      ? `INSPECT · ${selectedNode.type.toUpperCase()}`
-                      : 'CURRICULUM NODE'}
-                </span>
-                <h2 className="text-lg font-bold text-card-foreground">
-                  {createAction
-                    ? createAction.type === 'module'
-                      ? 'New Curriculum Module'
-                      : createAction.type === 'lesson'
-                        ? 'New Theory Lesson'
-                        : createAction.type === 'lab'
-                          ? 'Configure Hands-On Lab Sandbox'
-                          : 'New Knowledge Quiz'
-                    : selectedNode?.type === 'course'
-                      ? 'Course Settings & Architecture'
-                      : selectedNode?.type === 'module'
-                        ? 'Module Settings'
-                        : selectedNode?.type === 'lab'
-                          ? 'Lab Sandbox Configuration'
-                          : selectedNode?.type === 'quiz'
-                            ? 'Quiz Builder'
-                            : 'Lesson Editor'}
-                </h2>
-              </div>
-
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 text-muted hover:text-card-foreground transition-colors cursor-pointer rounded-xs"
-                aria-label="Close drawer"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            {/* Drawer Form Body */}
-            <div>
-              {/* 1. Create Actions */}
-              {createAction && (
-                <CreateActionContent
-                  action={createAction}
-                  onClose={onClose}
-                  onNodeCreated={onNodeCreated}
-                />
-              )}
-
-              {/* 2. Selected Node Views */}
-              {!createAction && selectedNode && (
-                <SelectedNodeContent
-                  selectedNode={selectedNode}
-                  course={course}
-                  onClose={onClose}
-                />
-              )}
-            </div>
-          </div>
-        </div>
+    <CurriculumDrawerShell isOpen={isOpen} onClose={onClose} eyebrow={eyebrow} title={title}>
+      {/* Key by task identity: a new task always starts from fresh form state. */}
+      <div key={taskKey}>
+        {activeCreate ? (
+          <CreateActionContent action={activeCreate} onClose={onClose} />
+        ) : activeSelection ? (
+          <SelectedNodeContent selectedNode={activeSelection} course={course} onClose={onClose} />
+        ) : null}
       </div>
-    </div>
+    </CurriculumDrawerShell>
   );
 }
 
-// ─── Component: Selected Node Content ──────────────────────────────────────────
+/* ─── Selected node (edit tasks) ─────────────────────────────────────────── */
 
 function SelectedNodeContent({
   selectedNode,
@@ -142,38 +120,58 @@ function SelectedNodeContent({
   onClose,
 }: {
   selectedNode: TreeNodeSelection;
-  course: CourseDto;
+  course: CourseDto | null;
   onClose: () => void;
 }) {
   const courseManager = useAdminCourse();
 
-  // Course Node Form
   if (selectedNode.type === 'course') {
-    return (
-      <div className="space-y-4">
-        <CourseMetaCard
-          course={courseManager.query.data ?? course}
-          moduleCount={0}
-          canManage
-          saving={courseManager.update.isPending}
-          onSave={(payload) =>
-            courseManager.update.mutate(payload, {
-              onSuccess: () => toast.success('Course updated successfully.'),
-              onError: (error) => toast.error(error.message),
-            })
-          }
-          onCancel={onClose}
+    if (courseManager.query.isLoading && !course && !courseManager.query.data) {
+      return <LoadingState label="Loading course settings…" />;
+    }
+    if (courseManager.query.isError && !courseManager.query.data && !course) {
+      return (
+        <ErrorState
+          title="Could not load the course"
+          message={courseManager.query.error?.message ?? 'The canonical course is unavailable.'}
+          onRetry={() => void courseManager.query.refetch()}
         />
-      </div>
+      );
+    }
+    const courseData = courseManager.query.data ?? course;
+    if (!courseData) {
+      return (
+        <ErrorState
+          title="Course unavailable"
+          message="The canonical course has not been configured yet."
+          onRetry={() => void courseManager.query.refetch()}
+        />
+      );
+    }
+    return (
+      <CourseMetaCard
+        course={courseData}
+        moduleCount={0}
+        canManage
+        saving={courseManager.update.isPending}
+        onSave={(payload) =>
+          courseManager.update.mutate(payload, {
+            onSuccess: () => {
+              toast.success('Course updated.');
+              onClose();
+            },
+            onError: (error) => toast.error(error.message),
+          })
+        }
+        onCancel={onClose}
+      />
     );
   }
 
-  // Module Node Form
   if (selectedNode.type === 'module') {
     return <ModuleNodeDrawerContent moduleId={selectedNode.id} onClose={onClose} />;
   }
 
-  // Lesson Node Form
   if (selectedNode.type === 'lesson') {
     return (
       <LessonNodeDrawerContent
@@ -184,7 +182,6 @@ function SelectedNodeContent({
     );
   }
 
-  // Lab Node Form
   if (selectedNode.type === 'lab') {
     return (
       <LabNodeDrawerContent
@@ -195,21 +192,14 @@ function SelectedNodeContent({
     );
   }
 
-  // Quiz Node Form
   if (selectedNode.type === 'quiz') {
-    return (
-      <QuizNodeDrawerContent
-        quizId={selectedNode.id}
-        moduleId={selectedNode.moduleId}
-        onClose={onClose}
-      />
-    );
+    return <QuizNodeDrawerContent quizId={selectedNode.id} onClose={onClose} />;
   }
 
   return null;
 }
 
-// ─── Module Drawer Content ───────────────────────────────────────────────────
+/* ─── Module drawer content ──────────────────────────────────────────────── */
 
 function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onClose: () => void }) {
   const editor = useAdminModuleEditor(moduleId);
@@ -223,7 +213,8 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
   if (editor.query.isError || !editor.query.data) {
     return (
       <ErrorState
-        message={editor.query.error?.message ?? 'Unable to load module.'}
+        title="Could not load module"
+        message={editor.query.error?.message ?? 'This module could not be loaded.'}
         onRetry={() => void editor.query.refetch()}
       />
     );
@@ -233,7 +224,7 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
 
   const confirmArchive = () => {
     if (archiveTitle.trim() !== module.title) {
-      toast.error('Type the module title to confirm archiving.');
+      toast.error('Type the module title exactly to confirm archiving.');
       return;
     }
     editor.archive.mutate(undefined, {
@@ -248,10 +239,10 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
 
   return (
     <div className="space-y-6">
-      {/* Publication & Archive bar */}
-      <div className="flex items-center justify-between p-3 rounded-md bg-paper border border-border">
+      {/* Publication & archive bar */}
+      <div className="flex items-center justify-between gap-3 rounded-md border border-border bg-paper p-3">
         <div>
-          <p className="text-xs font-mono font-semibold text-card-foreground">Publication Status</p>
+          <p className="font-mono text-xs font-semibold text-card-foreground">Publication Status</p>
           <p className="text-xs text-muted">
             {module.isPublished ? 'Published and live' : 'Draft / Unpublished'}
           </p>
@@ -276,7 +267,7 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
         </div>
       </div>
 
-      {/* Module Edit Form */}
+      {/* Module edit form — save closes the edit task. */}
       <ModuleForm
         initial={{
           title: module.title,
@@ -298,14 +289,17 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
               moduleOrder: values.moduleOrder ? Number(values.moduleOrder) : undefined,
             },
             {
-              onSuccess: () => toast.success('Module saved.'),
+              onSuccess: () => {
+                toast.success('Module saved.');
+                onClose();
+              },
               onError: (error) => toast.error(error.message),
             },
           )
         }
       />
 
-      {/* Archive Confirmation Modal */}
+      {/* Archive confirmation modal */}
       <Modal open={archiving} onClose={() => setArchiving(false)} title="Archive Module">
         <p className="modal-panel__body text-xs text-muted">
           Archiving will hide all lessons and quizzes within this module from enrolled learners.
@@ -321,11 +315,7 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
           />
         </div>
         <div className="modal-panel__actions mt-6 flex justify-end gap-2">
-          <Button
-            variant="secondary"
-            onClick={() => setArchiving(false)}
-            disabled={editor.archive.isPending}
-          >
+          <Button variant="secondary" onClick={() => setArchiving(false)}>
             Cancel
           </Button>
           <Button variant="danger" onClick={confirmArchive} isLoading={editor.archive.isPending}>
@@ -337,7 +327,7 @@ function ModuleNodeDrawerContent({ moduleId, onClose }: { moduleId: number; onCl
   );
 }
 
-// ─── Lesson Drawer Content ───────────────────────────────────────────────────
+/* ─── Lesson drawer content ───────────────────────────────────────────────── */
 
 function LessonNodeDrawerContent({
   lessonId,
@@ -357,7 +347,8 @@ function LessonNodeDrawerContent({
   if (editor.query.isError || !editor.query.data) {
     return (
       <ErrorState
-        message={editor.query.error?.message ?? 'Unable to load lesson.'}
+        title="Could not load lesson"
+        message={editor.query.error?.message ?? 'This lesson could not be loaded.'}
         onRetry={() => void editor.query.refetch()}
       />
     );
@@ -401,7 +392,10 @@ function LessonNodeDrawerContent({
             tagIds: values.tagIds,
           },
           {
-            onSuccess: () => toast.success('Lesson updated.'),
+            onSuccess: () => {
+              toast.success('Lesson updated.');
+              onClose();
+            },
             onError: (err) => toast.error(err.message),
           },
         )
@@ -411,7 +405,7 @@ function LessonNodeDrawerContent({
   );
 }
 
-// ─── Lab Drawer Content ──────────────────────────────────────────────────────
+/* ─── Lab drawer content ─────────────────────────────────────────────────── */
 
 function LabNodeDrawerContent({
   lessonId,
@@ -431,7 +425,8 @@ function LabNodeDrawerContent({
   if (editor.query.isError || !editor.query.data) {
     return (
       <ErrorState
-        message={editor.query.error?.message ?? 'Unable to load lab.'}
+        title="Could not load the lab"
+        message={editor.query.error?.message ?? 'This lab could not be loaded.'}
         onRetry={() => void editor.query.refetch()}
       />
     );
@@ -443,10 +438,12 @@ function LabNodeDrawerContent({
     <LabConfigForm
       initial={{
         title: lesson.title,
-        slug: lesson.title
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, '-')
-          .replace(/(^-|-$)/g, ''),
+        slug:
+          lesson.slug ??
+          lesson.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/(^-|-$)/g, ''),
         difficultyId: 2,
         labType: 'pro_lab',
         estimatedHours: 2,
@@ -469,7 +466,10 @@ function LabNodeDrawerContent({
             lessonOrder: lesson.lessonOrder,
           },
           {
-            onSuccess: () => toast.success('Lab configuration saved.'),
+            onSuccess: () => {
+              toast.success('Lab configuration saved.');
+              onClose();
+            },
             onError: (err) => toast.error(err.message),
           },
         )
@@ -479,17 +479,9 @@ function LabNodeDrawerContent({
   );
 }
 
-// ─── Quiz Drawer Content ─────────────────────────────────────────────────────
+/* ─── Quiz drawer content ────────────────────────────────────────────────── */
 
-function QuizNodeDrawerContent({
-  quizId,
-  moduleId: _moduleId,
-  onClose,
-}: {
-  quizId: number;
-  moduleId: number;
-  onClose: () => void;
-}) {
+function QuizNodeDrawerContent({ quizId, onClose }: { quizId: number; onClose: () => void }) {
   const builder = useAdminQuizEditor(quizId);
 
   if (builder.query.isLoading) {
@@ -499,7 +491,8 @@ function QuizNodeDrawerContent({
   if (builder.query.isError || !builder.query.data) {
     return (
       <ErrorState
-        message={builder.query.error?.message ?? 'Unable to load quiz.'}
+        title="Could not load the quiz"
+        message={builder.query.error?.message ?? 'This quiz could not be loaded.'}
         onRetry={() => void builder.query.refetch()}
       />
     );
@@ -516,7 +509,10 @@ function QuizNodeDrawerContent({
         publishing={builder.update.isPending}
         onUpdateQuiz={(payload) =>
           builder.update.mutate(payload, {
-            onSuccess: () => toast.success('Quiz settings saved.'),
+            onSuccess: () => {
+              toast.success('Quiz settings saved.');
+              onClose();
+            },
             onError: (err) => toast.error(err.message),
           })
         }
@@ -545,7 +541,7 @@ function QuizNodeDrawerContent({
           )
         }
       />
-      <div className="flex justify-end pt-2 border-t border-border">
+      <div className="flex justify-end border-t border-border pt-2">
         <Button variant="secondary" size="sm" onClick={onClose}>
           Done
         </Button>
@@ -554,105 +550,197 @@ function QuizNodeDrawerContent({
   );
 }
 
-// ─── Create Action Content ───────────────────────────────────────────────────
+/* ─── Create tasks (create only, close on success) ───────────────────────── */
 
-function CreateActionContent({
-  action,
-  onClose,
-  onNodeCreated,
-}: {
-  action: CreateAction;
-  onClose: () => void;
-  onNodeCreated?: (selection: TreeNodeSelection) => void;
-}) {
+function CreateActionContent({ action, onClose }: { action: CreateAction; onClose: () => void }) {
+  if (action.type === 'module') {
+    return <CreateModuleContent onClose={onClose} />;
+  }
+
+  if (action.moduleId > 0) {
+    return <CreateItemContent action={action} moduleId={action.moduleId} onClose={onClose} />;
+  }
+
+  // A `?create=lesson|lab|quiz` deep link without a module scope: let the
+  // admin pick the target module instead of silently posting to module 0.
+  return <ModuleScopePicker itemType={action.type} onClose={onClose} />;
+}
+
+function CreateModuleContent({ onClose }: { onClose: () => void }) {
   const moduleMutations = useAdminModuleMutations();
 
-  // Create Module
-  if (action.type === 'module') {
+  return (
+    <ModuleForm
+      initial={{ title: '', description: '', estimatedMinutes: '120', moduleOrder: '1' }}
+      submitLabel="Create Module"
+      saving={moduleMutations.create.isPending}
+      onCancel={onClose}
+      onSubmit={(values) =>
+        moduleMutations.create.mutate(
+          {
+            title: values.title,
+            description: values.description.trim() || undefined,
+            estimatedMinutes: values.estimatedMinutes ? Number(values.estimatedMinutes) : undefined,
+            moduleOrder: Number(values.moduleOrder) || 1,
+          },
+          {
+            onSuccess: () => {
+              toast.success('Module created.');
+              onClose();
+            },
+            onError: (err) => toast.error(err.message),
+          },
+        )
+      }
+    />
+  );
+}
+
+function ModuleScopePicker({
+  itemType,
+  onClose,
+}: {
+  itemType: 'lesson' | 'lab' | 'quiz';
+  onClose: () => void;
+}) {
+  const modulesQuery = useAdminModules();
+  const courseQuery = useAdminCourse();
+  const [moduleId, setModuleId] = useState('');
+
+  if (modulesQuery.isLoading || courseQuery.query.isLoading) {
+    return <LoadingState label="Loading modules…" />;
+  }
+
+  if (modulesQuery.isError) {
     return (
-      <ModuleForm
-        initial={{
-          title: '',
-          description: '',
-          estimatedMinutes: '120',
-          moduleOrder: '1',
-        }}
-        submitLabel="Create Module"
-        saving={moduleMutations.create.isPending}
-        onCancel={onClose}
-        onSubmit={(values) =>
-          moduleMutations.create.mutate(
-            {
-              title: values.title,
-              description: values.description.trim() || undefined,
-              estimatedMinutes: values.estimatedMinutes
-                ? Number(values.estimatedMinutes)
-                : undefined,
-              moduleOrder: Number(values.moduleOrder) || 1,
-            },
-            {
-              onSuccess: (created) => {
-                toast.success('Module created.');
-                if (onNodeCreated) {
-                  onNodeCreated({ type: 'module', id: created.moduleId });
-                } else {
-                  onClose();
-                }
-              },
-              onError: (err) => toast.error(err.message),
-            },
-          )
+      <ErrorState
+        title="Could not load modules"
+        message={modulesQuery.error?.message ?? 'The module list is unavailable.'}
+        onRetry={() => void modulesQuery.refetch()}
+      />
+    );
+  }
+
+  if (courseQuery.query.isError || !courseQuery.query.data) {
+    return (
+      <ErrorState
+        title="Could not load the canonical course"
+        message={
+          courseQuery.query.error?.message ??
+          'The canonical course is required to pick a target module.'
+        }
+        onRetry={() => void courseQuery.query.refetch()}
+      />
+    );
+  }
+
+  // The admin API only writes modules of the canonical course, so the picker
+  // never offers modules the create request would reject.
+  const modules = (modulesQuery.data ?? []).filter(
+    (module) => module.courseId === courseQuery.query.data?.courseId,
+  );
+
+  if (modules.length === 0) {
+    return (
+      <EmptyState
+        title="No modules available"
+        description="Create a module before adding lessons, labs or quizzes to it."
+        action={
+          <Button variant="secondary" size="sm" onClick={onClose}>
+            Close
+          </Button>
         }
       />
     );
   }
 
-  // Create Lesson
-  if (action.type === 'lesson') {
+  if (moduleId) {
     return (
-      <CreateLessonContent
-        moduleId={action.moduleId}
-        onClose={onClose}
-        onNodeCreated={onNodeCreated}
-      />
+      <div className="space-y-4">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={() => setModuleId('')}
+          className="font-mono text-xs"
+        >
+          ← Change module
+        </Button>
+        <CreateItemContent
+          key={moduleId}
+          action={{ type: itemType, moduleId: Number(moduleId) }}
+          moduleId={Number(moduleId)}
+          onClose={onClose}
+        />
+      </div>
     );
   }
 
-  // Create Lab
-  if (action.type === 'lab') {
-    return (
-      <CreateLabContent
-        moduleId={action.moduleId}
-        onClose={onClose}
-        onNodeCreated={onNodeCreated}
-      />
-    );
-  }
-
-  // Create Quiz
-  if (action.type === 'quiz') {
-    return (
-      <CreateQuizContent
-        moduleId={action.moduleId}
-        onClose={onClose}
-        onNodeCreated={onNodeCreated}
-      />
-    );
-  }
-
-  return null;
+  return (
+    <div className="space-y-4">
+      <p className="text-xs text-muted">
+        This deep link does not name a module. Pick the module that should contain the new{' '}
+        {itemType}:
+      </p>
+      <div className="space-y-2">
+        {modules.map((module) => (
+          <button
+            key={module.moduleId}
+            type="button"
+            onClick={() => setModuleId(String(module.moduleId))}
+            className="flex w-full items-center justify-between gap-2 rounded-sm border border-border/60 px-3 py-2.5 text-left transition-colors hover:border-paper-line-strong hover:bg-surface/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600/40"
+          >
+            <span className="min-w-0 truncate text-xs font-medium text-card-foreground">
+              M{module.moduleOrder} · {module.title}
+            </span>
+            <span className="shrink-0 text-micro text-muted">
+              {module.lessonCount} {module.lessonCount === 1 ? 'item' : 'items'}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-function CreateLessonContent({
+type ItemCreateAction = Extract<CreateAction, { type: 'lesson' | 'lab' | 'quiz' }>;
+
+function CreateItemContent({
+  action,
   moduleId,
   onClose,
-  onNodeCreated,
 }: {
+  action: ItemCreateAction;
   moduleId: number;
   onClose: () => void;
-  onNodeCreated?: (selection: TreeNodeSelection) => void;
 }) {
+  if (action.type === 'lesson') {
+    return <CreateLessonContent moduleId={moduleId} onClose={onClose} />;
+  }
+  if (action.type === 'lab') {
+    return <CreateLabContent moduleId={moduleId} onClose={onClose} />;
+  }
+  return <CreateQuizContent moduleId={moduleId} onClose={onClose} />;
+}
+
+function CreateLessonContent({ moduleId, onClose }: { moduleId: number; onClose: () => void }) {
   const editor = useAdminModuleEditor(moduleId);
+
+  if (editor.query.isLoading) {
+    return <LoadingState label="Loading the target module…" />;
+  }
+
+  if (editor.query.isError || !editor.query.data) {
+    return (
+      <ErrorState
+        title="Could not load the target module"
+        message={
+          editor.query.error?.message ??
+          'The module for this new lesson does not exist or is not manageable.'
+        }
+        onRetry={() => void editor.query.refetch()}
+      />
+    );
+  }
 
   return (
     <LessonForm
@@ -673,13 +761,9 @@ function CreateLessonContent({
             tagIds: values.tagIds,
           },
           {
-            onSuccess: (created) => {
+            onSuccess: () => {
               toast.success('Lesson created.');
-              if (onNodeCreated) {
-                onNodeCreated({ type: 'lesson', id: created.lessonId, moduleId });
-              } else {
-                onClose();
-              }
+              onClose();
             },
             onError: (err) => toast.error(err.message),
           },
@@ -689,16 +773,25 @@ function CreateLessonContent({
   );
 }
 
-function CreateLabContent({
-  moduleId,
-  onClose,
-  onNodeCreated,
-}: {
-  moduleId: number;
-  onClose: () => void;
-  onNodeCreated?: (selection: TreeNodeSelection) => void;
-}) {
+function CreateLabContent({ moduleId, onClose }: { moduleId: number; onClose: () => void }) {
   const editor = useAdminModuleEditor(moduleId);
+
+  if (editor.query.isLoading) {
+    return <LoadingState label="Loading the target module…" />;
+  }
+
+  if (editor.query.isError || !editor.query.data) {
+    return (
+      <ErrorState
+        title="Could not load the target module"
+        message={
+          editor.query.error?.message ??
+          'The module for this new lab does not exist or is not manageable.'
+        }
+        onRetry={() => void editor.query.refetch()}
+      />
+    );
+  }
 
   return (
     <LabConfigForm
@@ -714,13 +807,9 @@ function CreateLabContent({
             lessonOrder: (editor.query.data?.lessons.length ?? 0) + 1,
           },
           {
-            onSuccess: (created) => {
+            onSuccess: () => {
               toast.success('Hands-On Lab created.');
-              if (onNodeCreated) {
-                onNodeCreated({ type: 'lab', id: created.lessonId, moduleId });
-              } else {
-                onClose();
-              }
+              onClose();
             },
             onError: (err) => toast.error(err.message),
           },
@@ -730,21 +819,30 @@ function CreateLabContent({
   );
 }
 
-function CreateQuizContent({
-  moduleId,
-  onClose,
-  onNodeCreated,
-}: {
-  moduleId: number;
-  onClose: () => void;
-  onNodeCreated?: (selection: TreeNodeSelection) => void;
-}) {
+function CreateQuizContent({ moduleId, onClose }: { moduleId: number; onClose: () => void }) {
   const editor = useAdminModuleEditor(moduleId);
   const [title, setTitle] = useState('');
   const [titleError, setTitleError] = useState<string | null>(null);
   const [passingScore, setPassingScore] = useState('70');
   const [timeLimitMinutes, setTimeLimitMinutes] = useState('');
   const [isRequired, setIsRequired] = useState(true);
+
+  if (editor.query.isLoading) {
+    return <LoadingState label="Loading the target module…" />;
+  }
+
+  if (editor.query.isError || !editor.query.data) {
+    return (
+      <ErrorState
+        title="Could not load the target module"
+        message={
+          editor.query.error?.message ??
+          'The module for this new quiz does not exist or is not manageable.'
+        }
+        onRetry={() => void editor.query.refetch()}
+      />
+    );
+  }
 
   const handleTitleChange = (val: string) => {
     setTitle(val);
@@ -757,8 +855,8 @@ function CreateQuizContent({
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
     if (!title.trim() || title.trim().length < 3) {
       setTitleError('Title must be at least 3 characters');
       return;
@@ -771,13 +869,9 @@ function CreateQuizContent({
         isRequired,
       },
       {
-        onSuccess: (created) => {
+        onSuccess: () => {
           toast.success('Quiz created.');
-          if (onNodeCreated) {
-            onNodeCreated({ type: 'quiz', id: created.quizId, moduleId });
-          } else {
-            onClose();
-          }
+          onClose();
         },
         onError: (err) => toast.error(err.message),
       },
@@ -786,16 +880,13 @@ function CreateQuizContent({
 
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <div>
-        <Input
-          label="Quiz Title *"
-          placeholder="e.g. Container Networking Check"
-          value={title}
-          onChange={(e) => handleTitleChange(e.target.value)}
-          error={titleError ?? undefined}
-        />
-        {titleError && <p className="mt-1 text-xs text-rose-500 font-mono">{titleError}</p>}
-      </div>
+      <Input
+        label="Quiz Title *"
+        placeholder="e.g. Container Networking Check"
+        value={title}
+        onChange={(e) => handleTitleChange(e.target.value)}
+        error={titleError ?? undefined}
+      />
 
       <div className="grid grid-cols-2 gap-4">
         <Input
@@ -824,14 +915,14 @@ function CreateQuizContent({
           type="checkbox"
           checked={isRequired}
           onChange={(e) => setIsRequired(e.target.checked)}
-          className="h-4 w-4 accent-brand-600 rounded-xs"
+          className="h-4 w-4 rounded-xs accent-brand-600"
         />
-        <label htmlFor="quiz-is-required" className="text-xs font-mono text-card-foreground">
+        <label htmlFor="quiz-is-required" className="font-mono text-xs text-card-foreground">
           Mandatory for module completion
         </label>
       </div>
 
-      <div className="flex justify-end gap-2 pt-4 border-t border-border">
+      <div className="flex justify-end gap-2 border-t border-border pt-4">
         <Button
           variant="ghost"
           size="sm"

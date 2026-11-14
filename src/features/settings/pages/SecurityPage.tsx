@@ -24,6 +24,7 @@ export default function SecurityPage() {
   const [flowState, setFlowState] = useState<'setup' | 'verifying-disable' | null>(null);
   const [setup, setSetup] = useState<TwoFactorSetup | null>(null);
   const [code, setCode] = useState('');
+  const [disablePassword, setDisablePassword] = useState('');
   const [setupError, setSetupError] = useState<string | null>(null);
 
   // Derive the active state from flowState if in a setup/disable workflow,
@@ -55,8 +56,9 @@ export default function SecurityPage() {
 
   const handleVerify = () => {
     if (!setup || code.length < 6) return;
+    // The pending secret lives server-side; only the confirmation code is sent.
     verify.mutate(
-      { code, secret: setup.secret },
+      { code },
       {
         onSuccess: () => {
           toast.success('2FA enabled successfully.');
@@ -74,13 +76,15 @@ export default function SecurityPage() {
   };
 
   const handleDisable = () => {
-    if (code.length < 6) return;
+    if (code.length < 6 || disablePassword.length === 0) return;
+    // Step-up: the server requires both the TOTP code and the account password.
     disable.mutate(
-      { code },
+      { code, password: disablePassword },
       {
         onSuccess: () => {
           toast.success('2FA disabled.');
           setCode('');
+          setDisablePassword('');
           const user = useAuthStore.getState().user;
           if (user) {
             useAuthStore.getState().setUser({ ...user, twoFactorEnabled: false });
@@ -191,6 +195,7 @@ export default function SecurityPage() {
                     variant="danger"
                     onClick={() => {
                       setCode('');
+                      setDisablePassword('');
                       setSetupError(null);
                       setFlowState('verifying-disable');
                     }}
@@ -202,9 +207,26 @@ export default function SecurityPage() {
             ) : (
               <div className="settings-2fa">
                 <p className="settings-card__body">
-                  To disable 2FA, enter the current code from your authenticator app.
+                  To disable 2FA, confirm the current code from your authenticator app and enter
+                  your account password.
                 </p>
                 <OtpInputGroup value={code} onChange={setCode} disabled={disable.isPending} />
+
+                <div>
+                  <label htmlFor="disable-2fa-password" className="settings-2fa__label">
+                    Account password
+                  </label>
+                  <input
+                    id="disable-2fa-password"
+                    type="password"
+                    autoComplete="current-password"
+                    value={disablePassword}
+                    onChange={(e) => setDisablePassword(e.target.value)}
+                    disabled={disable.isPending}
+                    className="input-field w-full rounded-sm font-mono text-xs"
+                    placeholder="Enter your account password to confirm"
+                  />
+                </div>
 
                 {setupError ? (
                   <p className="auth-alert auth-alert--error" role="alert">
@@ -219,6 +241,7 @@ export default function SecurityPage() {
                     onClick={() => {
                       setFlowState(null);
                       setCode('');
+                      setDisablePassword('');
                       setSetupError(null);
                     }}
                     disabled={disable.isPending}
@@ -230,7 +253,7 @@ export default function SecurityPage() {
                     variant="danger"
                     onClick={handleDisable}
                     isLoading={disable.isPending}
-                    disabled={code.length < 6}
+                    disabled={code.length < 6 || disablePassword.length === 0}
                   >
                     Confirm disable
                   </Button>
@@ -311,23 +334,21 @@ function PasswordManagementCard() {
 
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md pt-2">
         {errorMsg && (
-          <div className="p-2.5 text-xs font-mono bg-destructive/10 text-destructive border border-destructive/20 rounded-none">
+          <div className="p-2.5 text-xs font-mono bg-destructive/10 text-destructive border border-destructive/20 rounded-md">
             {errorMsg}
           </div>
         )}
 
         {hasPassword && (
           <div>
-            <label className="block text-xs font-mono text-muted mb-1">
-              Current Password
-            </label>
+            <label className="block text-xs font-mono text-muted mb-1">Current Password</label>
             <input
               type="password"
               autoComplete="current-password"
               required
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value)}
-              className="input-field w-full rounded-none font-mono text-xs"
+              className="input-field w-full rounded-sm font-mono text-xs"
               placeholder="••••••••••••"
             />
           </div>
@@ -341,7 +362,7 @@ function PasswordManagementCard() {
             required
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="input-field w-full rounded-none font-mono text-xs"
+            className="input-field w-full rounded-sm font-mono text-xs"
             placeholder="Min 8 characters"
           />
         </div>
@@ -354,13 +375,13 @@ function PasswordManagementCard() {
             required
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
-            className="input-field w-full rounded-none font-mono text-xs"
+            className="input-field w-full rounded-sm font-mono text-xs"
             placeholder="Re-enter new password"
           />
         </div>
 
         <div>
-          <Button type="submit" isLoading={isSubmitting} className="rounded-none">
+          <Button type="submit" isLoading={isSubmitting} className="rounded-sm">
             {hasPassword ? 'Change Password' : 'Set Password'}
           </Button>
         </div>

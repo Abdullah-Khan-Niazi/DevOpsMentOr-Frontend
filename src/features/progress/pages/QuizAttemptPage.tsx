@@ -11,8 +11,27 @@ import type { QuizAnswerPayload, QuizAttemptResultDto, QuizQuestionDto } from '.
 
 type AnswerMap = Record<number, QuizAnswerValue>;
 
+type BucketAssignment = Record<number, string>;
+
+/** `bucket_sort` answers are cardId → chosen bucket label objects. */
+function isBucketAssignment(value: QuizAnswerValue | undefined): value is BucketAssignment {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
 function isAnswered(question: QuizQuestionDto, answer: QuizAnswerValue | undefined): boolean {
   if (answer === undefined) return false;
+  if (question.questionType === 'ordering') {
+    // Every item must be placed; the array order is the learner's sequence.
+    return Array.isArray(answer) && answer.length === question.answers.length;
+  }
+  if (question.questionType === 'bucket_sort') {
+    // Every card must be assigned to one of the configured buckets.
+    if (!isBucketAssignment(answer)) return false;
+    return question.answers.every((card) => {
+      const bucket = answer[card.answerId];
+      return typeof bucket === 'string' && bucket.trim().length > 0;
+    });
+  }
   if (question.questionType === 'multiple_select') {
     return Array.isArray(answer) && answer.length > 0;
   }
@@ -84,6 +103,31 @@ function QuizAttemptView({ quizId }: { quizId: string }) {
     const payloadAnswers = questions
       .map((question): QuizAnswerPayload[] => {
         const value = answers[question.questionId];
+
+        // ordering: one entry per item, in the learner's chosen order. The
+        // backend scores the sequence of `answerId`s, so entry order matters.
+        if (question.questionType === 'ordering' && Array.isArray(value)) {
+          const validIds = new Set(question.answers.map((card) => card.answerId));
+          return value
+            .filter((answerId): answerId is number => validIds.has(answerId))
+            .map((answerId) => ({ questionId: question.questionId, answerId }));
+        }
+
+        // bucket_sort: one entry per card, carrying the chosen bucket label.
+        if (question.questionType === 'bucket_sort' && isBucketAssignment(value)) {
+          return question.answers.flatMap((card): QuizAnswerPayload[] => {
+            const bucket = value[card.answerId];
+            if (typeof bucket !== 'string' || bucket.trim().length === 0) return [];
+            return [
+              {
+                questionId: question.questionId,
+                answerId: card.answerId,
+                answerText: bucket.trim(),
+              },
+            ];
+          });
+        }
+
         if (question.questionType === 'multiple_select' && Array.isArray(value)) {
           return value.map((answerId) => ({ questionId: question.questionId, answerId }));
         }
@@ -135,10 +179,7 @@ function QuizAttemptView({ quizId }: { quizId: string }) {
   if (result) {
     return (
       <div className="mx-auto max-w-3xl">
-        <PageHeader
-          title={meta.data.title}
-          backTo={ROUTES.LEARN}
-        />
+        <PageHeader title={meta.data.title} backTo={ROUTES.LEARN} />
         <QuizResultPanel
           result={result}
           onRetry={() => {

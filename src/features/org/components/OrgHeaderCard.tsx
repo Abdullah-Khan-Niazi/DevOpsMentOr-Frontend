@@ -21,7 +21,7 @@ export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-semibold text-card-foreground">{org.name}</h2>
             {org.isVerified ? (
-              <span className="text-[0.625rem] font-mono font-bold uppercase tracking-wider text-card-foreground border border-border-strong px-2 py-0.5 bg-accent/10 rounded-none">
+              <span className="text-micro font-mono font-bold uppercase tracking-wider text-card-foreground border border-border-strong px-2 py-0.5 bg-accent/10 rounded-xs">
                 Verified
               </span>
             ) : null}

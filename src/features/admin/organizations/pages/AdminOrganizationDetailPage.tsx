@@ -355,12 +355,12 @@ export function OrgDetailForm({
       {/* Tab 1: Organization Details */}
       {activeTab === 'details' ? (
         <div className="space-y-6">
-          <Card className="space-y-4 p-6 rounded-none">
+          <Card className="space-y-4 p-6">
             <div className="grid gap-4 sm:grid-cols-2">
               <Input label="Name" value={name} onChange={(e) => setName(e.target.value)} required />
               <div>
                 <label className="input-label">URL slug</label>
-                <div className="input-field bg-surface text-muted cursor-not-allowed select-all rounded-none">
+                <div className="input-field bg-surface text-muted cursor-not-allowed select-all">
                   {org.slug}
                 </div>
                 <p className="mt-1 text-xs text-muted">Immutable tenant workspace identifier.</p>
@@ -387,7 +387,7 @@ export function OrgDetailForm({
               <textarea
                 id="org-admin-desc"
                 rows={3}
-                className="input-field w-full rounded-none"
+                className="input-field w-full"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
               />
@@ -399,7 +399,7 @@ export function OrgDetailForm({
             </div>
           </Card>
 
-          <Card className="space-y-4 border-signal/40 bg-signal/5 p-6 rounded-none">
+          <Card className="space-y-4 border-signal/40 bg-signal/5 p-6">
             <div>
               <h3 className="text-base font-semibold text-signal">Danger Zone</h3>
               <p className="mt-0.5 text-xs text-muted">
@@ -426,18 +426,18 @@ export function OrgDetailForm({
       {/* Tab 2: Leadership & Admins */}
       {activeTab === 'leadership' ? (
         <div className="space-y-6">
-          <Card className="p-6 rounded-none">
+          <Card className="p-6">
             <h3 className="text-base font-semibold text-card-foreground">
               Current Organization Admin
             </h3>
-            <div className="mt-3 border border-border p-4 bg-surface rounded-none">
+            <div className="mt-3 border border-border p-4 bg-surface rounded-md">
               {org.adminUserId && org.adminEmail ? (
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <p className="font-medium text-card-foreground">{org.adminEmail}</p>
                     <p className="text-xs text-muted">Platform User #{org.adminUserId}</p>
                   </div>
-                  <span className="border border-border-strong bg-accent/10 px-2.5 py-1 text-xs font-medium text-card-foreground rounded-none">
+                  <span className="border border-border-strong bg-accent/10 px-2.5 py-1 text-xs font-medium text-card-foreground rounded-xs">
                     Active Org Admin
                   </span>
                 </div>
@@ -450,7 +450,7 @@ export function OrgDetailForm({
             </div>
 
             {pendingInviteSentTo && (
-              <div className="mt-3 border border-blue-200 bg-blue-50/50 p-3 text-xs text-blue-900 rounded-none">
+              <div className="mt-3 border border-blue-200 bg-blue-50/50 p-3 text-xs text-blue-900 rounded-md">
                 <p className="font-semibold">Pending Invitation Sent</p>
                 <p className="mt-0.5">
                   An email invitation link was dispatched to{' '}
@@ -461,7 +461,7 @@ export function OrgDetailForm({
             )}
           </Card>
 
-          <Card className="p-6 space-y-4 rounded-none">
+          <Card className="p-6 space-y-4">
             <div>
               <h3 className="text-base font-semibold text-card-foreground">
                 {org.adminUserId ? 'Reassign / Transfer Admin' : 'Assign Organization Admin'}
@@ -476,7 +476,7 @@ export function OrgDetailForm({
                   setAdminMode('search');
                   setSelectedUser(null);
                 }}
-                className={`px-3 py-1.5 text-xs font-medium border transition-colors rounded-none ${
+                className={`px-3 py-1.5 text-xs font-medium border transition-colors rounded-sm ${
                   adminMode === 'search'
                     ? 'border-brand-600 bg-brand-50/20 text-brand-600 font-bold'
                     : 'border-border text-muted hover:text-card-foreground'
@@ -490,7 +490,7 @@ export function OrgDetailForm({
                   setAdminMode('email');
                   setSelectedUser(null);
                 }}
-                className={`px-3 py-1.5 text-xs font-medium border transition-colors rounded-none ${
+                className={`px-3 py-1.5 text-xs font-medium border transition-colors rounded-sm ${
                   adminMode === 'email'
                     ? 'border-brand-600 bg-brand-50/20 text-brand-600 font-bold'
                     : 'border-border text-muted hover:text-card-foreground'
@@ -521,7 +521,7 @@ export function OrgDetailForm({
             ) : (
               <div className="space-y-4 max-w-xl">
                 {selectedUser && (
-                  <div className="border border-border bg-surface p-4 rounded-none space-y-3">
+                  <div className="border border-border bg-surface p-4 rounded-md space-y-3">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <div>
                         <p className="font-medium text-card-foreground">
@@ -569,7 +569,7 @@ export function OrgDetailForm({
                   </label>
                   <input
                     id="admin-filter-input"
-                    className="input-field w-full mt-1 rounded-none"
+                    className="input-field w-full mt-1"
                     placeholder="Type name, username or email to filter list…"
                     value={userSearch}
                     onChange={(e) => {
@@ -579,7 +579,7 @@ export function OrgDetailForm({
                   />
                 </div>
 
-                <div className="max-h-56 overflow-y-auto border border-border divide-y divide-border/60 bg-card rounded-none">
+                <div className="max-h-56 overflow-y-auto border border-border divide-y divide-border/60 bg-card rounded-md">
                   {usersQuery.isLoading ? (
                     <div className="p-3 text-center text-xs text-muted">
                       Loading registered platform users…
@@ -659,7 +659,7 @@ export function OrgDetailForm({
                 variant="secondary"
                 size="sm"
                 onClick={() => setSelectedClassId(null)}
-                className="rounded-none flex items-center gap-1.5"
+                className="flex items-center gap-1.5"
               >
                 <span>←</span> Back to Classes
               </Button>
@@ -683,14 +683,14 @@ export function OrgDetailForm({
             ) : classDetailQuery.data ? (
               <>
                 {/* Class Header Card */}
-                <Card className="p-5 rounded-none space-y-3">
+                <Card className="p-5 space-y-3">
                   <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
                     <div>
                       <h4 className="text-lg font-bold text-card-foreground">
                         {classDetailQuery.data.detail.className}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-xs text-brand-600 bg-brand-50/20 px-2 py-0.5 border border-brand-200 rounded-none">
+                        <span className="font-mono text-xs text-brand-600 bg-brand-50/20 px-2 py-0.5 border border-brand-200 rounded-xs">
                           /{classDetailQuery.data.detail.slug}
                         </span>
                         <span className="text-xs text-muted">
@@ -717,12 +717,12 @@ export function OrgDetailForm({
                 </Card>
 
                 {/* Assigned Professor Card */}
-                <Card className="p-5 rounded-none">
+                <Card className="p-5">
                   <div className="text-xs uppercase text-muted font-medium mb-2">
                     Assigned Professor
                   </div>
                   {classDetailQuery.data.professor ? (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-border p-3 bg-surface rounded-none">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-border p-3 bg-surface rounded-md">
                       <div>
                         <p className="font-medium text-card-foreground">
                           {classDetailQuery.data.professor.fullName ??
@@ -751,13 +751,13 @@ export function OrgDetailForm({
                             },
                           )
                         }
-                        className="rounded-none text-xs"
+                        className="text-xs"
                       >
                         View Professor Profile →
                       </Button>
                     </div>
                   ) : (
-                    <div className="border border-border/80 p-3 bg-surface/50 text-xs text-muted rounded-none">
+                    <div className="border border-border/80 p-3 bg-surface/50 text-xs text-muted rounded-md">
                       No instructor assigned to this class.
                     </div>
                   )}
@@ -769,12 +769,12 @@ export function OrgDetailForm({
                     Cohort Telemetry & Compute Resources
                   </h5>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                    <Card className="p-4 rounded-none">
+                    <Card className="p-4">
                       <span className="text-xs uppercase text-muted">Module Progression</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.avgProgress}%
                       </p>
-                      <div className="w-full bg-secondary h-1.5 mt-2 rounded-none">
+                      <div className="w-full bg-secondary h-1.5 mt-2 rounded-full">
                         <div
                           className="bg-brand-600 h-1.5 transition-all"
                           style={{
@@ -784,7 +784,7 @@ export function OrgDetailForm({
                       </div>
                     </Card>
 
-                    <Card className="p-4 rounded-none">
+                    <Card className="p-4">
                       <span className="text-xs uppercase text-muted">Active Compute Pods</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.activePods}
@@ -792,7 +792,7 @@ export function OrgDetailForm({
                       <p className="text-xs text-muted mt-1">Live sandbox containers</p>
                     </Card>
 
-                    <Card className="p-4 rounded-none">
+                    <Card className="p-4">
                       <span className="text-xs uppercase text-muted">RAM Consumption</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.avgRam} GB
@@ -800,7 +800,7 @@ export function OrgDetailForm({
                       <p className="text-xs text-muted mt-1">Allocated memory</p>
                     </Card>
 
-                    <Card className="p-4 rounded-none">
+                    <Card className="p-4">
                       <span className="text-xs uppercase text-muted">CPU Compute Load</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.avgCpu} Cores
@@ -811,7 +811,7 @@ export function OrgDetailForm({
                 </div>
 
                 {/* Top Performing Student Leaderboard */}
-                <Card className="p-5 rounded-none space-y-3">
+                <Card className="p-5 space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-3">
                     <div>
                       <h5 className="text-sm font-semibold text-card-foreground">
@@ -888,7 +888,7 @@ export function OrgDetailForm({
                 </Card>
 
                 {/* Enrolled Students Roster */}
-                <Card className="p-5 rounded-none space-y-3">
+                <Card className="p-5 space-y-3">
                   <div className="flex items-center justify-between border-b border-border pb-3">
                     <div>
                       <h5 className="text-sm font-semibold text-card-foreground">
@@ -954,7 +954,7 @@ export function OrgDetailForm({
             ) : null}
           </div>
         ) : (
-          <Card className="p-6 space-y-4 rounded-none">
+          <Card className="p-6 space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4">
               <div>
                 <h3 className="text-base font-semibold text-card-foreground">
@@ -1042,7 +1042,7 @@ export function OrgDetailForm({
             <>
               {/* Top Row KPI Cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <Card className="p-4 rounded-none">
+                <Card className="p-4">
                   <span className="text-xs uppercase text-muted">Revenue & Payments</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     ${analyticsQuery.data?.revenue.totalRevenue.toLocaleString() ?? 0}
@@ -1053,7 +1053,7 @@ export function OrgDetailForm({
                   </p>
                 </Card>
 
-                <Card className="p-4 rounded-none">
+                <Card className="p-4">
                   <span className="text-xs uppercase text-muted">Total Learners & Staff</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     {analyticsQuery.data?.members.totalMembers ?? 0}
@@ -1065,7 +1065,7 @@ export function OrgDetailForm({
                   </p>
                 </Card>
 
-                <Card className="p-4 rounded-none">
+                <Card className="p-4">
                   <span className="text-xs uppercase text-muted">Daily Active Learners</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     {analyticsQuery.data?.dau.avgDau ?? 0}
@@ -1076,7 +1076,7 @@ export function OrgDetailForm({
                   </p>
                 </Card>
 
-                <Card className="p-4 rounded-none">
+                <Card className="p-4">
                   <span className="text-xs uppercase text-muted">Active Lab Containers</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     {analyticsQuery.data?.compute.activePods ?? 0}
@@ -1090,7 +1090,7 @@ export function OrgDetailForm({
 
               {/* Curriculum Progress & Resource Consumption Grid */}
               <div className="grid gap-6 lg:grid-cols-2">
-                <Card className="p-6 rounded-none space-y-4">
+                <Card className="p-6 space-y-4">
                   <h3 className="text-sm font-semibold text-card-foreground">
                     Curriculum & Lab Progress
                   </h3>
@@ -1102,9 +1102,9 @@ export function OrgDetailForm({
                           {analyticsQuery.data?.progress.avgModuleCompletionRate ?? 0}%
                         </span>
                       </div>
-                      <div className="h-2 w-full bg-secondary overflow-hidden rounded-none">
+                      <div className="h-2 w-full bg-secondary overflow-hidden rounded-full">
                         <div
-                          className="h-full bg-brand-600 transition-all duration-300 rounded-none"
+                          className="h-full bg-brand-600 transition-all duration-300 rounded-full"
                           style={{
                             width: `${analyticsQuery.data?.progress.avgModuleCompletionRate ?? 0}%`,
                           }}
@@ -1119,9 +1119,9 @@ export function OrgDetailForm({
                           {analyticsQuery.data?.progress.avgLabCompletionRate ?? 0}%
                         </span>
                       </div>
-                      <div className="h-2 w-full bg-secondary overflow-hidden rounded-none">
+                      <div className="h-2 w-full bg-secondary overflow-hidden rounded-full">
                         <div
-                          className="h-full bg-cyan-600 transition-all duration-300 rounded-none"
+                          className="h-full bg-cyan-600 transition-all duration-300 rounded-full"
                           style={{
                             width: `${analyticsQuery.data?.progress.avgLabCompletionRate ?? 0}%`,
                           }}
@@ -1130,13 +1130,13 @@ export function OrgDetailForm({
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div className="border border-border p-3 bg-surface rounded-none">
+                      <div className="border border-border p-3 bg-surface rounded-md">
                         <span className="text-xs uppercase text-muted">Completed Modules</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalModuleCompletions ?? 0}
                         </p>
                       </div>
-                      <div className="border border-border p-3 bg-surface rounded-none">
+                      <div className="border border-border p-3 bg-surface rounded-md">
                         <span className="text-xs uppercase text-muted">Completed Labs</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalLabCompletions ?? 0}
@@ -1146,12 +1146,12 @@ export function OrgDetailForm({
                   </div>
                 </Card>
 
-                <Card className="p-6 rounded-none space-y-4">
+                <Card className="p-6 space-y-4">
                   <h3 className="text-sm font-semibold text-card-foreground">
                     Compute Resource Consumption
                   </h3>
                   <div className="grid grid-cols-2 gap-4">
-                    <div className="border border-border p-4 bg-surface rounded-none">
+                    <div className="border border-border p-4 bg-surface rounded-md">
                       <span className="text-xs font-medium text-muted">RAM Consumption</span>
                       <p className="mt-2 text-xl font-bold text-card-foreground">
                         {analyticsQuery.data?.compute.avgRam ?? 0} GB{' '}
@@ -1163,7 +1163,7 @@ export function OrgDetailForm({
                       </p>
                     </div>
 
-                    <div className="border border-border p-4 bg-surface rounded-none">
+                    <div className="border border-border p-4 bg-surface rounded-md">
                       <span className="text-xs font-medium text-muted">CPU Allocation</span>
                       <p className="mt-2 text-xl font-bold text-card-foreground">
                         {analyticsQuery.data?.compute.avgCpu ?? 0}{' '}
@@ -1179,7 +1179,7 @@ export function OrgDetailForm({
               </div>
 
               {/* 14-Day Activity Trend */}
-              <Card className="p-6 rounded-none">
+              <Card className="p-6">
                 <div className="flex items-center justify-between mb-4">
                   <div>
                     <h3 className="text-sm font-semibold text-card-foreground">
@@ -1194,9 +1194,9 @@ export function OrgDetailForm({
                 <div className="grid grid-cols-7 sm:grid-cols-14 gap-1.5 pt-2">
                   {analyticsQuery.data?.dau.dailyTrend.map((pt) => (
                     <div key={pt.date} className="flex flex-col items-center">
-                      <div className="h-24 w-full flex items-end justify-center bg-secondary/30 p-1 rounded-none">
+                      <div className="h-24 w-full flex items-end justify-center bg-secondary/30 p-1 rounded-full">
                         <div
-                          className="w-full bg-brand-600 rounded-none transition-all duration-300"
+                          className="w-full bg-brand-600 rounded-full transition-all duration-300"
                           style={{
                             height: `${Math.max(8, Math.min(100, (pt.activeUsers / Math.max(1, analyticsQuery.data?.dau.maxDau ?? 1)) * 100))}%`,
                           }}
@@ -1225,7 +1225,7 @@ export function OrgDetailForm({
           />
 
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
-            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-none">
+            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
               <div className="space-y-6">
                 <div className="flex items-center justify-between border-b border-border pb-4">
                   <div>
@@ -1255,7 +1255,7 @@ export function OrgDetailForm({
                     </label>
                     <select
                       id="drawer-org-role"
-                      className="input-field w-full mt-1 rounded-none"
+                      className="input-field w-full mt-1"
                       value={drawerRole}
                       onChange={(e) =>
                         setDrawerRole(e.target.value as 'org_student' | 'professor' | 'org_admin')
@@ -1293,7 +1293,7 @@ export function OrgDetailForm({
                         void handleDrawerCsvFile(e.dataTransfer.files);
                       }}
                       onClick={() => drawerFileInputRef.current?.click()}
-                      className={`mt-1 border border-dashed p-3 text-center cursor-pointer transition-colors rounded-none ${
+                      className={`mt-1 border border-dashed p-3 text-center cursor-pointer transition-colors rounded-md ${
                         isDrawerDraggingCsv
                           ? 'border-brand-600 bg-brand-50/20'
                           : 'border-border bg-surface/50 hover:bg-surface'
@@ -1330,7 +1330,7 @@ export function OrgDetailForm({
                     <textarea
                       id="drawer-org-emails"
                       rows={5}
-                      className="input-field w-full mt-1 font-mono text-xs rounded-none"
+                      className="input-field w-full mt-1 font-mono text-xs"
                       placeholder={'student1@acme.edu\nstudent2@acme.edu, professor@acme.edu'}
                       value={drawerEmails}
                       onChange={(e) => setDrawerEmails(e.target.value)}

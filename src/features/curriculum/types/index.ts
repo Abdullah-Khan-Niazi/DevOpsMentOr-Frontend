@@ -1,7 +1,8 @@
 /** F4 §07 response DTOs, mirrored from the backend curriculum DTOs. */
 
 export type ContentType = 'text' | 'video' | 'interactive' | 'lab';
-export type QuestionType = 'multiple_choice' | 'true_false' | 'fill_blank' | 'multiple_select';
+export type QuestionType =
+  'multiple_choice' | 'true_false' | 'fill_blank' | 'multiple_select' | 'bucket_sort' | 'ordering';
 
 export interface TagDto {
   tagId: number;
@@ -48,6 +49,8 @@ export interface LessonDto {
   lessonId: number;
   moduleId: number;
   title: string;
+  /** Stable slug used for deep links and GitOps slide/walkthrough asset matching. */
+  slug: string | null;
   content: string | null;
   contentType: ContentType;
   videoUrl: string | null;
@@ -79,11 +82,31 @@ export interface AnswerDto {
   answerOrder: number;
 }
 
+/**
+ * Presentation config persisted on `QuestionDto.config` for `bucket_sort`.
+ * `buckets` is the ordered list of bucket labels; a card's `answerOrder`
+ * points at the 1-based bucket index (correctness never lives in config).
+ */
+export type BucketSortConfigDto = {
+  buckets: string[];
+  instructions?: string;
+};
+
+/**
+ * Presentation config persisted on `QuestionDto.config` for `ordering`.
+ * `answerOrder` carries the item position; config only carries hints.
+ */
+export type OrderingConfigDto = {
+  instructions?: string;
+};
+
 export interface QuestionDto {
   questionId: number;
   quizId: number;
   questionText: string;
   questionType: QuestionType;
+  /** Rich presentation payload for bucket_sort/ordering (never holds correctness). */
+  config: Record<string, unknown> | null;
   points: number;
   explanation: string | null;
   questionOrder: number;
@@ -192,6 +215,7 @@ export interface AnswerInput {
 export interface CreateQuestionPayload {
   questionText: string;
   questionType: QuestionType;
+  config?: Record<string, unknown> | null;
   points?: number;
   explanation?: string | null;
   questionOrder: number;
@@ -201,6 +225,7 @@ export interface CreateQuestionPayload {
 export interface UpdateQuestionPayload {
   questionText?: string;
   questionType?: QuestionType;
+  config?: Record<string, unknown> | null;
   points?: number;
   explanation?: string | null;
   questionOrder?: number;

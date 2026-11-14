@@ -1,4 +1,12 @@
-export { useMyOrg, useOrgProfessors, useOrgUsers, useOrgUserDetail, useMyOrgAnalytics } from './useOrg';
+export {
+  useMyOrg,
+  useMyMemberships,
+  useSwitchOrg,
+  useOrgProfessors,
+  useOrgUsers,
+  useOrgUserDetail,
+  useMyOrgAnalytics,
+} from './useOrg';
 export {
   useClassDetail,
   useClassInvitations,
