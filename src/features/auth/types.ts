@@ -121,7 +121,11 @@ export interface TwoFactorSetup {
 
 export interface Verify2faPayload {
   code: string;
-  secret?: string;
+}
+
+export interface Disable2faPayload {
+  code: string;
+  password: string;
 }
 
 /* ─── OAuth ──────────────────────────────────────────────────────────────── */

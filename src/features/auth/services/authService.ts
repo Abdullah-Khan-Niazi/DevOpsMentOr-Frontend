@@ -7,6 +7,7 @@ import type {
   ApiTokenCreated,
   AuthEnvelope,
   CreateApiTokenPayload,
+  Disable2faPayload,
   ForgotPasswordPayload,
   LoginCredentials,
   LoginHistoryEntry,
@@ -57,7 +58,10 @@ export const authService = {
     return data;
   },
 
-  async setPassword(payload: { currentPassword?: string; newPassword: string }): Promise<MessageResponse> {
+  async setPassword(payload: {
+    currentPassword?: string;
+    newPassword: string;
+  }): Promise<MessageResponse> {
     const { data } = await apiClient.post<MessageResponse>('/auth/set-password', payload);
     return data;
   },
@@ -101,7 +105,7 @@ export const authService = {
     return data;
   },
 
-  async disable2fa(payload: Verify2faPayload): Promise<MessageResponse> {
+  async disable2fa(payload: Disable2faPayload): Promise<MessageResponse> {
     const { data } = await apiClient.post<MessageResponse>('/auth/2fa/disable', payload);
     return data;
   },

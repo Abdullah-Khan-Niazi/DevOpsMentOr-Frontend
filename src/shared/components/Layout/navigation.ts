@@ -108,22 +108,13 @@ export function buildNavItems(
       });
     }
     if (permissions.has('platform.gamification.manage')) {
-      items.push(
-        {
-          to: ROUTES.ADMIN_GAMIFICATION,
-          label: 'Gamification',
-          icon: 'award',
-          section: 'Administration',
-        },
-        { to: ROUTES.ADMIN_BADGES, label: 'Badges', icon: 'award', section: 'Administration' },
-        {
-          to: ROUTES.ADMIN_ACHIEVEMENTS,
-          label: 'Achievements',
-          icon: 'leaderboard',
-          section: 'Administration',
-        },
-        { to: ROUTES.ADMIN_SEASONS, label: 'Seasons', icon: 'track', section: 'Administration' },
-      );
+      // One nav entry; badges/achievements/seasons are URL-driven tabs.
+      items.push({
+        to: ROUTES.ADMIN_GAMIFICATION,
+        label: 'Gamification',
+        icon: 'award',
+        section: 'Administration',
+      });
     }
     if (permissions.has('platform.content.moderate')) {
       items.push(
@@ -195,11 +186,7 @@ export function buildNavItems(
       });
     }
     if (
-      hasAny(permissions, [
-        'org:professors:invite',
-        'org:students:invite',
-        'class:students:read',
-      ])
+      hasAny(permissions, ['org:professors:invite', 'org:students:invite', 'class:students:read'])
     ) {
       items.push({
         to: ROUTES.ORG_PROFESSORS,
@@ -234,7 +221,9 @@ export function buildNavItems(
     }
     if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
       items.push({
-        to: ROUTES.LEARN,
+        // Context-aware: staff stay in the org workspace instead of being
+        // silently teleported to the personal /learn shell.
+        to: ROUTES.ORG_CURRICULUM,
         label: 'Curriculum',
         icon: 'roles',
         section: 'Workspace',
@@ -279,7 +268,9 @@ export function buildNavItems(
     });
     if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
       items.push({
-        to: ROUTES.LEARN,
+        // Context-aware: staff stay in the org workspace instead of being
+        // silently teleported to the personal /learn shell.
+        to: ROUTES.ORG_CURRICULUM,
         label: 'Curriculum',
         icon: 'roles',
         section: 'Workspace',

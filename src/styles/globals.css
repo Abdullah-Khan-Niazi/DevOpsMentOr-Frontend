@@ -80,6 +80,14 @@
   --shadow-accent-glow: 0 0 0 0.0625rem var(--ink), 0 0.25rem 0.75rem rgba(20, 20, 15, 0.12);
 }
 
+/* Off-scale micro typography used by dense admin surfaces. Declared inline so the
+   generated text-micro / text-caption utilities keep these exact sizes — the legacy
+   unlayered :root --text-caption token (0.75rem) stays untouched for CSS consumers. */
+@theme inline {
+  --text-micro: 0.625rem;
+  --text-caption: 0.6875rem;
+}
+
 html {
   scroll-behavior: smooth;
   /* Fluid root type scale: 16px at <=1440px, growing to 18px at >=1920px.

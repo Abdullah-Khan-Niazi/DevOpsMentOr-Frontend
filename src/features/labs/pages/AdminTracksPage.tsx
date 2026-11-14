@@ -1,17 +1,8 @@
 import { useState, useMemo } from 'react';
-import {
-  Button,
-  Card,
-  ErrorState,
-  PageHeader,
-  TablePageSkeleton,
-  toast,
-} from '@/shared/components';
-import { useQueryClient } from '@tanstack/react-query';
-import { QUERY_KEYS } from '@/shared/constants';
+import { Button, Card, ErrorState, PageHeader, TablePageSkeleton } from '@/shared/components';
 import { useAdminTracks } from '../hooks';
-import { labsService } from '../services';
-import type { AdminTrackDto, CreateTrackPayload } from '../types';
+import { CurriculumTrackDrawer } from '@/features/curriculum/components/CurriculumTrackDrawer';
+import type { AdminTrackDto } from '../types';
 
 type SortColumn = 'trackName' | 'estimatedHours' | 'difficultyName' | 'isActive';
 type SortDirection = 'asc' | 'desc';
@@ -26,61 +17,27 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
   );
 }
 
-/** LAB-19/20/21: admin track management — create and edit ordered paths. */
+/**
+ * LAB-19/20/21: admin track management — create and edit ordered paths. The
+ * create/edit form lives in the shared curriculum track drawer so this page
+ * and the curriculum Tracks tab stay on one implementation.
+ */
 export function AdminTracksPage() {
-  const queryClient = useQueryClient();
   const { data, isLoading, isError, error, refetch } = useAdminTracks();
-  const [editing, setEditing] = useState<AdminTrackDto | null>(null);
-  const [draft, setDraft] = useState<CreateTrackPayload | null>(null);
-  const [saving, setSaving] = useState(false);
+  const [drawer, setDrawer] = useState<{
+    mode: 'create' | 'edit';
+    track: AdminTrackDto | null;
+  } | null>(null);
 
   const [sortCol, setSortCol] = useState<SortColumn>('trackName');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
 
-  const invalidate = (): void => {
-    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.adminLabs.tracks('all') });
-  };
-
   const openCreate = (): void => {
-    setEditing(null);
-    setDraft({ trackName: '', slug: '', totalLabs: 0, content: [] });
+    setDrawer({ mode: 'create', track: null });
   };
 
   const openEdit = (track: AdminTrackDto): void => {
-    setEditing(track);
-    setDraft({
-      trackName: track.trackName,
-      slug: track.slug,
-      description: track.description ?? undefined,
-      difficultyId: track.difficultyId ?? undefined,
-      totalLabs: 0,
-      content: [],
-    });
-  };
-
-  const save = (): void => {
-    if (!draft) {
-      return;
-    }
-    if (draft.trackName.trim().length === 0 || draft.slug.trim().length === 0) {
-      toast.error('Track name and slug are required.');
-      return;
-    }
-    setSaving(true);
-    const request = editing
-      ? labsService.adminUpdateTrack(editing.trackId, draft)
-      : labsService.adminCreateTrack(draft);
-    request
-      .then(() => {
-        toast.success(editing ? 'Track updated.' : 'Track created.');
-        setDraft(null);
-        setEditing(null);
-        invalidate();
-      })
-      .catch((err: unknown) => {
-        toast.error((err as { message?: string }).message ?? 'Could not save track.');
-      })
-      .finally(() => setSaving(false));
+    setDrawer({ mode: 'edit', track });
   };
 
   const [search, setSearch] = useState('');
@@ -193,7 +150,7 @@ export function AdminTracksPage() {
                   setSearch('');
                   setStatusFilter('all');
                 }}
-                className="h-7 text-[0.6875rem] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+                className="h-7 text-caption rounded-none px-2 shrink-0 transition-transform active:scale-95"
               >
                 Reset
               </Button>
@@ -203,7 +160,7 @@ export function AdminTracksPage() {
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-xs font-mono border-collapse">
               <thead>
-                <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
+                <tr className="border-b border-border text-caption uppercase tracking-wide text-muted">
                   <th
                     className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
                     onClick={() => handleSort('trackName')}
@@ -240,7 +197,7 @@ export function AdminTracksPage() {
                   >
                     <td className="px-3 py-2.5">
                       <div className="font-semibold text-card-foreground">{track.trackName}</div>
-                      <div className="text-[0.6875rem] text-muted font-mono">/{track.slug}</div>
+                      <div className="text-caption text-muted font-mono">/{track.slug}</div>
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
                       {track.estimatedHours} hrs
@@ -270,102 +227,12 @@ export function AdminTracksPage() {
         </Card>
       )}
 
-      {draft && (
-        <div className="modal-backdrop">
-          <Card className="lab-admin-form">
-            <h2>{editing ? 'Edit track' : 'New track'}</h2>
-            <label className="input-label">
-              Track name
-              <input
-                className="input-field"
-                value={draft.trackName}
-                onChange={(e) => setDraft({ ...draft, trackName: e.target.value })}
-              />
-            </label>
-            <label className="input-label">
-              Slug
-              <input
-                className="input-field"
-                value={draft.slug}
-                onChange={(e) =>
-                  setDraft({ ...draft, slug: e.target.value.toLowerCase().replace(/\s+/g, '-') })
-                }
-              />
-            </label>
-            <label className="input-label">
-              Description
-              <textarea
-                className="input-field"
-                rows={3}
-                value={draft.description ?? ''}
-                onChange={(e) => setDraft({ ...draft, description: e.target.value })}
-              />
-            </label>
-            <div className="lab-admin-form__grid">
-              <label className="input-label">
-                Difficulty ID
-                <input
-                  className="input-field"
-                  type="number"
-                  value={draft.difficultyId ?? ''}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      difficultyId: e.target.value === '' ? undefined : Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label className="input-label">
-                Category ID
-                <input
-                  className="input-field"
-                  type="number"
-                  value={draft.categoryId ?? ''}
-                  onChange={(e) =>
-                    setDraft({
-                      ...draft,
-                      categoryId: e.target.value === '' ? undefined : Number(e.target.value),
-                    })
-                  }
-                />
-              </label>
-              <label className="input-label">
-                Total labs
-                <input
-                  className="input-field"
-                  type="number"
-                  value={draft.totalLabs}
-                  onChange={(e) => setDraft({ ...draft, totalLabs: Number(e.target.value) })}
-                />
-              </label>
-              <label className="input-label">
-                Premium
-                <select
-                  className="input-field"
-                  value={draft.isPremium ? '1' : '0'}
-                  onChange={(e) => setDraft({ ...draft, isPremium: e.target.value === '1' })}
-                >
-                  <option value="0">No</option>
-                  <option value="1">Yes</option>
-                </select>
-              </label>
-            </div>
-            <p className="lab-admin-form__note">
-              Content items (labs and courses with display order and required flags) are managed via
-              the API.
-            </p>
-            <div className="lab-admin-form__actions">
-              <Button variant="ghost" onClick={() => setDraft(null)}>
-                Cancel
-              </Button>
-              <Button onClick={save} isLoading={saving}>
-                {editing ? 'Save changes' : 'Create track'}
-              </Button>
-            </div>
-          </Card>
-        </div>
-      )}
+      <CurriculumTrackDrawer
+        isOpen={Boolean(drawer)}
+        onClose={() => setDrawer(null)}
+        mode={drawer?.mode ?? 'create'}
+        track={drawer?.track ?? null}
+      />
     </div>
   );
 }

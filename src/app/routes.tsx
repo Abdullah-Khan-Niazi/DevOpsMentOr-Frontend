@@ -9,7 +9,6 @@ import {
   OrgDashboardSkeleton,
   TablePageSkeleton,
   DetailFormSkeleton,
-  GridCardsSkeleton,
   DashboardSkeleton,
   CurriculumSkeleton,
   PublicPageSkeleton,
@@ -99,14 +98,9 @@ const CohortLeaderboardPage = lazy(
 const VerifyCertificatePage = lazy(
   () => import('@/features/certificates/pages/VerifyCertificatePage'),
 );
-const AdminGamificationPage = lazy(
-  () => import('@/features/admin/gamification/pages/AdminGamificationPage'),
+const AdminGamificationHubPage = lazy(
+  () => import('@/features/admin/gamification/pages/AdminGamificationHubPage'),
 );
-const AdminBadgesPage = lazy(() => import('@/features/admin/gamification/pages/AdminBadgesPage'));
-const AdminAchievementsPage = lazy(
-  () => import('@/features/admin/gamification/pages/AdminAchievementsPage'),
-);
-const AdminSeasonsPage = lazy(() => import('@/features/admin/gamification/pages/AdminSeasonsPage'));
 // ─── F8 analytics, notifications & platform operations ─────────────────────
 const NotificationInboxPage = lazy(
   () => import('@/features/notifications/pages/NotificationInboxPage'),
@@ -433,7 +427,10 @@ export function AppRoutes() {
           {/* ─── F6 labs catalog & tracks deprecated — redirected to unified learner curriculum ── */}
           <Route path={ROUTES.LABS} element={<Navigate to={ROUTES.LEARN} replace />} />
           <Route path={ROUTES.LAB_DETAIL} element={<Navigate to={ROUTES.LEARN} replace />} />
-          <Route path={ROUTES.SHERLOCK_DIAGNOSTIC} element={<Navigate to={ROUTES.LEARN} replace />} />
+          <Route
+            path={ROUTES.SHERLOCK_DIAGNOSTIC}
+            element={<Navigate to={ROUTES.LEARN} replace />}
+          />
           <Route path={ROUTES.TRACKS} element={<Navigate to={ROUTES.LEARN} replace />} />
           <Route path={ROUTES.TRACK_DETAIL} element={<Navigate to={ROUTES.LEARN} replace />} />
           <Route
@@ -949,6 +946,19 @@ export function AppRoutes() {
           </PermissionRouteGuard>
         }
       />
+      {/* Context-aware curriculum: staff stay inside the org workspace. */}
+      <Route
+        path={ROUTES.ORG_CURRICULUM}
+        element={
+          <Suspense fallback={<DetailFormSkeleton />}>
+            <OrgAdminShell>
+              <LazyPage skeleton={<DetailFormSkeleton />}>
+                <LearnCurriculumPage />
+              </LazyPage>
+            </OrgAdminShell>
+          </Suspense>
+        }
+      />
       {/* ─── F5 org-admin student analytics (OrgAdminShell, permission-gated) ─ */}
       <Route
         path={ROUTES.ORG_STUDENTS_PROGRESS}
@@ -965,54 +975,31 @@ export function AppRoutes() {
         }
       />
 
-      {/* ─── F7 gamification management (AdminShell, permission-gated) ─── */}
+      {/* ─── F7 gamification: one hub page with URL-driven tabs ─────────── */}
       <Route
         path={ROUTES.ADMIN_GAMIFICATION}
         element={
           <PermissionRouteGuard permission="platform.gamification.manage">
             <AdminShell>
               <LazyPage skeleton={<DetailFormSkeleton />}>
-                <AdminGamificationPage />
+                <AdminGamificationHubPage />
               </LazyPage>
             </AdminShell>
           </PermissionRouteGuard>
         }
       />
+      {/* Legacy deep links stay valid and land on the matching hub tab. */}
       <Route
         path={ROUTES.ADMIN_BADGES}
-        element={
-          <PermissionRouteGuard permission="platform.gamification.manage">
-            <AdminShell>
-              <LazyPage skeleton={<GridCardsSkeleton />}>
-                <AdminBadgesPage />
-              </LazyPage>
-            </AdminShell>
-          </PermissionRouteGuard>
-        }
+        element={<Navigate to={`${ROUTES.ADMIN_GAMIFICATION}?tab=badges`} replace />}
       />
       <Route
         path={ROUTES.ADMIN_ACHIEVEMENTS}
-        element={
-          <PermissionRouteGuard permission="platform.gamification.manage">
-            <AdminShell>
-              <LazyPage skeleton={<GridCardsSkeleton />}>
-                <AdminAchievementsPage />
-              </LazyPage>
-            </AdminShell>
-          </PermissionRouteGuard>
-        }
+        element={<Navigate to={`${ROUTES.ADMIN_GAMIFICATION}?tab=achievements`} replace />}
       />
       <Route
         path={ROUTES.ADMIN_SEASONS}
-        element={
-          <PermissionRouteGuard permission="platform.gamification.manage">
-            <AdminShell>
-              <LazyPage skeleton={<TablePageSkeleton />}>
-                <AdminSeasonsPage />
-              </LazyPage>
-            </AdminShell>
-          </PermissionRouteGuard>
-        }
+        element={<Navigate to={`${ROUTES.ADMIN_GAMIFICATION}?tab=seasons`} replace />}
       />
 
       <Route path={ROUTES.HOME} element={<HomePage />} />
@@ -1081,14 +1068,8 @@ export function AppRoutes() {
           </LazyPage>
         }
       />
-      <Route
-        path={ROUTES.MODULE_CATALOG}
-        element={<Navigate to={ROUTES.CURRICULUM} replace />}
-      />
-      <Route
-        path={ROUTES.LEARNING_PATH}
-        element={<Navigate to={ROUTES.CURRICULUM} replace />}
-      />
+      <Route path={ROUTES.MODULE_CATALOG} element={<Navigate to={ROUTES.CURRICULUM} replace />} />
+      <Route path={ROUTES.LEARNING_PATH} element={<Navigate to={ROUTES.CURRICULUM} replace />} />
       <Route
         path={ROUTES.PRIVACY}
         element={

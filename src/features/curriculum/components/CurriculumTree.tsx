@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Button, Input, toast } from '@/shared/components';
 import { ContentTypeIcon } from './ContentTypeIcon';
+import { PublishToggle } from './PublishToggle';
 import { useAdminModuleEditor } from '../hooks';
 import { useBadgeCatalog } from '@/features/achievements/hooks/useGamification';
 import type { CourseDto, LessonDto, ModuleDto, QuizDetailDto } from '../types';
@@ -25,8 +26,6 @@ interface CurriculumTreeProps {
   onSelectNode: (selection: TreeNodeSelection) => void;
   onCreateAction: (action: CreateAction) => void;
   onReorderModule?: (moduleId: number, direction: -1 | 1) => void;
-  onPublishModule?: (moduleId: number) => void;
-  onUnpublishModule?: (moduleId: number) => void;
   busyModuleIds?: Set<number>;
 }
 
@@ -211,8 +210,14 @@ function ModuleNode({
     module.moduleId,
     isExpanded || searchFilter.trim().length > 0,
   );
-  const lessons: LessonDto[] = editor.query.data?.lessons ?? [];
-  const quizzes: QuizDetailDto[] = editor.query.data?.quizzes ?? [];
+  const lessons: LessonDto[] = useMemo(
+    () => editor.query.data?.lessons ?? [],
+    [editor.query.data?.lessons],
+  );
+  const quizzes: QuizDetailDto[] = useMemo(
+    () => editor.query.data?.quizzes ?? [],
+    [editor.query.data?.quizzes],
+  );
   const [orderVersion, setOrderVersion] = useState(0);
 
   const isModuleSelected = selectedNode?.type === 'module' && selectedNode.id === module.moduleId;
@@ -347,9 +352,9 @@ function ModuleNode({
   // - Pearl/paper fill background
   // - Border ink on hover and bold 2px on active press
   const quickBtnClass =
-    'text-[0.6875rem] font-mono px-2.5 py-1 rounded-xs border border-border bg-pearl-100 text-ink font-medium hover:font-bold hover:text-ink hover:bg-pearl-100 hover:border-ink hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-[0.98] active:border-2 active:border-ink active:font-black active:text-ink transition-all duration-150 ease-out cursor-pointer';
+    'text-caption font-mono px-2.5 py-1 rounded-xs border border-border bg-pearl-100 text-ink font-medium hover:font-bold hover:text-ink hover:bg-pearl-100 hover:border-ink hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-95 active:border-2 active:border-ink active:font-black active:text-ink transition-all duration-150 ease-out cursor-pointer';
   const quickLabBtnClass =
-    'text-[0.6875rem] font-mono px-2.5 py-1 rounded-xs border border-border bg-pearl-100 text-ink font-medium hover:font-bold hover:text-ink hover:bg-pearl-100 hover:border-ink hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-[0.98] active:border-2 active:border-ink active:font-black active:text-ink transition-all duration-150 ease-out cursor-pointer flex items-center gap-1.5';
+    'text-caption font-mono px-2.5 py-1 rounded-xs border border-border bg-pearl-100 text-ink font-medium hover:font-bold hover:text-ink hover:bg-pearl-100 hover:border-ink hover:-translate-y-0.5 hover:shadow-xs active:translate-y-0 active:scale-95 active:border-2 active:border-ink active:font-black active:text-ink transition-all duration-150 ease-out cursor-pointer flex items-center gap-1.5';
 
   return (
     <div className="relative group/module">
@@ -394,13 +399,13 @@ function ModuleNode({
               <span className="text-sm font-semibold text-card-foreground truncate">
                 {module.title}
               </span>
-              <span className="text-[0.625rem] font-mono text-muted shrink-0">
+              <span className="text-micro font-mono text-muted shrink-0">
                 · {module.isPublished ? 'Published' : 'Draft'}
               </span>
             </div>
 
             {/* DB-Driven Module Metadata Strip - Pure Ink & Paper, no yellow, no emojis */}
-            <div className="flex items-center gap-2.5 text-[0.6875rem] font-mono text-muted truncate mt-0.5">
+            <div className="flex items-center gap-2.5 text-caption font-mono text-muted truncate mt-0.5">
               <span>
                 {module.lessonCount} {module.lessonCount === 1 ? 'item' : 'items'}
               </span>
@@ -456,6 +461,30 @@ function ModuleNode({
             </div>
           )}
 
+          {/* Module Publish Control */}
+          <div
+            className="ml-1.5"
+            title={`${module.isPublished ? 'Unpublish' : 'Publish'} ${module.title}`}
+          >
+            <PublishToggle
+              isPublished={module.isPublished}
+              label={module.title}
+              busy={editor.publish.isPending || editor.archive.isPending}
+              onPublish={() =>
+                editor.publish.mutate(undefined, {
+                  onSuccess: () => toast.success('Module published.'),
+                  onError: (error) => toast.error(error.message),
+                })
+              }
+              onUnpublish={() =>
+                editor.archive.mutate(undefined, {
+                  onSuccess: () => toast.success('Module archived.'),
+                  onError: (error) => toast.error(error.message),
+                })
+              }
+            />
+          </div>
+
           {/* Module Reorder Controls */}
           {onReorder && (
             <div className="inline-flex items-center border border-border rounded-xs overflow-hidden bg-paper divide-x divide-border shadow-2xs ml-1.5">
@@ -463,7 +492,7 @@ function ModuleNode({
                 type="button"
                 disabled={!canMoveUp || isBusy}
                 onClick={() => onReorder(-1)}
-                className="px-2 py-1 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-[0.95] disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer transition-all"
+                className="px-2 py-1 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer transition-all"
                 title="Move module up"
               >
                 ↑
@@ -472,7 +501,7 @@ function ModuleNode({
                 type="button"
                 disabled={!canMoveDown || isBusy}
                 onClick={() => onReorder(1)}
-                className="px-2 py-1 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-[0.95] disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer transition-all"
+                className="px-2 py-1 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-95 disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer transition-all"
                 title="Move module down"
               >
                 ↓
@@ -556,14 +585,14 @@ function ModuleNode({
                             <span className="text-xs font-medium text-card-foreground truncate">
                               {quiz.title}
                             </span>
-                            <span className="text-[0.625rem] font-mono text-muted uppercase tracking-wider font-semibold">
+                            <span className="text-micro font-mono text-muted uppercase tracking-wider font-semibold">
                               QUIZ
                             </span>
-                            <span className="text-[0.625rem] font-mono text-muted">
+                            <span className="text-micro font-mono text-muted">
                               · {quiz.isPublished ? 'Published' : 'Draft'}
                             </span>
                           </div>
-                          <div className="flex items-center gap-2 mt-0.5 text-[0.625rem] font-mono text-muted">
+                          <div className="flex items-center gap-2 mt-0.5 text-micro font-mono text-muted">
                             <span>
                               {quiz.questionCount}{' '}
                               {quiz.questionCount === 1 ? 'question' : 'questions'}
@@ -595,7 +624,7 @@ function ModuleNode({
                             type="button"
                             disabled={!canMoveItemUp || editor.reorderLessons.isPending}
                             onClick={() => handleReorderItem(itemIndex, -1)}
-                            className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-[0.95] transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                            className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                             title="Move quiz up in module sequence"
                           >
                             ↑
@@ -605,13 +634,13 @@ function ModuleNode({
                             type="button"
                             disabled={!canMoveItemDown || editor.reorderLessons.isPending}
                             onClick={() => handleReorderItem(itemIndex, 1)}
-                            className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-[0.95] transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                            className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                             title="Move quiz down in module sequence"
                           >
                             ↓
                           </button>
                         </div>
-                        <span className="text-[0.625rem] font-mono text-muted shrink-0">
+                        <span className="text-micro font-mono text-muted shrink-0">
                           #{module.moduleOrder}.{itemIndex + 1}
                         </span>
                       </div>
@@ -719,16 +748,16 @@ function ModuleNode({
                           <span className="text-xs font-medium text-card-foreground truncate">
                             {lesson.title}
                           </span>
-                          <span className="text-[0.625rem] font-mono text-muted uppercase tracking-wider font-semibold">
+                          <span className="text-micro font-mono text-muted uppercase tracking-wider font-semibold">
                             {subtypeBadge}
                           </span>
-                          <span className="text-[0.625rem] font-mono text-muted">
+                          <span className="text-micro font-mono text-muted">
                             · {lesson.isPublished ? 'Published' : 'Draft'}
                           </span>
                         </div>
 
                         {/* Metrics: Time, XP, and Skill Tags */}
-                        <div className="flex items-center gap-2 mt-0.5 overflow-hidden text-[0.625rem] font-mono text-muted">
+                        <div className="flex items-center gap-2 mt-0.5 overflow-hidden text-micro font-mono text-muted">
                           <span className="flex items-center gap-0.5">
                             <ClockDurationIcon className="w-3 h-3 text-muted" />
                             {estimatedMinutes}m
@@ -745,13 +774,13 @@ function ModuleNode({
                                 {lesson.tags.slice(0, 3).map((tag) => (
                                   <span
                                     key={tag.tagId}
-                                    className="text-[0.5625rem] font-mono text-muted bg-paper px-1 rounded-xs border border-border truncate"
+                                    className="text-micro font-mono text-muted bg-paper px-1 rounded-xs border border-border truncate"
                                   >
                                     #{tag.tagName}
                                   </span>
                                 ))}
                                 {lesson.tags.length > 3 && (
-                                  <span className="text-[0.5625rem] font-mono text-muted">
+                                  <span className="text-micro font-mono text-muted">
                                     +{lesson.tags.length - 3}
                                   </span>
                                 )}
@@ -772,7 +801,7 @@ function ModuleNode({
                           type="button"
                           disabled={!canMoveItemUp || editor.reorderLessons.isPending}
                           onClick={() => handleReorderItem(itemIndex, -1)}
-                          className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-[0.95] transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                          className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                           title="Move lesson up in module sequence"
                         >
                           ↑
@@ -782,13 +811,13 @@ function ModuleNode({
                           type="button"
                           disabled={!canMoveItemDown || editor.reorderLessons.isPending}
                           onClick={() => handleReorderItem(itemIndex, 1)}
-                          className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-[0.95] transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
+                          className="px-1.5 py-0.5 hover:bg-surface-hover text-muted hover:text-card-foreground active:scale-95 transition-all disabled:opacity-20 disabled:cursor-not-allowed cursor-pointer"
                           title="Move lesson down in module sequence"
                         >
                           ↓
                         </button>
                       </div>
-                      <span className="text-[0.625rem] font-mono text-muted shrink-0">
+                      <span className="text-micro font-mono text-muted shrink-0">
                         #{module.moduleOrder}.{itemIndex + 1}
                       </span>
                     </div>
@@ -958,10 +987,10 @@ export function CurriculumTree({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="text-[0.625rem] font-mono uppercase tracking-wider text-muted">
+                <span className="text-micro font-mono uppercase tracking-wider text-muted">
                   Canonical Track
                 </span>
-                <span className="text-[0.625rem] font-mono text-muted">
+                <span className="text-micro font-mono text-muted">
                   · {course.isPublished ? 'Live & Published' : 'Draft / Unpublished'}
                 </span>
               </div>
@@ -979,7 +1008,7 @@ export function CurriculumTree({
                 e.stopPropagation();
                 onCreateAction({ type: 'module' });
               }}
-              className="text-xs font-mono shadow-xs active:scale-[0.97] transition-all cursor-pointer"
+              className="text-xs font-mono shadow-xs active:scale-95 transition-all cursor-pointer"
             >
               + New Module
             </Button>

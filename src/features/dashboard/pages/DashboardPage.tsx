@@ -278,8 +278,8 @@ function LearnerDashboard() {
         {/* Right: 4 Metric Cards */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 shrink-0">
           {/* Card 1: Points / XP */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
-            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+          <div className="border border-border bg-card px-4 py-3 rounded-md flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
+            <div className="w-10 h-10 rounded-md border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="award" size={18} />
             </div>
             <div>
@@ -291,8 +291,8 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 2: Modules */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
-            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+          <div className="border border-border bg-card px-4 py-3 rounded-md flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
+            <div className="w-10 h-10 rounded-md border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="roles" size={18} />
             </div>
             <div>
@@ -304,8 +304,8 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 3: Certificates / Badges */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
-            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+          <div className="border border-border bg-card px-4 py-3 rounded-md flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
+            <div className="w-10 h-10 rounded-md border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="flag" size={18} />
             </div>
             <div>
@@ -317,8 +317,8 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 4: Challenges / Completed Labs */}
-          <div className="border border-border bg-card px-4 py-3 rounded-xl flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
-            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+          <div className="border border-border bg-card px-4 py-3 rounded-md flex items-center gap-3.5 shadow-2xs hover:border-border/80 transition-colors min-w-[7.5rem]">
+            <div className="w-10 h-10 rounded-md border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="terminal" size={18} />
             </div>
             <div>
@@ -333,9 +333,9 @@ function LearnerDashboard() {
 
       {/* ─── Class context: one learner dashboard, no separate class workspace ─ */}
       {enrolledClass && (
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-xl border border-border bg-card px-5 py-4 shadow-2xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-md border border-border bg-card px-5 py-4 shadow-2xs">
           <div className="flex items-center gap-3 min-w-0">
-            <div className="w-10 h-10 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
+            <div className="w-10 h-10 rounded-md border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0">
               <Icon name="my-class" size={18} />
             </div>
             <div className="min-w-0">
@@ -363,9 +363,9 @@ function LearnerDashboard() {
             </h2>
 
             {/* Continue Learning Card with Top-Right Curved Cutout */}
-            <div className="relative border border-border bg-card rounded-2xl p-6 shadow-2xs transition-all overflow-hidden group">
+            <div className="relative border border-border bg-card rounded-lg p-6 shadow-2xs transition-all overflow-hidden group">
               {/* Top-Right Curved Accent Area with Circular Micro-Interaction Buttons */}
-              <div className="absolute top-0 right-0 flex items-center gap-2 p-3 bg-paper border-b border-l border-border rounded-bl-2xl">
+              <div className="absolute top-0 right-0 flex items-center gap-2 p-3 bg-paper border-b border-l border-border rounded-bl-lg">
                 <button
                   type="button"
                   onClick={toggleBookmark}
@@ -394,7 +394,7 @@ function LearnerDashboard() {
               {/* Main Card Content */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-2 sm:pt-0">
                 {/* Topic Icon Container */}
-                <div className="w-20 h-20 rounded-2xl border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
+                <div className="w-20 h-20 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
                   <Icon name="terminal" size={36} />
                 </div>
 
@@ -476,7 +476,7 @@ function LearnerDashboard() {
                 <div
                   key={item.id}
                   onClick={() => navigate(item.to)}
-                  className="border border-border bg-card hover:border-ink/50 p-5 rounded-2xl flex flex-col justify-between gap-4 transition-all duration-150 cursor-pointer shadow-2xs group"
+                  className="border border-border bg-card hover:border-ink/50 p-5 rounded-md flex flex-col justify-between gap-4 transition-all duration-150 cursor-pointer shadow-2xs group"
                 >
                   <div className="space-y-1.5">
                     <div className="flex items-center gap-1.5 text-xs text-muted font-medium">
@@ -490,14 +490,14 @@ function LearnerDashboard() {
 
                   <div className="flex items-center justify-between pt-2 border-t border-border/50">
                     <div className="flex items-center gap-2 text-xs font-mono text-muted">
-                      <span className="px-2 py-0.5 rounded-sm border border-border bg-paper font-sans font-medium text-[0.6875rem]">
+                      <span className="px-2 py-0.5 rounded-xs border border-border bg-paper font-sans font-medium text-caption">
                         {item.difficulty}
                       </span>
                       <span>•</span>
                       <span>{item.meta}</span>
                     </div>
 
-                    <div className="w-8 h-8 rounded-lg border border-border bg-paper flex items-center justify-center text-muted group-hover:text-card-foreground transition-colors shrink-0">
+                    <div className="w-8 h-8 rounded-md border border-border bg-paper flex items-center justify-center text-muted group-hover:text-card-foreground transition-colors shrink-0">
                       <Icon name="external-link" size={14} />
                     </div>
                   </div>
@@ -510,7 +510,7 @@ function LearnerDashboard() {
               variant="secondary"
               size="md"
               onClick={() => navigate(ROUTES.LEARN)}
-              className="w-full justify-center text-xs font-semibold py-3 rounded-xl border border-border bg-card hover:bg-surface-hover hover:border-ink/40 transition-all cursor-pointer flex items-center gap-2"
+              className="w-full justify-center text-xs font-semibold py-3 border border-border bg-card hover:bg-surface-hover hover:border-ink/40 transition-all cursor-pointer flex items-center gap-2"
             >
               <span>See all modules</span>
               <Icon name="external-link" size={14} />
@@ -521,7 +521,7 @@ function LearnerDashboard() {
         {/* ─── RIGHT COLUMN (~35% width) ───────────────────────────────────── */}
         <div className="lg:col-span-4 space-y-6 min-w-0">
           {/* Card 1: Streak Card */}
-          <div className="border border-border bg-card rounded-2xl p-6 shadow-2xs space-y-6">
+          <div className="border border-border bg-card rounded-md p-6 shadow-2xs space-y-6">
             {/* Streak Header */}
             <div className="flex items-center justify-between">
               <div>
@@ -533,7 +533,7 @@ function LearnerDashboard() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-1 text-lg font-bold text-card-foreground border border-border bg-paper px-3 py-1.5 rounded-xl shadow-2xs">
+              <div className="flex items-center gap-1 text-lg font-bold text-card-foreground border border-border bg-paper px-3 py-1.5 rounded-xs shadow-2xs">
                 <Icon name="zap" size={18} />
                 <span>{currentStreak}</span>
               </div>
@@ -576,7 +576,7 @@ function LearnerDashboard() {
                     <span className="font-semibold text-card-foreground truncate max-w-[11.25rem]">
                       {skill.name}
                     </span>
-                    <span className="font-mono text-muted text-[0.6875rem]">
+                    <span className="font-mono text-muted text-caption">
                       {skill.xp.toLocaleString()} XP
                     </span>
                   </div>
@@ -603,12 +603,12 @@ function LearnerDashboard() {
           </div>
 
           {/* Card 2: AI DevOps Mentor (User instructed: "for the bottom right thing let it be the AI bot") */}
-          <div className="border border-border bg-card rounded-2xl p-6 shadow-2xs space-y-4 relative overflow-hidden">
+          <div className="border border-border bg-card rounded-md p-6 shadow-2xs space-y-4 relative overflow-hidden">
             <div className="flex items-center justify-between">
-              <div className="w-10 h-10 rounded-xl border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
+              <div className="w-10 h-10 rounded-md border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
                 <Icon name="sparkles" size={20} />
               </div>
-              <span className="text-[0.6875rem] font-mono uppercase tracking-wider px-2 py-0.5 rounded-sm border border-border bg-paper text-muted">
+              <span className="text-caption font-mono uppercase tracking-wider px-2 py-0.5 rounded-xs border border-border bg-paper text-muted">
                 Assistant
               </span>
             </div>
@@ -627,7 +627,7 @@ function LearnerDashboard() {
               variant="primary"
               size="md"
               onClick={() => setIsAiMentorOpen(true)}
-              className="w-full justify-center text-xs font-semibold py-2.5 rounded-xl bg-ink text-paper shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
+              className="w-full justify-center text-xs font-semibold py-2.5 bg-ink text-paper shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer flex items-center gap-2"
             >
               <Icon name="sparkles" size={14} />
               <span>Ask AI Mentor</span>

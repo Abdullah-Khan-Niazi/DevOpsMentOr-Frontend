@@ -53,8 +53,6 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
   const { data: announcements } = usePublishedAnnouncements();
   const permissions = new Set(user?.permissions ?? []);
   const canSeeNotifications = permissions.has('notifications:inbox:read');
-  const canSeeAchievements = permissions.has('gamification:profile:read');
-  const canSeeBilling = permissions.has('billing:subscription:read');
 
   const roles = new Set(user?.roles ?? []);
   const platformAdmin = isPlatformAdminUser(user);
@@ -205,17 +203,6 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
                         <span>View Profile</span>
                       </Link>
 
-                      {canSeeAchievements ? (
-                        <Link
-                          to={ROUTES.ACHIEVEMENTS}
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
-                        >
-                          <Icon name="award" size={14} className="text-muted" />
-                          <span>Achievements</span>
-                        </Link>
-                      ) : null}
-
                       <Link
                         to={ROUTES.SETTINGS}
                         onClick={() => setProfileDropdownOpen(false)}
@@ -224,17 +211,6 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
                         <Icon name="settings" size={14} className="text-muted" />
                         <span>Account Settings</span>
                       </Link>
-
-                      {canSeeBilling ? (
-                        <Link
-                          to={ROUTES.BILLING}
-                          onClick={() => setProfileDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
-                        >
-                          <Icon name="card" size={14} className="text-muted" />
-                          <span>Billing & Seats</span>
-                        </Link>
-                      ) : null}
                     </div>
 
                     <div className="pt-1 border-t border-border">
@@ -260,7 +236,11 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
       )}
       {/* ─── Mobile Top Header (Screens < 1024px) ────────────────────────────── */}
       <header className="app-chrome__mobile-header">
-        <Link to={resolvedLogoTo} className="app-chrome__mobile-logo" aria-label="DevOpsMentor home">
+        <Link
+          to={resolvedLogoTo}
+          className="app-chrome__mobile-logo"
+          aria-label="DevOpsMentor home"
+        >
           <SiteLogo />
         </Link>
         <div className="flex items-center gap-2">

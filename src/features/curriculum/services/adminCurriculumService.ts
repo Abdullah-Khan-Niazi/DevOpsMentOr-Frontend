@@ -25,6 +25,16 @@ function unwrap<T>(envelope: { data: T }): T {
 }
 
 /** F4 §07 F4-API-07..22 platform-admin curriculum endpoints. */
+export interface CreateCoursePayload {
+  title: string;
+  slug?: string;
+  description?: string | null;
+  difficultyId: number;
+  categoryId?: number | null;
+  estimatedHours?: number;
+  isPremium?: boolean;
+}
+
 export const adminCurriculumService = {
   /** F4-API-07 */
   async getCourse(): Promise<CourseDto> {
@@ -38,6 +48,31 @@ export const adminCurriculumService = {
       '/admin/curriculum/course',
       payload,
     );
+    return unwrap(data);
+  },
+
+  /** Multi-course: create a DRAFT course (published later via updateCourse). */
+  async createCourse(payload: CreateCoursePayload): Promise<CourseDto> {
+    const { data } = await apiClient.post<{ data: CourseDto }>(
+      '/admin/curriculum/courses',
+      payload,
+    );
+    return unwrap(data);
+  },
+
+  /** Difficulty options for the course-create drawer. */
+  async listDifficulties(): Promise<Array<{ difficultyId: number; name: string }>> {
+    const { data } = await apiClient.get<{
+      data: Array<{ difficultyId: number; name: string }>;
+    }>('/admin/curriculum/difficulties');
+    return unwrap(data);
+  },
+
+  /** Category options for the course-create drawer. */
+  async listCategories(): Promise<Array<{ categoryId: number; name: string; slug: string }>> {
+    const { data } = await apiClient.get<{
+      data: Array<{ categoryId: number; name: string; slug: string }>;
+    }>('/admin/curriculum/categories');
     return unwrap(data);
   },
 
