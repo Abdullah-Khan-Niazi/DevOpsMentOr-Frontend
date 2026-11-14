@@ -23,7 +23,7 @@
 @keyframes site-reveal {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(1.25rem);
   }
   to {
     opacity: 1;
@@ -48,7 +48,7 @@
 
 .site-reveal-stagger.is-visible .site-reveal-item {
   animation: site-reveal var(--duration-base) var(--ease-decelerate) forwards;
-  animation-delay: calc(var(--stagger-index, 0) * 60ms);
+  animation-delay: calc(var(--stagger-index) * 60ms);
 }
 
 /* ─── Reduced Motion ──────────────────────────────────────────────────────── */

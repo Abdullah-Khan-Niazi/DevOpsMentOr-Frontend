@@ -19,21 +19,21 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
   cursor: pointer;
 }
 
 .files-admin-page__check input {
   accent-color: var(--color-accent-600);
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
 .files-admin-page__file-input {
   flex: 1;
-  min-width: 200px;
+  min-width: 12.5rem;
   color: var(--color-text-secondary);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
 }
 
 .files-admin-page__list {
@@ -50,18 +50,18 @@
 
 .files-admin-page__item-title {
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--text-mono-m);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .files-admin-page__item-visibility {
-  padding: 2px var(--space-2);
+  padding: 0.125rem var(--space-2);
   border-radius: var(--radius-full);
   background: var(--color-bg-sunken);
   color: var(--color-text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
   font-weight: 600;
 }
 

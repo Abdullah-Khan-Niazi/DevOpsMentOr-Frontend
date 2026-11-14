@@ -20,7 +20,10 @@ export function QRCodeDisplay({ otpAuthUri, className = '' }: QRCodeDisplayProps
       width: 220,
       margin: 1,
       errorCorrectionLevel: 'M',
-      color: { dark: '#16191D', light: '#FFFFFF' },
+      color: {
+        dark: '#14140F',
+        light: '#FDFCFA',
+      } /* ink modules on pearl background — token values */,
     })
       .then((url) => {
         if (!cancelled) setDataUrl(url);

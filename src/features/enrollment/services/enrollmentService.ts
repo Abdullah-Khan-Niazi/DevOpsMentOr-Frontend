@@ -1,5 +1,6 @@
 import { apiClient } from '@/shared/services';
 import type {
+  ClassJoinResultDto,
   EnrollmentAcceptedDto,
   InvitePreviewDto,
   StudentClassDto,
@@ -27,9 +28,25 @@ export const enrollmentService = {
     return unwrap(data);
   },
 
-  /** ENR-03 student's own class. */
-  async getMyClass(): Promise<StudentClassDto> {
-    const { data } = await apiClient.get<{ data: StudentClassDto }>('/student/my-class');
+  /** ENR-03 student's own class; optional class selection for multi-class learners. */
+  async getMyClass(classId?: string | number): Promise<StudentClassDto> {
+    const { data } = await apiClient.get<{ data: StudentClassDto }>('/student/my-class', {
+      params: classId === undefined ? undefined : { classId },
+    });
+    return unwrap(data);
+  },
+
+  /** Every active class enrollment for the signed-in learner. */
+  async listMyClasses(): Promise<StudentClassDto[]> {
+    const { data } = await apiClient.get<{ data: StudentClassDto[] }>('/student/my-classes');
+    return unwrap(data);
+  },
+
+  /** Task 3: reusable class-code self-enrollment. */
+  async joinWithCode(code: string): Promise<ClassJoinResultDto> {
+    const { data } = await apiClient.post<{ data: ClassJoinResultDto }>('/student/classes/join', {
+      code,
+    });
     return unwrap(data);
   },
 };

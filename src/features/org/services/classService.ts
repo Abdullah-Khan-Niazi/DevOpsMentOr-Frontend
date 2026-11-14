@@ -2,6 +2,7 @@ import { apiClient } from '@/shared/services';
 import type {
   ClassDetailDto,
   ClassDto,
+  ClassJoinCodeDto,
   ImportSummaryDto,
   InvitationDto,
   InviteStudentsResultDto,
@@ -28,6 +29,13 @@ export interface UpdateClassPayload {
 
 export interface InviteStudentsPayload {
   emails: string[];
+}
+
+export interface DeleteClassResult {
+  classId: number;
+  className: string;
+  studentCount: number;
+  revokedCodeCount: number;
 }
 
 /** Contract §07 CLS-01..CLS-08 class management endpoints. */
@@ -128,10 +136,7 @@ export const classService = {
   },
 
   /** Direct student enrollment into cohort */
-  async enrollStudent(
-    classId: string | number,
-    studentUserId: string | number,
-  ): Promise<void> {
+  async enrollStudent(classId: string | number, studentUserId: string | number): Promise<void> {
     await apiClient.post(`/org/classes/${classId}/students/enroll`, {
       studentUserId: Number(studentUserId),
     });
@@ -157,6 +162,20 @@ export const classService = {
     const { data } = await apiClient.post<{ data: { success: boolean; email: string } }>(
       `/org/classes/${classId}/invitations/${invitationId}/resend`,
     );
+    return unwrap(data);
+  },
+
+  /** Task 3: generate a reusable, expiring join code for the class. */
+  async generateJoinCode(classId: string | number): Promise<ClassJoinCodeDto> {
+    const { data } = await apiClient.post<{ data: ClassJoinCodeDto }>(
+      `/org/classes/${classId}/join-code`,
+    );
+    return unwrap(data);
+  },
+
+  /** Destructive class deletion (staff/platform-admin only). */
+  async deleteClass(classId: string | number): Promise<DeleteClassResult> {
+    const { data } = await apiClient.delete<{ data: DeleteClassResult }>(`/org/classes/${classId}`);
     return unwrap(data);
   },
 };

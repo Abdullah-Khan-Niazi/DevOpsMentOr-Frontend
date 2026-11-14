@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useLocation, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import {
   Button,
@@ -27,7 +27,9 @@ import {
   useClassDetail,
   useClassInvitations,
   useClassRoster,
+  useDeleteClass,
   useEnrollStudent,
+  useGenerateJoinCode,
   useOrgProfessors,
   useOrgUsers,
   useResendInvitation,
@@ -39,7 +41,7 @@ import {
   OrgInviteDrawer,
   ProfessorAssignmentSelector,
 } from '../components';
-import type { InvitationDto } from '../types';
+import type { ClassDetailDto, ClassJoinCodeDto, InvitationDto } from '../types';
 
 type ClassTab = 'overview' | 'students' | 'progress' | 'invitations' | 'settings';
 const ROSTER_PAGE_SIZE = 20;
@@ -76,6 +78,116 @@ function sortStudents<
   return sorted;
 }
 
+interface ClassSettingsCardProps {
+  klass: ClassDetailDto;
+  canManage: boolean;
+  update: ReturnType<typeof useClassDetail>['update'];
+}
+
+/**
+ * Mounted fresh whenever the settings tab or class changes, so its editable
+ * draft is initialized from server data without a state-syncing effect.
+ */
+function ClassSettingsCard({ klass, canManage, update }: ClassSettingsCardProps) {
+  const [editName, setEditName] = useState(klass.className);
+  const [editDesc, setEditDesc] = useState(klass.description ?? '');
+  const [editMax, setEditMax] = useState(String(klass.maxStudents));
+
+  const resetEdit = () => {
+    setEditName(klass.className);
+    setEditDesc(klass.description ?? '');
+    setEditMax(String(klass.maxStudents));
+  };
+
+  const saveEdit = () => {
+    if (!editName.trim()) {
+      toast.error('Cohort name is required.');
+      return;
+    }
+    update.mutate(
+      {
+        className: editName.trim(),
+        description: editDesc.trim() || null,
+        maxStudents: editMax ? Number(editMax) : undefined,
+      },
+      {
+        onSuccess: () => toast.success('Cohort settings updated.'),
+        onError: (error) => toast.error(error.message),
+      },
+    );
+  };
+
+  return (
+    <Card className="p-6 space-y-5">
+      <div className="border-b border-border pb-4">
+        <h3 className="text-base font-semibold text-card-foreground">Cohort Settings</h3>
+      </div>
+
+      {canManage ? (
+        <div className="space-y-4">
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Cohort Name"
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              required
+            />
+            <div>
+              <label className="input-label">Cohort Identifier / Slug</label>
+              <div className="input-field bg-surface text-muted cursor-not-allowed font-mono text-xs">
+                {klass.slug}
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="cohort-desc" className="input-label">
+              Description
+            </label>
+            <textarea
+              id="cohort-desc"
+              rows={3}
+              className="input-field w-full font-mono text-xs"
+              placeholder="Brief description of this cohort's learning schedule or curriculum goals…"
+              value={editDesc}
+              onChange={(e) => setEditDesc(e.target.value)}
+            />
+          </div>
+
+          <div className="max-w-xs">
+            <Input
+              label="Student Capacity Ceiling"
+              type="number"
+              min={1}
+              value={editMax}
+              onChange={(e) => setEditMax(e.target.value)}
+            />
+            <p className="mt-1 text-xs text-muted font-mono">
+              Currently {klass.studentCount} students enrolled
+            </p>
+          </div>
+
+          <div className="pt-2 flex items-center gap-3">
+            <Button
+              variant="primary"
+              onClick={saveEdit}
+              isLoading={update.isPending}
+              disabled={!editName.trim()}
+            >
+              Save Changes
+            </Button>
+            <Button variant="ghost" onClick={resetEdit}>
+              Reset
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <p className="text-sm text-muted">You do not have permission to edit this cohort.</p>
+      )}
+    </Card>
+  );
+}
+
 /** F3 contract §10 SCR-F3-06: Unified class detail with smooth inline tabs. */
 export function OrgClassDetailPage() {
   const { classId = '' } = useParams<{ classId: string }>();
@@ -98,15 +210,21 @@ export function OrgClassDetailPage() {
   const permissions = user?.permissions ?? [];
   const roles = user?.roles ?? [];
   const isPrivileged =
-    roles.includes('platform_admin') ||
-    roles.includes('org_admin') ||
-    roles.includes('admin');
+    roles.includes('platform_admin') || roles.includes('org_admin') || roles.includes('admin');
 
   const canManage =
     isPrivileged ||
     permissions.some((p) =>
-      ['org:classes:manage', 'class:manage', 'org:manage', 'platform.organizations.manage'].includes(p),
+      [
+        'org:classes:manage',
+        'class:manage',
+        'org:manage',
+        'platform.organizations.manage',
+      ].includes(p),
     );
+  const canManageOrg =
+    isPrivileged ||
+    permissions.some((p) => ['org:manage', 'platform.organizations.manage'].includes(p));
   const canInvite =
     isPrivileged ||
     permissions.some((p) =>
@@ -153,29 +271,11 @@ export function OrgClassDetailPage() {
 
   // Class detail queries & mutations
   const { query: detail, update, assignProfessor } = useClassDetail(classId);
-  const professors = useOrgProfessors();
+  const professors = useOrgProfessors(canManageOrg);
 
-  // Settings editing state & initialization
-  const [editName, setEditName] = useState('');
-  const [editDesc, setEditDesc] = useState('');
-  const [editMax, setEditMax] = useState('');
   const [withdrawAllOpen, setWithdrawAllOpen] = useState(false);
-
-  useEffect(() => {
-    if (detail.data) {
-      setEditName(detail.data.className);
-      setEditDesc(detail.data.description ?? '');
-      setEditMax(String(detail.data.maxStudents));
-    }
-  }, [detail.data]);
-
-  const resetEdit = () => {
-    if (detail.data) {
-      setEditName(detail.data.className);
-      setEditDesc(detail.data.description ?? '');
-      setEditMax(String(detail.data.maxStudents));
-    }
-  };
+  const [deleteClassOpen, setDeleteClassOpen] = useState(false);
+  const deleteClass = useDeleteClass(classId);
 
   // Roster tab state & hooks
   const [rosterPage, setRosterPage] = useState(1);
@@ -191,7 +291,7 @@ export function OrgClassDetailPage() {
   const withdraw = useWithdrawStudent(classId);
   const enrollStudent = useEnrollStudent(classId);
   const [selectedStudentToEnroll, setSelectedStudentToEnroll] = useState('');
-  const orgUsersQuery = useOrgUsers();
+  const orgUsersQuery = useOrgUsers(canManageOrg);
 
   const eligibleOrgStudents = useMemo(() => {
     if (!orgUsersQuery.data) return [];
@@ -211,6 +311,9 @@ export function OrgClassDetailPage() {
     activeTab === 'invitations',
   );
   const resendInvite = useResendInvitation(classId);
+  const generateJoinCode = useGenerateJoinCode(classId);
+  const [joinCode, setJoinCode] = useState<ClassJoinCodeDto | null>(null);
+  const [codeCopied, setCodeCopied] = useState(false);
 
   // Progress tab state & hooks
   const [progressSort, setProgressSort] = useState<SortKey>({
@@ -250,26 +353,6 @@ export function OrgClassDetailPage() {
 
   const klass = detail.data;
 
-  const saveEdit = () => {
-    if (!editName.trim()) {
-      toast.error('Cohort name is required.');
-      return;
-    }
-    update.mutate(
-      {
-        className: editName.trim(),
-        description: editDesc.trim() || null,
-        maxStudents: editMax ? Number(editMax) : undefined,
-      },
-      {
-        onSuccess: () => {
-          toast.success('Cohort settings updated.');
-        },
-        onError: (error) => toast.error(error.message),
-      },
-    );
-  };
-
   const applyRosterSearch = () => {
     setRosterPage(1);
     setRosterSearch(rosterDraft.trim());
@@ -296,12 +379,30 @@ export function OrgClassDetailPage() {
     });
   };
 
+  const handleGenerateJoinCode = () => {
+    generateJoinCode.mutate(undefined, {
+      onSuccess: (data) => {
+        setJoinCode(data);
+        setCodeCopied(false);
+      },
+      onError: (error) => toast.error(error.message),
+    });
+  };
+
+  const handleCopyJoinCode = async () => {
+    if (!joinCode) return;
+    try {
+      await navigator.clipboard.writeText(joinCode.code);
+      setCodeCopied(true);
+      toast.success('Class join code copied.');
+    } catch {
+      toast.error('Unable to copy. Please copy the code manually.');
+    }
+  };
+
   return (
     <div className="space-y-6">
-      <PageHeader
-        title={klass.className}
-        onBack={handleBack}
-      />
+      <PageHeader title={klass.className} onBack={handleBack} />
 
       <TabRow
         items={[
@@ -351,7 +452,7 @@ export function OrgClassDetailPage() {
           <Card className="space-y-4 p-5">
             <h3 className="font-medium text-card-foreground">Professor assignment</h3>
             <div>
-              {canManage ? (
+              {canManageOrg ? (
                 <ProfessorAssignmentSelector
                   professors={professors.query.data ?? []}
                   currentProfessorUserId={klass.professorUserId}
@@ -545,10 +646,7 @@ export function OrgClassDetailPage() {
                         <h2 className="mb-3 text-sm font-semibold text-card-foreground">
                           Activity log
                         </h2>
-                        <ActivityLogTable
-                          items={studentDetail.data.activity}
-                          isLoading={false}
-                        />
+                        <ActivityLogTable items={studentDetail.data.activity} isLoading={false} />
                       </Card>
                     </div>
                   )}
@@ -609,85 +707,27 @@ export function OrgClassDetailPage() {
       {activeTab === 'settings' && (
         <div className="space-y-6 max-w-4xl">
           {/* General Cohort Settings */}
-          <Card className="p-6 space-y-5">
-            <div className="border-b border-border pb-4">
-              <h3 className="text-base font-semibold text-card-foreground">Cohort Settings</h3>
-            </div>
-
-            {canManage ? (
-              <div className="space-y-4">
-                <div className="grid gap-4 sm:grid-cols-2">
-                  <Input
-                    label="Cohort Name"
-                    value={editName}
-                    onChange={(e) => setEditName(e.target.value)}
-                    required
-                  />
-                  <div>
-                    <label className="input-label">Cohort Identifier / Slug</label>
-                    <div className="input-field bg-surface text-muted cursor-not-allowed font-mono text-xs">
-                      {klass.slug}
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <label htmlFor="cohort-desc" className="input-label">
-                    Description
-                  </label>
-                  <textarea
-                    id="cohort-desc"
-                    rows={3}
-                    className="input-field w-full font-mono text-xs"
-                    placeholder="Brief description of this cohort's learning schedule or curriculum goals…"
-                    value={editDesc}
-                    onChange={(e) => setEditDesc(e.target.value)}
-                  />
-                </div>
-
-                <div className="max-w-xs">
-                  <Input
-                    label="Student Capacity Ceiling"
-                    type="number"
-                    min={1}
-                    value={editMax}
-                    onChange={(e) => setEditMax(e.target.value)}
-                  />
-                  <p className="mt-1 text-xs text-muted font-mono">
-                    Currently {klass.studentCount} students enrolled
-                  </p>
-                </div>
-
-                <div className="pt-2 flex items-center gap-3">
-                  <Button
-                    variant="primary"
-                    onClick={saveEdit}
-                    isLoading={update.isPending}
-                    disabled={!editName.trim()}
-                  >
-                    Save Changes
-                  </Button>
-                  <Button variant="ghost" onClick={resetEdit}>
-                    Reset
-                  </Button>
-                </div>
-              </div>
-            ) : (
-              <p className="text-sm text-muted">You do not have permission to edit this cohort.</p>
-            )}
-          </Card>
+          <ClassSettingsCard
+            key={klass.classId}
+            klass={klass}
+            canManage={canManage}
+            update={update}
+          />
 
           {/* Academic Leadership & Professor Assignment */}
           <Card className="p-6 space-y-4">
             <div className="border-b border-border pb-4">
-              <h3 className="text-base font-semibold text-card-foreground">Lead Professor Assignment</h3>
+              <h3 className="text-base font-semibold text-card-foreground">
+                Lead Professor Assignment
+              </h3>
               <p className="mt-0.5 text-xs text-muted font-mono">
-                Assigned instructor responsible for monitoring progress, answering student queries, and grading capstone labs.
+                Assigned instructor responsible for monitoring progress, answering student queries,
+                and grading capstone labs.
               </p>
             </div>
 
             <div>
-              {canManage ? (
+              {canManageOrg ? (
                 <ProfessorAssignmentSelector
                   professors={professors.query.data ?? []}
                   currentProfessorUserId={klass.professorUserId}
@@ -707,6 +747,62 @@ export function OrgClassDetailPage() {
             </div>
           </Card>
 
+          {/* Reusable class code — students self-enroll without email invites. */}
+          {canManage && (
+            <Card className="p-6 space-y-4">
+              <div className="border-b border-border pb-4">
+                <h3 className="text-base font-semibold text-card-foreground">Class join code</h3>
+                <p className="mt-0.5 text-xs text-muted font-mono">
+                  Share a reusable code so students can enroll themselves. Codes expire after 7
+                  days.
+                </p>
+              </div>
+
+              {joinCode ? (
+                <div className="space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    <code className="flex-1 rounded-lg border border-border bg-paper px-4 py-3 text-center font-mono text-lg font-bold tracking-widest text-card-foreground">
+                      {joinCode.code}
+                    </code>
+                    <div className="flex items-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => void handleCopyJoinCode()}
+                      >
+                        {codeCopied ? 'Copied' : 'Copy code'}
+                      </Button>
+                      <Button
+                        size="sm"
+                        onClick={handleGenerateJoinCode}
+                        isLoading={generateJoinCode.isPending}
+                      >
+                        Regenerate
+                      </Button>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted">
+                    Expires {new Date(joinCode.expiresAt).toLocaleString()}.
+                  </p>
+                </div>
+              ) : (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <p className="text-sm text-card-foreground">
+                    No active code shown. Generate one to let students join without an email
+                    invitation.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={handleGenerateJoinCode}
+                    isLoading={generateJoinCode.isPending}
+                  >
+                    Generate join code
+                  </Button>
+                </div>
+              )}
+            </Card>
+          )}
+
           {/* Danger Zone */}
           <Card className="p-6 space-y-4 border-red-500/40 bg-red-500/5">
             <div>
@@ -720,7 +816,8 @@ export function OrgClassDetailPage() {
               <div>
                 <p className="text-sm font-semibold text-card-foreground">Withdraw All Students</p>
                 <p className="text-xs text-muted">
-                  Remove all enrolled students from this cohort roster while preserving their progress history.
+                  Remove all enrolled students from this cohort roster while preserving their
+                  progress history.
                 </p>
               </div>
               <Button
@@ -730,6 +827,19 @@ export function OrgClassDetailPage() {
                 onClick={() => setWithdrawAllOpen(true)}
               >
                 Withdraw All Students
+              </Button>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border pt-4">
+              <div>
+                <p className="text-sm font-semibold text-card-foreground">Delete Class</p>
+                <p className="text-xs text-muted">
+                  Permanently delete this class, its roster, invitations and active join codes. This
+                  cannot be undone.
+                </p>
+              </div>
+              <Button variant="danger" size="sm" onClick={() => setDeleteClassOpen(true)}>
+                Delete Class
               </Button>
             </div>
           </Card>
@@ -773,6 +883,27 @@ export function OrgClassDetailPage() {
           confirmLabel="Withdraw All"
           isLoading={withdraw.isPending}
           message={`Are you sure you want to withdraw all ${klass.studentCount} students from this cohort? Their historical progress is kept safe.`}
+        />
+      )}
+
+      {deleteClassOpen && (
+        <ConfirmDialog
+          open
+          title="Delete class"
+          onCancel={() => setDeleteClassOpen(false)}
+          onConfirm={() =>
+            deleteClass.mutate(undefined, {
+              onSuccess: (result) => {
+                setDeleteClassOpen(false);
+                toast.success(`${result.className} was deleted.`);
+                navigate(ROUTES.ORG_DASHBOARD);
+              },
+              onError: (error) => toast.error(error.message),
+            })
+          }
+          confirmLabel="Delete Class"
+          isLoading={deleteClass.isPending}
+          message={`Permanently delete "${klass.className}" and its ${klass.studentCount} enrollment(s)? Active join codes and invitations will be revoked. This cannot be undone.`}
         />
       )}
     </div>

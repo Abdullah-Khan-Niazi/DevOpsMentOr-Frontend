@@ -2,14 +2,14 @@
 
 .card {
   background-color: var(--pearl-100);
-  border: 1px solid var(--paper-line);
-  border-radius: var(--radius-md, 8px);
+  border: 0.0625rem solid var(--paper-line);
+  border-radius: var(--radius-md);
   min-width: 0;
   max-width: 100%;
   padding: var(--space-8);
   box-shadow:
-    0 1px 2px rgba(20, 20, 15, 0.03),
-    0 4px 12px rgba(20, 20, 15, 0.04);
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 3%, transparent),
+    0 0.25rem 0.75rem color-mix(in srgb, var(--ink) 4%, transparent);
   transition:
     transform var(--duration-fast) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard),
@@ -22,29 +22,29 @@
 }
 
 .card--interactive:hover {
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
   border-color: var(--ink);
   box-shadow:
-    0 2px 4px rgba(20, 20, 15, 0.04),
-    0 8px 24px rgba(20, 20, 15, 0.08);
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 4%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .card--interactive:active {
   transform: translateY(0) scale(0.998);
-  box-shadow: 0 1px 2px rgba(20, 20, 15, 0.05);
+  box-shadow: 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 5%, transparent);
   transition-duration: 80ms;
 }
 
 .card--interactive:focus-visible {
-  outline: 2px solid var(--ink);
-  outline-offset: 2px;
+  outline: 0.125rem solid var(--ink);
+  outline-offset: 0.125rem;
 }
 
 .card--highlighted {
   border-color: var(--ink);
   box-shadow:
-    0 2px 4px rgba(20, 20, 15, 0.06),
-    0 8px 24px rgba(20, 20, 15, 0.10);
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 6%, transparent),
+    0 0.5rem 1.5rem color-mix(in srgb, var(--ink) 10%, transparent);
 }
 
 @media (max-width: 767px) {

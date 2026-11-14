@@ -39,7 +39,7 @@
   gap: var(--space-3);
   padding: var(--space-8);
   background-color: var(--color-bg-raised);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   transition:
     border-color var(--duration-base) var(--ease-decelerate),
@@ -48,7 +48,7 @@
 
 .cr-role:hover {
   border-color: var(--color-border-strong);
-  transform: translateY(-2px);
+  transform: translateY(-0.125rem);
 }
 
 .cr-role__meta {

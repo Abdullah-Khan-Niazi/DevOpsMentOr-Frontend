@@ -5,6 +5,15 @@ function unwrap<T>(envelope: { data: T }): T {
   return envelope.data;
 }
 
+export interface CreateOrgPayload {
+  name: string;
+  slug: string;
+  description?: string | null;
+  website?: string | null;
+  industry?: string | null;
+  billingEmail?: string | null;
+}
+
 export interface UpdateMyOrgPayload {
   name?: string;
   description?: string | null;
@@ -19,6 +28,15 @@ export interface InviteProfessorPayload {
 
 /** Contract §07 ORG-06..ORG-10 org workspace + enrollment endpoints. */
 export const orgService = {
+  /** Create a new organization */
+  async createOrg(payload: CreateOrgPayload): Promise<{ organizationId: number; name: string; slug: string }> {
+    const { data } = await apiClient.post<{ data: { organizationId: number; name: string; slug: string } }>(
+      '/org',
+      payload,
+    );
+    return unwrap(data);
+  },
+
   /** ORG-06 */
   async getMyOrg(): Promise<MyOrgDto> {
     const { data } = await apiClient.get<{ data: MyOrgDto }>('/org/me');

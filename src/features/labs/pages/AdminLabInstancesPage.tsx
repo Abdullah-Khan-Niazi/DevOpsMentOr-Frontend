@@ -20,7 +20,9 @@ type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
       {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
     </span>
   );
@@ -170,7 +172,7 @@ export function AdminLabInstancesPage() {
                 setStatus('');
                 setPage(1);
               }}
-              className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
+              className="h-7 text-[0.6875rem] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
             >
               Reset
             </Button>
@@ -188,7 +190,7 @@ export function AdminLabInstancesPage() {
             <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-xs font-mono border-collapse">
                 <thead>
-                  <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                  <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
                     <th
                       className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
                       onClick={() => handleSort('instanceId')}
@@ -230,8 +232,13 @@ export function AdminLabInstancesPage() {
                 </thead>
                 <tbody className="divide-y divide-border/60">
                   {sortedInstances.map((instance) => (
-                    <tr key={instance.instanceId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
-                      <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">#{instance.instanceId}</td>
+                    <tr
+                      key={instance.instanceId}
+                      className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
+                    >
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
+                        #{instance.instanceId}
+                      </td>
                       <td className="px-3 py-2.5 whitespace-nowrap font-semibold text-card-foreground">
                         {instance.username ?? `user#${instance.userId}`}
                       </td>
@@ -239,11 +246,19 @@ export function AdminLabInstancesPage() {
                         {instance.labName ?? `lab#${instance.labId ?? '?'}`}
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap font-mono text-xs">
-                        <span className={instance.status === 'running' ? 'font-semibold text-card-foreground uppercase' : 'text-muted uppercase'}>
+                        <span
+                          className={
+                            instance.status === 'running'
+                              ? 'font-semibold text-card-foreground uppercase'
+                              : 'text-muted uppercase'
+                          }
+                        >
                           {instance.status}
                         </span>
                       </td>
-                      <td className="px-3 py-2.5 whitespace-nowrap text-muted">{instance.assignedIp ?? '—'}</td>
+                      <td className="px-3 py-2.5 whitespace-nowrap text-muted">
+                        {instance.assignedIp ?? '—'}
+                      </td>
                       <td className="px-3 py-2.5 whitespace-nowrap text-muted">
                         {instance.expiresAt ? new Date(instance.expiresAt).toLocaleString() : '—'}
                       </td>
@@ -253,7 +268,6 @@ export function AdminLabInstancesPage() {
                             variant="danger"
                             size="sm"
                             onClick={() => terminate(instance.instanceId)}
-                           
                           >
                             Terminate
                           </Button>

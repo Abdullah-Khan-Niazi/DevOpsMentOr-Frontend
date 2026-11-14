@@ -38,15 +38,9 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
   const [selectedRegion, setSelectedRegion] = useState<MapRegion>('ALL');
   const [mouseCoords, setMouseCoords] = useState<{ x: number; y: number } | null>(null);
 
-  const totalUsers = useMemo(
-    () => countries.reduce((sum, c) => sum + c.userCount, 0),
-    [countries],
-  );
+  const totalUsers = useMemo(() => countries.reduce((sum, c) => sum + c.userCount, 0), [countries]);
 
-  const maxUsers = useMemo(
-    () => Math.max(...countries.map((c) => c.userCount), 1),
-    [countries],
-  );
+  const maxUsers = useMemo(() => Math.max(...countries.map((c) => c.userCount), 1), [countries]);
 
   const countryStatsMap = useMemo(() => {
     const map = new Map<string, CountryDistributionDto>();
@@ -57,11 +51,11 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
   }, [countries]);
 
   const hoveredCountry = hoveredCode
-    ? countryStatsMap.get(hoveredCode) ?? {
+    ? (countryStatsMap.get(hoveredCode) ?? {
         countryCode: hoveredCode,
         countryName: getCountryName(hoveredCode),
         userCount: 0,
-      }
+      })
     : null;
 
   return (
@@ -144,17 +138,17 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                 const isHovered = hoveredCode === code;
 
                 // Authentic choropleth coloring: darker/more saturated for higher learner counts
-                let fill = 'var(--color-bg-sunken, #17191e)';
+                let fill = 'var(--paper-dim)';
                 let fillOpacity = 1;
 
                 if (hasUsers) {
-                  fill = 'var(--color-accent-500)';
+                  fill = 'var(--ink)';
                   // Darker/higher opacity with more learners
                   fillOpacity = Math.min(1, 0.4 + ratio * 0.6);
                 }
 
                 if (isHovered) {
-                  fill = hasUsers ? 'var(--color-accent-400)' : 'var(--color-surface-hover, #23272e)';
+                  fill = hasUsers ? 'var(--ink-soft)' : 'var(--pearl-300)';
                   fillOpacity = 1;
                 }
 
@@ -170,16 +164,16 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                       <path
                         key={pIdx}
                         d={p}
-                        fill={fill}
-                        fillOpacity={fillOpacity}
-                        stroke={
-                          isHovered
-                            ? 'var(--color-accent-400)'
+                        style={{
+                          fill,
+                          fillOpacity,
+                          stroke: isHovered
+                            ? 'var(--ink-soft)'
                             : hasUsers
-                              ? 'var(--color-border-strong)'
-                              : 'var(--color-border-subtle)'
-                        }
-                        strokeWidth={isHovered ? 1.4 : hasUsers ? 0.8 : 0.4}
+                              ? 'var(--paper-line-strong)'
+                              : 'var(--paper-line)',
+                          strokeWidth: isHovered ? 1.4 : hasUsers ? 0.8 : 0.4,
+                        }}
                         strokeLinejoin="round"
                         className="transition-all duration-100"
                       />
@@ -195,7 +189,6 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
             <div
               className="absolute bg-surface border border-accent p-3 shadow-2xl font-mono text-xs z-30 pointer-events-none transition-all duration-75"
               style={{
-                
                 left: mouseCoords
                   ? mouseCoords.x > 480
                     ? `${Math.max(10, mouseCoords.x - 250)}px`
@@ -210,14 +203,14 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
               }}
             >
               <div className="flex items-center gap-2 mb-1.5 pb-1 border-b border-border/60">
-                <span className="px-1.5 py-0.5 bg-accent text-accent-foreground font-bold text-[10px]">
+                <span className="px-1.5 py-0.5 bg-accent text-accent-foreground font-bold text-[0.625rem]">
                   {hoveredCountry.countryCode}
                 </span>
                 <span className="font-semibold text-card-foreground">
                   {hoveredCountry.countryName}
                 </span>
               </div>
-              <div className="space-y-1 text-[11px]">
+              <div className="space-y-1 text-[0.6875rem]">
                 <div className="flex items-center justify-between gap-6 text-muted">
                   <span>Enrolled Learners:</span>
                   <span className="font-bold text-card-foreground">
@@ -247,10 +240,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
           )}
 
           {/* Map Choropleth Legend (Lower Left Corner) */}
-          <div
-            className="absolute bottom-3 left-3 bg-surface/90 border border-border p-2 font-mono text-[10px] text-muted flex items-center gap-2"
-           
-          >
+          <div className="absolute bottom-3 left-3 bg-surface/90 border border-border p-2 font-mono text-[0.625rem] text-muted flex items-center gap-2">
             <span>Fewer Learners</span>
             <div className="flex items-center gap-0.5">
               <span className="w-3 h-2 bg-surface-hover border border-border" />
@@ -278,23 +268,20 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                   ? 'border-accent bg-accent/15 -translate-y-0.5'
                   : 'border-border bg-surface/40 hover:bg-surface/80 hover:border-card-foreground'
               }`}
-             
+
               onMouseEnter={() => setHoveredCode(code)}
               onMouseLeave={() => setHoveredCode(null)}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span
-                    className="px-1 py-0.5 border border-border bg-surface text-[10px] font-bold"
-                   
-                  >
+                  <span className="px-1 py-0.5 border border-border bg-surface text-[0.625rem] font-bold">
                     {c.countryCode}
                   </span>
-                  <span className="text-card-foreground font-medium truncate text-[11px]">
+                  <span className="text-card-foreground font-medium truncate text-[0.6875rem]">
                     {c.countryName || getCountryName(c.countryCode)}
                   </span>
                 </div>
-                <span className="font-bold text-card-foreground text-[11px] shrink-0">
+                <span className="font-bold text-card-foreground text-[0.6875rem] shrink-0">
                   {c.userCount.toLocaleString()}
                 </span>
               </div>
@@ -307,7 +294,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                 />
               </div>
 
-              <div className="flex items-center justify-between text-[10px] text-muted">
+              <div className="flex items-center justify-between text-[0.625rem] text-muted">
                 <span>Platform Share</span>
                 <span className="text-accent">{pct}%</span>
               </div>

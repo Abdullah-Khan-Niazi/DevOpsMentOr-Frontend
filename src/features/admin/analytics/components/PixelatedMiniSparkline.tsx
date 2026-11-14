@@ -13,21 +13,20 @@ export function PixelatedMiniSparkline({
   const maxSegs = 5;
 
   return (
-    <div className="flex items-end gap-[3px] h-7" aria-hidden="true">
+    <div className="flex items-end gap-[0.1875rem] h-7" aria-hidden="true">
       {bars.map((lvl, bIdx) => {
         const filled = Math.min(Math.max(lvl, 0), maxSegs);
         return (
-          <div key={bIdx} className="flex flex-col-reverse gap-[2px] w-[5px]">
+          <div key={bIdx} className="flex flex-col-reverse gap-[0.125rem] w-[0.3125rem]">
             {Array.from({ length: maxSegs }).map((_, sIdx) => {
               const isFilled = sIdx < filled;
               return (
                 <div
                   key={sIdx}
-                  className="w-full h-[3px]"
+                  className="w-full h-[0.1875rem]"
                   style={{
                     backgroundColor: isFilled ? color : emptyColor,
                     opacity: isFilled ? 0.9 : 0.3,
-                    
                   }}
                 />
               );

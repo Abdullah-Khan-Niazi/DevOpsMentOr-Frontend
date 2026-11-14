@@ -90,7 +90,8 @@ export function AdminDashboardPage() {
       const matchesSearch =
         auditSearch === '' ||
         (log.adminEmail && log.adminEmail.toLowerCase().includes(auditSearch.toLowerCase())) ||
-        (log.adminFullName && log.adminFullName.toLowerCase().includes(auditSearch.toLowerCase())) ||
+        (log.adminFullName &&
+          log.adminFullName.toLowerCase().includes(auditSearch.toLowerCase())) ||
         log.action.toLowerCase().includes(auditSearch.toLowerCase()) ||
         String(log.targetId ?? '').includes(auditSearch);
 
@@ -98,8 +99,10 @@ export function AdminDashboardPage() {
 
       if (auditFilter === 'ALL') return true;
       if (auditFilter === 'USER') return log.action.includes('USER') || log.targetType === 'user';
-      if (auditFilter === 'ORG') return log.action.includes('ORG') || log.targetType === 'organization';
-      if (auditFilter === 'AUTH') return log.action.includes('LOGIN') || log.action.includes('AUTH');
+      if (auditFilter === 'ORG')
+        return log.action.includes('ORG') || log.targetType === 'organization';
+      if (auditFilter === 'AUTH')
+        return log.action.includes('LOGIN') || log.action.includes('AUTH');
       if (auditFilter === 'SETTING') return log.action.includes('SETTING');
       return true;
     });
@@ -120,7 +123,9 @@ export function AdminDashboardPage() {
       const min = Math.min(...slice);
       const max = Math.max(...slice);
       const range = max - min || 1;
-      return slice.map((val) => Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)));
+      return slice.map((val) =>
+        Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)),
+      );
     }
     const u = data?.kpis?.totalUsers ?? data?.kpis?.totalIndividualLearners ?? 1;
     return [
@@ -150,8 +155,12 @@ export function AdminDashboardPage() {
 
   const computeLevels = useMemo(() => {
     if (data?.kpis?.sparklines?.compute) return data.kpis.sparklines.compute;
-    const ram = data?.kpis?.pwnbox?.totalActiveRamGb ?? data?.kpis?.hostTelemetry?.memoryUsagePercent ?? 20;
-    const cpu = data?.kpis?.pwnbox?.totalActiveCpuCores ?? data?.kpis?.hostTelemetry?.activeCpuLoadPercent ?? 15;
+    const ram =
+      data?.kpis?.pwnbox?.totalActiveRamGb ?? data?.kpis?.hostTelemetry?.memoryUsagePercent ?? 20;
+    const cpu =
+      data?.kpis?.pwnbox?.totalActiveCpuCores ??
+      data?.kpis?.hostTelemetry?.activeCpuLoadPercent ??
+      15;
     const heap = data?.kpis?.hostTelemetry?.heapUsedMb ?? 60;
     return [
       Math.max(1, Math.min(5, Math.round(cpu / 20) + 1)),
@@ -170,7 +179,9 @@ export function AdminDashboardPage() {
       const min = Math.min(...slice);
       const max = Math.max(...slice);
       const range = max - min || 1;
-      return slice.map((val) => Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)));
+      return slice.map((val) =>
+        Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)),
+      );
     }
     const l = data?.kpis?.activeLearners ?? 1;
     return [
@@ -336,7 +347,7 @@ export function AdminDashboardPage() {
               {/* Traffic Density Curve in PKT (Day / 7D / Month) */}
               <Card className="flex flex-col justify-between p-5 min-w-0 max-w-full overflow-hidden">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-2">
-                  <h2 className="text-[11px] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
+                  <h2 className="text-[0.6875rem] font-semibold uppercase tracking-wider font-mono text-card-foreground whitespace-nowrap">
                     {trafficWindow === 'day' && '24-Hour Traffic Curve (PKT)'}
                     {trafficWindow === '7d' && '7-Day Traffic Trajectory (PKT)'}
                     {trafficWindow === 'month' && '30-Day Traffic Trajectory (PKT)'}
@@ -366,8 +377,8 @@ export function AdminDashboardPage() {
                     </div>
 
                     {data.kpis.peakActivity?.peakHour && (
-                      <div className="flex items-center gap-1 text-muted text-[10px] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap rounded-md">
-                        <span className="text-[9px] uppercase">PEAK:</span>
+                      <div className="flex items-center gap-1 text-muted text-[0.625rem] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap rounded-md">
+                        <span className="text-[0.5625rem] uppercase">PEAK:</span>
                         <span className="font-bold text-card-foreground">
                           {data.kpis.peakActivity.peakHour}
                         </span>
@@ -455,16 +466,17 @@ export function AdminDashboardPage() {
                           <span className="font-bold text-accent uppercase tracking-wide truncate">
                             {log.action}
                           </span>
-                          <span className="text-[10px] text-muted whitespace-nowrap shrink-0">
+                          <span className="text-[0.625rem] text-muted whitespace-nowrap shrink-0">
                             {formatPktDate(log.createdAt)}
                           </span>
                         </div>
-                        <div className="flex items-center justify-between gap-2 text-[11px] text-muted">
+                        <div className="flex items-center justify-between gap-2 text-[0.6875rem] text-muted">
                           <span className="text-card-foreground truncate">
                             {log.adminFullName ?? log.adminEmail}
                           </span>
-                          <span className="text-[11px] text-muted/80 whitespace-nowrap shrink-0">
-                            &rarr; {log.targetType ?? 'system'}{log.targetId ? ` #${log.targetId}` : ''}
+                          <span className="text-[0.6875rem] text-muted/80 whitespace-nowrap shrink-0">
+                            &rarr; {log.targetType ?? 'system'}
+                            {log.targetId ? ` #${log.targetId}` : ''}
                           </span>
                         </div>
                       </div>
@@ -530,39 +542,34 @@ function NothingKpiCard({
       className="group relative flex flex-col justify-between p-4 transition-all duration-150 ease-out border border-border bg-surface hover:-translate-y-1 hover:border-ink hover:shadow-md hover:bg-surface-hover active:translate-y-0 active:scale-[0.99] focus-visible:ring-1 focus-visible:ring-accent focus-visible:outline-none cursor-pointer h-full select-none"
     >
       <div className="flex items-start justify-between">
-        <div className="flex items-center gap-1.5">
-          <p className="text-[11px] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors">
-            {label}
-          </p>
-          {tooltipContext && (
-            <span
-              className="inline-flex items-center justify-center w-3.5 h-3.5 text-[9px] font-mono text-muted group-hover:text-card-foreground border border-border/80 rounded-xs transition-colors cursor-help"
-              title={tooltipContext}
-              aria-label={tooltipContext}
-            >
-              ?
-            </span>
-          )}
-        </div>
+        <p
+          className="text-[0.6875rem] font-mono uppercase tracking-wider text-muted group-hover:text-card-foreground transition-colors"
+          title={tooltipContext}
+        >
+          {label}
+        </p>
         {sparklineLevels && <PixelatedMiniSparkline levels={sparklineLevels} />}
       </div>
 
       <div className="my-2">
         <p className="text-2xl font-bold font-mono tracking-tight text-card-foreground group-hover:text-accent transition-colors">
           {typeof value === 'number' ? value.toLocaleString() : value}
-          {accentValue && (
-            <span className="ml-2 text-xs font-mono text-accent">{accentValue}</span>
-          )}
+          {accentValue && <span className="ml-2 text-xs font-mono text-accent">{accentValue}</span>}
         </p>
       </div>
 
-      <p className="text-xs text-muted group-hover:text-card-foreground/80 transition-colors truncate border-t border-border/40 pt-1.5">{subtext}</p>
+      <p className="text-xs text-muted group-hover:text-card-foreground/80 transition-colors truncate border-t border-border/40 pt-1.5">
+        {subtext}
+      </p>
     </Card>
   );
 
   if (href) {
     return (
-      <Link to={href} className="block h-full outline-none focus-visible:ring-1 focus-visible:ring-accent">
+      <Link
+        to={href}
+        className="block h-full outline-none focus-visible:ring-1 focus-visible:ring-accent"
+      >
         {cardContent}
       </Link>
     );

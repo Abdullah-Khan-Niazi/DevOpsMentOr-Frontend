@@ -20,19 +20,19 @@
 
 .input-field {
   background-color: var(--pearl-100);
-  border: 1px solid var(--paper-line);
-  border-radius: var(--radius-sm, 6px);
+  border: 0.0625rem solid var(--paper-line);
+  border-radius: var(--radius-sm);
   padding: var(--space-2) var(--space-3);
   font-family: var(--font-body);
   font-size: var(--text-body-m);
   line-height: var(--leading-normal);
   color: var(--color-text-primary);
   outline: none;
-  box-shadow: inset 0 1px 2px rgba(20, 20, 15, 0.03);
+  box-shadow: inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 3%, transparent);
   transition:
-    border-color 160ms var(--ease-standard),
-    box-shadow 160ms var(--ease-standard),
-    background-color 160ms var(--ease-standard);
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard);
 }
 
 .input-field::placeholder {
@@ -41,13 +41,13 @@
 }
 
 .input-field:hover:not(:focus):not(:disabled) {
-  border-color: #CEC9BD;
+  border-color: var(--paper-line-strong);
 }
 
 .input-field:focus {
   border-color: var(--ink);
-  background-color: #FFFFFF;
-  box-shadow: 0 0 0 3px rgba(20, 20, 15, 0.08);
+  background-color: var(--pearl-100);
+  box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .input-field:disabled {
@@ -58,41 +58,41 @@
 
 select.input-field,
 select {
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   appearance: none;
-  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236C685C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238A897F' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
   background-repeat: no-repeat;
   background-position: right 0.75rem center;
-  background-size: 14px;
+  background-size: 0.875rem;
   padding-right: 2.25rem;
   cursor: pointer;
 }
 
 select option {
-  padding: 6px 10px;
-  background-color: #FFFFFF;
-  color: var(--ink, #14140F);
+  padding: 0.375rem 0.625rem;
+  background-color: var(--pearl-100);
+  color: var(--ink);
 }
 
 /* ─── Field-Level Error State with subtle red hue and glow ───────────────── */
 .input-field--error {
-  border-color: var(--accent-signal, #D71921) !important;
-  background-color: rgba(215, 25, 33, 0.025);
+  border-color: var(--accent-signal) !important;
+  background-color: color-mix(in srgb, var(--accent-signal) 2.5%, transparent);
 }
 
 .input-field--error:focus {
-  border-color: var(--accent-signal, #D71921) !important;
-  box-shadow: 0 0 0 3px rgba(215, 25, 33, 0.16) !important;
+  border-color: var(--accent-signal) !important;
+  box-shadow: 0 0 0 0.1875rem color-mix(in srgb, var(--accent-signal) 16%, transparent) !important;
 }
 
 .input-error {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
+  gap: 0.3125rem;
   font-size: var(--text-body-s);
-  color: var(--accent-signal, #D71921);
+  color: var(--accent-signal);
   font-weight: 500;
-  margin-top: 2px;
+  margin-top: 0.125rem;
 }
 
 .input-hint {
@@ -111,11 +111,11 @@ select option {
 .filter-input {
   height: 2rem !important;
   padding: 0 0.625rem !important;
-  font-size: 0.75rem !important;
+  font-size: var(--text-caption) !important;
   line-height: 2rem !important;
   background-color: var(--pearl-100);
-  border: 1px solid var(--paper-line);
-  border-radius: var(--radius-xs, 4px) !important;
+  border: 0.0625rem solid var(--paper-line);
+  border-radius: var(--radius-xs) !important;
   font-family: var(--font-body);
   color: var(--color-text-primary);
   outline: none;
@@ -126,12 +126,12 @@ select option {
 }
 
 .filter-input:hover:not(:focus) {
-  border-color: #CEC9BD;
+  border-color: var(--paper-line-strong);
 }
 
 .filter-input:focus {
   border-color: var(--ink);
-  box-shadow: 0 0 0 2px rgba(20, 20, 15, 0.08);
+  box-shadow: 0 0 0 0.125rem color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .filter-input::placeholder {

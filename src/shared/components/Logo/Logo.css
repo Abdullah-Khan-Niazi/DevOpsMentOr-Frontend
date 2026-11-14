@@ -15,33 +15,33 @@
   width: auto;
 }
 
-/* Icon mark — 36px header scale */
+/* Icon mark — header scale */
 .logo--mark {
-  height: 36px;
+  height: 2.25rem;
 }
 
 /* Wordmark — optically aligned to the mark */
 .logo--wordmark {
-  height: 24px;
+  height: 1.5rem;
   margin-left: var(--space-3);
 }
 
 /* Stacked lockup (icon above wordmark) */
 .logo--icon-text {
-  height: 64px;
+  height: 4rem;
   align-items: flex-start;
 }
 
 /* Composed lockup — always the compact header scale */
 .logo--full {
-  height: 31px;
+  height: 1.9375rem;
 }
 
 .logo--full .logo--mark {
-  height: 31px;
+  height: 1.9375rem;
 }
 
 .logo--full .logo--wordmark {
-  height: 19px;
+  height: 1.1875rem;
   margin-left: var(--space-3);
 }

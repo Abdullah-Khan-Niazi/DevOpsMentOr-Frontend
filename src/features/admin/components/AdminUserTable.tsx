@@ -15,9 +15,7 @@ function formatDate(value: string | null): string {
 
 function formatRolesText(roles: string[]): string {
   if (!roles || roles.length === 0) return '-';
-  return roles
-    .map((r) => r.replace('_', ' '))
-    .join(', ');
+  return roles.map((r) => r.replace('_', ' ')).join(', ');
 }
 
 type SortColumn = 'user' | 'roles' | 'organization' | 'country' | 'joined';
@@ -220,7 +218,7 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
               onClick={() =>
                 navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(user.userId)))
               }
-              className="border-b border-border/60 last:border-0 hover:bg-[#F3EFE6] cursor-pointer transition-colors group"
+              className="border-b border-border/60 last:border-0 hover:bg-surface-hover cursor-pointer transition-colors group"
             >
               <td className="px-3 py-3">
                 <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
@@ -236,9 +234,7 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
               <td className="px-3 py-3 text-card-foreground text-xs font-normal">
                 {user.organizationName ?? '-'}
               </td>
-              <td className="px-3 py-3 text-xs text-muted-foreground">
-                {user.country ?? '-'}
-              </td>
+              <td className="px-3 py-3 text-xs text-muted-foreground">{user.country ?? '-'}</td>
               <td className="px-3 py-3 text-muted-foreground text-right text-xs tabular-nums">
                 {formatDate(user.createdAt)}
               </td>

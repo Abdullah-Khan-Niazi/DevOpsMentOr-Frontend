@@ -18,12 +18,12 @@
 .review-section__histogram {
   display: grid;
   gap: var(--space-1);
-  max-width: 480px;
+  max-width: 30rem;
 }
 
 .review-section__bar-row {
   display: grid;
-  grid-template-columns: 40px 1fr 32px;
+  grid-template-columns: 2.5rem 1fr 2rem;
   align-items: center;
   gap: var(--space-3);
 }
@@ -34,7 +34,7 @@
 }
 
 .review-section__bar-track {
-  height: 8px;
+  height: 0.5rem;
   border-radius: var(--radius-full);
   background: var(--color-bg-sunken);
   overflow: hidden;
@@ -49,7 +49,7 @@
 
 .review-section__bar-count {
   color: var(--color-text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
   text-align: right;
 }
 
@@ -67,18 +67,18 @@
 
 .review-section__author {
   font-weight: 600;
-  font-size: 0.9375rem;
+  font-size: var(--text-mono-m);
 }
 
 .review-section__stars {
   color: var(--color-warning);
-  letter-spacing: 2px;
+  letter-spacing: 0.125rem;
 }
 
 .review-section__time {
   margin-left: auto;
   color: var(--color-text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 
 .review-section__title {
@@ -97,7 +97,7 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-6);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
   background: var(--color-bg-raised);
 }
@@ -115,7 +115,7 @@
   border: none;
   background: transparent;
   color: var(--color-text-tertiary);
-  font-size: 1.5rem;
+  font-size: var(--text-heading-l);
   cursor: pointer;
   transition: color var(--duration-fast) var(--ease-standard);
 }
@@ -130,7 +130,7 @@
 .report-modal__textarea {
   width: 100%;
   padding: var(--space-3);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-sm);
   background: var(--color-bg-base);
   color: var(--color-text-primary);
@@ -155,7 +155,7 @@
   align-items: center;
   gap: var(--space-2);
   color: var(--color-text-tertiary);
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
 }
 
 .review-section__error,
@@ -187,7 +187,7 @@
   flex-direction: column;
   gap: var(--space-2);
   padding: var(--space-4);
-  border: 1px solid var(--color-border-subtle);
+  border: 0.0625rem solid var(--color-border-subtle);
   border-radius: var(--radius-md);
   background: var(--color-bg-raised);
 }
@@ -205,7 +205,7 @@
 
 .comment-row__author {
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
 }
 
 .comment-row__pinned {
@@ -217,7 +217,7 @@
 .comment-row__time {
   margin-left: auto;
   color: var(--color-text-tertiary);
-  font-size: 0.75rem;
+  font-size: var(--text-caption);
 }
 
 .comment-row__content {
@@ -261,7 +261,7 @@
   flex-direction: column;
   gap: var(--space-3);
   padding: var(--space-4);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-md);
 }
 
@@ -284,13 +284,13 @@
 }
 
 .report-modal__label {
-  font-size: 0.875rem;
+  font-size: var(--text-body-s);
   font-weight: 500;
 }
 
 .report-modal__select {
   padding: var(--space-2) var(--space-3);
-  border: 1px solid var(--color-border-default);
+  border: 0.0625rem solid var(--color-border-default);
   border-radius: var(--radius-sm);
   background: var(--color-bg-base);
   color: var(--color-text-primary);

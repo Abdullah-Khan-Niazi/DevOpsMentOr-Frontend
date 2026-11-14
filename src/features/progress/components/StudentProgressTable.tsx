@@ -209,7 +209,12 @@ export function StudentProgressTable({
               sort={sort}
               onSortChange={onSortChange}
             />
-            <SortableHeader label="Status" column="status" sort={sort} onSortChange={onSortChange} />
+            <SortableHeader
+              label="Status"
+              column="status"
+              sort={sort}
+              onSortChange={onSortChange}
+            />
             {onSelectStudent ? (
               <th className="px-4 py-3 font-semibold text-xs tracking-wider uppercase text-muted">
                 Actions
@@ -221,7 +226,7 @@ export function StudentProgressTable({
           {students.map((student) => (
             <tr
               key={student.userId}
-              className="transition-colors duration-150 hover:bg-[#F3EFE6] cursor-default"
+              className="transition-colors duration-150 hover:bg-surface-hover cursor-default"
             >
               <td className="px-4 py-3">
                 <div className="font-medium text-card-foreground">
@@ -245,7 +250,9 @@ export function StudentProgressTable({
               </td>
               <td className="px-4 py-3 tabular-nums text-muted-foreground">
                 <span className="font-medium text-ink">{student.labsCompleted}</span>{' '}
-                <span className="text-xs text-muted">{student.labsCompleted === 1 ? 'lab' : 'labs'}</span>
+                <span className="text-xs text-muted">
+                  {student.labsCompleted === 1 ? 'lab' : 'labs'}
+                </span>
               </td>
               <td className="px-4 py-3 text-muted-foreground">
                 {formatDate(student.lastActiveAt)}
@@ -254,7 +261,7 @@ export function StudentProgressTable({
                 <span
                   className={
                     student.progressPercentage >= 100
-                      ? 'inline-flex items-center rounded-sm bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 ring-1 ring-inset ring-emerald-600/20'
+                      ? 'inline-flex items-center rounded-sm bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success ring-1 ring-inset ring-success/20'
                       : 'inline-flex items-center rounded-sm bg-pearl-200 px-2.5 py-0.5 text-xs font-medium text-text-secondary ring-1 ring-inset ring-paper-line'
                   }
                 >

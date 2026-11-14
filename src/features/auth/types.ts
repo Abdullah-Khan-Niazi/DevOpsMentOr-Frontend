@@ -10,6 +10,7 @@ export interface AuthUser {
   status: string;
   isVerified: boolean;
   twoFactorEnabled?: boolean;
+  hasPassword?: boolean;
   roles: string[];
   permissions?: string[];
 }
@@ -44,6 +45,7 @@ export interface MeResponse {
     status: string;
     isVerified: boolean;
     twoFactorEnabled: boolean;
+    hasPassword?: boolean;
     roles: string[];
     permissions: string[];
   };
@@ -225,6 +227,7 @@ export interface AuthState {
   refreshToken: string | null;
   isAuthenticated: boolean;
   setSession: (payload: LoginResponse) => void;
+  setTokens: (tokens: { accessToken: string; refreshToken: string }) => void;
   setUser: (user: AuthUser) => void;
   clearSession: () => void;
 }

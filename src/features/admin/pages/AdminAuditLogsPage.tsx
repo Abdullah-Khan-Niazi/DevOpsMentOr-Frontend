@@ -74,11 +74,7 @@ export function AdminAuditLogsPage() {
   };
 
   const hasActiveFilters = Boolean(
-    filters.search ||
-    filters.action ||
-    filters.targetType ||
-    filters.from ||
-    filters.to
+    filters.search || filters.action || filters.targetType || filters.from || filters.to,
   );
 
   return (
@@ -125,7 +121,7 @@ export function AdminAuditLogsPage() {
           </select>
 
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[10px] text-muted uppercase shrink-0">From:</span>
+            <span className="text-[0.625rem] text-muted uppercase shrink-0">From:</span>
             <input
               id="audit-from"
               type="date"
@@ -136,7 +132,7 @@ export function AdminAuditLogsPage() {
           </div>
 
           <div className="flex items-center gap-1 shrink-0">
-            <span className="text-[10px] text-muted uppercase shrink-0">To:</span>
+            <span className="text-[0.625rem] text-muted uppercase shrink-0">To:</span>
             <input
               id="audit-to"
               type="date"
@@ -151,8 +147,7 @@ export function AdminAuditLogsPage() {
               variant="ghost"
               size="sm"
               onClick={resetFilters}
-              className="h-7 text-[11px] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
-             
+              className="h-7 text-[0.6875rem] rounded-none px-2 shrink-0 transition-transform active:scale-[0.98]"
             >
               Reset
             </Button>
@@ -183,12 +178,14 @@ export function AdminAuditLogsPage() {
             </div>
           </div>
         ) : data && data.data.length === 0 ? (
-          <p className="py-6 text-sm text-muted font-mono">No audit logs found matching criteria.</p>
+          <p className="py-6 text-sm text-muted font-mono">
+            No audit logs found matching criteria.
+          </p>
         ) : data ? (
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead>
-                <tr className="border-b border-border text-[11px] uppercase tracking-wide text-muted">
+                <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Timestamp</th>
                   <th className="px-3 py-2 font-medium">Actor</th>
                   <th className="px-3 py-2 font-medium">Action</th>
@@ -199,7 +196,10 @@ export function AdminAuditLogsPage() {
               </thead>
               <tbody>
                 {data.data.map((log) => (
-                  <tr key={log.logId} className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors">
+                  <tr
+                    key={log.logId}
+                    className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
+                  >
                     <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
                       {formatDate(log.createdAt)}
                     </td>
@@ -208,7 +208,7 @@ export function AdminAuditLogsPage() {
                         {log.adminFullName ?? log.adminEmail}
                       </div>
                       {log.adminFullName && log.adminEmail && (
-                        <div className="text-[10px] text-muted">{log.adminEmail}</div>
+                        <div className="text-[0.625rem] text-muted">{log.adminEmail}</div>
                       )}
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap">
@@ -232,7 +232,9 @@ export function AdminAuditLogsPage() {
                     <td className="px-3 py-2.5 max-w-xs truncate">
                       {log.changes ? (
                         <span className="text-xs text-muted-foreground truncate block max-w-sm font-mono">
-                          {typeof log.changes === 'string' ? log.changes : JSON.stringify(log.changes)}
+                          {typeof log.changes === 'string'
+                            ? log.changes
+                            : JSON.stringify(log.changes)}
                         </span>
                       ) : (
                         <span className="text-muted">—</span>

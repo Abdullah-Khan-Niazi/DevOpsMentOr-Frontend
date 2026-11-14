@@ -29,4 +29,5 @@ export { SherlockLabPage } from './pages/SherlockLabPage';
 export { TrackDetailPage } from './pages/TrackDetailPage';
 export { TracksPage } from './pages/TracksPage';
 export { VpnSettingsPage } from './pages/VpnSettingsPage';
+export { LabWorkspace, type LabWorkspaceProps } from './components/LabWorkspace';
 export type * from './types';

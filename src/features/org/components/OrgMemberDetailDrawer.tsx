@@ -18,10 +18,13 @@ export function OrgMemberDetailDrawer({
   onClose,
   onUpdate,
 }: OrgMemberDetailDrawerProps) {
-  const { data: member, isLoading, isError, error, refetch } = useOrgUserDetail(
-    userId,
-    isOpen && Boolean(userId),
-  );
+  const {
+    data: member,
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useOrgUserDetail(userId, isOpen && Boolean(userId));
 
   const classesQuery = useOrgClasses();
   const allCohorts = classesQuery.data?.data ?? [];
@@ -162,7 +165,9 @@ export function OrgMemberDetailDrawer({
                     </div>
                     <div>
                       <span className="text-muted block">Account Status</span>
-                      <span className="font-mono text-card-foreground capitalize">{member.status}</span>
+                      <span className="font-mono text-card-foreground capitalize">
+                        {member.status}
+                      </span>
                     </div>
                     <div>
                       <span className="text-muted block">Country of Origin</span>
@@ -189,19 +194,19 @@ export function OrgMemberDetailDrawer({
                       <div className="text-2xl font-bold font-mono text-card-foreground">
                         {member.completedModules}
                       </div>
-                      <div className="text-[11px] text-muted mt-0.5">Modules Completed</div>
+                      <div className="text-[0.6875rem] text-muted mt-0.5">Modules Completed</div>
                     </Card>
                     <Card className="p-3 text-center">
                       <div className="text-2xl font-bold font-mono text-card-foreground">
                         {member.quizzesPassed}
                       </div>
-                      <div className="text-[11px] text-muted mt-0.5">Quizzes Passed</div>
+                      <div className="text-[0.6875rem] text-muted mt-0.5">Quizzes Passed</div>
                     </Card>
                     <Card className="p-3 text-center">
                       <div className="text-2xl font-bold font-mono text-card-foreground">
                         {member.labHours}h
                       </div>
-                      <div className="text-[11px] text-muted mt-0.5">Lab Hours</div>
+                      <div className="text-[0.6875rem] text-muted mt-0.5">Lab Hours</div>
                     </Card>
                   </div>
                 </div>
@@ -229,7 +234,9 @@ export function OrgMemberDetailDrawer({
                             <p className="text-xs font-semibold text-card-foreground">
                               {cls.className}
                             </p>
-                            <p className="text-[10px] font-mono text-muted">Cohort #{cls.classId}</p>
+                            <p className="text-[0.625rem] font-mono text-muted">
+                              Cohort #{cls.classId}
+                            </p>
                           </div>
                           <div className="flex items-center gap-2.5">
                             <Link
@@ -244,7 +251,7 @@ export function OrgMemberDetailDrawer({
                                 type="button"
                                 disabled={withdrawingCohortId === cls.classId}
                                 onClick={() => handleWithdrawFromCohort(cls.classId)}
-                                className="text-[11px] text-destructive hover:underline font-mono cursor-pointer"
+                                className="text-[0.6875rem] text-destructive hover:underline font-mono cursor-pointer"
                               >
                                 {withdrawingCohortId === cls.classId ? 'Removing…' : 'Withdraw'}
                               </button>

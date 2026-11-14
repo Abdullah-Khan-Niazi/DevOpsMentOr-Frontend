@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { TELEMETRY_TOKENS } from '@/shared/constants';
+import { TELEMETRY_TOKENS, SURFACE_TOKENS } from '@/shared/constants';
 
 export interface ActivityTrendPoint {
   date: string;
@@ -39,7 +39,6 @@ export function ActivityLineChart({
     newSignups: true,
     courseCompletions: true,
   });
-
 
   const maxVal = useMemo(() => {
     if (!data || data.length === 0) return 10;
@@ -78,9 +77,7 @@ export function ActivityLineChart({
                   key={d}
                   type="button"
                   onClick={() => onDaysChange(d)}
-                  className={`tab-switcher__tab ${
-                    days === d ? 'tab-switcher__tab--active' : ''
-                  }`}
+                  className={`tab-switcher__tab ${days === d ? 'tab-switcher__tab--active' : ''}`}
                 >
                   {d}D
                 </button>
@@ -94,27 +91,29 @@ export function ActivityLineChart({
       <div className="flex flex-wrap items-center gap-4 text-xs font-mono pt-1">
         <button
           type="button"
-          onClick={() =>
-            setVisibleSeries((prev) => ({ ...prev, activeUsers: !prev.activeUsers }))
-          }
+          onClick={() => setVisibleSeries((prev) => ({ ...prev, activeUsers: !prev.activeUsers }))}
           className={`inline-flex items-center gap-1.5 transition-opacity cursor-pointer ${
             visibleSeries.activeUsers ? 'opacity-100' : 'opacity-40 line-through'
           }`}
         >
-          <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }} />
+          <span
+            className="w-2 h-2 rounded-full inline-block shrink-0"
+            style={{ backgroundColor: TELEMETRY_TOKENS.activeLearners }}
+          />
           <span className="text-card-foreground font-medium">Active Learners</span>
         </button>
 
         <button
           type="button"
-          onClick={() =>
-            setVisibleSeries((prev) => ({ ...prev, newSignups: !prev.newSignups }))
-          }
+          onClick={() => setVisibleSeries((prev) => ({ ...prev, newSignups: !prev.newSignups }))}
           className={`inline-flex items-center gap-1.5 transition-opacity cursor-pointer ${
             visibleSeries.newSignups ? 'opacity-100' : 'opacity-40 line-through'
           }`}
         >
-          <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.newSignups }} />
+          <span
+            className="w-2 h-2 rounded-full inline-block shrink-0"
+            style={{ backgroundColor: TELEMETRY_TOKENS.newSignups }}
+          />
           <span className="text-card-foreground font-medium">New Signups</span>
         </button>
 
@@ -131,7 +130,10 @@ export function ActivityLineChart({
               visibleSeries.courseCompletions ? 'opacity-100' : 'opacity-40 line-through'
             }`}
           >
-            <span className="w-2 h-2 rounded-full inline-block shrink-0" style={{ backgroundColor: TELEMETRY_TOKENS.completions }} />
+            <span
+              className="w-2 h-2 rounded-full inline-block shrink-0"
+              style={{ backgroundColor: TELEMETRY_TOKENS.completions }}
+            />
             <span className="text-card-foreground font-medium">Completions</span>
           </button>
         )}
@@ -142,7 +144,11 @@ export function ActivityLineChart({
         <ResponsiveContainer width="100%" height="100%">
           <LineChart data={data} margin={{ top: 10, right: 15, left: -20, bottom: 0 }}>
             {/* LED Matrix Dotted Grid Lines */}
-            <CartesianGrid strokeDasharray="1 3" stroke="var(--color-border-subtle)" vertical={false} />
+            <CartesianGrid
+              strokeDasharray="1 3"
+              stroke="var(--color-border-subtle)"
+              vertical={false}
+            />
             <XAxis
               dataKey="date"
               stroke="var(--color-text-tertiary)"
@@ -162,24 +168,22 @@ export function ActivityLineChart({
               content={({ active, payload, label }) => {
                 if (!active || !payload || payload.length === 0) return null;
                 return (
-                  <div
-                    className="border border-border bg-surface p-2.5 shadow-xl font-mono text-xs rounded-lg"
-                  >
+                  <div className="border border-border bg-surface p-2.5 shadow-xl font-mono text-xs rounded-lg">
                     <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-1.5 flex items-center justify-between gap-4">
                       <span>Date: {label}</span>
-                      <span className="text-[10px] text-muted font-normal">Daily Total</span>
+                      <span className="text-[0.625rem] text-muted font-normal">Daily Total</span>
                     </div>
                     <div className="space-y-1">
                       {payload.map((entry) => (
                         <div
                           key={entry.name}
-                          className="flex items-center justify-between gap-4 text-[11px]"
+                          className="flex items-center justify-between gap-4 text-[0.6875rem]"
                         >
-                          <span className="flex items-center gap-1.5" style={{ color: entry.color }}>
-                            <span
-                              className="w-2 h-2"
-                              style={{ backgroundColor: entry.color }}
-                            />
+                          <span
+                            className="flex items-center gap-1.5"
+                            style={{ color: entry.color }}
+                          >
+                            <span className="w-2 h-2" style={{ backgroundColor: entry.color }} />
                             {entry.name}:
                           </span>
                           <span className="font-bold text-card-foreground">
@@ -200,8 +204,18 @@ export function ActivityLineChart({
                 name="Active Learners"
                 stroke={TELEMETRY_TOKENS.activeLearners}
                 strokeWidth={2}
-                dot={{ r: 2.5, strokeWidth: 1.5, fill: TELEMETRY_TOKENS.activeLearners, stroke: TELEMETRY_TOKENS.activeLearners }}
-                activeDot={{ r: 5, strokeWidth: 2, fill: TELEMETRY_TOKENS.activeLearners, stroke: 'var(--color-bg-surface, #FAF9F6)' }}
+                dot={{
+                  r: 2.5,
+                  strokeWidth: 1.5,
+                  fill: TELEMETRY_TOKENS.activeLearners,
+                  stroke: TELEMETRY_TOKENS.activeLearners,
+                }}
+                activeDot={{
+                  r: 5,
+                  strokeWidth: 2,
+                  fill: TELEMETRY_TOKENS.activeLearners,
+                  stroke: SURFACE_TOKENS.paper,
+                }}
               />
             )}
 
@@ -212,22 +226,43 @@ export function ActivityLineChart({
                 name="New Signups"
                 stroke={TELEMETRY_TOKENS.newSignups}
                 strokeWidth={1.75}
-                dot={{ r: 2.5, strokeWidth: 1.5, fill: TELEMETRY_TOKENS.newSignups, stroke: TELEMETRY_TOKENS.newSignups }}
-                activeDot={{ r: 5, strokeWidth: 2, fill: TELEMETRY_TOKENS.newSignups, stroke: 'var(--color-bg-surface, #FAF9F6)' }}
+                dot={{
+                  r: 2.5,
+                  strokeWidth: 1.5,
+                  fill: TELEMETRY_TOKENS.newSignups,
+                  stroke: TELEMETRY_TOKENS.newSignups,
+                }}
+                activeDot={{
+                  r: 5,
+                  strokeWidth: 2,
+                  fill: TELEMETRY_TOKENS.newSignups,
+                  stroke: SURFACE_TOKENS.paper,
+                }}
               />
             )}
 
-            {visibleSeries.courseCompletions && data.some((d) => d.courseCompletions !== undefined) && (
-              <Line
-                type="monotone"
-                dataKey="courseCompletions"
-                name="Completions"
-                stroke={TELEMETRY_TOKENS.completions}
-                strokeWidth={1.75}
-                dot={{ r: 2.5, strokeWidth: 1.5, fill: TELEMETRY_TOKENS.completions, stroke: TELEMETRY_TOKENS.completions }}
-                activeDot={{ r: 5, strokeWidth: 2, fill: TELEMETRY_TOKENS.completions, stroke: 'var(--color-bg-surface, #FAF9F6)' }}
-              />
-            )}
+            {visibleSeries.courseCompletions &&
+              data.some((d) => d.courseCompletions !== undefined) && (
+                <Line
+                  type="monotone"
+                  dataKey="courseCompletions"
+                  name="Completions"
+                  stroke={TELEMETRY_TOKENS.completions}
+                  strokeWidth={1.75}
+                  dot={{
+                    r: 2.5,
+                    strokeWidth: 1.5,
+                    fill: TELEMETRY_TOKENS.completions,
+                    stroke: TELEMETRY_TOKENS.completions,
+                  }}
+                  activeDot={{
+                    r: 5,
+                    strokeWidth: 2,
+                    fill: TELEMETRY_TOKENS.completions,
+                    stroke: SURFACE_TOKENS.paper,
+                  }}
+                />
+              )}
           </LineChart>
         </ResponsiveContainer>
       </div>

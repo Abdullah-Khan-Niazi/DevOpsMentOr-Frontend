@@ -40,9 +40,13 @@ export function AdminUsersPage() {
 
   // Slide drawer state for user invitations
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [inviteType, setInviteType] = useState<'individual_learner' | 'organization'>('individual_learner');
+  const [inviteType, setInviteType] = useState<'individual_learner' | 'organization'>(
+    'individual_learner',
+  );
   const [inviteOrgId, setInviteOrgId] = useState<number | undefined>(undefined);
-  const [inviteRole, setInviteRole] = useState<'individual_learner' | 'org_admin' | 'professor' | 'org_student'>('individual_learner');
+  const [inviteRole, setInviteRole] = useState<
+    'individual_learner' | 'org_admin' | 'professor' | 'org_student'
+  >('individual_learner');
   const [inviteEmails, setInviteEmails] = useState('');
   const [isDraggingCsv, setIsDraggingCsv] = useState(false);
   const [csvParsedCount, setCsvParsedCount] = useState<number | null>(null);
@@ -73,14 +77,20 @@ export function AdminUsersPage() {
     const file = files[0];
     try {
       const text = await file.text();
-      const lines = text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+      const lines = text
+        .split(/\r?\n/)
+        .map((l) => l.trim())
+        .filter(Boolean);
       const parsedEmails: string[] = [];
 
       for (const line of lines) {
         if (/^email\s*,/i.test(line)) continue;
         const parts = line.split(',');
         const emailCandidate = parts[0]?.trim();
-        if (emailCandidate && /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(emailCandidate)) {
+        if (
+          emailCandidate &&
+          /[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/.test(emailCandidate)
+        ) {
           parsedEmails.push(emailCandidate.toLowerCase());
         } else {
           const matches = line.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/gi) || [];
@@ -309,9 +319,7 @@ export function AdminUsersPage() {
             id="admin-status"
             className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
             value={filters.status}
-            onChange={(e) =>
-              applyFilters({ status: e.target.value as StatusFilter, page: 1 })
-            }
+            onChange={(e) => applyFilters({ status: e.target.value as StatusFilter, page: 1 })}
           >
             <option value="active">Active</option>
             <option value="inactive">Inactive</option>
@@ -320,8 +328,17 @@ export function AdminUsersPage() {
             <option value="all">All statuses</option>
           </select>
 
-          {(filters.search || filters.role || filters.organizationId || filters.country || filters.status !== 'active') && (
-            <Button variant="ghost" size="sm" onClick={resetFilters} className="h-7 text-[11px] px-2 shrink-0 transition-transform active:scale-[0.98]">
+          {(filters.search ||
+            filters.role ||
+            filters.organizationId ||
+            filters.country ||
+            filters.status !== 'active') && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={resetFilters}
+              className="h-7 text-[0.6875rem] px-2 shrink-0 transition-transform active:scale-[0.98]"
+            >
               Reset
             </Button>
           )}
@@ -334,10 +351,7 @@ export function AdminUsersPage() {
           />
         ) : (
           <>
-            <AdminUserTable
-              users={data?.data ?? []}
-              isLoading={isLoading}
-            />
+            <AdminUserTable users={data?.data ?? []} isLoading={isLoading} />
             {data ? (
               <Pagination
                 page={data.page}
@@ -377,7 +391,12 @@ export function AdminUsersPage() {
                     aria-label="Close drawer"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
                     </svg>
                   </button>
                 </div>
@@ -429,7 +448,8 @@ export function AdminUsersPage() {
                           id="invite-org-select"
                           className={cn(
                             'input-field w-full mt-1 rounded-md transition-colors',
-                            inviteOrgError && 'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5'
+                            inviteOrgError &&
+                              'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5',
                           )}
                           value={inviteOrgId ?? ''}
                           onChange={(e) => {
@@ -446,10 +466,29 @@ export function AdminUsersPage() {
                         </select>
                         {inviteOrgError ? (
                           <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
-                            <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <svg
+                              className="w-3.5 h-3.5 shrink-0"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
                               <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                              <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
-                              <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                              <line
+                                x1="12"
+                                y1="8"
+                                x2="12"
+                                y2="12"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
+                              <line
+                                x1="12"
+                                y1="16"
+                                x2="12.01"
+                                y2="16"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                              />
                             </svg>
                             {inviteOrgError}
                           </p>
@@ -465,7 +504,9 @@ export function AdminUsersPage() {
                           className="input-field w-full mt-1 rounded-md"
                           value={inviteRole}
                           onChange={(e) =>
-                            setInviteRole(e.target.value as 'org_student' | 'org_admin' | 'professor')
+                            setInviteRole(
+                              e.target.value as 'org_student' | 'org_admin' | 'professor',
+                            )
                           }
                         >
                           <option value="org_student">Student (org_student)</option>
@@ -519,8 +560,10 @@ export function AdminUsersPage() {
                         Drag & drop a CSV file here, or{' '}
                         <span className="text-brand-600 underline">browse</span>
                       </div>
-                      <div className="text-[11px] text-muted mt-0.5">
-                        Accepts format: <span className="font-mono text-card-foreground">email,role,fullName</span> (roles: student, professor, admin) or list of emails.
+                      <div className="text-[0.6875rem] text-muted mt-0.5">
+                        Accepts format:{' '}
+                        <span className="font-mono text-card-foreground">email,role,fullName</span>{' '}
+                        (roles: student, professor, admin) or list of emails.
                       </div>
                       {csvParsedCount !== null && (
                         <div className="mt-1.5 text-xs text-card-foreground font-semibold">
@@ -539,7 +582,8 @@ export function AdminUsersPage() {
                       rows={4}
                       className={cn(
                         'input-field w-full mt-1 font-mono text-xs rounded-lg transition-colors',
-                        inviteEmailError && 'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5'
+                        inviteEmailError &&
+                          'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5',
                       )}
                       placeholder="student1@example.com&#10;student2@example.com, student3@example.com"
                       value={inviteEmails}
@@ -550,10 +594,29 @@ export function AdminUsersPage() {
                     />
                     {inviteEmailError ? (
                       <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <svg
+                          className="w-3.5 h-3.5 shrink-0"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
                           <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                          <line x1="12" y1="8" x2="12" y2="12" strokeWidth="2" strokeLinecap="round" />
-                          <line x1="12" y1="16" x2="12.01" y2="16" strokeWidth="2" strokeLinecap="round" />
+                          <line
+                            x1="12"
+                            y1="8"
+                            x2="12"
+                            y2="12"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
+                          <line
+                            x1="12"
+                            y1="16"
+                            x2="12.01"
+                            y2="16"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                          />
                         </svg>
                         {inviteEmailError}
                       </p>

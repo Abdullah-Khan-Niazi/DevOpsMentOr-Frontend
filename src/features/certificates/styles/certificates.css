@@ -18,7 +18,7 @@
   align-items: center;
   gap: var(--space-8);
   width: 100%;
-  max-width: 560px;
+  max-width: 35rem;
 }
 
 .verify-shell__brand {
@@ -39,10 +39,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 64px;
-  height: 64px;
+  width: 4rem;
+  height: 4rem;
   border-radius: var(--radius-full);
-  border: 2px solid;
+  border: 0.125rem solid;
 }
 
 .verification-card__badge--valid {
@@ -59,14 +59,14 @@
 
 .verification-card__heading {
   margin: 0;
-  font-size: 22px;
+  font-size: 1.375rem;
   line-height: 1.2;
   color: var(--color-text-primary);
 }
 
 .verification-card__statement {
   margin: 0;
-  font-size: 14px;
+  font-size: var(--text-body-s);
   line-height: 1.55;
   color: var(--color-text-secondary);
 }
@@ -74,7 +74,7 @@
 .verification-card__details {
   width: 100%;
   margin: var(--space-4) 0 0;
-  border-top: 1px solid var(--color-border-subtle);
+  border-top: 0.0625rem solid var(--color-border-subtle);
   text-align: left;
 }
 
@@ -84,12 +84,12 @@
   justify-content: space-between;
   gap: var(--space-4);
   padding: var(--space-3) 0;
-  border-bottom: 1px solid var(--color-border-subtle);
+  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .verification-card__row dt {
   flex-shrink: 0;
-  font-size: 12px;
+  font-size: var(--text-caption);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--color-text-tertiary);
@@ -98,7 +98,7 @@
 .verification-card__row dd {
   margin: 0;
   text-align: right;
-  font-size: 14px;
+  font-size: var(--text-body-s);
   color: var(--color-text-primary);
   overflow-wrap: anywhere;
 }
