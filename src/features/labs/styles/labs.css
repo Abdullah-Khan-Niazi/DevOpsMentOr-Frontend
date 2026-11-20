@@ -135,12 +135,367 @@
 }
 
 /* Terminal iframe */
-.terminal-iframe {
+.terminal-iframe-wrap {
+  position: relative;
+  flex: 1 1 auto;
   width: 100%;
   height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  background-color: var(--ink-deep);
+}
+
+.terminal-iframe {
+  width: calc(100% + 1.125rem);
+  height: 100%;
+  margin-right: -1.125rem;
   border: 0;
   display: block;
-  background-color: var(--color-bg-void);
+  background-color: var(--ink-deep);
+}
+
+/* Lab Guide Toggle (icon-only, transparent bg, no borders, 6 interactive states + context tooltip) */
+.lab-guide-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: var(--radius-xs);
+  border: none;
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.lab-guide-toggle::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  right: 0;
+  z-index: var(--z-floating);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-xs);
+  background-color: var(--ink);
+  color: var(--pearl-100);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-0.1875rem);
+  transition:
+    opacity var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.lab-guide-toggle[data-tooltip-align='left']::after {
+  right: auto;
+  left: 0;
+}
+
+.lab-guide-toggle:hover:not(:disabled):not([aria-disabled='true']) {
+  color: var(--ink);
+  background-color: color-mix(in srgb, var(--pearl-200) 75%, transparent);
+  transform: translateY(-0.0625rem);
+}
+
+.lab-guide-toggle:hover:not(:disabled):not([aria-disabled='true'])::after,
+.lab-guide-toggle:focus-visible::after {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.lab-guide-toggle:focus-visible {
+  color: var(--ink);
+  background-color: color-mix(in srgb, var(--pearl-200) 75%, transparent);
+  outline: 0.125rem solid var(--ink);
+  outline-offset: 0.125rem;
+}
+
+.lab-guide-toggle:active:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(0) scale(0.94);
+  background-color: var(--pearl-300);
+}
+
+.lab-guide-toggle--dark {
+  color: color-mix(in srgb, var(--pearl-100) 75%, transparent);
+}
+
+.lab-guide-toggle--dark:hover:not(:disabled):not([aria-disabled='true']) {
+  color: var(--pearl-100);
+  background-color: color-mix(in srgb, var(--pearl-100) 12%, transparent);
+}
+
+.lab-guide-toggle--dark:focus-visible {
+  color: var(--pearl-100);
+  background-color: color-mix(in srgb, var(--pearl-100) 12%, transparent);
+  outline: 0.125rem solid var(--pearl-100);
+  outline-offset: 0.125rem;
+}
+
+.lab-guide-toggle--dark:active:not(:disabled):not([aria-disabled='true']) {
+  color: var(--pearl-100);
+  background-color: color-mix(in srgb, var(--pearl-100) 20%, transparent);
+}
+
+.lab-guide-toggle:disabled,
+.lab-guide-toggle[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+/* Floating 3D Dotted Spherical AI Mentor Trigger (no square platform behind orb) */
+.lab-mentor-fab {
+  position: fixed;
+  right: var(--space-5);
+  bottom: var(--space-5);
+  z-index: var(--z-workspace-fab);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.5rem;
+  height: 3.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--pearl-100);
+  filter: drop-shadow(0 0.25rem 0.625rem color-mix(in srgb, var(--ink-deep) 70%, transparent));
+  cursor: pointer;
+  transition:
+    color var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out),
+    filter var(--duration-fast) var(--ease-out);
+}
+
+.lab-mentor-fab::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  right: calc(100% + 0.625rem);
+  top: 50%;
+  transform: translateY(-50%) translateX(0.25rem);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-xs);
+  background-color: var(--ink);
+  color: var(--pearl-100);
+  border: 0.0625rem solid color-mix(in srgb, var(--pearl-100) 20%, transparent);
+  font-family: var(--font-mono);
+  font-size: 0.6875rem;
+  font-weight: 500;
+  white-space: nowrap;
+  pointer-events: none;
+  opacity: 0;
+  transition:
+    opacity var(--duration-fast) var(--ease-out),
+    transform var(--duration-fast) var(--ease-out);
+}
+
+.lab-mentor-fab:hover:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(-0.1875rem) scale(1.08);
+  filter: drop-shadow(0 0.375rem 0.875rem color-mix(in srgb, var(--pearl-100) 28%, transparent));
+}
+
+.lab-mentor-fab:hover:not(:disabled):not([aria-disabled='true'])::after,
+.lab-mentor-fab:focus-visible::after {
+  opacity: 1;
+  transform: translateY(-50%) translateX(0);
+}
+
+.lab-mentor-fab:focus-visible {
+  outline: 0.125rem solid var(--pearl-100);
+  outline-offset: 0.25rem;
+}
+
+.lab-mentor-fab:active:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(0) scale(0.92);
+}
+
+.lab-mentor-fab[aria-pressed='true'] {
+  color: var(--signal);
+  filter: drop-shadow(0 0.25rem 0.75rem color-mix(in srgb, var(--signal) 35%, transparent));
+}
+
+.lab-mentor-fab[aria-pressed='true']:hover:not(:disabled):not([aria-disabled='true']) {
+  color: var(--pearl-100);
+}
+
+.lab-mentor-fab:disabled,
+.lab-mentor-fab[aria-disabled='true'] {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+/* 3D Dotted Spherical Mentor Orb across all bot states */
+.mentor-orb {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: currentColor;
+}
+
+.mentor-orb--sm {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.mentor-orb--md {
+  width: 3rem;
+  height: 3rem;
+}
+
+.mentor-orb--lg {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.mentor-orb__svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.mentor-orb--listening {
+  color: var(--pearl-100);
+}
+
+.mentor-orb--thinking {
+  color: var(--pearl-200);
+}
+
+.mentor-orb--working {
+  color: var(--signal);
+}
+
+.mentor-orb--success {
+  color: var(--check-success);
+}
+
+.mentor-orb--error {
+  color: var(--color-error);
+}
+
+.mentor-orb--disabled {
+  opacity: 0.35;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-guide-toggle,
+  .lab-guide-toggle::after,
+  .lab-mentor-fab,
+  .lab-mentor-fab::after,
+  .ai-mentor-modal,
+  .lab-run-checks-btn,
+  .lab-run-checks-btn--checking::after,
+  .lab-run-checks-pulse {
+    transition: none;
+    animation: none;
+  }
+}
+
+
+
+/* Dark-surface tertiary Run Checks button: no white hover/pressed bg, bright/bold text + checking animation */
+.lab-run-checks-btn {
+  position: relative;
+  background-color: transparent !important;
+  border: none !important;
+  color: color-mix(in srgb, var(--pearl-100) 80%, transparent);
+  font-weight: 500;
+  box-shadow: none !important;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    text-shadow var(--duration-fast) var(--ease-standard);
+}
+
+.lab-run-checks-btn:hover:not(:disabled):not([aria-disabled='true']) {
+  background-color: transparent !important;
+  color: var(--pearl-100);
+  font-weight: 700;
+  text-shadow: 0 0 0.5rem color-mix(in srgb, var(--pearl-100) 28%, transparent);
+  transform: translateY(-0.0625rem);
+}
+
+.lab-run-checks-btn:focus-visible {
+  background-color: transparent !important;
+  color: var(--pearl-100);
+  font-weight: 700;
+  outline: 0.125rem solid var(--pearl-100);
+  outline-offset: 0.125rem;
+}
+
+.lab-run-checks-btn:active:not(:disabled):not([aria-disabled='true']) {
+  background-color: var(--ink) !important;
+  color: var(--pearl-100);
+  font-weight: 700;
+  transform: translateY(0) scale(0.96);
+}
+
+.lab-run-checks-btn--checking {
+  opacity: 1 !important;
+  color: var(--pearl-100) !important;
+  font-weight: 700;
+  cursor: progress !important;
+}
+
+.lab-run-checks-btn--checking::after {
+  content: '';
+  position: absolute;
+  left: 0.5rem;
+  right: 0.5rem;
+  bottom: 0.125rem;
+  height: 0.125rem;
+  border-radius: var(--radius-full);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    var(--accent-success) 50%,
+    transparent 100%
+  );
+  background-size: 200% 100%;
+  animation: labChecksSweep 1s linear infinite;
+}
+
+.lab-run-checks-pulse {
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-success);
+  display: inline-block;
+  animation: labChecksPulse 0.9s var(--ease-standard) infinite alternate;
+}
+
+@keyframes labChecksSweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes labChecksPulse {
+  from {
+    opacity: 0.45;
+    transform: scale(0.85);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1.2);
+  }
 }
 
 /* Assertion checklist (SCR-F6-02 sidebar) */
@@ -366,42 +721,65 @@
   cursor: pointer;
 }
 
-/* AI Mentor drawer (SCR-F6-05) */
-.ai-mentor-drawer {
+/* Floating AI Mentor chat modal originating from bottom-right isometric FAB */
+.ai-mentor-modal {
   position: fixed;
-  right: 0;
-  top: 0;
-  bottom: 0;
-  width: 23.75rem;
-  max-width: 90vw;
-  z-index: 50;
+  right: var(--space-5);
+  bottom: calc(var(--space-5) + 3.75rem);
+  width: min(24rem, calc(100vw - 2 * var(--space-4)));
+  height: min(33rem, calc(100dvh - 7rem));
+  z-index: var(--z-workspace-drawer);
   display: flex;
   flex-direction: column;
-  background-color: var(--color-bg-raised);
-  border-left: 0.0625rem solid var(--color-border-subtle);
-  color: var(--color-text-primary);
+  background-color: var(--pearl-100);
+  border: 0.0625rem solid var(--paper-line);
+  border-radius: var(--radius-lg);
+  color: var(--ink);
+  box-shadow: var(--shadow-xl);
+  overflow: hidden;
+  transform-origin: bottom right;
+  animation: ai-mentor-modal-pop var(--duration-base) var(--ease-out) forwards;
 }
 
-.ai-mentor-drawer__header {
+@keyframes ai-mentor-modal-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.72) translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.ai-mentor-modal__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 0.0625rem solid var(--color-border-subtle);
+  background-color: var(--paper);
 }
 
-.ai-mentor-drawer__title {
+.ai-mentor-modal__identity {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--ink);
+}
+
+.ai-mentor-modal__title {
   margin: 0;
   font-size: var(--text-body-m);
+  font-weight: 600;
 }
 
-.ai-mentor-drawer__header-actions {
+.ai-mentor-modal__header-actions {
   display: flex;
-  gap: var(--space-2);
+  gap: var(--space-1);
 }
 
-.ai-mentor-drawer__history {
+.ai-mentor-modal__history {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: var(--space-4);
@@ -410,7 +788,7 @@
   gap: var(--space-3);
 }
 
-.ai-mentor-drawer__empty {
+.ai-mentor-modal__empty {
   color: var(--color-text-tertiary);
   font-size: var(--text-body-s);
 }
@@ -426,18 +804,18 @@
 
 .ai-mentor-message--user {
   align-self: flex-end;
-  background-color: var(--color-accent-600);
-  color: var(--color-text-on-accent);
+  background-color: var(--ink);
+  color: var(--pearl-100);
 }
 
 .ai-mentor-message--assistant {
   align-self: flex-start;
-  background-color: var(--color-bg-base);
-  border: 0.0625rem solid var(--color-border-subtle);
-  color: var(--color-text-primary);
+  background-color: var(--paper);
+  border: 0.0625rem solid var(--paper-line);
+  color: var(--ink);
 }
 
-.ai-mentor-drawer__typing::after {
+.ai-mentor-modal__typing::after {
   content: '';
   display: inline-block;
   width: 0.25rem;
@@ -453,24 +831,29 @@
   }
 }
 
-.ai-mentor-drawer__input-row {
+.ai-mentor-modal__input-row {
   display: flex;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  border-top: 0.0625rem solid var(--color-border-subtle);
+  background-color: var(--paper);
   align-items: flex-end;
 }
 
-.ai-mentor-drawer__input {
+.ai-mentor-modal__input {
   flex: 1 1 auto;
   resize: none;
-  background-color: var(--color-bg-base);
-  color: var(--color-text-primary);
-  border: 0.0625rem solid var(--color-border-strong);
+  background-color: var(--pearl-100);
+  color: var(--ink);
+  border: 0.0625rem solid var(--paper-line);
   border-radius: var(--radius-md);
   padding: var(--space-2) var(--space-3);
   font-size: var(--text-body-s);
   font-family: var(--font-sans);
+}
+
+.ai-mentor-modal__input:focus-visible {
+  outline: 0.125rem solid var(--ink);
+  outline-offset: 0.0625rem;
 }
 
 /* Sherlock diagnostic (SCR-F6-03) */

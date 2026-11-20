@@ -153,6 +153,15 @@ function LearnerDashboard() {
 
   const totalModulesCount = modules.data?.length ?? courseOverview.data?.modules?.length ?? 0;
   const completedLessonsCount = course.data?.completedLessonCount ?? 0;
+  const hasStartedLearning =
+    Boolean(pointer?.lessonId) &&
+    (progressPct > 0 || completedLessonsCount > 0 || activityItems.length > 0);
+  const learningActionLabel =
+    progressPct >= 100 || course.data?.isCompleted
+      ? 'Review course'
+      : hasStartedLearning
+        ? 'Resume learning'
+        : 'Start learning';
 
   // Filtered Recommended items (2x2 grid)
   const recommendedItems = useMemo(() => {
@@ -362,69 +371,68 @@ function LearnerDashboard() {
               Continue learning
             </h2>
 
-            {/* Continue Learning Card with Top-Right Curved Cutout */}
-            <div className="relative border border-border bg-card rounded-lg p-6 shadow-2xs transition-all overflow-hidden group">
-              {/* Top-Right Curved Accent Area with Circular Micro-Interaction Buttons */}
-              <div className="absolute top-0 right-0 flex items-center gap-2 p-3 bg-paper border-b border-l border-border rounded-bl-lg">
-                <button
-                  type="button"
-                  onClick={toggleBookmark}
-                  className={`w-9 h-9 rounded-full border border-border flex items-center justify-center transition-all cursor-pointer ${
-                    isBookmarked
-                      ? 'bg-ink text-paper font-bold'
-                      : 'bg-card text-muted hover:text-card-foreground hover:bg-surface-hover'
-                  }`}
-                  title={isBookmarked ? 'Bookmarked' : 'Bookmark lesson'}
-                  aria-label="Bookmark lesson"
-                >
-                  <Icon name="bookmark" size={15} />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => navigate(ROUTES.LEARN)}
-                  className="w-9 h-9 rounded-full border border-border bg-card text-muted hover:text-card-foreground hover:bg-surface-hover flex items-center justify-center transition-all cursor-pointer"
-                  title="Curriculum outline"
-                  aria-label="More options"
-                >
-                  <Icon name="more-horizontal" size={16} />
-                </button>
-              </div>
-
-              {/* Main Card Content */}
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 pt-2 sm:pt-0">
-                {/* Topic Icon Container */}
-                <div className="w-20 h-20 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
-                  <Icon name="terminal" size={36} />
-                </div>
-
-                {/* Details */}
-                <div className="space-y-2 flex-1 min-w-0 pr-16 sm:pr-24">
-                  <div className="flex items-center gap-1.5 text-xs text-muted font-medium">
-                    <Icon name="roles" size={13} />
-                    <span>{pointer?.moduleTitle ?? 'Core Curriculum'}</span>
+            {/* Continue Learning Card */}
+            <div className="border border-border bg-card rounded-lg p-6 shadow-2xs transition-all group">
+              <div className="flex flex-col sm:flex-row sm:items-stretch justify-between gap-6">
+                {/* Left: Topic Icon & Course Details */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 flex-1 min-w-0">
+                  <div className="w-20 h-20 rounded-lg border border-border bg-paper flex items-center justify-center text-card-foreground shrink-0 shadow-2xs">
+                    <Icon name="terminal" size={36} />
                   </div>
 
-                  <h3 className="text-xl font-bold text-card-foreground tracking-tight truncate">
-                    {pointer?.lessonTitle ?? 'Operating Systems & Linux Fundamentals'}
-                  </h3>
+                  <div className="space-y-2 flex-1 min-w-0 w-full">
+                    <div className="flex items-center gap-1.5 text-xs text-muted font-medium">
+                      <Icon name="roles" size={13} />
+                      <span className="truncate">{pointer?.moduleTitle ?? 'Core Curriculum'}</span>
+                    </div>
 
-                  {/* Progress Bar & Percentage */}
-                  <div className="space-y-1.5 pt-1">
-                    <span className="text-xs font-mono text-muted">
-                      {progressPct}% of 100% Completed
-                    </span>
-                    <div className="w-full max-w-md h-2 bg-paper border border-border rounded-full overflow-hidden">
-                      <div
-                        className="h-full bg-ink rounded-full transition-all duration-300"
-                        style={{ width: `${Math.max(4, progressPct)}%` }}
-                      />
+                    <h3 className="text-xl font-bold text-card-foreground tracking-tight truncate">
+                      {pointer?.lessonTitle ?? 'Operating Systems & Linux Fundamentals'}
+                    </h3>
+
+                    {/* Progress Bar & Percentage */}
+                    <div className="space-y-1.5 pt-1">
+                      <span className="text-xs font-mono text-muted">
+                        {progressPct}% of 100% Completed
+                      </span>
+                      <div className="w-full max-w-md h-2 bg-paper border border-border rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-ink rounded-full transition-all duration-300"
+                          style={{ width: `${Math.max(4, progressPct)}%` }}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
 
-                {/* Resume Learning Action */}
-                <div className="shrink-0 self-end sm:self-center mt-2 sm:mt-0">
+                {/* Right: Secondary Icon Actions + State-Aware Primary Action */}
+                <div className="flex sm:flex-col items-center sm:items-end justify-between gap-4 shrink-0">
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={toggleBookmark}
+                      className={`w-9 h-9 rounded-full border border-border flex items-center justify-center transition-all cursor-pointer ${
+                        isBookmarked
+                          ? 'bg-ink text-paper font-bold'
+                          : 'bg-card text-muted hover:text-card-foreground hover:bg-surface-hover'
+                      }`}
+                      title={isBookmarked ? 'Bookmarked' : 'Bookmark lesson'}
+                      aria-label="Bookmark lesson"
+                    >
+                      <Icon name="bookmark" size={15} />
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => navigate(ROUTES.LEARN)}
+                      className="w-9 h-9 rounded-full border border-border bg-card text-muted hover:text-card-foreground hover:bg-surface-hover flex items-center justify-center transition-all cursor-pointer"
+                      title="Curriculum outline"
+                      aria-label="More options"
+                    >
+                      <Icon name="more-horizontal" size={16} />
+                    </button>
+                  </div>
+
                   <Button
                     variant="primary"
                     size="md"
@@ -437,9 +445,9 @@ function LearnerDashboard() {
                         navigate(ROUTES.LEARN);
                       }
                     }}
-                    className="rounded-full px-6 py-2.5 bg-ink text-paper font-semibold text-xs tracking-wide shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer"
+                    className="rounded-full px-6 py-2.5 bg-ink text-paper font-semibold text-xs tracking-wide shadow-xs hover:opacity-90 active:scale-[0.98] transition-all cursor-pointer whitespace-nowrap"
                   >
-                    Resume learning
+                    {learningActionLabel}
                   </Button>
                 </div>
               </div>

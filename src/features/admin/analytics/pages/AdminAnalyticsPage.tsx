@@ -250,6 +250,10 @@ export function AdminAnalyticsPage() {
                 terminatedPods: detailed.data.pwnbox.terminatedInstances,
                 totalActiveRamGb: detailed.data.pwnbox.totalRamGb,
                 totalActiveCpuCores: detailed.data.pwnbox.totalCpuCores,
+                consumedRamMb: detailed.data.pwnbox.consumedRamMb,
+                consumedRamGb: detailed.data.pwnbox.consumedRamGb,
+                consumedCpuCores: detailed.data.pwnbox.consumedCpuCores,
+                consumedCpuPercent: detailed.data.pwnbox.consumedCpuPercent,
                 avgDurationMinutes: detailed.data.pwnbox.avgDurationMinutes,
                 maxSimultaneousPods: detailed.data.pwnbox.activeInstances,
               }

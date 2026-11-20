@@ -106,7 +106,7 @@ export function AdminDashboardPage() {
       if (auditFilter === 'SETTING') return log.action.includes('SETTING');
       return true;
     });
-  }, [data?.recentAuditLogs, auditSearch, auditFilter]);
+  }, [data, auditSearch, auditFilter]);
 
   const paginatedLogs = useMemo(() => {
     const start = (auditPage - 1) * AUDIT_PAGE_SIZE;
@@ -262,14 +262,24 @@ export function AdminDashboardPage() {
               tooltipContext="Live interactive browser sandboxes currently running in container orchestrator."
             />
 
-            {/* Live Compute Allocation */}
+            {/* Live Compute Allocation & Actual Consumption */}
             <NothingKpiCard
-              label="Compute Allocated"
+              label="Compute Allocated & Used"
               value={`${data.kpis.pwnbox?.totalActiveRamGb ?? 0} GB`}
-              subtext={`${data.kpis.pwnbox?.totalActiveCpuCores ?? 0} CPU cores provisioned`}
+              accentValue={`${data.kpis.pwnbox?.totalActiveCpuCores ?? 0} CORES ALLOC`}
+              secondaryMetric={{
+                label: 'Consumed Live',
+                value:
+                  (data.kpis.pwnbox?.consumedRamMb ?? 0) > 0 &&
+                  (data.kpis.pwnbox?.consumedRamGb ?? 0) < 1
+                    ? `${(data.kpis.pwnbox?.consumedRamMb ?? 0).toFixed(1)} MB (${(data.kpis.pwnbox?.consumedRamGb ?? 0).toFixed(2)} GB)`
+                    : `${(data.kpis.pwnbox?.consumedRamGb ?? 0).toFixed(2)} GB`,
+                subtext: `${(data.kpis.pwnbox?.consumedCpuCores ?? 0).toFixed(2)} cores (${(data.kpis.pwnbox?.consumedCpuPercent ?? 0).toFixed(1)}% CPU) used`,
+              }}
+              subtext={`${data.kpis.pwnbox?.activePods ?? 0} running pod(s) • Real-time Docker cgroup telemetry`}
               href={ROUTES.ADMIN_ANALYTICS}
               sparklineLevels={computeLevels}
-              tooltipContext="Dedicated memory and processor cores actively assigned to learner sandboxes."
+              tooltipContext="Provisioned vs. actual real-time consumed RAM and CPU cores across all currently opened learner lab sandboxes."
             />
 
             {/* Active Learners Past 30 Days */}
@@ -526,6 +536,7 @@ function NothingKpiCard({
   href,
   sparklineLevels,
   accentValue,
+  secondaryMetric,
   tooltipContext,
 }: {
   label: string;
@@ -534,6 +545,7 @@ function NothingKpiCard({
   href?: string;
   sparklineLevels?: number[];
   accentValue?: string;
+  secondaryMetric?: { label: string; value: string; subtext: string };
   tooltipContext?: string;
 }) {
   const cardContent = (
@@ -551,14 +563,42 @@ function NothingKpiCard({
         {sparklineLevels && <PixelatedMiniSparkline levels={sparklineLevels} />}
       </div>
 
-      <div className="my-2">
-        <p className="text-2xl font-bold font-mono tracking-tight text-card-foreground group-hover:text-accent transition-colors">
-          {typeof value === 'number' ? value.toLocaleString() : value}
-          {accentValue && <span className="ml-2 text-xs font-mono text-accent">{accentValue}</span>}
-        </p>
-      </div>
+      {secondaryMetric ? (
+        <div className="my-2 grid grid-cols-2 gap-3 items-baseline">
+          <div className="min-w-0">
+            <p className="text-2xl font-bold font-mono tracking-tight text-card-foreground group-hover:text-accent transition-colors leading-tight">
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </p>
+            {accentValue && (
+              <p className="mt-0.5 text-[0.625rem] font-mono font-semibold text-muted">
+                {accentValue}
+              </p>
+            )}
+          </div>
+          <div className="min-w-0 border-l border-border/60 pl-3">
+            <p className="text-[0.625rem] font-mono uppercase tracking-wider text-muted">
+              {secondaryMetric.label}
+            </p>
+            <p className="text-sm font-bold font-mono tracking-tight text-card-foreground leading-snug">
+              {secondaryMetric.value}
+            </p>
+            <p className="text-[0.625rem] font-mono text-muted leading-snug">
+              {secondaryMetric.subtext}
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="my-2">
+          <p className="text-2xl font-bold font-mono tracking-tight text-card-foreground group-hover:text-accent transition-colors">
+            {typeof value === 'number' ? value.toLocaleString() : value}
+            {accentValue && (
+              <span className="ml-2 text-xs font-mono text-accent">{accentValue}</span>
+            )}
+          </p>
+        </div>
+      )}
 
-      <p className="text-xs text-muted group-hover:text-card-foreground/80 transition-colors truncate border-t border-border/40 pt-1.5">
+      <p className="text-xs text-muted group-hover:text-card-foreground/80 transition-colors border-t border-border/40 pt-1.5 leading-snug">
         {subtext}
       </p>
     </Card>

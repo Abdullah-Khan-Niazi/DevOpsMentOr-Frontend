@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { ContentTypeIcon } from './ContentTypeIcon';
@@ -176,8 +177,8 @@ export function CourseOutlineModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
+  return createPortal(
+    <div className="fixed inset-0 z-[var(--z-overlay)] overflow-y-auto">
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-black/70 backdrop-blur-xs transition-opacity"
@@ -362,7 +363,8 @@ export function CourseOutlineModal({
           </div>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }
 

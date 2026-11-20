@@ -48,6 +48,7 @@
   --color-accent-foreground: var(--pearl-100);
   --color-signal: var(--accent-signal);
   --color-success: var(--accent);
+  --color-check-success: var(--accent-success);
   --color-error: #b83232;
   --color-warning: var(--accent-warn);
   --color-info: #2a628f;
@@ -248,6 +249,7 @@ body {
   /* ---- Functional accent — Paper & Ink primary color family ---- */
   --accent: var(--ink); /* ink — primary accent, replaces legacy green role */
   --accent-signal: #d71921; /* NothingOS red — live signal & pulse dots only */
+  --accent-success: #16a34a; /* green — passed check & objective verification */
   --accent-warn: #9c5b12; /* muted amber — pending/retry states only */
 
   /* ---- Danger action ramp (red family, derives from --accent-signal) ---- */
@@ -266,6 +268,8 @@ body {
   --telemetry-active-pods: #0d9488;
   --telemetry-queued-pods: #d97706;
   --telemetry-allocated-cores: #38bdf8;
+  --telemetry-consumed-ram: #10b981;
+  --telemetry-consumed-cores: #f59e0b;
   --telemetry-redis-memory: #e11d48;
   --telemetry-cache-hit-ratio: #0d9488;
   --telemetry-mysql-queries: #2563eb;
@@ -357,6 +361,9 @@ body {
   --z-raised: 10;
   --z-floating: 100;
   --z-sticky: 200;
+  --z-workspace: 300;
+  --z-workspace-fab: 350;
+  --z-workspace-drawer: 400;
   --z-overlay: 500;
   --z-toast: 900;
 

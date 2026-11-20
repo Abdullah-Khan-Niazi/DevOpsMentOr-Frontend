@@ -55,6 +55,10 @@ export interface PwnboxAnalyticsDto {
   terminatedInstances: number;
   totalRamGb: number;
   totalCpuCores: number;
+  consumedRamMb?: number;
+  consumedRamGb?: number;
+  consumedCpuCores?: number;
+  consumedCpuPercent?: number;
   avgDurationMinutes: number;
 }
 

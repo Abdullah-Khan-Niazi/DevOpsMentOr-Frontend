@@ -184,9 +184,11 @@ export function CurriculumMasterPanel() {
     const keys = new Set<string>();
     if (selectedTrackId) {
       keys.add(`track-${selectedTrackId}`);
+    } else if (activeTab === 'tracks') {
+      keys.add('track-1');
     }
-    // The Courses tab opens with the canonical (editable) course expanded.
-    if (activeTab === 'courses' && canonicalCourseId !== null) {
+    // The Tracks and Courses tabs open with the canonical (editable) course expanded.
+    if ((activeTab === 'tracks' || activeTab === 'courses') && canonicalCourseId !== null) {
       keys.add(`course-${canonicalCourseId}`);
     }
     if (!createAction && selection) {

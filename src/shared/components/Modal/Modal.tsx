@@ -1,7 +1,8 @@
 import { useEffect, useRef, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import './Modal.css';
 
-// Minimal accessible modal — overlay, Esc + backdrop dismissal, initial focus.
+// Minimal accessible modal — portal to document.body, overlay, Esc + backdrop dismissal, initial focus.
 
 interface ModalProps {
   open: boolean;
@@ -17,6 +18,8 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     if (!open) return;
 
     const previouslyFocused = document.activeElement as HTMLElement | null;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
     panelRef.current?.focus();
 
     function handleKeyDown(event: KeyboardEvent) {
@@ -28,13 +31,14 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.body.style.overflow = previousOverflow;
       previouslyFocused?.focus();
     };
   }, [open, onClose]);
 
   if (!open) return null;
 
-  return (
+  return createPortal(
     <div className="modal-overlay" onMouseDown={onClose}>
       <div
         ref={panelRef}
@@ -70,6 +74,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         </div>
         {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

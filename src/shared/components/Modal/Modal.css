@@ -1,4 +1,4 @@
-/* Modal — overlay + centered raised panel (tokens only) */
+/* Modal - overlay + centered raised panel (tokens only) */
 
 .modal-overlay {
   position: fixed;
@@ -7,27 +7,34 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--space-6);
+  padding: clamp(var(--space-4), 3vw, var(--space-6));
   background-color: color-mix(in srgb, var(--ink) 45%, transparent);
   backdrop-filter: blur(0.25rem);
   -webkit-backdrop-filter: blur(0.25rem);
   overscroll-behavior: contain;
-  animation: modalFadeIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modalFadeIn var(--duration-fast) var(--ease-standard);
 }
 
 .modal-panel {
   width: 100%;
   max-width: 30rem;
-  max-height: calc(100vh - var(--space-16));
+  max-height: calc(100dvh - var(--space-12));
   overflow-y: auto;
   overscroll-behavior: contain;
   background-color: var(--pearl-100);
   border: 0.0625rem solid var(--paper-line);
   border-radius: var(--radius-lg);
-  padding: var(--space-8);
+  padding: var(--space-6);
   box-shadow: var(--shadow-xl);
   outline: none;
-  animation: modalScaleIn 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  animation: modalScaleIn var(--duration-fast) var(--ease-standard);
+}
+
+@media (max-width: 640px) {
+  .modal-panel {
+    max-height: calc(100dvh - var(--space-8));
+    padding: var(--space-5);
+  }
 }
 
 @keyframes modalFadeIn {
@@ -55,9 +62,7 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-4);
-  margin-bottom: var(--space-6);
-  padding-bottom: var(--space-4);
-  border-bottom: 0.0625rem solid var(--paper-line);
+  margin-bottom: var(--space-5);
 }
 
 .modal-panel__title {
@@ -83,13 +88,18 @@
   color: var(--color-text-tertiary);
   outline: none;
   transition:
-    color 140ms ease,
-    background-color 140ms ease;
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
 }
 
 .modal-panel__close:hover {
   color: var(--ink);
   background-color: var(--paper-dim);
+}
+
+.modal-panel__close:active {
+  transform: scale(0.94);
 }
 
 .modal-panel__close:focus-visible {
@@ -111,16 +121,17 @@
 
 .modal-panel__actions {
   display: flex;
+  flex-wrap: wrap;
   justify-content: flex-end;
   gap: var(--space-3);
   margin-top: var(--space-6);
-  padding-top: var(--space-4);
-  border-top: 0.0625rem solid var(--paper-line);
 }
 
 @media (prefers-reduced-motion: reduce) {
   .modal-overlay,
-  .modal-panel {
+  .modal-panel,
+  .modal-panel__close {
     animation: none;
+    transition: none;
   }
 }

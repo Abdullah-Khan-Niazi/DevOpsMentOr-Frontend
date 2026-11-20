@@ -134,17 +134,19 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
               {!platformAdmin && <WorkspaceSwitcher variant="topbar" />}
             </div>
 
-            {/* Center: Role-aware navigation (CSS-migration tab switcher) */}
-            <nav className="tab-switcher" aria-label="Learner Primary">
+            {/* Center: Role-aware navigation matching SiteHeader nav style */}
+            <nav className="app-chrome__topbar-nav" aria-label="Learner Primary">
               {topbarItems.map((item) => (
                 <NavLink
                   key={item.to}
                   to={item.to}
                   className={({ isActive }) =>
-                    cn('tab-switcher__tab', isActive && 'tab-switcher__tab--active')
+                    cn(
+                      'app-chrome__topbar-nav-item',
+                      isActive && 'app-chrome__topbar-nav-item--active',
+                    )
                   }
                 >
-                  <Icon name={item.icon} size={14} />
                   <span>{item.label}</span>
                 </NavLink>
               ))}

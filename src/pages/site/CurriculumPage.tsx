@@ -43,7 +43,7 @@ export interface CatalogModule {
 export const CATALOG_MODULES: CatalogModule[] = [
   {
     num: '01',
-    title: 'Operating Systems and Linux Fundamentals',
+    title: 'OS & Linux Basics',
     desc: 'Master core Linux server administration, shell navigation, package management, user security, Bash scripting, and SSH hardening to build secure production servers. Transforms a raw, unconfigured virtual system into a hardened, production-ready Linux server through hands-on terminal mastery and fundamental OS principles.',
     difficulty: 'Foundational',
     labsCount: 7,
@@ -70,7 +70,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '02',
-    title: 'Version Control Systems and Git',
+    title: 'Version Control with Git',
     desc: 'Master distributed version control using Git, covering repository mechanics, history forensics, branch isolation strategies, three-way conflict resolution, destructive state recovery, and GitHub collaboration workflows. Eliminates source code chaos, unversioned file archives, and deployment collisions.',
     difficulty: 'Core',
     labsCount: 6,
@@ -97,7 +97,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '03',
-    title: 'Build Tools and Package Managers',
+    title: 'Build and Package Manager Tools',
     desc: 'Master software build automation, multi-ecosystem dependency management (Maven, Gradle, npm, Yarn), artifact publishing, multi-stage Docker builds, and CI/CD pipeline integration. Eliminates manual compilation variances, unversioned software distribution, and environment drift.',
     difficulty: 'Core',
     labsCount: 9,
@@ -124,34 +124,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '04',
-    title: 'Artifact Repository Management',
-    desc: 'Master binary lifecycle management and immutable supply chains using Sonatype Nexus Repository Manager OSS. Eliminates pipeline failure risks from external registry outages and ensures release reproducibility by implementing the Repository Triad, RBAC, REST API integration, and automated storage governance.',
-    difficulty: 'Core',
-    labsCount: 7,
-    techName: 'Nexus Repository',
-    icon: repo3d,
-    coverageOutcomes: [
-      {
-        label: 'Repository Triad Topology',
-        text: 'Partition storage into Proxy caches, Hosted proprietary repositories, and unified Group endpoints under a single URL.',
-      },
-      {
-        label: 'Role-Based Access Control',
-        text: 'Enforce least privilege security by provisioning scoped CI/CD service accounts with token-based publishing privileges.',
-      },
-      {
-        label: 'Package Ingestion & REST Queries',
-        text: 'Publish versioned Python wheels via twine and programmatically query component metadata using the Nexus REST API and jq.',
-      },
-      {
-        label: 'Data Governance & Compaction',
-        text: 'Configure automated retention cleanup policies and execute Blob Store compaction tasks to reclaim physical storage.',
-      },
-    ],
-  },
-  {
-    num: '05',
-    title: 'Cloud Computing and IaaS',
+    title: 'Cloud & IaaS Basics',
     desc: 'Master the core principles of Infrastructure as a Service (IaaS) by transforming raw cloud virtual machines into hardened, production-ready web servers. Provision compute nodes, secure network perimeters with UFW, enforce key-based SSH access, configure Nginx reverse proxies, deploy React applications, and execute CLI-driven infrastructure teardowns.',
     difficulty: 'Core',
     labsCount: 6,
@@ -173,6 +146,33 @@ export const CATALOG_MODULES: CatalogModule[] = [
       {
         label: 'Ephemeral State & Teardown',
         text: 'Bootstrap instances via Cloud-Init metadata scripts and execute automated, scripted teardowns to prevent cloud cost sprawl.',
+      },
+    ],
+  },
+  {
+    num: '05',
+    title: 'Artifact Repository Manager with Nexus',
+    desc: 'Master binary lifecycle management and immutable supply chains using Sonatype Nexus Repository Manager OSS. Eliminates pipeline failure risks from external registry outages and ensures release reproducibility by implementing the Repository Triad, RBAC, REST API integration, and automated storage governance.',
+    difficulty: 'Core',
+    labsCount: 7,
+    techName: 'Nexus Repository',
+    icon: repo3d,
+    coverageOutcomes: [
+      {
+        label: 'Repository Triad Topology',
+        text: 'Partition storage into Proxy caches, Hosted proprietary repositories, and unified Group endpoints under a single URL.',
+      },
+      {
+        label: 'Role-Based Access Control',
+        text: 'Enforce least privilege security by provisioning scoped CI/CD service accounts with token-based publishing privileges.',
+      },
+      {
+        label: 'Package Ingestion & REST Queries',
+        text: 'Publish versioned Python wheels via twine and programmatically query component metadata using the Nexus REST API and jq.',
+      },
+      {
+        label: 'Data Governance & Compaction',
+        text: 'Configure automated retention cleanup policies and execute Blob Store compaction tasks to reclaim physical storage.',
       },
     ],
   },
@@ -205,7 +205,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '07',
-    title: 'Jenkins Pipelines and Build Automation',
+    title: 'Build Automation - CI/CD with Jenkins',
     desc: 'Master production-grade build automation and CI/CD with Jenkins, progressing from headless server setup and security hardening to Declarative Pipelines, GitHub Webhooks, Groovy Shared Libraries, and dynamic Semantic Versioning. Eliminates fragile manual deployments by engineering automated, version-controlled, and secure pipeline assembly lines.',
     difficulty: 'Advanced',
     labsCount: 6,
@@ -232,7 +232,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '08',
-    title: 'AWS Services',
+    title: 'AWS Service',
     desc: 'Architect secure AWS cloud networks, enforce IAM security policies, provision elastic EC2 virtual servers, and extend Jenkins CI/CD pipelines to automate container deployments to the AWS public cloud. Bridges local build automation and public cloud infrastructure by mastering AWS networking, identity security, programmatic CLI automation, and continuous cloud deployment pipelines.',
     difficulty: 'Core',
     labsCount: 6,
@@ -259,7 +259,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '09',
-    title: 'Core Kubernetes Container Orchestration',
+    title: 'Container Orchestration with Kubernetes',
     desc: 'Master core Kubernetes orchestration mechanics by moving from imperative control plane queries to declarative multi-service automation using YAML, Helm, and Helmfile. Eliminates host-level fragility and manual container management by building self-healing, stateful, and secure microservice topologies.',
     difficulty: 'Advanced',
     labsCount: 8,
@@ -286,7 +286,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '10',
-    title: 'Kubernetes on AWS (EKS)',
+    title: 'Kubernetes on AWS - EKS',
     desc: 'Master enterprise AWS Elastic Kubernetes Service (EKS) management using declarative IaC (eksctl), serverless compute (Fargate), sub-second autoscaling (Karpenter), zero-trust pod security (IRSA and RBAC), private artifact repositories (ECR), and automated token-scoped Jenkins deployment pipelines.',
     difficulty: 'Enterprise',
     labsCount: 6,
@@ -313,7 +313,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '11',
-    title: 'Terraform',
+    title: 'Infrastructure as Code with Terraform',
     desc: 'Master declarative Infrastructure as Code using Terraform to automate, scale, parameterize, secure, and continuously deploy AWS cloud infrastructure and EKS Kubernetes clusters. Eliminates manual console configuration, resource drift, and undocumented cloud sprawl by transforming infrastructure into version-controlled, auditable, and repeatable code.',
     difficulty: 'Advanced',
     labsCount: 16,
@@ -367,7 +367,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '13',
-    title: 'Python Automation (AWS Boto3)',
+    title: 'Automation with Python',
     desc: 'Master programmatic AWS infrastructure control using Python and Boto3. Build automated auditors, governance enforcers, EBS snapshot lifecycles, disaster recovery protocols, and self-healing watchdog daemons. Eradicates manual, error-prone console clicks ("ClickOps") and operational toil by engineering robust, self-healing Python scripts that automate complex cloud workflows at scale.',
     difficulty: 'Advanced',
     labsCount: 10,
@@ -394,7 +394,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '14',
-    title: 'Ansible',
+    title: 'Configuration Management with Ansible',
     desc: 'Master declarative configuration management and cross-cloud fleet orchestration using Ansible. Build agentless, idempotent automation pipelines connecting Terraform, Docker, AWS EC2, Kubernetes, and Jenkins into production-grade CI/CD workflows. Eliminates manual system administration, configuration drift, and unrepeatable deployments.',
     difficulty: 'Professional',
     labsCount: 16,
@@ -421,7 +421,7 @@ export const CATALOG_MODULES: CatalogModule[] = [
   },
   {
     num: '15',
-    title: 'Enterprise Monitoring with Prometheus and Grafana',
+    title: 'Monitoring with Prometheus',
     desc: 'Master enterprise-grade Kubernetes observability by deploying the Prometheus Operator stack, writing declarative alerting rules, routing alerts via Alertmanager, integrating third-party exporters, instrumenting custom microservices with client libraries, and crafting real-time PromQL dashboards in Grafana. Eliminates blind spots in microservice architectures by transitioning from reactive log-guessing to programmatic, pull-based metric scraping and sub-minute alerting.',
     difficulty: 'Enterprise',
     labsCount: 8,
@@ -453,18 +453,18 @@ export const CURRICULUM_ICONS = [
   { name: 'Linux', icon: linux3d, targetSlide: 1 },
   { name: 'Git', icon: git3d, targetSlide: 2 },
   { name: 'Package Managers', icon: apt3d, targetSlide: 3 },
-  { name: 'Repo Manager', icon: repo3d, targetSlide: 4 },
-  { name: 'DigitalOcean', icon: droplet3d, targetSlide: 5 },
+  { name: 'Cloud & IaaS', icon: droplet3d, targetSlide: 4 },
+  { name: 'Repo Manager', icon: repo3d, targetSlide: 5 },
   { name: 'Docker', icon: docker3d, targetSlide: 6 },
   { name: 'Jenkins', icon: jenkins3d, targetSlide: 7 },
-  { name: 'AWS Services', icon: aws3d, targetSlide: 8 },
+  { name: 'AWS Service', icon: aws3d, targetSlide: 8 },
   { name: 'Kubernetes', icon: k8s3d, targetSlide: 9 },
   { name: 'AWS EKS', icon: eks3d, targetSlide: 10 },
   { name: 'Terraform', icon: terraform3d, targetSlide: 11 },
   { name: 'Python', icon: python3d, targetSlide: 12 },
   { name: 'Automation', icon: pythonAuto3d, targetSlide: 13 },
   { name: 'Ansible', icon: ansible3d, targetSlide: 14 },
-  { name: 'Observability', icon: prometheus3d, targetSlide: 15 },
+  { name: 'Prometheus', icon: prometheus3d, targetSlide: 15 },
 ] as const;
 
 const TOTAL_SLIDES = 17; // 1 overview + 15 module slides + 1 closing CTA

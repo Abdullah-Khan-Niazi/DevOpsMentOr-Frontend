@@ -430,12 +430,7 @@ export function WorkspaceSwitcher({
       </DropdownMenu.Root>
 
       <Modal open={isJoinClassOpen} onClose={closeJoinClass} title="Join a class">
-        <form onSubmit={handleJoinClass} className="space-y-5">
-          <p className="text-xs leading-relaxed text-muted">
-            Enter the reusable class code shared by your instructor. Codes expire automatically.
-            Staff accounts cannot join a class as students.
-          </p>
-
+        <form onSubmit={handleJoinClass} className="space-y-4">
           <Input
             label="Class code"
             placeholder="e.g. A7K2M9QX"
@@ -443,12 +438,12 @@ export function WorkspaceSwitcher({
             onChange={(event: ChangeEvent<HTMLInputElement>) =>
               setClassCode(event.target.value.toUpperCase())
             }
-            hint="6–12 letters and digits."
+            hint="6 to 12 letters and digits."
             autoFocus
             required
           />
 
-          <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
+          <div className="modal-panel__actions">
             <Button
               type="button"
               variant="secondary"
@@ -467,11 +462,6 @@ export function WorkspaceSwitcher({
 
       <Modal open={isCreateOrgOpen} onClose={closeCreateOrg} title="Create organization">
         <form onSubmit={handleCreateOrg} className="space-y-4">
-          <p className="text-xs leading-relaxed text-muted">
-            An organization workspace lets you manage cohorts, invite instructors, and track learner
-            progress. An account can belong to one organization at a time.
-          </p>
-
           <Input
             label="Organization name"
             placeholder="e.g. FAST NUCES Computer Science"
@@ -512,7 +502,7 @@ export function WorkspaceSwitcher({
             onChange={(event) => setDescription(event.target.value)}
           />
 
-          <div className="flex items-center justify-end gap-3 border-t border-border pt-4">
+          <div className="modal-panel__actions">
             <Button
               type="button"
               variant="secondary"

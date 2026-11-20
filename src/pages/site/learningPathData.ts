@@ -22,8 +22,8 @@ export const MODULE_ICONS: Record<string, string> = {
   '01': linux3d,
   '02': git3d,
   '03': apt3d,
-  '04': repo3d,
-  '05': droplet3d,
+  '04': droplet3d,
+  '05': repo3d,
   '06': docker3d,
   '07': jenkins3d,
   '08': aws3d,
@@ -40,18 +40,18 @@ export const MODULE_SHORT_TITLES: Record<string, string> = {
   '01': 'Linux',
   '02': 'Git',
   '03': 'Package Managers',
-  '04': 'Repo Manager',
-  '05': 'DigitalOcean',
+  '04': 'Cloud & IaaS',
+  '05': 'Repo Manager',
   '06': 'Docker',
   '07': 'Jenkins',
-  '08': 'AWS Services',
+  '08': 'AWS Service',
   '09': 'Kubernetes',
   '10': 'AWS EKS',
   '11': 'Terraform',
   '12': 'Python',
   '13': 'Automation',
   '14': 'Ansible',
-  '15': 'Observability',
+  '15': 'Prometheus',
 };
 
 export interface LabItem {
@@ -89,7 +89,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 01: Operating Systems and Linux Fundamentals ────────────────────
   {
     num: '01',
-    title: 'Operating Systems and Linux Fundamentals',
+    title: 'OS & Linux Basics',
     difficulty: 'Beginner / Foundational',
     skillLevel: 'Level 0 -> Level 1 DevOps Practitioner',
     technologies: ['Ubuntu Linux 24.04 LTS', 'Bash', 'VirtualBox', 'Vim', 'APT', 'UFW', 'OpenSSH'],
@@ -176,7 +176,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 02: Version Control Systems and Git ─────────────────────────────
   {
     num: '02',
-    title: 'Version Control Systems and Git',
+    title: 'Version Control with Git',
     difficulty: 'Intermediate / Core Operations',
     skillLevel: 'Level 1 -> Level 2 DevOps Practitioner',
     technologies: ['Git CLI', 'GitHub Web GUI', 'SSH Keys'],
@@ -249,12 +249,12 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 03: Build Tools and Package Managers ────────────────────────────
   {
     num: '03',
-    title: 'Build Tools and Package Managers',
+    title: 'Build and Package Manager Tools',
     difficulty: 'Intermediate / Core Operations',
     skillLevel: 'Level 1 -> Level 2 DevOps Practitioner',
     technologies: ['Apache Maven', 'Gradle', 'Node.js', 'npm', 'Vite', 'Java OpenJDK 21', 'Docker'],
     prerequisites: ['Module 01 (Linux)', 'Module 02 (Git)'],
-    enables: ['Module 04 (Artifact Repositories)', 'Module 06 (Docker)', 'Module 07 (Jenkins)'],
+    enables: ['Module 05 (Artifact Repositories)', 'Module 06 (Docker)', 'Module 07 (Jenkins)'],
     description:
       'Master software build automation, multi-ecosystem dependency management (Maven, Gradle, npm), artifact packaging, multi-stage Docker builds, and CI/CD quality gate enforcement.',
     keySkills: [
@@ -340,89 +340,10 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
     },
   },
 
-  // ─── Module 04: Artifact Repository Management ──────────────────────────────
+  // ─── Module 04: Cloud & IaaS Basics ─────────────────────────────────────────
   {
     num: '04',
-    title: 'Artifact Repository Management',
-    difficulty: 'Intermediate',
-    skillLevel: 'Associate / Intermediate Engineer',
-    technologies: ['Sonatype Nexus OSS v3.94', 'OpenJDK 21', 'Python PyPI', 'Twine', 'cURL', 'jq'],
-    prerequisites: ['Module 01 (Linux)', 'Module 03 (Build Tools)'],
-    enables: ['Module 07 (Jenkins)', 'Module 08 (AWS)', 'Module 10 (EKS)'],
-    description:
-      'Master binary lifecycle management and immutable supply chains using Sonatype Nexus Repository Manager OSS, implementing the Repository Triad, RBAC, REST API integration, and storage governance.',
-    keySkills: [
-      'Nexus OSS administration and daemon management',
-      'Repository Triad architecture (Proxy, Hosted, Group)',
-      'Role-Based Access Control (RBAC) and service accounts',
-      'Package publishing with twine and REST API querying',
-      'Blob Store filesystem partitioning and compaction',
-    ],
-    walkthrough: {
-      title: 'Repository Triad Topology and Supply Chain Security Slides',
-      description: 'Interactive lecture and slide deck covering immutability principles, proxy caching, and garbage collection.',
-    },
-    labs: [
-      {
-        id: 'm04-lab1',
-        num: 'Lab 1',
-        title: 'Daemon Initialization and Core Deployment',
-        scenario: 'Install Java 21, extract Nexus 3.94, set nexus.rc, start service, and retrieve admin password.',
-        tools: 'apt install openjdk-21-jdk-headless, wget, tar, nexus.rc, ./nexus start',
-      },
-      {
-        id: 'm04-lab2',
-        num: 'Lab 2',
-        title: 'Physical Storage Allocation',
-        scenario: 'Create dedicated File Blob Store to isolate storage faults and manage disk quotas.',
-        tools: 'Nexus Web GUI: Administration -> Repository -> Blob Stores',
-      },
-      {
-        id: 'm04-lab3',
-        num: 'Lab 3',
-        title: 'The Repository Triad Topology',
-        scenario: 'Create PyPI Proxy, PyPI Hosted, and PyPI Group repositories under unified endpoint.',
-        tools: 'Nexus Web GUI: Repositories configuration',
-      },
-      {
-        id: 'm04-lab4',
-        num: 'Lab 4',
-        title: 'Principle of Least Privilege',
-        scenario: 'Create dedicated CI/CD role and service user with scoped PyPI upload privileges.',
-        tools: 'Nexus Web GUI: Security -> Roles and Users',
-      },
-      {
-        id: 'm04-lab5',
-        num: 'Lab 5',
-        title: 'Pipeline Injection (Publishing)',
-        scenario: 'Publish Python wheel packages to PyPI Hosted repository using twine.',
-        tools: 'pip install twine, twine upload --repository-url',
-      },
-      {
-        id: 'm04-lab6',
-        num: 'Lab 6',
-        title: 'Programmatic Retrieval (The REST API)',
-        scenario: 'Query component metadata from Nexus REST API programmatically and parse with jq.',
-        tools: 'curl, jq, /service/rest/v1/components',
-      },
-      {
-        id: 'm04-lab7',
-        num: 'Lab 7',
-        title: 'Data Retention and Garbage Collection',
-        scenario: 'Create cleanup policies and execute Compact Blob Store maintenance tasks.',
-        tools: 'Nexus Web GUI: Cleanup Policies, Tasks -> Compact Blob Store',
-      },
-    ],
-    certificate: {
-      title: 'Enterprise Artifact Management Specialist',
-      credentialId: 'DM-CERT-M04-REP',
-    },
-  },
-
-  // ─── Module 05: Cloud Computing and IaaS ────────────────────────────────────
-  {
-    num: '05',
-    title: 'Cloud Computing and IaaS',
+    title: 'Cloud & IaaS Basics',
     difficulty: 'Intermediate',
     skillLevel: 'Associate DevOps Engineer',
     technologies: ['DigitalOcean Droplets', 'doctl CLI', 'Ubuntu Linux 24.04 LTS', 'OpenSSH', 'UFW', 'Nginx', 'Node.js'],
@@ -444,42 +365,42 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
     },
     labs: [
       {
-        id: 'm05-lab1',
+        id: 'm04-lab1',
         num: 'Lab 1',
         title: 'The Cloud Console (GUI Provisioning)',
         scenario: 'Provision initial cloud compute node using web dashboard and audit via CLI.',
         tools: 'Cloud Console, doctl compute droplet list',
       },
       {
-        id: 'm05-lab2',
+        id: 'm04-lab2',
         num: 'Lab 2',
         title: 'The Cryptographic Entry (SSH and Remote Execution)',
         scenario: 'Connect to remote VM via SSH and disable password authentication entirely.',
         tools: 'ssh-keygen, ssh, nano /etc/ssh/sshd_config, systemctl restart sshd',
       },
       {
-        id: 'm05-lab3',
+        id: 'm04-lab3',
         num: 'Lab 3',
         title: 'The Virtual Network Perimeter (OS Level Firewalls)',
         scenario: 'Enforce OS-level packet filtering using UFW default-deny and port restrictions.',
         tools: 'ufw status, ufw default deny, ufw allow, ufw enable',
       },
       {
-        id: 'm05-lab4',
+        id: 'm04-lab4',
         num: 'Lab 4',
         title: 'The Compute Foundation (Runtime Installation)',
         scenario: 'Prepare Linux instance to host web applications with NodeSource and Nginx.',
         tools: 'apt update, apt upgrade, curl, apt install nodejs, apt install nginx',
       },
       {
-        id: 'm05-lab5',
+        id: 'm04-lab5',
         num: 'Lab 5',
         title: 'Deploying the JS React Application',
         scenario: 'Clone, compile, and serve a React application via Nginx with client-side routing.',
         tools: 'git clone, npm install, npm run build, nginx -t, systemctl reload nginx',
       },
       {
-        id: 'm05-lab6',
+        id: 'm04-lab6',
         num: 'Lab 6',
         title: 'Ephemeral State (Automated Teardown)',
         scenario: 'Authenticate cloud CLI and destroy cloud infrastructure programmatically.',
@@ -488,7 +409,86 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
     ],
     certificate: {
       title: 'Cloud Infrastructure and IaaS Engineer',
-      credentialId: 'DM-CERT-M05-CLD',
+      credentialId: 'DM-CERT-M04-CLD',
+    },
+  },
+
+  // ─── Module 05: Artifact Repository Manager with Nexus ──────────────────────
+  {
+    num: '05',
+    title: 'Artifact Repository Manager with Nexus',
+    difficulty: 'Intermediate',
+    skillLevel: 'Associate / Intermediate Engineer',
+    technologies: ['Sonatype Nexus OSS v3.94', 'OpenJDK 21', 'Python PyPI', 'Twine', 'cURL', 'jq'],
+    prerequisites: ['Module 01 (Linux)', 'Module 03 (Build Tools)'],
+    enables: ['Module 07 (Jenkins)', 'Module 08 (AWS)', 'Module 10 (EKS)'],
+    description:
+      'Master binary lifecycle management and immutable supply chains using Sonatype Nexus Repository Manager OSS, implementing the Repository Triad, RBAC, REST API integration, and storage governance.',
+    keySkills: [
+      'Nexus OSS administration and daemon management',
+      'Repository Triad architecture (Proxy, Hosted, Group)',
+      'Role-Based Access Control (RBAC) and service accounts',
+      'Package publishing with twine and REST API querying',
+      'Blob Store filesystem partitioning and compaction',
+    ],
+    walkthrough: {
+      title: 'Repository Triad Topology and Supply Chain Security Slides',
+      description: 'Interactive lecture and slide deck covering immutability principles, proxy caching, and garbage collection.',
+    },
+    labs: [
+      {
+        id: 'm05-lab1',
+        num: 'Lab 1',
+        title: 'Daemon Initialization and Core Deployment',
+        scenario: 'Install Java 21, extract Nexus 3.94, set nexus.rc, start service, and retrieve admin password.',
+        tools: 'apt install openjdk-21-jdk-headless, wget, tar, nexus.rc, ./nexus start',
+      },
+      {
+        id: 'm05-lab2',
+        num: 'Lab 2',
+        title: 'Physical Storage Allocation',
+        scenario: 'Create dedicated File Blob Store to isolate storage faults and manage disk quotas.',
+        tools: 'Nexus Web GUI: Administration -> Repository -> Blob Stores',
+      },
+      {
+        id: 'm05-lab3',
+        num: 'Lab 3',
+        title: 'The Repository Triad Topology',
+        scenario: 'Create PyPI Proxy, PyPI Hosted, and PyPI Group repositories under unified endpoint.',
+        tools: 'Nexus Web GUI: Repositories configuration',
+      },
+      {
+        id: 'm05-lab4',
+        num: 'Lab 4',
+        title: 'Principle of Least Privilege',
+        scenario: 'Create dedicated CI/CD role and service user with scoped PyPI upload privileges.',
+        tools: 'Nexus Web GUI: Security -> Roles and Users',
+      },
+      {
+        id: 'm05-lab5',
+        num: 'Lab 5',
+        title: 'Pipeline Injection (Publishing)',
+        scenario: 'Publish Python wheel packages to PyPI Hosted repository using twine.',
+        tools: 'pip install twine, twine upload --repository-url',
+      },
+      {
+        id: 'm05-lab6',
+        num: 'Lab 6',
+        title: 'Programmatic Retrieval (The REST API)',
+        scenario: 'Query component metadata from Nexus REST API programmatically and parse with jq.',
+        tools: 'curl, jq, /service/rest/v1/components',
+      },
+      {
+        id: 'm05-lab7',
+        num: 'Lab 7',
+        title: 'Data Retention and Garbage Collection',
+        scenario: 'Create cleanup policies and execute Compact Blob Store maintenance tasks.',
+        tools: 'Nexus Web GUI: Cleanup Policies, Tasks -> Compact Blob Store',
+      },
+    ],
+    certificate: {
+      title: 'Enterprise Artifact Management Specialist',
+      credentialId: 'DM-CERT-M05-REP',
     },
   },
 
@@ -582,7 +582,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 07: Jenkins Pipelines and Build Automation ──────────────────────
   {
     num: '07',
-    title: 'Jenkins Pipelines and Build Automation',
+    title: 'Build Automation - CI/CD with Jenkins',
     difficulty: 'Intermediate to Advanced',
     skillLevel: 'Associate / Professional DevOps Engineer',
     technologies: ['Jenkins Controller', 'Java OpenJDK 17/21', 'Docker', 'Git', 'GitHub Webhooks', 'Groovy'],
@@ -655,7 +655,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 08: AWS Services ────────────────────────────────────────────────
   {
     num: '08',
-    title: 'AWS Services',
+    title: 'AWS Service',
     difficulty: 'Intermediate',
     skillLevel: 'Associate / Practitioner',
     technologies: ['AWS IAM', 'AWS VPC', 'AWS EC2', 'Security Groups', 'AWS CLI v2', 'Elastic IP', 'Jenkins sshagent'],
@@ -735,7 +735,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 09: Core Kubernetes Container Orchestration ─────────────────────
   {
     num: '09',
-    title: 'Core Kubernetes Container Orchestration',
+    title: 'Container Orchestration with Kubernetes',
     difficulty: 'Advanced',
     skillLevel: 'Intermediate to Advanced DevOps Engineer',
     technologies: ['Kubernetes', 'Minikube', 'kubectl', 'Helm', 'Helmfile', 'Nginx Ingress', 'Redis', 'FastAPI'],
@@ -822,11 +822,11 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 10: Kubernetes on AWS (EKS) ─────────────────────────────────────
   {
     num: '10',
-    title: 'Kubernetes on AWS (EKS)',
+    title: 'Kubernetes on AWS - EKS',
     difficulty: 'Advanced / Enterprise',
     skillLevel: 'Senior DevOps Engineer / Cloud Architect',
     technologies: ['AWS EKS', 'eksctl', 'AWS CLI', 'kubectl', 'Helm', 'AWS IAM', 'OIDC', 'AWS Fargate', 'Karpenter', 'AWS ECR'],
-    prerequisites: ['Module 01 (Linux)', 'Module 05 (IaaS)', 'Module 06 (Docker)', 'Module 07 (Jenkins)', 'Module 08 (AWS)', 'Module 09 (Kubernetes)'],
+    prerequisites: ['Module 01 (Linux)', 'Module 04 (IaaS)', 'Module 06 (Docker)', 'Module 07 (Jenkins)', 'Module 08 (AWS)', 'Module 09 (Kubernetes)'],
     enables: ['Module 11 (Terraform)', 'Module 15 (Observability)', 'Production Cloud Engineering'],
     description:
       'Master enterprise AWS Elastic Kubernetes Service (EKS) management using declarative IaC (eksctl), serverless compute (Fargate), sub-second autoscaling (Karpenter), zero-trust security (IRSA), and Jenkins rollouts.',
@@ -895,11 +895,11 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 11: Terraform ───────────────────────────────────────────────────
   {
     num: '11',
-    title: 'Terraform',
+    title: 'Infrastructure as Code with Terraform',
     difficulty: 'Intermediate to Advanced',
     skillLevel: 'Professional DevOps / Infrastructure Engineer',
     technologies: ['Terraform CLI v1.9+', 'HCL', 'AWS (EC2, VPC, EKS, IAM, S3, DynamoDB)', 'Git', 'GitHub Actions'],
-    prerequisites: ['Module 01 (Linux)', 'Module 02 (Git)', 'Module 05 (Cloud Computing & AWS)'],
+    prerequisites: ['Module 01 (Linux)', 'Module 02 (Git)', 'Module 04 (Cloud & IaaS)'],
     enables: ['Automated Infrastructure Pipelines', 'GitOps Foundations', 'Multi-Environment Deployments'],
     description:
       'Master declarative Infrastructure as Code using Terraform to automate, scale, parameterize, secure, and continuously deploy AWS cloud infrastructure and EKS Kubernetes clusters.',
@@ -1153,7 +1153,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 13: Python Automation (AWS Boto3) ───────────────────────────────
   {
     num: '13',
-    title: 'Python Automation (AWS Boto3)',
+    title: 'Automation with Python',
     difficulty: 'Intermediate to Advanced',
     skillLevel: 'Advanced Practitioner / DevOps Engineer',
     technologies: ['Python 3', 'Boto3', 'Botocore', 'AWS EC2', 'AWS EBS', 'AWS EKS', 'AWS SNS', 'Requests', 'Schedule'],
@@ -1254,11 +1254,11 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 14: Ansible ─────────────────────────────────────────────────────
   {
     num: '14',
-    title: 'Ansible',
+    title: 'Configuration Management with Ansible',
     difficulty: 'Intermediate to Advanced',
     skillLevel: 'Professional DevOps Engineer / Platform Engineer',
     technologies: ['Ansible Core', 'Python 3', 'OpenSSH', 'YAML', 'Jinja2', 'Docker', 'Terraform', 'AWS EC2', 'Kubernetes'],
-    prerequisites: ['Module 01 (Linux)', 'Module 02 (Git)', 'Module 05 (IaaS)', 'Module 06 (Docker)', 'Module 08 (AWS)', 'Module 11 (Terraform)'],
+    prerequisites: ['Module 01 (Linux)', 'Module 02 (Git)', 'Module 04 (IaaS)', 'Module 06 (Docker)', 'Module 08 (AWS)', 'Module 11 (Terraform)'],
     enables: ['Enterprise Fleet Patching', 'Self-Healing Cloud Infrastructure', 'GitOps Operations'],
     description:
       'Master declarative configuration management and cross-cloud fleet orchestration using Ansible. Build agentless, idempotent automation pipelines connecting Terraform, Docker, AWS EC2, Kubernetes, and Jenkins.',
@@ -1396,7 +1396,7 @@ export const LEARNING_PATH_MODULES: LearningPathModule[] = [
   // ─── Module 15: Enterprise Cluster Monitoring and Observability ─────────────
   {
     num: '15',
-    title: 'Enterprise Cluster Monitoring and Observability with Prometheus and Grafana',
+    title: 'Monitoring with Prometheus',
     difficulty: 'Advanced',
     skillLevel: 'Senior DevOps Engineer / Observability Specialist',
     technologies: ['Prometheus Operator', 'Grafana', 'Alertmanager', 'Helm', 'Kubernetes CRDs', 'Node Exporter', 'prom-client', 'PromQL'],

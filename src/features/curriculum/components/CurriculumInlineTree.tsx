@@ -650,8 +650,8 @@ function InlineModuleNode({
             />
           ) : orderedLessons.length === 0 && quizzes.length === 0 ? (
             <InlineNote
-              title="No lessons, labs or quizzes yet."
-              description="Create the first item in this module."
+              title="No labs uploaded for this module yet."
+              description="This module is intentionally kept empty until labs are uploaded."
               action={
                 <>
                   <Button

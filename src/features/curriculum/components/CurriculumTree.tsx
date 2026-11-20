@@ -521,9 +521,7 @@ function ModuleNode({
             </div>
           ) : orderedItems.length === 0 ? (
             <div className="p-3 rounded-xs border border-dashed border-border/80 bg-transparent text-center">
-              <p className="text-xs text-muted font-mono">
-                No lessons or quizzes yet in this module.
-              </p>
+              <p className="text-xs text-muted font-mono">No labs uploaded for this module yet.</p>
               <div className="mt-2 flex items-center justify-center gap-2">
                 <button
                   type="button"

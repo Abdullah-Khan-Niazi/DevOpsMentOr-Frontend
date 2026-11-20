@@ -15,15 +15,18 @@ export const TerminalIframe = memo(function TerminalIframe({
   title = 'Lab Terminal',
 }: TerminalIframeProps) {
   return (
-    <iframe
-      className="terminal-iframe"
-      title={title}
-      src={terminalWsUrl}
-      sandbox="allow-scripts allow-same-origin"
-      onLoad={(event) => {
-        event.currentTarget.contentWindow?.postMessage({ type: 'resize' }, '*');
-      }}
-    />
+    <div className="terminal-iframe-wrap">
+      <iframe
+        className="terminal-iframe"
+        title={title}
+        src={terminalWsUrl}
+        scrolling="no"
+        sandbox="allow-scripts allow-same-origin"
+        onLoad={(event) => {
+          event.currentTarget.contentWindow?.postMessage({ type: 'resize' }, '*');
+        }}
+      />
+    </div>
   );
 });
 
