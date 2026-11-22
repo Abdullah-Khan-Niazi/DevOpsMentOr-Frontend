@@ -1,4 +1,4 @@
-/* Global Premium Button
+/* Global Button
    Multi-layer elevation shadows, refined border radius, and token-driven hues. */
 
 .btn {
@@ -29,6 +29,31 @@
 .btn:focus-visible {
   outline: 0.125rem solid var(--ink);
   outline-offset: 0.125rem;
+}
+
+/* Logged-in UI: shared focus ring and spring press (the marketing site keeps the rules above). */
+.btn:not(.site-root *) {
+  transition:
+    background-color var(--duration-micro) var(--ease-standard),
+    border-color var(--duration-micro) var(--ease-standard),
+    box-shadow var(--duration-micro) var(--ease-standard),
+    color var(--duration-micro) var(--ease-standard),
+    transform var(--duration-spring-snappy) var(--spring-snappy),
+    opacity var(--duration-micro) var(--ease-standard);
+}
+
+.btn:not(.site-root *):focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.btn--danger:not(.site-root *):focus-visible {
+  box-shadow: var(--focus-ring-danger);
+}
+
+.btn:not(.site-root *):active:not(:disabled) {
+  transform: scale(var(--press-scale));
+  transition-duration: var(--duration-press);
 }
 
 .btn:disabled,
@@ -93,36 +118,29 @@
     inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink-deep) 28%, transparent);
 }
 
-/* ─── Secondary Variant ────────────────────────────────────────────────────── */
+/* ─── Secondary Variant ────────────────────────────────────────────────────
+   Bordered and filled, built like primary in the secondary palette: pearl fill
+   and a hairline border at rest, one step darker on hover and press. */
 .btn--secondary {
-  background: var(--pearl-100);
+  background-color: var(--pearl-200);
   color: var(--ink);
+  font-weight: 500;
   border: 0.0625rem solid var(--paper-line);
   box-shadow:
-    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 5%, transparent),
-    0 0.0625rem 0.1875rem color-mix(in srgb, var(--ink) 3%, transparent),
-    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 2%, transparent),
-    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 95%, transparent);
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 6%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 80%, transparent);
 }
 
 .btn--secondary:hover:not(:disabled) {
-  background: linear-gradient(180deg, var(--pearl-100) 0%, var(--pearl-200) 100%);
+  background-color: var(--pearl-300);
   border-color: var(--paper-line-strong);
   color: var(--ink);
-  transform: translateY(-0.0625rem);
-  box-shadow:
-    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 8%, transparent),
-    0 0.25rem 0.5rem color-mix(in srgb, var(--ink) 4%, transparent),
-    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 95%, transparent);
 }
 
 .btn--secondary:active:not(:disabled) {
-  transform: translateY(0);
-  background: var(--paper-dim);
+  background-color: var(--pearl-300);
   border-color: var(--paper-line);
-  box-shadow:
-    0 0.0625rem 0.0625rem color-mix(in srgb, var(--ink) 4%, transparent),
-    inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 8%, transparent);
+  box-shadow: inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 /* ─── Danger Variant ───────────────────────────────────────────────────────── */
@@ -156,67 +174,66 @@
 
 /* ─── Tertiary Variant ─────────────────────────────────────────────────────── */
 .btn--tertiary {
+  background-color: var(--paper);
+  color: var(--text-secondary);
+  border: 0.0625rem solid var(--paper-line);
+  box-shadow: none;
+}
+
+.btn--tertiary:hover:not(:disabled) {
+  background-color: var(--pearl-200);
+  color: var(--ink);
+}
+
+.btn--tertiary:active:not(:disabled) {
+  background-color: var(--pearl-300);
+  color: var(--ink);
+}
+
+/* ─── Ghost Variant ──────────────────────────────────────────────────────────
+   Transparent and borderless in every state (no border on hover). */
+.btn--ghost {
   background-color: transparent;
   color: var(--text-secondary);
   border: none;
   box-shadow: none;
 }
 
-.btn--tertiary:hover:not(:disabled) {
-  background-color: color-mix(in srgb, var(--pearl-200) 75%, transparent);
-  color: var(--ink);
-  transform: translateY(-0.0625rem);
-}
-
-.btn--tertiary:active:not(:disabled) {
-  background-color: var(--pearl-300);
-  color: var(--ink);
-  transform: translateY(0) scale(0.98);
-}
-
-/* ─── Ghost Variant ────────────────────────────────────────────────────────── */
-.btn--ghost {
-  background-color: transparent;
-  color: var(--text-secondary);
-  border: 0.0625rem solid transparent;
-  box-shadow: none;
-}
-
 .btn--ghost:hover:not(:disabled) {
-  background-color: var(--pearl-100);
-  border-color: var(--paper-line);
+  background-color: var(--pearl-200);
   color: var(--ink);
-  transform: translateY(-0.0625rem);
-  box-shadow:
-    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 4%, transparent),
-    0 0.125rem 0.375rem color-mix(in srgb, var(--ink) 2%, transparent);
 }
 
 .btn--ghost:active:not(:disabled) {
-  background-color: var(--pearl-200);
-  border-color: var(--paper-line);
-  transform: translateY(0);
-  box-shadow: inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 4%, transparent);
+  background-color: var(--pearl-300);
+  color: var(--ink);
 }
 
-/* ─── Inner Elements: Spinner, Label, Arrow, Icons ──────────────────────────── */
+/* ─── Inner Elements: Label, Icons, Arrow, Spinner ──────────────────────────── */
 .btn__content {
   display: inline-flex;
   align-items: center;
   gap: inherit;
 }
 
+/* Loading keeps the width: the content is hidden, the spinner sits on top. */
+.btn--loading .btn__content {
+  visibility: hidden;
+}
+
 .btn__spinner-wrap {
+  position: absolute;
+  inset: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
+  pointer-events: none;
 }
 
 .btn__spinner {
   width: 1.1em;
   height: 1.1em;
-  animation: btn-spin 0.65s linear infinite;
 }
 
 .btn__label {
@@ -237,34 +254,119 @@
   display: block;
 }
 
+.btn--success .btn__icon {
+  animation: pop-in var(--duration-spring-bouncy) var(--spring-bouncy) both;
+}
+
 .btn__arrow {
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
+.btn__arrow-icon {
+  transition: transform var(--duration-spring-snappy) var(--spring-snappy);
+}
+
+.btn:hover:not(:disabled) .btn__arrow-icon {
+  transform: translateX(0.125rem);
+}
+
+/* The legacy arrow glyph is only shown on the marketing site. */
 .btn__arrow-svg {
+  display: none;
+}
+
+/* ─── Marketing site preservation ──────────────────────────────────────────────
+   The public site (`.site-root`) keeps the previous button look byte for byte:
+   original transitions, focus outline, press transforms, filled secondary,
+   bordered ghost hover and the original arrow glyph. */
+.site-root .btn {
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    box-shadow var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
+}
+
+.site-root .btn--secondary {
+  background: var(--pearl-100);
+  color: var(--ink);
+  font-weight: 500;
+  border: 0.0625rem solid var(--paper-line);
+  box-shadow:
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 5%, transparent),
+    0 0.0625rem 0.1875rem color-mix(in srgb, var(--ink) 3%, transparent),
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 2%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 95%, transparent);
+}
+
+.site-root .btn--secondary:hover:not(:disabled) {
+  background: linear-gradient(180deg, var(--pearl-100) 0%, var(--pearl-200) 100%);
+  border-color: var(--paper-line-strong);
+  color: var(--ink);
+  transform: translateY(-0.0625rem);
+  box-shadow:
+    0 0.125rem 0.25rem color-mix(in srgb, var(--ink) 8%, transparent),
+    0 0.25rem 0.5rem color-mix(in srgb, var(--ink) 4%, transparent),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 95%, transparent);
+}
+
+.site-root .btn--secondary:active:not(:disabled) {
+  transform: translateY(0);
+  background: var(--paper-dim);
+  border-color: var(--paper-line);
+  box-shadow:
+    0 0.0625rem 0.0625rem color-mix(in srgb, var(--ink) 4%, transparent),
+    inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.site-root .btn--ghost {
+  background-color: transparent;
+  color: var(--text-secondary);
+  border: 0.0625rem solid transparent;
+  box-shadow: none;
+}
+
+.site-root .btn--ghost:hover:not(:disabled) {
+  background-color: var(--pearl-100);
+  border-color: var(--paper-line);
+  color: var(--ink);
+  transform: translateY(-0.0625rem);
+  box-shadow:
+    0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 4%, transparent),
+    0 0.125rem 0.375rem color-mix(in srgb, var(--ink) 2%, transparent);
+}
+
+.site-root .btn--ghost:active:not(:disabled) {
+  background-color: var(--pearl-200);
+  border-color: var(--paper-line);
+  transform: translateY(0);
+  box-shadow: inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 4%, transparent);
+}
+
+.site-root .btn__arrow-icon {
+  display: none;
+}
+
+.site-root .btn__arrow-svg {
+  display: block;
   width: 0.875rem;
   height: 0.875rem;
   transition: transform var(--duration-fast) var(--ease-standard);
 }
 
-.btn:hover:not(:disabled) .btn__arrow-svg {
+.site-root .btn:hover:not(:disabled) .btn__arrow-svg {
   transform: translateX(0.125rem);
 }
 
-@keyframes btn-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .btn,
-  .btn__arrow-svg {
+  .site-root .btn,
+  .site-root .btn__arrow-svg {
     transition: none;
   }
-  .btn:hover:not(:disabled) {
+  .site-root .btn:hover:not(:disabled) {
     transform: none;
   }
 }
