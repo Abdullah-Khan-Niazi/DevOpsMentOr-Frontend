@@ -1,0 +1,30 @@
+/* Selected (active) icon: accent colour, filled glyph (set in Icon.tsx), heavier stroke and a soft spring scale.
+   Ancestor selectors cover active nav links, tabs, tree rows and toggles; the path can only be filled when the
+   component passes `selected`. */
+
+.icon--selected,
+[aria-current='page'] > .icon,
+[aria-selected='true'] .icon,
+[aria-pressed='true'] .icon,
+[data-state='active'] .icon {
+  color: var(--accent-icon, var(--ink));
+  transform: scale(1.08);
+  transition: transform var(--duration-spring-bouncy, 640ms) var(--spring-bouncy, ease);
+}
+
+.icon--selected path {
+  stroke: currentColor;
+  stroke-width: 18;
+  paint-order: stroke;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .icon--selected,
+  [aria-current='page'] > .icon,
+  [aria-selected='true'] .icon,
+  [aria-pressed='true'] .icon,
+  [data-state='active'] .icon {
+    transform: none;
+    transition: none;
+  }
+}

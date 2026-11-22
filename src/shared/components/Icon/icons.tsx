@@ -1,9 +1,178 @@
-import type { ReactNode } from 'react';
+// App icon set: Google Material Symbols (Rounded, weight 400) from the pinned
+// `@material-symbols/svg-400` package. Outlined Rounded glyphs at rest; the `-fill`
+// source is used for the selected state. Each symbol is imported as raw SVG text with
+// Vite's `?raw` suffix and reduced to its single path, so only the listed symbols
+// are bundled and no markup is ever injected as HTML. Rendered by `Icon.tsx`.
 
-// App icon set — inline stroke SVGs only (no icon library dependency).
-// Icons inherit `currentColor` and are sized via `size` on the Icon component.
-// Draw in a 24×24 grid, stroke 1.75, round caps/joins, matching the brand's
-// minimal line language.
+import symDashboard from '@material-symbols/svg-400/rounded/dashboard.svg?raw';
+import symGroup from '@material-symbols/svg-400/rounded/group.svg?raw';
+import symShieldPerson from '@material-symbols/svg-400/rounded/shield_person.svg?raw';
+import symBarChart from '@material-symbols/svg-400/rounded/bar_chart.svg?raw';
+import symSettings from '@material-symbols/svg-400/rounded/settings.svg?raw';
+import symCorporateFare from '@material-symbols/svg-400/rounded/corporate_fare.svg?raw';
+import symSchool from '@material-symbols/svg-400/rounded/school.svg?raw';
+import symGroups from '@material-symbols/svg-400/rounded/groups.svg?raw';
+import symCoPresent from '@material-symbols/svg-400/rounded/co_present.svg?raw';
+import symReceiptLong from '@material-symbols/svg-400/rounded/receipt_long.svg?raw';
+import symAdminPanelSettings from '@material-symbols/svg-400/rounded/admin_panel_settings.svg?raw';
+import symScience from '@material-symbols/svg-400/rounded/science.svg?raw';
+import symRoute from '@material-symbols/svg-400/rounded/route.svg?raw';
+import symWorkspacePremium from '@material-symbols/svg-400/rounded/workspace_premium.svg?raw';
+import symLeaderboard from '@material-symbols/svg-400/rounded/leaderboard.svg?raw';
+import symCancel from '@material-symbols/svg-400/rounded/cancel.svg?raw';
+import symLogout from '@material-symbols/svg-400/rounded/logout.svg?raw';
+import symKeyboardDoubleArrowLeft from '@material-symbols/svg-400/rounded/keyboard_double_arrow_left.svg?raw';
+import symKeyboardDoubleArrowRight from '@material-symbols/svg-400/rounded/keyboard_double_arrow_right.svg?raw';
+import symKeyboardArrowDown from '@material-symbols/svg-400/rounded/keyboard_arrow_down.svg?raw';
+import symCheck from '@material-symbols/svg-400/rounded/check.svg?raw';
+import symNotifications from '@material-symbols/svg-400/rounded/notifications.svg?raw';
+import symNotificationsFill from '@material-symbols/svg-400/rounded/notifications-fill.svg?raw';
+import symCampaign from '@material-symbols/svg-400/rounded/campaign.svg?raw';
+import symCalendarMonth from '@material-symbols/svg-400/rounded/calendar_month.svg?raw';
+import symMonitoring from '@material-symbols/svg-400/rounded/monitoring.svg?raw';
+import symMail from '@material-symbols/svg-400/rounded/mail.svg?raw';
+import symDescription from '@material-symbols/svg-400/rounded/description.svg?raw';
+import symFlag from '@material-symbols/svg-400/rounded/flag.svg?raw';
+import symKeep from '@material-symbols/svg-400/rounded/keep.svg?raw';
+import symCreditCard from '@material-symbols/svg-400/rounded/credit_card.svg?raw';
+import symMenu from '@material-symbols/svg-400/rounded/menu.svg?raw';
+import symClose from '@material-symbols/svg-400/rounded/close.svg?raw';
+import symBolt from '@material-symbols/svg-400/rounded/bolt.svg?raw';
+import symBookmark from '@material-symbols/svg-400/rounded/bookmark.svg?raw';
+import symBookmarkFill from '@material-symbols/svg-400/rounded/bookmark-fill.svg?raw';
+import symMoreHoriz from '@material-symbols/svg-400/rounded/more_horiz.svg?raw';
+import symTerminal from '@material-symbols/svg-400/rounded/terminal.svg?raw';
+import symStarShine from '@material-symbols/svg-400/rounded/star_shine.svg?raw';
+import symOpenInNew from '@material-symbols/svg-400/rounded/open_in_new.svg?raw';
+import symKeyboardArrowUp from '@material-symbols/svg-400/rounded/keyboard_arrow_up.svg?raw';
+import symChevronRight from '@material-symbols/svg-400/rounded/chevron_right.svg?raw';
+import symChevronLeft from '@material-symbols/svg-400/rounded/chevron_left.svg?raw';
+import symArrowBack from '@material-symbols/svg-400/rounded/arrow_back.svg?raw';
+import symArrowForward from '@material-symbols/svg-400/rounded/arrow_forward.svg?raw';
+import symArrowUpward from '@material-symbols/svg-400/rounded/arrow_upward.svg?raw';
+import symArrowDownward from '@material-symbols/svg-400/rounded/arrow_downward.svg?raw';
+import symAdd from '@material-symbols/svg-400/rounded/add.svg?raw';
+import symRemove from '@material-symbols/svg-400/rounded/remove.svg?raw';
+import symEdit from '@material-symbols/svg-400/rounded/edit.svg?raw';
+import symDelete from '@material-symbols/svg-400/rounded/delete.svg?raw';
+import symSearch from '@material-symbols/svg-400/rounded/search.svg?raw';
+import symFilterList from '@material-symbols/svg-400/rounded/filter_list.svg?raw';
+import symSort from '@material-symbols/svg-400/rounded/sort.svg?raw';
+import symDragIndicator from '@material-symbols/svg-400/rounded/drag_indicator.svg?raw';
+import symMoreVert from '@material-symbols/svg-400/rounded/more_vert.svg?raw';
+import symVisibility from '@material-symbols/svg-400/rounded/visibility.svg?raw';
+import symVisibilityOff from '@material-symbols/svg-400/rounded/visibility_off.svg?raw';
+import symLock from '@material-symbols/svg-400/rounded/lock.svg?raw';
+import symLockOpen from '@material-symbols/svg-400/rounded/lock_open.svg?raw';
+import symPlayArrow from '@material-symbols/svg-400/rounded/play_arrow.svg?raw';
+import symPause from '@material-symbols/svg-400/rounded/pause.svg?raw';
+import symStopCircle from '@material-symbols/svg-400/rounded/stop_circle.svg?raw';
+import symRestartAlt from '@material-symbols/svg-400/rounded/restart_alt.svg?raw';
+import symRefresh from '@material-symbols/svg-400/rounded/refresh.svg?raw';
+import symTimer from '@material-symbols/svg-400/rounded/timer.svg?raw';
+import symSchedule from '@material-symbols/svg-400/rounded/schedule.svg?raw';
+import symHourglassEmpty from '@material-symbols/svg-400/rounded/hourglass_empty.svg?raw';
+import symLightbulb from '@material-symbols/svg-400/rounded/lightbulb.svg?raw';
+import symLightbulbFill from '@material-symbols/svg-400/rounded/lightbulb-fill.svg?raw';
+import symHelp from '@material-symbols/svg-400/rounded/help.svg?raw';
+import symInfo from '@material-symbols/svg-400/rounded/info.svg?raw';
+import symWarning from '@material-symbols/svg-400/rounded/warning.svg?raw';
+import symError from '@material-symbols/svg-400/rounded/error.svg?raw';
+import symCheckCircle from '@material-symbols/svg-400/rounded/check_circle.svg?raw';
+import symCheckCircleFill from '@material-symbols/svg-400/rounded/check_circle-fill.svg?raw';
+import symRadioButtonUnchecked from '@material-symbols/svg-400/rounded/radio_button_unchecked.svg?raw';
+import symTaskAlt from '@material-symbols/svg-400/rounded/task_alt.svg?raw';
+import symContentCopy from '@material-symbols/svg-400/rounded/content_copy.svg?raw';
+import symDownload from '@material-symbols/svg-400/rounded/download.svg?raw';
+import symUpload from '@material-symbols/svg-400/rounded/upload.svg?raw';
+import symLink from '@material-symbols/svg-400/rounded/link.svg?raw';
+import symQuiz from '@material-symbols/svg-400/rounded/quiz.svg?raw';
+import symArticle from '@material-symbols/svg-400/rounded/article.svg?raw';
+import symSmartDisplay from '@material-symbols/svg-400/rounded/smart_display.svg?raw';
+import symSlideshow from '@material-symbols/svg-400/rounded/slideshow.svg?raw';
+import symTour from '@material-symbols/svg-400/rounded/tour.svg?raw';
+import symViewModule from '@material-symbols/svg-400/rounded/view_module.svg?raw';
+import symMenuBook from '@material-symbols/svg-400/rounded/menu_book.svg?raw';
+import symAutoStories from '@material-symbols/svg-400/rounded/auto_stories.svg?raw';
+import symLayers from '@material-symbols/svg-400/rounded/layers.svg?raw';
+import symTrophy from '@material-symbols/svg-400/rounded/trophy.svg?raw';
+import symStar from '@material-symbols/svg-400/rounded/star.svg?raw';
+import symStarFill from '@material-symbols/svg-400/rounded/star-fill.svg?raw';
+import symLocalFireDepartment from '@material-symbols/svg-400/rounded/local_fire_department.svg?raw';
+import symLocalFireDepartmentFill from '@material-symbols/svg-400/rounded/local_fire_department-fill.svg?raw';
+import symPerson from '@material-symbols/svg-400/rounded/person.svg?raw';
+import symPersonAdd from '@material-symbols/svg-400/rounded/person_add.svg?raw';
+import symGroupAdd from '@material-symbols/svg-400/rounded/group_add.svg?raw';
+import symLogin from '@material-symbols/svg-400/rounded/login.svg?raw';
+import symKey from '@material-symbols/svg-400/rounded/key.svg?raw';
+import symVpnKey from '@material-symbols/svg-400/rounded/vpn_key.svg?raw';
+import symShield from '@material-symbols/svg-400/rounded/shield.svg?raw';
+import symPublish from '@material-symbols/svg-400/rounded/publish.svg?raw';
+import symUnpublished from '@material-symbols/svg-400/rounded/unpublished.svg?raw';
+import symArchive from '@material-symbols/svg-400/rounded/archive.svg?raw';
+import symHome from '@material-symbols/svg-400/rounded/home.svg?raw';
+import symHistory from '@material-symbols/svg-400/rounded/history.svg?raw';
+import symCode from '@material-symbols/svg-400/rounded/code.svg?raw';
+import symList from '@material-symbols/svg-400/rounded/list.svg?raw';
+import symChecklist from '@material-symbols/svg-400/rounded/checklist.svg?raw';
+import symFormatListNumbered from '@material-symbols/svg-400/rounded/format_list_numbered.svg?raw';
+import symFullscreen from '@material-symbols/svg-400/rounded/fullscreen.svg?raw';
+import symFullscreenExit from '@material-symbols/svg-400/rounded/fullscreen_exit.svg?raw';
+import symLeftPanelClose from '@material-symbols/svg-400/rounded/left_panel_close.svg?raw';
+import symLeftPanelOpen from '@material-symbols/svg-400/rounded/left_panel_open.svg?raw';
+import symUnfoldMore from '@material-symbols/svg-400/rounded/unfold_more.svg?raw';
+import symUnfoldLess from '@material-symbols/svg-400/rounded/unfold_less.svg?raw';
+import symCloudOff from '@material-symbols/svg-400/rounded/cloud_off.svg?raw';
+import symSync from '@material-symbols/svg-400/rounded/sync.svg?raw';
+import symPending from '@material-symbols/svg-400/rounded/pending.svg?raw';
+import symSmartToy from '@material-symbols/svg-400/rounded/smart_toy.svg?raw';
+import symRocketLaunch from '@material-symbols/svg-400/rounded/rocket_launch.svg?raw';
+import symMilitaryTech from '@material-symbols/svg-400/rounded/military_tech.svg?raw';
+import symAccountTree from '@material-symbols/svg-400/rounded/account_tree.svg?raw';
+import symDns from '@material-symbols/svg-400/rounded/dns.svg?raw';
+import symDeployedCode from '@material-symbols/svg-400/rounded/deployed_code.svg?raw';
+import symSubdirectoryArrowRight from '@material-symbols/svg-400/rounded/subdirectory_arrow_right.svg?raw';
+import symTrendingUp from '@material-symbols/svg-400/rounded/trending_up.svg?raw';
+import symSend from '@material-symbols/svg-400/rounded/send.svg?raw';
+import symChat from '@material-symbols/svg-400/rounded/chat.svg?raw';
+import symSave from '@material-symbols/svg-400/rounded/save.svg?raw';
+import symUndo from '@material-symbols/svg-400/rounded/undo.svg?raw';
+import symImage from '@material-symbols/svg-400/rounded/image.svg?raw';
+import symLanguage from '@material-symbols/svg-400/rounded/language.svg?raw';
+import symBugReport from '@material-symbols/svg-400/rounded/bug_report.svg?raw';
+import symSwapHoriz from '@material-symbols/svg-400/rounded/swap_horiz.svg?raw';
+import symBlock from '@material-symbols/svg-400/rounded/block.svg?raw';
+import symVerified from '@material-symbols/svg-400/rounded/verified.svg?raw';
+import symPayments from '@material-symbols/svg-400/rounded/payments.svg?raw';
+
+// Filled sources for the selected state (nav, tabs, tree rows, toggles).
+import symDashboardFill from '@material-symbols/svg-400/rounded/dashboard-fill.svg?raw';
+import symGroupFill from '@material-symbols/svg-400/rounded/group-fill.svg?raw';
+import symShieldPersonFill from '@material-symbols/svg-400/rounded/shield_person-fill.svg?raw';
+import symBarChartFill from '@material-symbols/svg-400/rounded/bar_chart-fill.svg?raw';
+import symSettingsFill from '@material-symbols/svg-400/rounded/settings-fill.svg?raw';
+import symCorporateFareFill from '@material-symbols/svg-400/rounded/corporate_fare-fill.svg?raw';
+import symSchoolFill from '@material-symbols/svg-400/rounded/school-fill.svg?raw';
+import symGroupsFill from '@material-symbols/svg-400/rounded/groups-fill.svg?raw';
+import symCoPresentFill from '@material-symbols/svg-400/rounded/co_present-fill.svg?raw';
+import symReceiptLongFill from '@material-symbols/svg-400/rounded/receipt_long-fill.svg?raw';
+import symAdminPanelSettingsFill from '@material-symbols/svg-400/rounded/admin_panel_settings-fill.svg?raw';
+import symScienceFill from '@material-symbols/svg-400/rounded/science-fill.svg?raw';
+import symRouteFill from '@material-symbols/svg-400/rounded/route-fill.svg?raw';
+import symWorkspacePremiumFill from '@material-symbols/svg-400/rounded/workspace_premium-fill.svg?raw';
+import symLeaderboardFill from '@material-symbols/svg-400/rounded/leaderboard-fill.svg?raw';
+import symMonitoringFill from '@material-symbols/svg-400/rounded/monitoring-fill.svg?raw';
+import symMenuBookFill from '@material-symbols/svg-400/rounded/menu_book-fill.svg?raw';
+import symAutoStoriesFill from '@material-symbols/svg-400/rounded/auto_stories-fill.svg?raw';
+import symViewModuleFill from '@material-symbols/svg-400/rounded/view_module-fill.svg?raw';
+import symArticleFill from '@material-symbols/svg-400/rounded/article-fill.svg?raw';
+import symQuizFill from '@material-symbols/svg-400/rounded/quiz-fill.svg?raw';
+import symPersonFill from '@material-symbols/svg-400/rounded/person-fill.svg?raw';
+import symHomeFill from '@material-symbols/svg-400/rounded/home-fill.svg?raw';
+import symTerminalFill from '@material-symbols/svg-400/rounded/terminal-fill.svg?raw';
+import symSlideshowFill from '@material-symbols/svg-400/rounded/slideshow-fill.svg?raw';
+import symTourFill from '@material-symbols/svg-400/rounded/tour-fill.svg?raw';
+import symSmartToyFill from '@material-symbols/svg-400/rounded/smart_toy-fill.svg?raw';
 
 export const iconNames = [
   'dashboard',
@@ -44,244 +213,271 @@ export const iconNames = [
   'terminal',
   'sparkles',
   'external-link',
+  'chevron-up',
+  'chevron-right',
+  'chevron-left',
+  'arrow-left',
+  'arrow-right',
+  'arrow-up',
+  'arrow-down',
+  'plus',
+  'minus',
+  'edit',
+  'delete',
+  'search',
+  'filter',
+  'sort',
+  'drag',
+  'more-vertical',
+  'visibility',
+  'visibility-off',
+  'lock',
+  'lock-open',
+  'play',
+  'pause',
+  'stop',
+  'restart',
+  'refresh',
+  'timer',
+  'clock',
+  'hourglass',
+  'hint',
+  'help',
+  'info',
+  'warning',
+  'error',
+  'check-circle',
+  'circle',
+  'task',
+  'copy',
+  'download',
+  'upload',
+  'link',
+  'quiz',
+  'lesson',
+  'video',
+  'slides',
+  'walkthrough',
+  'module',
+  'course',
+  'curriculum',
+  'layers',
+  'trophy',
+  'star',
+  'streak',
+  'person',
+  'person-add',
+  'group-add',
+  'login',
+  'key',
+  'vpn',
+  'shield',
+  'publish',
+  'unpublish',
+  'archive',
+  'home',
+  'history',
+  'code',
+  'list',
+  'checklist',
+  'numbered',
+  'fullscreen',
+  'fullscreen-exit',
+  'panel-close',
+  'panel-open',
+  'expand-all',
+  'collapse-all',
+  'offline',
+  'sync',
+  'pending',
+  'mentor',
+  'rocket',
+  'medal',
+  'tree',
+  'server',
+  'container',
+  'subitem',
+  'trending',
+  'send',
+  'chat',
+  'save',
+  'undo',
+  'image',
+  'globe',
+  'bug',
+  'swap',
+  'block',
+  'verified',
+  'payments',
 ] as const;
 
 export type IconName = (typeof iconNames)[number];
 
-export const ICONS: Record<IconName, ReactNode> = {
-  dashboard: (
-    <>
-      <rect x="3" y="3" width="7" height="7" rx="1.5" />
-      <rect x="14" y="3" width="7" height="7" rx="1.5" />
-      <rect x="3" y="14" width="7" height="7" rx="1.5" />
-      <rect x="14" y="14" width="7" height="7" rx="1.5" />
-    </>
-  ),
-  users: (
-    <>
-      <circle cx="9" cy="8" r="3.5" />
-      <path d="M3.5 20c0-3 2.5-5 5.5-5s5.5 2 5.5 5" />
-      <path d="M15.5 4.7a3.5 3.5 0 0 1 0 6.6" />
-      <path d="M17.5 15.3c1.9.8 3 2.2 3 4.7" />
-    </>
-  ),
-  roles: (
-    <>
-      <path d="M12 3l7 2.6v5.4c0 4.4-2.9 7.6-7 9.5-4.1-1.9-7-5.1-7-9.5V5.6z" />
-      <path d="M9 11.5l2 2 4-4" />
-    </>
-  ),
-  reports: (
-    <>
-      <path d="M4 20h16" />
-      <path d="M7 20v-6" />
-      <path d="M12 20V9" />
-      <path d="M17 20V5" />
-    </>
-  ),
-  settings: (
-    <>
-      <circle cx="12" cy="12" r="3" />
-      <path d="M12 2.8v3M12 18.2v3M2.8 12h3M18.2 12h3M5.5 5.5l2.1 2.1M16.4 16.4l2.1 2.1M18.5 5.5l-2.1 2.1M7.6 16.4l-2.1 2.1" />
-    </>
-  ),
-  organization: (
-    <>
-      <path d="M4 21V5.5L11 3.5V21M11 21V8h9v13M4 21h16" />
-      <path d="M7 8h.5M7 11h.5M7 14h.5" />
-      <path d="M15 11h.5M15 14h.5M15 17h.5" />
-    </>
-  ),
-  'my-class': (
-    <>
-      <path d="M12 4L2.5 9 12 14l9.5-5z" />
-      <path d="M6.5 11.5V16c0 1.5 2.5 3 5.5 3s5.5-1.5 5.5-3v-4.5" />
-      <path d="M21.5 9v5" />
-    </>
-  ),
-  classes: (
-    <>
-      <path d="M12 6.5C10.5 5.1 8 4.6 4 4.6v13.6c4 0 6.5.5 8 2 1.5-1.5 4-2 8-2V4.6c-4 0-6.5.5-8 1.9z" />
-      <path d="M12 6.5v13.7" />
-    </>
-  ),
-  professors: (
-    <>
-      <circle cx="9.5" cy="7.5" r="3" />
-      <path d="M4.5 19.5c0-2.8 2.2-4.5 5-4.5 1 0 1.9.2 2.6.7" />
-      <path d="M16.5 14.5l3.5 2.2-3.5 2.2v-3z" />
-    </>
-  ),
-  'audit-logs': (
-    <>
-      <path d="M8.5 6H20M8.5 12H20M8.5 18H20" />
-      <path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" strokeWidth="2.4" />
-    </>
-  ),
-  'platform-admins': (
-    <>
-      <path d="M12 3l7 2.6v5.4c0 4.4-2.9 7.6-7 9.5-4.1-1.9-7-5.1-7-9.5V5.6z" />
-      <circle cx="9.5" cy="9.5" r="2.3" />
-      <path d="M6.5 15.5c.5-1.7 1.6-2.6 3-2.6s2.5.9 3 2.6" />
-    </>
-  ),
-  lab: (
-    <>
-      <rect x="3.5" y="4.5" width="17" height="15" rx="2" />
-      <path d="M8 9h8M8 13h5" />
-      <path d="M9.5 16.5h.01M12.5 16.5h.01" strokeWidth="2.4" />
-    </>
-  ),
-  track: (
-    <>
-      <path d="M12 3.5v17" />
-      <path d="M12 6.5c-2.8 0-5-1.5-5-3s2.2-3 5-3 5 1.5 5 3-2.2 3-5 3z" />
-      <path d="M12 12.5c-2.8 0-5-1.5-5-3s2.2-3 5-3 5 1.5 5 3-2.2 3-5 3z" />
-      <path d="M12 18.5c-2.8 0-5-1.5-5-3s2.2-3 5-3 5 1.5 5 3-2.2 3-5 3z" />
-    </>
-  ),
-  logout: (
-    <>
-      <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-      <path d="M16 17l5-5-5-5" />
-      <path d="M21 12H9" />
-    </>
-  ),
-  'chevrons-left': (
-    <>
-      <path d="M11 6l-6 6 6 6" />
-      <path d="M18 6l-6 6 6 6" />
-    </>
-  ),
-  'chevrons-right': (
-    <>
-      <path d="M13 6l6 6-6 6" />
-      <path d="M6 6l6 6-6 6" />
-    </>
-  ),
-  'chevron-down': <path d="M6 9l6 6 6-6" />,
-  check: <path d="M4.5 12.5l5 5 10-11" />,
-  award: (
-    <>
-      <circle cx="12" cy="9" r="5" />
-      <path d="M9 13.2L7.5 21l4.5-2.4L16.5 21 15 13.2" />
-      <path d="M8.8 8.5L6 5.5M15.2 8.5L18 5.5" />
-    </>
-  ),
-  leaderboard: (
-    <>
-      <path d="M4 20h16" />
-      <path d="M7.5 20v-6" />
-      <path d="M12 20V9" />
-      <path d="M16.5 20V4.5" />
-    </>
-  ),
-  'x-circle': (
-    <>
-      <circle cx="12" cy="12" r="8.5" />
-      <path d="M9.5 9.5l5 5M14.5 9.5l-5 5" />
-    </>
-  ),
-  bell: (
-    <>
-      <path d="M6 9a6 6 0 0 1 12 0c0 5 2 6 2 6H4s2-1 2-6" />
-      <path d="M10 19a2 2 0 0 0 4 0" />
-    </>
-  ),
-  megaphone: (
-    <>
-      <path d="M4 11v2a1 1 0 0 0 1 1h2l8 4.5V5.5L7 10H5a1 1 0 0 0-1 1z" />
-      <path d="M18 8.5a4.5 4.5 0 0 1 0 7" />
-    </>
-  ),
-  calendar: (
-    <>
-      <rect x="3.5" y="5" width="17" height="15.5" rx="2" />
-      <path d="M3.5 10h17M8 2.5V6M16 2.5V6" />
-      <path d="M7.5 14h.01M12 14h.01M16.5 14h.01M7.5 17.5h.01M12 17.5h.01" strokeWidth="2.4" />
-    </>
-  ),
-  chart: (
-    <>
-      <path d="M3.5 20.5h17" />
-      <path d="M6.5 16.5v-5M11 16.5V6.5M15.5 16.5v-8M20 16.5V9.5" />
-    </>
-  ),
-  email: (
-    <>
-      <rect x="3.5" y="5.5" width="17" height="13" rx="2" />
-      <path d="M4.5 7l7.5 6 7.5-6" />
-    </>
-  ),
-  card: (
-    <>
-      <rect x="3.5" y="6" width="17" height="12" rx="2" />
-      <path d="M3.5 10h17" />
-      <path d="M7.5 15h4" />
-    </>
-  ),
-  file: (
-    <>
-      <path d="M6 3.5h8l4 4V20.5H6z" />
-      <path d="M14 3.5v4h4M9 12h6M9 15.5h6" />
-    </>
-  ),
-  flag: (
-    <>
-      <path d="M5.5 21V4" />
-      <path d="M5.5 5c0-1.5 2.5-2 5-2s5 .5 5 2-2.5 2-5 2-5-.5-5-2z" />
-      <path d="M5.5 9.5c0-1.5 2.5-2 5-2s5 .5 5 2-2.5 2-5 2-5-.5-5-2z" />
-    </>
-  ),
-  pin: (
-    <>
-      <path d="M9 4h6l-1 5 3 3v2H7v-2l3-3z" />
-      <path d="M12 14v6.5" />
-    </>
-  ),
-  menu: (
-    <>
-      <line x1="3" y1="6" x2="21" y2="6" />
-      <line x1="3" y1="12" x2="21" y2="12" />
-      <line x1="3" y1="18" x2="21" y2="18" />
-    </>
-  ),
-  x: (
-    <>
-      <line x1="18" y1="6" x2="6" y2="18" />
-      <line x1="6" y1="6" x2="18" y2="18" />
-    </>
-  ),
-  zap: (
-    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-  ),
-  bookmark: (
-    <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z" />
-  ),
-  'more-horizontal': (
-    <>
-      <circle cx="12" cy="12" r="1.5" />
-      <circle cx="19" cy="12" r="1.5" />
-      <circle cx="5" cy="12" r="1.5" />
-    </>
-  ),
-  terminal: (
-    <>
-      <polyline points="4 17 10 11 4 5" />
-      <line x1="12" y1="19" x2="20" y2="19" />
-    </>
-  ),
-  sparkles: (
-    <>
-      <path d="M12 3l1.9 4.6L18.5 9.5l-4.6 1.9L12 16l-1.9-4.6L5.5 9.5l4.6-1.9z" />
-      <path d="M19 16l.8 1.9 1.9.8-1.9.8-.8 1.9-.8-1.9-1.9-.8 1.9-.8z" />
-    </>
-  ),
-  'external-link': (
-    <>
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
-      <polyline points="15 3 21 3 21 9" />
-      <line x1="10" y1="14" x2="21" y2="3" />
-    </>
-  ),
+interface IconSource {
+  outlined: string;
+  filled?: string;
+}
+
+export interface IconPaths {
+  outlined: string;
+  filled?: string;
+}
+
+const ICON_SOURCES: Record<IconName, IconSource> = {
+  dashboard: { outlined: symDashboard, filled: symDashboardFill },
+  users: { outlined: symGroup, filled: symGroupFill },
+  roles: { outlined: symShieldPerson, filled: symShieldPersonFill },
+  reports: { outlined: symBarChart, filled: symBarChartFill },
+  settings: { outlined: symSettings, filled: symSettingsFill },
+  organization: { outlined: symCorporateFare, filled: symCorporateFareFill },
+  'my-class': { outlined: symSchool, filled: symSchoolFill },
+  classes: { outlined: symGroups, filled: symGroupsFill },
+  professors: { outlined: symCoPresent, filled: symCoPresentFill },
+  'audit-logs': { outlined: symReceiptLong, filled: symReceiptLongFill },
+  'platform-admins': { outlined: symAdminPanelSettings, filled: symAdminPanelSettingsFill },
+  lab: { outlined: symScience, filled: symScienceFill },
+  track: { outlined: symRoute, filled: symRouteFill },
+  award: { outlined: symWorkspacePremium, filled: symWorkspacePremiumFill },
+  leaderboard: { outlined: symLeaderboard, filled: symLeaderboardFill },
+  'x-circle': { outlined: symCancel },
+  logout: { outlined: symLogout },
+  'chevrons-left': { outlined: symKeyboardDoubleArrowLeft },
+  'chevrons-right': { outlined: symKeyboardDoubleArrowRight },
+  'chevron-down': { outlined: symKeyboardArrowDown },
+  check: { outlined: symCheck },
+  bell: { outlined: symNotifications, filled: symNotificationsFill },
+  megaphone: { outlined: symCampaign },
+  calendar: { outlined: symCalendarMonth },
+  chart: { outlined: symMonitoring, filled: symMonitoringFill },
+  email: { outlined: symMail },
+  file: { outlined: symDescription },
+  flag: { outlined: symFlag },
+  pin: { outlined: symKeep },
+  card: { outlined: symCreditCard },
+  menu: { outlined: symMenu },
+  x: { outlined: symClose },
+  zap: { outlined: symBolt },
+  bookmark: { outlined: symBookmark, filled: symBookmarkFill },
+  'more-horizontal': { outlined: symMoreHoriz },
+  terminal: { outlined: symTerminal, filled: symTerminalFill },
+  sparkles: { outlined: symStarShine },
+  'external-link': { outlined: symOpenInNew },
+  'chevron-up': { outlined: symKeyboardArrowUp },
+  'chevron-right': { outlined: symChevronRight },
+  'chevron-left': { outlined: symChevronLeft },
+  'arrow-left': { outlined: symArrowBack },
+  'arrow-right': { outlined: symArrowForward },
+  'arrow-up': { outlined: symArrowUpward },
+  'arrow-down': { outlined: symArrowDownward },
+  plus: { outlined: symAdd },
+  minus: { outlined: symRemove },
+  edit: { outlined: symEdit },
+  delete: { outlined: symDelete },
+  search: { outlined: symSearch },
+  filter: { outlined: symFilterList },
+  sort: { outlined: symSort },
+  drag: { outlined: symDragIndicator },
+  'more-vertical': { outlined: symMoreVert },
+  visibility: { outlined: symVisibility },
+  'visibility-off': { outlined: symVisibilityOff },
+  lock: { outlined: symLock },
+  'lock-open': { outlined: symLockOpen },
+  play: { outlined: symPlayArrow },
+  pause: { outlined: symPause },
+  stop: { outlined: symStopCircle },
+  restart: { outlined: symRestartAlt },
+  refresh: { outlined: symRefresh },
+  timer: { outlined: symTimer },
+  clock: { outlined: symSchedule },
+  hourglass: { outlined: symHourglassEmpty },
+  hint: { outlined: symLightbulb, filled: symLightbulbFill },
+  help: { outlined: symHelp },
+  info: { outlined: symInfo },
+  warning: { outlined: symWarning },
+  error: { outlined: symError },
+  'check-circle': { outlined: symCheckCircle, filled: symCheckCircleFill },
+  circle: { outlined: symRadioButtonUnchecked },
+  task: { outlined: symTaskAlt },
+  copy: { outlined: symContentCopy },
+  download: { outlined: symDownload },
+  upload: { outlined: symUpload },
+  link: { outlined: symLink },
+  quiz: { outlined: symQuiz, filled: symQuizFill },
+  lesson: { outlined: symArticle, filled: symArticleFill },
+  video: { outlined: symSmartDisplay },
+  slides: { outlined: symSlideshow, filled: symSlideshowFill },
+  walkthrough: { outlined: symTour, filled: symTourFill },
+  module: { outlined: symViewModule, filled: symViewModuleFill },
+  course: { outlined: symMenuBook, filled: symMenuBookFill },
+  curriculum: { outlined: symAutoStories, filled: symAutoStoriesFill },
+  layers: { outlined: symLayers },
+  trophy: { outlined: symTrophy },
+  star: { outlined: symStar, filled: symStarFill },
+  streak: { outlined: symLocalFireDepartment, filled: symLocalFireDepartmentFill },
+  person: { outlined: symPerson, filled: symPersonFill },
+  'person-add': { outlined: symPersonAdd },
+  'group-add': { outlined: symGroupAdd },
+  login: { outlined: symLogin },
+  key: { outlined: symKey },
+  vpn: { outlined: symVpnKey },
+  shield: { outlined: symShield },
+  publish: { outlined: symPublish },
+  unpublish: { outlined: symUnpublished },
+  archive: { outlined: symArchive },
+  home: { outlined: symHome, filled: symHomeFill },
+  history: { outlined: symHistory },
+  code: { outlined: symCode },
+  list: { outlined: symList },
+  checklist: { outlined: symChecklist },
+  numbered: { outlined: symFormatListNumbered },
+  fullscreen: { outlined: symFullscreen },
+  'fullscreen-exit': { outlined: symFullscreenExit },
+  'panel-close': { outlined: symLeftPanelClose },
+  'panel-open': { outlined: symLeftPanelOpen },
+  'expand-all': { outlined: symUnfoldMore },
+  'collapse-all': { outlined: symUnfoldLess },
+  offline: { outlined: symCloudOff },
+  sync: { outlined: symSync },
+  pending: { outlined: symPending },
+  mentor: { outlined: symSmartToy, filled: symSmartToyFill },
+  rocket: { outlined: symRocketLaunch },
+  medal: { outlined: symMilitaryTech },
+  tree: { outlined: symAccountTree },
+  server: { outlined: symDns },
+  container: { outlined: symDeployedCode },
+  subitem: { outlined: symSubdirectoryArrowRight },
+  trending: { outlined: symTrendingUp },
+  send: { outlined: symSend },
+  chat: { outlined: symChat },
+  save: { outlined: symSave },
+  undo: { outlined: symUndo },
+  image: { outlined: symImage },
+  globe: { outlined: symLanguage },
+  bug: { outlined: symBugReport },
+  swap: { outlined: symSwapHoriz },
+  block: { outlined: symBlock },
+  verified: { outlined: symVerified },
+  payments: { outlined: symPayments },
 };
+
+const PATH_RE = /<path[^>]*\sd="([^"]+)"/;
+
+function pathOf(raw: string, name: string): string {
+  const match = PATH_RE.exec(raw);
+  if (!match) {
+    if (import.meta.env.DEV) {
+      throw new Error(`Material symbol "${name}" has no single path`);
+    }
+    return '';
+  }
+  return match[1];
+}
+
+export const ICON_PATHS = Object.fromEntries(
+  iconNames.map((name) => {
+    const source = ICON_SOURCES[name];
+    const paths: IconPaths = { outlined: pathOf(source.outlined, name) };
+    if (source.filled) paths.filled = pathOf(source.filled, `${name} (filled)`);
+    return [name, paths];
+  }),
+) as Record<IconName, IconPaths>;
