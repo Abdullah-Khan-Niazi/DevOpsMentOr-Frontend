@@ -1,53 +1,48 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AUTH_REFRESH_TOKEN_KEY, AUTH_TOKEN_KEY } from '@/shared/services';
-import type { AuthState, LoginResponse } from '../types';
+import { clearAccessToken, setAccessToken } from '@/shared/services';
+import type { AuthState } from '../types';
 
 /**
- * Legacy key written by the removed persisted workspace store. Removing it on
- * every session end prevents a stale value from lingering in browsers that
- * used the old build.
+ * Legacy keys from the token-in-storage era and the removed persisted
+ * workspace store. They are purged on every session end so stale values can
+ * never survive in browsers that used an older build.
  */
-const LEGACY_WORKSPACE_KEY = 'stardust_active_workspace';
+const LEGACY_STORAGE_KEYS = ['auth_token', 'auth_refresh_token', 'stardust_active_workspace'];
 
+function purgeLegacyKeys(): void {
+  try {
+    for (const key of LEGACY_STORAGE_KEYS) {
+      localStorage.removeItem(key);
+    }
+  } catch {
+    // localStorage unavailable
+  }
+}
+
+/**
+ * Session state. Tokens are never stored here or persisted: the access token
+ * lives in memory (`authSession`) and the refresh token is an httpOnly cookie.
+ * Only the non-secret user identity and the `isAuthenticated` hint persist, so
+ * a reload knows to attempt a silent refresh.
+ */
 export const useAuthStore = create<AuthState>()(
   persist(
     (set) => ({
       user: null,
-      accessToken: null,
-      refreshToken: null,
       isAuthenticated: false,
-      setSession: (payload: LoginResponse) => {
-        localStorage.setItem(AUTH_TOKEN_KEY, payload.data.tokens.accessToken);
-        localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, payload.data.tokens.refreshToken);
-        set({
-          user: payload.data.user,
-          accessToken: payload.data.tokens.accessToken,
-          refreshToken: payload.data.tokens.refreshToken,
-          isAuthenticated: true,
-        });
+      setSession: (payload) => {
+        setAccessToken(payload.data.tokens.accessToken, payload.data.tokens.expiresInSeconds);
+        set({ user: payload.data.user, isAuthenticated: true });
       },
       setUser: (user) => set({ user }),
       setTokens: (tokens) => {
-        localStorage.setItem(AUTH_TOKEN_KEY, tokens.accessToken);
-        localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, tokens.refreshToken);
-        set({
-          accessToken: tokens.accessToken,
-          refreshToken: tokens.refreshToken,
-        });
+        setAccessToken(tokens.accessToken, tokens.expiresInSeconds);
       },
       clearSession: () => {
-        localStorage.removeItem(AUTH_TOKEN_KEY);
-        localStorage.removeItem(AUTH_REFRESH_TOKEN_KEY);
-        // Context is URL-derived now, but purge the old persisted value so a
-        // previous account's workspace name can never survive in storage.
-        localStorage.removeItem(LEGACY_WORKSPACE_KEY);
-        set({
-          user: null,
-          accessToken: null,
-          refreshToken: null,
-          isAuthenticated: false,
-        });
+        clearAccessToken();
+        purgeLegacyKeys();
+        set({ user: null, isAuthenticated: false });
         try {
           const channel = new BroadcastChannel('auth_sync');
           channel.postMessage({ type: 'LOGOUT' });
@@ -59,10 +54,17 @@ export const useAuthStore = create<AuthState>()(
     }),
     {
       name: 'auth-session',
+      version: 1,
+      // v0 persisted both tokens; keep only the non-secret identity.
+      migrate: (persisted) => {
+        const old = (persisted ?? {}) as Partial<Pick<AuthState, 'user' | 'isAuthenticated'>>;
+        return {
+          user: old.user ?? null,
+          isAuthenticated: Boolean(old.isAuthenticated),
+        } as AuthState;
+      },
       partialize: (state) => ({
         user: state.user,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
         isAuthenticated: state.isAuthenticated,
       }),
     },

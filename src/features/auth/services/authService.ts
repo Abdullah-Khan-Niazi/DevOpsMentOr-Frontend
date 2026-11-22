@@ -27,9 +27,24 @@ import type {
   VerifyEmailPayload,
 } from '../types';
 
+/** Login responses carry the access token only; the refresh token is the httpOnly `dm_rt` cookie (C§11.5). */
+export type SessionLoginResponse = LoginResponse;
+
+/** Result of a code exchange: a session, or a pending record for a new identity. */
+export type OAuthSessionResult = SessionLoginResponse | Exclude<OAuthLoginResult, LoginResponse>;
+
+/** Authorization-code exchange body. `codeVerifier` is the PKCE verifier (C§11.6). */
+export interface OAuthCodeExchange extends OAuthCredentials {
+  codeVerifier: string;
+}
+
+export interface OAuthSignupCodeExchange extends OAuthSignupCredentials {
+  codeVerifier: string;
+}
+
 export const authService = {
-  async login(credentials: LoginCredentials): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/auth/login', credentials);
+  async login(credentials: LoginCredentials): Promise<SessionLoginResponse> {
+    const { data } = await apiClient.post<SessionLoginResponse>('/auth/login', credentials);
     return data;
   },
 
@@ -38,8 +53,8 @@ export const authService = {
     return data;
   },
 
-  async verifyEmail(payload: VerifyEmailPayload): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/auth/verify-email', payload);
+  async verifyEmail(payload: VerifyEmailPayload): Promise<SessionLoginResponse> {
+    const { data } = await apiClient.post<SessionLoginResponse>('/auth/verify-email', payload);
     return data;
   },
 
@@ -66,28 +81,37 @@ export const authService = {
     return data;
   },
 
-  async oauthLogin(credentials: OAuthCredentials): Promise<OAuthLoginResult> {
-    const { data } = await apiClient.post<OAuthLoginResult>('/auth/oauth/login', credentials);
+  async oauthLogin(credentials: OAuthCodeExchange): Promise<OAuthSessionResult> {
+    const { data } = await apiClient.post<OAuthSessionResult>('/auth/oauth/login', credentials);
     return data;
   },
 
-  async oauthSignup(credentials: OAuthSignupCredentials): Promise<OAuthLoginResult> {
-    const { data } = await apiClient.post<OAuthLoginResult>('/auth/oauth/signup', credentials);
+  async oauthSignup(credentials: OAuthSignupCodeExchange): Promise<OAuthSessionResult> {
+    const { data } = await apiClient.post<OAuthSessionResult>('/auth/oauth/signup', credentials);
     return data;
   },
 
-  async oauthComplete(credentials: OAuthCompleteCredentials): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/auth/oauth/complete', credentials);
+  async oauthComplete(credentials: OAuthCompleteCredentials): Promise<SessionLoginResponse> {
+    const { data } = await apiClient.post<SessionLoginResponse>(
+      '/auth/oauth/complete',
+      credentials,
+    );
     return data;
   },
 
-  async adminLogin(credentials: AdminLoginCredentials): Promise<LoginResponse> {
-    const { data } = await apiClient.post<LoginResponse>('/auth/admin/login', credentials);
+  async adminLogin(credentials: AdminLoginCredentials): Promise<SessionLoginResponse> {
+    const { data } = await apiClient.post<SessionLoginResponse>('/auth/admin/login', credentials);
     return data;
   },
 
-  async logout(refreshToken: string): Promise<void> {
-    await apiClient.post('/auth/logout', { refreshToken });
+  /** Ends this session. The refresh cookie is sent and cleared by the server (CSRF header set by apiClient). */
+  async logout(): Promise<void> {
+    await apiClient.post('/auth/logout');
+  },
+
+  /** Ends every session of the caller. */
+  async logoutAll(): Promise<void> {
+    await apiClient.post('/auth/logout-all');
   },
 
   async getMe(): Promise<MeResponse['data']> {
