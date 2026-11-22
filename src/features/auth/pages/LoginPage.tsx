@@ -15,7 +15,7 @@ export default function LoginPage() {
   }
 
   return (
-    <AuthLayout title="Welcome back" subtitle="Sign in to continue your lab session.">
+    <AuthLayout title="Welcome back">
       {verified ? (
         <p className="auth-alert auth-alert--success auth-alert--margin" role="status">
           Email verified. Sign in to continue.

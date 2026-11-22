@@ -3,6 +3,7 @@ export { useSignup } from './useSignup';
 export { useLogout } from './useLogout';
 export { useOAuthLogin, useOAuthSignup } from './useOAuth';
 export { useSessionValidator } from './useSessionValidator';
+export { useAuthBootstrap, useAuthReady } from './useAuthBootstrap';
 export { useVerifyEmail, useResendVerification } from './useVerifyEmail';
 export { useForgotPassword, useResetPassword } from './usePasswordReset';
 export { useAdminLogin } from './useAdminLogin';

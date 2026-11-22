@@ -151,7 +151,8 @@ export function CredentialsStep({ onNext, password = '', onPasswordChange }: Ste
     if (username.trim().length < 3) {
       next.username = 'Username must be at least 3 characters.';
     } else if (!/^[a-zA-Z0-9_.-]+$/.test(username.trim())) {
-      next.username = 'Username can only contain letters, numbers, underscores, periods, and hyphens.';
+      next.username =
+        'Username can only contain letters, numbers, underscores, periods, and hyphens.';
     }
     if (fullName.trim().length < 2) next.fullName = 'Full name is required.';
     if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email.trim()))
@@ -223,7 +224,8 @@ export function CredentialsStep({ onNext, password = '', onPasswordChange }: Ste
           }}
           className="text-xs text-muted hover:text-card-foreground transition-colors cursor-pointer"
         >
-          Setting up for an organization or school? <span className="underline font-medium text-card-foreground">Customize workspace →</span>
+          Setting up for an organization or school?{' '}
+          <span className="underline font-medium text-card-foreground">Customize workspace →</span>
         </button>
       </div>
 
@@ -424,7 +426,13 @@ export function VerifyEmailStep({ onVerified, password = '', onBack: _onBack }: 
       }
       const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || '';
       if (tz.includes('Karachi')) return 'PK';
-      if (tz.includes('New_York') || tz.includes('Chicago') || tz.includes('Los_Angeles') || tz.includes('Denver')) return 'US';
+      if (
+        tz.includes('New_York') ||
+        tz.includes('Chicago') ||
+        tz.includes('Los_Angeles') ||
+        tz.includes('Denver')
+      )
+        return 'US';
       if (tz.includes('London')) return 'GB';
       if (tz.includes('Toronto') || tz.includes('Vancouver')) return 'CA';
       if (tz.includes('Sydney') || tz.includes('Melbourne')) return 'AU';

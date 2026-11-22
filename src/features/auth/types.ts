@@ -17,7 +17,7 @@ export interface AuthUser {
 
 export interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
+  expiresInSeconds: number;
 }
 
 export interface AuthEnvelope<T> extends ApiResponse<T> {
@@ -227,11 +227,9 @@ export interface LoginHistoryEntry {
 
 export interface AuthState {
   user: AuthUser | null;
-  accessToken: string | null;
-  refreshToken: string | null;
   isAuthenticated: boolean;
   setSession: (payload: LoginResponse) => void;
-  setTokens: (tokens: { accessToken: string; refreshToken: string }) => void;
+  setTokens: (tokens: AuthTokens) => void;
   setUser: (user: AuthUser) => void;
   clearSession: () => void;
 }

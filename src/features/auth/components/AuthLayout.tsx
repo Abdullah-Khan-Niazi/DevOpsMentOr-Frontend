@@ -5,11 +5,10 @@ import { AuthContextPanel } from './AuthContextPanel';
 
 interface AuthLayoutProps {
   title: string;
-  subtitle?: string;
   children: ReactNode;
 }
 
-export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
+export function AuthLayout({ title, children }: AuthLayoutProps) {
   return (
     <div className="auth-page">
       <AuthContextPanel />
@@ -26,7 +25,6 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             </Link>
           </div>
           <h1 className="auth-title">{title}</h1>
-          {subtitle ? <p className="auth-sub">{subtitle}</p> : null}
           {children}
         </div>
       </main>

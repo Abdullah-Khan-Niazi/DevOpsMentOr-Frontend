@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
+import { safeRedirectPath } from '@/shared/utils';
 import type { ApiError } from '@/shared/types';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
@@ -20,9 +21,9 @@ export function useLogin() {
       if (data.data.user.isVerified) {
         const defaultRoute = getDefaultRouteForUser(data.data.user);
         const params = new URLSearchParams(location.search);
-        const redirect = params.get('redirect');
+        const redirect = safeRedirectPath(params.get('redirect'));
 
-        if (redirect && redirect.startsWith('/') && redirect !== ROUTES.DASHBOARD) {
+        if (redirect && redirect !== ROUTES.DASHBOARD) {
           void navigate(redirect, { replace: true });
         } else {
           void navigate(defaultRoute, { replace: true });

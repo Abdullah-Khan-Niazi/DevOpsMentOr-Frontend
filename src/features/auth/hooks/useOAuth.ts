@@ -2,17 +2,22 @@ import { useCallback, useState } from 'react';
 import { useMutation } from '@tanstack/react-query';
 import { useNavigate } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
+import { safeRedirectPath } from '@/shared/utils';
 import type { ApiError } from '@/shared/types';
 import { authService } from '../services';
+import type {
+  OAuthCodeExchange,
+  OAuthSessionResult,
+  OAuthSignupCodeExchange,
+  SessionLoginResponse,
+} from '../services/authService';
 import { useAuthStore } from '../stores/authStore';
 import { useOnboardingStore } from '../stores/onboardingStore';
 import type {
   LoginResponse,
   OAuthCompleteCredentials,
-  OAuthCredentials,
-  OAuthLoginResult,
   OAuthPendingResult,
-  OAuthSignupCredentials,
+  OAuthProvider,
 } from '../types';
 
 const PROVIDER_CONFIG: Record<string, { authUrl: string; clientId: string; scope: string }> = {
@@ -34,6 +39,39 @@ function generateState(): string {
   return Array.from(array, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+function base64UrlEncode(bytes: Uint8Array): string {
+  let binary = '';
+  for (const byte of bytes) {
+    binary += String.fromCharCode(byte);
+  }
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
+/** PKCE verifier: 64 random bytes, base64url (86 characters, RFC 7636 range 43-128). */
+function generateCodeVerifier(): string {
+  const array = new Uint8Array(64);
+  crypto.getRandomValues(array);
+  return base64UrlEncode(array);
+}
+
+/** PKCE S256 challenge: base64url(SHA-256(verifier)). */
+async function deriveCodeChallenge(verifier: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(verifier));
+  return base64UrlEncode(new Uint8Array(digest));
+}
+
+type OAuthFlowMode = 'login' | 'signup';
+
+/**
+ * Per-attempt PKCE record, keyed by the `state` value. It is read and deleted
+ * by the callback page, which is the only place that may complete the flow.
+ */
+const PKCE_KEY_PREFIX = 'oauth_pkce_';
+
+function pkceStorageKey(state: string): string {
+  return `${PKCE_KEY_PREFIX}${state}`;
+}
+
 function redirectUri(provider: string): string {
   return `${window.location.origin}/api/auth/callback/${provider}`;
 }
@@ -47,8 +85,8 @@ const OAUTH_REDIRECT_KEY = 'oauth_redirect';
 
 function persistOAuthRedirect(): void {
   try {
-    const redirect = new URLSearchParams(window.location.search).get('redirect');
-    if (redirect && redirect.startsWith('/')) {
+    const redirect = safeRedirectPath(new URLSearchParams(window.location.search).get('redirect'));
+    if (redirect) {
       sessionStorage.setItem(OAUTH_REDIRECT_KEY, redirect);
     }
   } catch {
@@ -59,11 +97,9 @@ function persistOAuthRedirect(): void {
 /** Return and clear the preserved redirect, or the given fallback. */
 export function consumeOAuthRedirect(fallback: string): string {
   try {
-    const stored = sessionStorage.getItem(OAUTH_REDIRECT_KEY);
-    if (stored && stored.startsWith('/')) {
-      sessionStorage.removeItem(OAUTH_REDIRECT_KEY);
-      return stored;
-    }
+    const stored = safeRedirectPath(sessionStorage.getItem(OAUTH_REDIRECT_KEY));
+    sessionStorage.removeItem(OAUTH_REDIRECT_KEY);
+    if (stored) return stored;
   } catch {
     // sessionStorage unavailable
   }
@@ -71,12 +107,13 @@ export function consumeOAuthRedirect(fallback: string): string {
 }
 
 function handleOAuthResult(
-  data: OAuthLoginResult,
+  data: OAuthSessionResult,
   setSession: (payload: LoginResponse) => void,
   navigate: ReturnType<typeof useNavigate>,
 ): void {
   // Backend returns AuthResponseDto for existing users, or OAuthPendingResultDto for new users,
   // wrapped in the ApiSuccessResponse envelope ({ success: true, message, data: { ... } }).
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const raw = data as any;
   const inner = raw?.data ?? raw;
 
@@ -111,17 +148,44 @@ function handleOAuthResult(
   }
 }
 
+/**
+ * Starts the provider round-trip with PKCE S256 and a one-time `state`. The
+ * verifier and mode are stored under the state so the callback can verify and
+ * consume them. Rejects when the browser cannot compute the challenge.
+ */
+async function redirectToProvider(provider: OAuthProvider, mode: OAuthFlowMode): Promise<void> {
+  const config = PROVIDER_CONFIG[provider];
+  const state = generateState();
+  const verifier = generateCodeVerifier();
+  const codeChallenge = await deriveCodeChallenge(verifier);
+
+  sessionStorage.setItem(pkceStorageKey(state), JSON.stringify({ verifier, mode }));
+  persistOAuthRedirect();
+
+  const params = new URLSearchParams({
+    client_id: config.clientId,
+    redirect_uri: redirectUri(provider),
+    response_type: 'code',
+    scope: config.scope,
+    state,
+    code_challenge: codeChallenge,
+    code_challenge_method: 'S256',
+  });
+
+  window.location.href = `${config.authUrl}?${params.toString()}`;
+}
+
 export function useOAuthLogin() {
   const [feedback, setFeedback] = useState<string | null>(null);
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
 
-  const mutation = useMutation<OAuthLoginResult, ApiError, OAuthCredentials>({
+  const mutation = useMutation<OAuthSessionResult, ApiError, OAuthCodeExchange>({
     mutationFn: (credentials) => authService.oauthLogin(credentials),
     onSuccess: (data) => handleOAuthResult(data, setSession, navigate),
   });
 
-  const initiateOAuth = useCallback((provider: 'google' | 'github') => {
+  const initiateOAuth = useCallback((provider: OAuthProvider) => {
     setFeedback(null);
 
     const config = PROVIDER_CONFIG[provider];
@@ -132,20 +196,9 @@ export function useOAuthLogin() {
       return;
     }
 
-    const state = generateState();
-    sessionStorage.setItem(`oauth_state_${provider}`, state);
-    sessionStorage.setItem('oauth_mode', 'login');
-    persistOAuthRedirect();
-
-    const params = new URLSearchParams({
-      client_id: config.clientId,
-      redirect_uri: redirectUri(provider),
-      response_type: 'code',
-      scope: config.scope,
-      state,
+    redirectToProvider(provider, 'login').catch(() => {
+      setFeedback('Sign in with this provider could not start. Try again.');
     });
-
-    window.location.href = `${config.authUrl}?${params.toString()}`;
   }, []);
 
   return { mutation, initiateOAuth, feedback };
@@ -156,12 +209,12 @@ export function useOAuthSignup() {
   const navigate = useNavigate();
   const setSession = useAuthStore((state) => state.setSession);
 
-  const mutation = useMutation<OAuthLoginResult, ApiError, OAuthSignupCredentials>({
+  const mutation = useMutation<OAuthSessionResult, ApiError, OAuthSignupCodeExchange>({
     mutationFn: (credentials) => authService.oauthSignup(credentials),
     onSuccess: (data) => handleOAuthResult(data, setSession, navigate),
   });
 
-  const initiateOAuth = useCallback((provider: 'google' | 'github') => {
+  const initiateOAuth = useCallback((provider: OAuthProvider) => {
     setFeedback(null);
 
     const config = PROVIDER_CONFIG[provider];
@@ -172,20 +225,9 @@ export function useOAuthSignup() {
       return;
     }
 
-    const state = generateState();
-    sessionStorage.setItem(`oauth_state_${provider}`, state);
-    sessionStorage.setItem('oauth_mode', 'signup');
-    persistOAuthRedirect();
-
-    const params = new URLSearchParams({
-      client_id: config.clientId,
-      redirect_uri: redirectUri(provider),
-      response_type: 'code',
-      scope: config.scope,
-      state,
+    redirectToProvider(provider, 'signup').catch(() => {
+      setFeedback('Sign in with this provider could not start. Try again.');
     });
-
-    window.location.href = `${config.authUrl}?${params.toString()}`;
   }, []);
 
   return { mutation, initiateOAuth, feedback };
@@ -196,7 +238,7 @@ export function useOAuthComplete() {
   const setSession = useAuthStore((state) => state.setSession);
   const resetOnboarding = useOnboardingStore((state) => state.reset);
 
-  return useMutation<LoginResponse, ApiError, OAuthCompleteCredentials>({
+  return useMutation<SessionLoginResponse, ApiError, OAuthCompleteCredentials>({
     mutationFn: (credentials) => authService.oauthComplete(credentials),
     onSuccess: (data) => {
       setSession(data);
