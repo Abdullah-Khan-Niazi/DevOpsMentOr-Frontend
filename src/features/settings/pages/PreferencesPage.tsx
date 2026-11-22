@@ -2,7 +2,8 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useEffect, useMemo } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { Button, Card, LoadingState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, toast } from '@/shared/components';
+import { PreferencesSkeleton } from './PreferencesSkeleton';
 import { useMySettings, useUpdateMySettings } from '../hooks';
 import type { UserSetting } from '../types';
 
@@ -49,7 +50,7 @@ function toForm(preferences: UserSetting[]): PreferencesValues {
 }
 
 export function PreferencesPage() {
-  const { data, isLoading, isError } = useMySettings();
+  const { data, isLoading, isError, error, refetch, isRefetching } = useMySettings();
   const { mutate, isPending } = useUpdateMySettings();
 
   const {
@@ -86,22 +87,21 @@ export function PreferencesPage() {
     );
   };
 
+  if (isLoading) return <PreferencesSkeleton />;
+
   return (
     <div>
-      <PageHeader
-        title="Preferences"
-        description="Theme, timezone and notification defaults for your account."
-      />
+      <PageHeader title="Preferences" />
 
-      {isLoading ? <LoadingState label="Loading preferences…" /> : null}
       {isError ? (
-        <p className="auth-alert auth-alert--error" role="alert">
-          Unable to load preferences.
-        </p>
-      ) : null}
-
-      {!isLoading && !isError ? (
-        <Card className="max-w-xl">
+        <ErrorState
+          title="Unable to load preferences"
+          error={error}
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+        />
+      ) : (
+        <Card>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
             <fieldset>
               <legend className="input-label">Theme</legend>
@@ -164,7 +164,7 @@ export function PreferencesPage() {
             </Button>
           </form>
         </Card>
-      ) : null}
+      )}
     </div>
   );
 }

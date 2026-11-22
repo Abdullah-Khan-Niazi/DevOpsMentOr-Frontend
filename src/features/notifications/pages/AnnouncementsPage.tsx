@@ -1,5 +1,6 @@
 import '../styles/notifications.css';
-import { Card, EmptyState, ErrorState, LoadingState, PageHeader } from '@/shared/components';
+import { Card, EmptyState, ErrorState, PageHeader } from '@/shared/components';
+import { AnnouncementsSkeleton } from './AnnouncementsSkeleton';
 import { usePublishedAnnouncements } from '../hooks/useNotifications';
 import type { AnnouncementPriority } from '../types';
 
@@ -14,19 +15,21 @@ const PRIORITY_LABEL: Record<AnnouncementPriority, string> = {
 };
 
 export function AnnouncementsPage() {
-  const { data, isLoading, isError } = usePublishedAnnouncements();
+  const { data, isLoading, isError, refetch, isRefetching } = usePublishedAnnouncements();
+
+  if (isLoading) return <AnnouncementsSkeleton />;
 
   return (
     <div className="announcements-page">
-      <PageHeader
-        title="Announcements"
-        description="Platform updates, maintenance windows and security notices."
-      />
+      <PageHeader title="Announcements" />
 
       {isError ? (
-        <ErrorState title="Could not load announcements" message="Please try again later." />
-      ) : isLoading ? (
-        <LoadingState />
+        <ErrorState
+          title="Could not load announcements"
+          message="Please try again later."
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+        />
       ) : data && data.length > 0 ? (
         <div className="announcements-page__list">
           {data.map((announcement) => (

@@ -1,8 +1,9 @@
 import '../styles/operations.css';
 import { Button, Card } from '@/shared/components';
 import type { EventDto } from '../types';
+import { safeHttpUrl } from '@/shared/utils';
 
-// SCR-F8-04: event listing card — type chip, local-time date, capacity bar
+// SCR-F8-04: event listing card - type chip, local-time date, capacity bar
 // and Register/Waitlisted/Registered button states. The register action is
 // authenticated; anonymous visitors see a sign-in hint instead.
 
@@ -23,7 +24,7 @@ const TYPE_LABEL: Record<EventDto['eventType'], string> = {
 
 function formatStart(startTime: string, timezone: string | null): string {
   const date = new Date(startTime);
-  return `${date.toLocaleDateString()} · ${date.toLocaleTimeString([], {
+  return `${date.toLocaleDateString()} ${date.toLocaleTimeString([], {
     hour: '2-digit',
     minute: '2-digit',
   })}${timezone ? ` ${timezone}` : ''}`;
@@ -41,8 +42,13 @@ export function EventCard({ event, onRegister, onCancel, isPending }: EventCardP
 
   return (
     <Card className="event-card">
-      {event.bannerUrl ? (
-        <img src={event.bannerUrl} alt="" className="event-card__banner" loading="lazy" />
+      {safeHttpUrl(event.bannerUrl) ? (
+        <img
+          src={safeHttpUrl(event.bannerUrl) ?? undefined}
+          alt=""
+          className="event-card__banner"
+          loading="lazy"
+        />
       ) : null}
       <div className="event-card__body">
         <div className="event-card__head">
@@ -52,8 +58,8 @@ export function EventCard({ event, onRegister, onCancel, isPending }: EventCardP
         <h3 className="event-card__title">{event.title}</h3>
         {event.description ? <p className="event-card__description">{event.description}</p> : null}
         <p className="event-card__meta">
-          {formatStart(event.startTime, event.timezone)}
-          {event.location ? ` · ${event.location}` : ''}
+          <span>{formatStart(event.startTime, event.timezone)}</span>
+          {event.location ? <span>{event.location}</span> : null}
         </p>
         <div className="event-card__capacity">
           <div className="event-card__capacity-track">
@@ -74,8 +80,9 @@ export function EventCard({ event, onRegister, onCancel, isPending }: EventCardP
               size="sm"
               onClick={() => onCancel(event.eventId)}
               disabled={isPending}
+              isLoading={isPending}
             >
-              {isWaitlisted ? 'Waitlisted — cancel' : 'Registered ✓ — cancel'}
+              {isWaitlisted ? 'Waitlisted, cancel' : 'Registered, cancel'}
             </Button>
           ) : (
             <Button

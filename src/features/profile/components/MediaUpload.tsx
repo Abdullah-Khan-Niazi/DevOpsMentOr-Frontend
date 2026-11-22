@@ -110,7 +110,6 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
         >
           Upload avatar
         </Button>
-        <p className="mt-2 text-xs text-muted-foreground">JPEG, PNG or WebP up to 5 MB.</p>
       </div>
 
       <div className="rounded-lg border border-border bg-card p-4">
@@ -148,7 +147,6 @@ export function MediaUpload({ avatarUrl, coverPhotoUrl }: MediaUploadProps) {
         >
           Upload cover
         </Button>
-        <p className="mt-2 text-xs text-muted-foreground">JPEG, PNG or WebP up to 5 MB.</p>
       </div>
     </div>
   );

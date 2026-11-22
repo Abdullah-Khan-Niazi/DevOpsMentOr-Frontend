@@ -1,21 +1,24 @@
-import { EmptyState, ErrorState, LoadingState, PageHeader } from '@/shared/components';
+import { EmptyState, ErrorState, PageHeader } from '@/shared/components';
+import { ReportsPageSkeleton } from '../components/ReportsPageSkeleton';
 import { ReportsList } from '../components';
 import { useReports } from '../hooks';
 
 export default function ReportsPage() {
-  const { data, isLoading, isError, error, refetch } = useReports();
+  const { data, isLoading, isError, error, refetch, isRefetching } = useReports();
   const reports = data ?? [];
+
+  if (isLoading) return <ReportsPageSkeleton />;
 
   return (
     <div>
-      <PageHeader title="Reports" description="Browse generated and scheduled reports." />
+      <PageHeader title="Reports" />
 
-      {isLoading ? <LoadingState label="Loading reports…" /> : null}
-
-      {isError ? <ErrorState message={error.message} onRetry={() => void refetch()} /> : null}
+      {isError ? (
+        <ErrorState error={error} onRetry={() => void refetch()} retrying={isRefetching} />
+      ) : null}
 
       {!isLoading && !isError && reports.length === 0 ? (
-        <EmptyState title="No reports yet" description="Reports will show up here once created." />
+        <EmptyState title="No reports yet" />
       ) : null}
 
       {!isLoading && !isError && reports.length > 0 ? <ReportsList reports={reports} /> : null}

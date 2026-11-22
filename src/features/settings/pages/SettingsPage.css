@@ -3,12 +3,9 @@
 }
 
 .settings-hub__heading {
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  font-weight: 500;
-  letter-spacing: var(--tracking-wide);
-  text-transform: uppercase;
-  color: var(--color-text-tertiary);
+  font-size: var(--text-body-l);
+  font-weight: 600;
+  color: var(--color-text-primary);
   margin: 0 0 var(--space-4);
 }
 
@@ -34,10 +31,4 @@
   font-size: var(--text-body-m);
   font-weight: 500;
   color: var(--color-text-primary);
-}
-
-.settings-hub__card-description {
-  font-size: var(--text-body-s);
-  color: var(--color-text-secondary);
-  line-height: var(--leading-normal);
 }

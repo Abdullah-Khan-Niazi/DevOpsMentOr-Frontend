@@ -1,7 +1,8 @@
 import { Card, PageHeader } from '@/shared/components';
+import { SettingsSkeleton } from './SettingsSkeleton';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
-import { EmptyState, ErrorState, DetailFormSkeleton } from '@/shared/components';
+import { EmptyState, ErrorState } from '@/shared/components';
 import { SettingsForm } from '../components';
 import { useSettings } from '../hooks';
 import './SettingsPage.css';
@@ -10,41 +11,37 @@ const securityLinks = [
   {
     to: ROUTES.PREFERENCES,
     title: 'Preferences',
-    description: 'Theme, timezone and notification defaults.',
   },
   {
     to: ROUTES.SECURITY,
     title: 'Security',
-    description: 'Two-factor authentication and account protection.',
   },
   {
     to: ROUTES.LOGIN_HISTORY,
     title: 'Login history',
-    description: 'Review your recent sign-in attempts.',
   },
   {
     to: ROUTES.API_TOKENS,
     title: 'API tokens',
-    description: 'Personal tokens for programmatic API access.',
   },
   {
     to: ROUTES.VPN_SETTINGS,
     title: 'VPN',
-    description: 'Your lab network assignment and OpenVPN config download.',
   },
   {
     to: ROUTES.BILLING,
     title: 'Billing',
-    description: 'Your subscription, payment methods and order history.',
   },
 ] as const;
 
 export default function SettingsPage() {
-  const { data, isLoading, isError, error, refetch } = useSettings();
+  const { data, isLoading, isError, error, refetch, isRefetching } = useSettings();
+
+  if (isLoading) return <SettingsSkeleton />;
 
   return (
     <div>
-      <PageHeader title="Settings" description="Configure organization preferences." />
+      <PageHeader title="Settings" />
 
       <div className="settings-hub">
         <h2 className="settings-hub__heading">Account security</h2>
@@ -53,7 +50,6 @@ export default function SettingsPage() {
             <Link key={link.to} to={link.to} className="settings-hub__link">
               <Card interactive className="settings-hub__card">
                 <span className="settings-hub__card-title">{link.title}</span>
-                <span className="settings-hub__card-description">{link.description}</span>
               </Card>
             </Link>
           ))}
@@ -62,18 +58,17 @@ export default function SettingsPage() {
 
       <div className="settings-hub">
         <h2 className="settings-hub__heading">Organization</h2>
-        {isLoading ? <DetailFormSkeleton /> : null}
-
-        {isError ? <ErrorState message={error.message} onRetry={() => void refetch()} /> : null}
-
-        {!isLoading && !isError && !data ? (
-          <EmptyState
-            title="Settings unavailable"
-            description="Unable to load settings right now."
+        {isError ? (
+          <ErrorState
+            message={error.message}
+            onRetry={() => void refetch()}
+            retrying={isRefetching}
           />
         ) : null}
 
-        {!isLoading && !isError && data ? <SettingsForm settings={data} /> : null}
+        {!isError && !data ? <EmptyState title="Settings unavailable" icon="settings" /> : null}
+
+        {!isError && data ? <SettingsForm settings={data} /> : null}
       </div>
     </div>
   );

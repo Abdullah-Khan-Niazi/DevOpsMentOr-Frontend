@@ -1,7 +1,9 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Button } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { resolveAssetUrl } from '../services';
 import type { PublicProfile } from '../types';
+import { safeHttpUrl } from '@/shared/utils';
 
 interface ProfileHeaderProps {
   profile: PublicProfile;
@@ -9,6 +11,7 @@ interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({ profile, isOwn }: ProfileHeaderProps) {
+  const navigate = useNavigate();
   const avatar = resolveAssetUrl(profile.avatarUrl);
   const cover = resolveAssetUrl(profile.coverPhotoUrl);
 
@@ -17,7 +20,7 @@ export function ProfileHeader({ profile, isOwn }: ProfileHeaderProps) {
       {cover ? (
         <div
           className="h-28 w-full bg-cover bg-center sm:h-36"
-          style={{ backgroundImage: `url(${cover})` }}
+          style={{ backgroundImage: `url("${cover}")` }}
         />
       ) : (
         <div className="h-28 w-full bg-gradient-to-r from-brand-50 to-slate-100 sm:h-36" />
@@ -38,22 +41,23 @@ export function ProfileHeader({ profile, isOwn }: ProfileHeaderProps) {
           )}
 
           {isOwn ? (
-            <Link
-              to={ROUTES.PROFILE_EDIT}
-              className="rounded-md border border-border bg-card px-3 py-1.5 text-sm font-medium text-card-foreground transition-colors hover:bg-border"
-            >
+            <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.PROFILE_EDIT)}>
               Edit profile
-            </Link>
+            </Button>
           ) : null}
         </div>
 
         <h1 className="mt-3 text-xl font-semibold text-card-foreground">
           {profile.displayName ?? profile.fullName ?? profile.username}
         </h1>
-        <p className="text-sm text-muted">
-          @{profile.username}
-          {profile.occupation ? ` · ${profile.occupation}` : ''}
-          {profile.company ? ` at ${profile.company}` : ''}
+        <p className="flex flex-wrap gap-x-3 text-sm text-muted">
+          <span>@{profile.username}</span>
+          {profile.occupation || profile.company ? (
+            <span>
+              {profile.occupation ?? ''}
+              {profile.company ? `${profile.occupation ? ' at ' : ''}${profile.company}` : ''}
+            </span>
+          ) : null}
         </p>
         {profile.city || profile.country ? (
           <p className="mt-1 text-sm text-muted">
@@ -73,9 +77,9 @@ export function ProfileHeader({ profile, isOwn }: ProfileHeaderProps) {
             <strong className="font-semibold text-card-foreground">{profile.followingCount}</strong>{' '}
             following
           </span>
-          {profile.website ? (
+          {safeHttpUrl(profile.website) ? (
             <a
-              href={profile.website}
+              href={safeHttpUrl(profile.website) ?? undefined}
               target="_blank"
               rel="noopener noreferrer"
               className="text-brand-600 hover:underline"

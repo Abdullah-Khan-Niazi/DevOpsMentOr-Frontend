@@ -13,24 +13,19 @@
 .history-page__table td {
   text-align: left;
   padding: var(--space-3) var(--space-4);
-  border-bottom: 0.0625rem solid var(--color-border);
   font-size: var(--text-body-s);
 }
 
 .history-page__table th {
-  font-family: var(--font-mono);
   font-size: var(--text-caption);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
+  font-weight: 600;
   color: var(--color-text-tertiary);
+}
+
+.history-page__table tbody tr:hover {
+  background: var(--color-bg-sunken);
 }
 
 .history-page__table td {
   color: var(--color-text-primary);
-}
-
-.history-page__hint {
-  margin: 0;
-  font-size: var(--text-body-s);
-  color: var(--color-text-tertiary);
 }

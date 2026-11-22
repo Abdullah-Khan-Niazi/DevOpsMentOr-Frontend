@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '@/shared/components/Icon';
+import { IconButton } from '@/shared/components/IconButton';
 import { ROUTES } from '@/shared/constants';
 import { notificationService } from '../services';
 import type { AnnouncementDto } from '../types';
@@ -73,14 +74,12 @@ export function AnnouncementBanner({ announcements }: AnnouncementBannerProps) {
       <Link to={ROUTES.ANNOUNCEMENTS} className="announcement-banner__link">
         View all
       </Link>
-      <button
-        type="button"
-        className="announcement-banner__dismiss"
-        aria-label="Dismiss announcement"
+      <IconButton
+        icon="x-circle"
+        label="Dismiss announcement"
+        size="sm"
         onClick={() => handleDismiss(active.announcementId)}
-      >
-        <Icon name="x-circle" size={16} />
-      </button>
+      />
     </div>
   );
 }

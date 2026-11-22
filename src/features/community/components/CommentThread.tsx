@@ -1,6 +1,6 @@
 import '../styles/community.css';
 import { useState } from 'react';
-import { Button, Icon, Spinner, toast } from '@/shared/components';
+import { Button, EmptyState, ErrorState, Icon, toast } from '@/shared/components';
 import { useAuthStore } from '@/features/auth';
 import {
   useComments,
@@ -11,6 +11,7 @@ import {
 } from '../hooks/useCommunity';
 import { relativeTime } from '@/features/notifications';
 import { ReportModal } from './ReportModal';
+import { CommentThreadSkeleton } from './CommentThreadSkeleton';
 import type { CommentDto } from '../types';
 
 // SCR-F8-06: embedded comment thread for course/lab/news pages. Max depth
@@ -27,6 +28,7 @@ function CommentRow({
   onLike,
   onUnlike,
   onDelete,
+  isDeleting,
   isReply,
 }: {
   comment: CommentDto;
@@ -34,6 +36,7 @@ function CommentRow({
   onLike: (commentId: number) => void;
   onUnlike: (commentId: number) => void;
   onDelete: (commentId: number) => void;
+  isDeleting: boolean;
   isReply?: boolean;
 }) {
   const user = useAuthStore((state) => state.user);
@@ -68,29 +71,29 @@ function CommentRow({
       <p className="comment-row__content">{comment.content}</p>
       <div className="comment-row__actions">
         {user ? (
-          <button type="button" className="comment-row__action" onClick={handleLike}>
-            <Icon name="award" size={14} />
+          <Button variant="ghost" size="sm" iconName="award" onClick={handleLike}>
             {comment.likesCount + (liked ? 1 : 0)}
-          </button>
+          </Button>
         ) : null}
         {!isReply ? (
-          <button type="button" className="comment-row__action" onClick={() => onReply(comment)}>
+          <Button variant="ghost" size="sm" onClick={() => onReply(comment)}>
             Reply
-          </button>
+          </Button>
         ) : null}
         {isOwn ? (
-          <button
-            type="button"
-            className="comment-row__action comment-row__action--danger"
+          <Button
+            variant="ghost"
+            size="sm"
+            isLoading={isDeleting}
+            disabled={isDeleting}
             onClick={() => onDelete(comment.commentId)}
           >
             Delete
-          </button>
+          </Button>
         ) : null}
-        <button type="button" className="comment-row__action" onClick={() => setReportOpen(true)}>
-          <Icon name="flag" size={14} />
+        <Button variant="ghost" size="sm" iconName="flag" onClick={() => setReportOpen(true)}>
           Report
-        </button>
+        </Button>
       </div>
       <ReportModal
         open={reportOpen}
@@ -104,7 +107,10 @@ function CommentRow({
 
 export function CommentThread({ targetType, targetId }: CommentThreadProps) {
   const user = useAuthStore((state) => state.user);
-  const { data, isLoading, isError } = useComments(targetType, targetId);
+  const { data, isLoading, isError, error, refetch, isRefetching } = useComments(
+    targetType,
+    targetId,
+  );
   const createComment = useCreateComment(targetType, targetId);
   const deleteComment = useDeleteComment(targetType, targetId);
   const like = useLike('comment');
@@ -180,11 +186,17 @@ export function CommentThread({ targetType, targetId }: CommentThreadProps) {
       )}
 
       {isError ? (
-        <p className="comment-thread__error">Could not load comments.</p>
+        <ErrorState
+          title="Could not load comments"
+          error={error}
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+          compact
+        />
       ) : isLoading ? (
-        <Spinner />
+        <CommentThreadSkeleton />
       ) : topLevel.length === 0 ? (
-        <p className="comment-thread__empty">No comments yet.</p>
+        <EmptyState title="No comments yet." icon="chat" className="py-6" />
       ) : (
         <ul className="comment-thread__list">
           {topLevel.map((comment) => (
@@ -196,6 +208,9 @@ export function CommentThread({ targetType, targetId }: CommentThreadProps) {
                 onLike={(id) => like.mutate(id)}
                 onUnlike={(id) => unlike.mutate(id)}
                 onDelete={handleDelete}
+                isDeleting={
+                  deleteComment.isPending && deleteComment.variables === comment.commentId
+                }
               />
               {replies(comment.commentId).map((reply) => (
                 <CommentRow
@@ -206,6 +221,9 @@ export function CommentThread({ targetType, targetId }: CommentThreadProps) {
                   onLike={(id) => like.mutate(id)}
                   onUnlike={(id) => unlike.mutate(id)}
                   onDelete={handleDelete}
+                  isDeleting={
+                    deleteComment.isPending && deleteComment.variables === reply.commentId
+                  }
                 />
               ))}
             </li>
@@ -227,7 +245,12 @@ export function CommentThread({ targetType, targetId }: CommentThreadProps) {
             onChange={(event) => setReplyDraft(event.target.value)}
           />
           <div className="comment-thread__composer-actions">
-            <Button variant="secondary" size="sm" onClick={() => setReplyingTo(null)}>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setReplyingTo(null)}
+              disabled={createComment.isPending}
+            >
               Cancel
             </Button>
             <Button size="sm" onClick={submitReply} isLoading={createComment.isPending}>

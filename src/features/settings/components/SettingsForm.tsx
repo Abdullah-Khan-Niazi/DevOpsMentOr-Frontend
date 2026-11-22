@@ -43,7 +43,7 @@ export function SettingsForm({ settings }: SettingsFormProps) {
   return (
     <form
       onSubmit={handleSubmit(onSubmit)}
-      className="max-w-xl space-y-4 rounded-lg border border-border bg-card p-6"
+      className="space-y-4 rounded-lg border border-border bg-card p-6"
       noValidate
     >
       <Input

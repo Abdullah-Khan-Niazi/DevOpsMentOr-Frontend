@@ -25,12 +25,18 @@
   color: var(--color-text-secondary);
 }
 
-.current-plan__badge {
-  font-family: var(--font-mono);
-  font-size: var(--text-caption);
-  text-transform: uppercase;
-  letter-spacing: var(--tracking-wide);
-  color: var(--color-text-secondary);
+.current-plan__status {
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-tertiary);
+}
+
+.current-plan__status[data-tone='active'] {
+  color: var(--color-success);
+}
+
+.current-plan__status[data-tone='cancelling'] {
+  color: var(--color-warning);
 }
 
 .current-plan__facts {

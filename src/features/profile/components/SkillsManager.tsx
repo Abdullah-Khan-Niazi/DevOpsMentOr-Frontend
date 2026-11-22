@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Button, toast } from '@/shared/components';
+import { Button, EmptyState, IconButton, toast } from '@/shared/components';
 import { useMySkills, useSkillsCatalog } from '../hooks';
 import type { SkillCategory, UserSkill } from '../types';
 
@@ -88,9 +88,6 @@ export function SkillsManager() {
               </option>
             ))}
           </select>
-          {available.length === 0 ? (
-            <p className="input-hint">All catalog skills are on your profile.</p>
-          ) : null}
         </div>
 
         <div>
@@ -139,34 +136,34 @@ export function SkillsManager() {
       </div>
 
       {grouped.length === 0 ? (
-        <p className="text-sm text-muted">No skills added yet — pick from the catalog above.</p>
+        <EmptyState title="No skills added yet." icon="award" className="py-6" />
       ) : (
         <div className="space-y-3">
           {grouped.map(([category, skills]) => (
             <div key={category}>
-              <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
+              <h4 className="mb-2 text-sm font-semibold text-card-foreground">
                 {CATEGORY_LABELS[category] ?? category}
               </h4>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-x-5 gap-y-2">
                 {skills.map((skill) => (
                   <span
                     key={skill.skillId}
-                    className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1 text-xs text-card-foreground font-medium"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-card-foreground"
                   >
                     {skill.skillName}
-                    <span className="text-xs text-muted">
-                      {skill.proficiencyLevel}
-                      {skill.yearsExperience > 0 ? ` · ${skill.yearsExperience}y` : ''}
-                    </span>
-                    <button
-                      type="button"
-                      aria-label={`Remove ${skill.skillName}`}
-                      className="text-muted-foreground transition-colors hover:text-danger"
+                    <span className="text-xs text-muted">{skill.proficiencyLevel}</span>
+                    {skill.yearsExperience > 0 ? (
+                      <span className="text-xs text-muted">{skill.yearsExperience}y</span>
+                    ) : null}
+                    <IconButton
+                      icon="x-circle"
+                      label={`Remove ${skill.skillName}`}
+                      size="sm"
+                      tone="danger"
                       onClick={() => handleRemove(skill.skillId)}
+                      isLoading={removeSkill.isPending && removeSkill.variables === skill.skillId}
                       disabled={removeSkill.isPending}
-                    >
-                      ×
-                    </button>
+                    />
                   </span>
                 ))}
               </div>

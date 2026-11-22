@@ -2,11 +2,12 @@ import '../styles/operations.css';
 import { useState } from 'react';
 import { EmptyState, ErrorState, PageHeader, Pagination, toast } from '@/shared/components';
 import { useAuthStore } from '@/features/auth';
+import { EventsSkeleton } from './EventsSkeleton';
 import { EventCard } from '../components/EventCard';
 import { useCancelRegistration, useEvents, useRegisterEvent } from '../hooks/useOperations';
 import type { EventType } from '../types';
 
-// SCR-F8-04: public events page — filter bar (type + upcoming toggle) over a
+// SCR-F8-04: public events page - filter bar (type + upcoming toggle) over a
 // responsive card grid. Registration requires a session; waitlist toasts
 // surface when capacity is reached server-side.
 
@@ -26,7 +27,10 @@ export function EventsPage() {
   const [page, setPage] = useState(1);
   const [eventType, setEventType] = useState<EventType | 'all'>('all');
   const [upcomingOnly, setUpcomingOnly] = useState(true);
-  const { data, isLoading, isError } = useEvents(page, upcomingOnly);
+  const { data, isLoading, isError, refetch, isRefetching, isPlaceholderData } = useEvents(
+    page,
+    upcomingOnly,
+  );
   const register = useRegisterEvent();
   const cancel = useCancelRegistration();
 
@@ -38,7 +42,7 @@ export function EventsPage() {
     register.mutate(eventId, {
       onSuccess: (result) => {
         if (result.status === 'waitlisted') {
-          toast.success('Event is full — you have been waitlisted.');
+          toast.success('Event is full. You have been waitlisted.');
         } else {
           toast.success('Registered for the event.');
         }
@@ -58,12 +62,11 @@ export function EventsPage() {
     (event) => eventType === 'all' || event.eventType === eventType,
   );
 
+  if (isLoading) return <EventsSkeleton />;
+
   return (
     <div className="events-page">
-      <PageHeader
-        title="Events"
-        description="Webinars, workshops and competitions — register before the deadline."
-      />
+      <PageHeader title="Events" />
 
       <div className="events-page__filters">
         <label className="events-page__filter-label">
@@ -71,7 +74,10 @@ export function EventsPage() {
           <select
             className="events-page__select"
             value={eventType}
-            onChange={(event) => setEventType(event.target.value as EventType | 'all')}
+            onChange={(event) => {
+              setEventType(event.target.value as EventType | 'all');
+              setPage(1);
+            }}
           >
             {TYPE_OPTIONS.map((option) => (
               <option key={option.value} value={option.value}>
@@ -94,15 +100,21 @@ export function EventsPage() {
       </div>
 
       {isError ? (
-        <ErrorState title="Could not load events" message="Please try again later." />
-      ) : isLoading ? (
-        <div className="events-page__grid" aria-hidden="true">
-          {Array.from({ length: 6 }, (_, index) => (
-            <div key={index} className="event-card event-card--skeleton" />
-          ))}
-        </div>
+        <ErrorState
+          title="Could not load events"
+          message="Please try again later."
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+        />
       ) : filtered && filtered.length > 0 ? (
-        <>
+        <div
+          className={
+            isPlaceholderData
+              ? 'events-page__content events-page__content--pending'
+              : 'events-page__content'
+          }
+          aria-busy={isPlaceholderData}
+        >
           <div className="events-page__grid">
             {filtered.map((event) => (
               <EventCard
@@ -121,12 +133,9 @@ export function EventsPage() {
             totalPages={Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE))}
             onPageChange={setPage}
           />
-        </>
+        </div>
       ) : (
-        <EmptyState
-          title="No upcoming events."
-          description="New webinars, workshops and competitions are scheduled regularly."
-        />
+        <EmptyState title="No upcoming events." icon="calendar" />
       )}
     </div>
   );

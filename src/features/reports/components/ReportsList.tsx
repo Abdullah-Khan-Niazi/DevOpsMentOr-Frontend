@@ -18,7 +18,15 @@ export function ReportsList({ reports }: ReportsListProps) {
               Updated {new Date(report.updatedAt).toLocaleString()}
             </p>
           </div>
-          <span className="rounded-sm bg-secondary px-2.5 py-1 text-xs capitalize text-muted">
+          <span
+            className={`text-sm font-medium capitalize ${
+              report.status === 'published'
+                ? 'text-success'
+                : report.status === 'archived'
+                  ? 'text-muted-foreground'
+                  : 'text-warning'
+            }`}
+          >
             {report.status}
           </span>
         </li>
