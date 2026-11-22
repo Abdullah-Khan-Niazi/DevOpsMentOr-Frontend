@@ -1,6 +1,15 @@
 import '../styles/gamification-admin.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
+import {
+  Button,
+  Card,
+  Drawer,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  toast,
+} from '@/shared/components';
+import { AdminBadgesSkeleton } from './AdminBadgesSkeleton';
 import { useAdminBadges } from '../hooks/useAdminGamification';
 import type { BadgeDto, CreateBadgePayload } from '../types';
 
@@ -154,27 +163,21 @@ export function AdminBadgesPage() {
   };
 
   if (query.isLoading) {
-    return <TablePageSkeleton />;
+    return <AdminBadgesSkeleton />;
   }
 
   return (
     <div>
-      <PageHeader
-        title="Badges"
-        description="Create and edit the badge catalog. Hidden badges are never shown to learners."
-        actions={<Button onClick={openCreate}>New badge</Button>}
-      />
+      <PageHeader title="Badges" actions={<Button onClick={openCreate}>New badge</Button>} />
 
       {query.isError ? (
         <ErrorState
           message={query.error?.message ?? 'Could not load the badge catalog.'}
           onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
         />
       ) : (query.data?.length ?? 0) === 0 ? (
-        <EmptyState
-          title="No badges configured"
-          description="Create your first badge to start rewarding learners."
-        />
+        <EmptyState icon="medal" title="No badges configured" />
       ) : (
         <Card>
           <table className="admin-table">
@@ -202,7 +205,13 @@ export function AdminBadgesPage() {
                       <Button variant="secondary" size="sm" onClick={() => openEdit(badge)}>
                         Edit
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => toggleHidden(badge)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => toggleHidden(badge)}
+                        isLoading={update.isPending && update.variables?.badgeId === badge.badgeId}
+                        disabled={update.isPending}
+                      >
                         {badge.isHidden ? 'Unhide' : 'Hide'}
                       </Button>
                     </div>
@@ -215,9 +224,23 @@ export function AdminBadgesPage() {
       )}
 
       {draft ? (
-        <div className="modal-backdrop">
-          <Card className="gamification-admin__form">
-            <h2>{editing ? 'Edit badge' : 'New badge'}</h2>
+        <Drawer
+          open
+          onClose={close}
+          title={editing ? 'Edit badge' : 'New badge'}
+          busy={saving}
+          footer={(requestClose) => (
+            <>
+              <Button variant="ghost" onClick={requestClose}>
+                Cancel
+              </Button>
+              <Button onClick={save} isLoading={saving}>
+                {editing ? 'Save changes' : 'Create badge'}
+              </Button>
+            </>
+          )}
+        >
+          <div className="gamification-admin__form">
             <div className="gamification-admin__grid">
               <label className="input-label">
                 Badge name
@@ -323,16 +346,8 @@ export function AdminBadgesPage() {
               />
               Hidden from learners
             </label>
-            <div className="gamification-admin__actions">
-              <Button variant="ghost" onClick={close}>
-                Cancel
-              </Button>
-              <Button onClick={save} isLoading={saving}>
-                {editing ? 'Save changes' : 'Create badge'}
-              </Button>
-            </div>
-          </Card>
-        </div>
+          </div>
+        </Drawer>
       ) : null}
     </div>
   );

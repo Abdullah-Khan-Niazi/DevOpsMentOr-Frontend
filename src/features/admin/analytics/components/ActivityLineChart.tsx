@@ -8,6 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
+import { EmptyState } from '@/shared/components';
 import { TELEMETRY_TOKENS, SURFACE_TOKENS } from '@/shared/constants';
 
 export interface ActivityTrendPoint {
@@ -50,12 +51,11 @@ export function ActivityLineChart({
 
   if (!data || data.length === 0) {
     return (
-      <div
-        className={`flex items-center justify-center border border-dashed border-border text-xs text-muted font-mono ${className}`}
-        style={{ height }}
-      >
-        No activity trend recorded for this period.
-      </div>
+      <EmptyState
+        icon="history"
+        title="No activity recorded for this period"
+        className={className}
+      />
     );
   }
 
@@ -169,9 +169,8 @@ export function ActivityLineChart({
                 if (!active || !payload || payload.length === 0) return null;
                 return (
                   <div className="border border-border bg-surface p-2.5 shadow-xl font-mono text-xs rounded-lg">
-                    <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-1.5 flex items-center justify-between gap-4">
+                    <div className="font-bold text-card-foreground mb-2">
                       <span>Date: {label}</span>
-                      <span className="text-[0.625rem] text-muted font-normal">Daily Total</span>
                     </div>
                     <div className="space-y-1">
                       {payload.map((entry) => (

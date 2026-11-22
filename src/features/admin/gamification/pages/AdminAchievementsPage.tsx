@@ -1,6 +1,15 @@
 import '../styles/gamification-admin.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
+import {
+  Button,
+  Card,
+  Drawer,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  toast,
+} from '@/shared/components';
+import { AdminAchievementsSkeleton } from './AdminAchievementsSkeleton';
 import { useAdminAchievements } from '../hooks/useAdminGamification';
 import type { CreateAchievementPayload } from '../types';
 
@@ -122,14 +131,13 @@ export function AdminAchievementsPage() {
   };
 
   if (query.isLoading) {
-    return <TablePageSkeleton />;
+    return <AdminAchievementsSkeleton />;
   }
 
   return (
     <div>
       <PageHeader
         title="Achievements"
-        description="Create and edit achievement rules evaluated against learner progress."
         actions={<Button onClick={openCreate}>New achievement</Button>}
       />
 
@@ -137,12 +145,10 @@ export function AdminAchievementsPage() {
         <ErrorState
           message={query.error?.message ?? 'Could not load the achievement catalog.'}
           onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
         />
       ) : (query.data?.length ?? 0) === 0 ? (
-        <EmptyState
-          title="No achievements configured"
-          description="Define achievement rules to reward milestones."
-        />
+        <EmptyState icon="award" title="No achievements configured" />
       ) : (
         <Card>
           <table className="admin-table">
@@ -180,6 +186,11 @@ export function AdminAchievementsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleActive(achievement.achievementId)}
+                        isLoading={
+                          update.isPending &&
+                          update.variables?.achievementId === achievement.achievementId
+                        }
+                        disabled={update.isPending}
                       >
                         {achievement.isActive ? 'Deactivate' : 'Activate'}
                       </Button>
@@ -193,9 +204,23 @@ export function AdminAchievementsPage() {
       )}
 
       {draft ? (
-        <div className="modal-backdrop">
-          <Card className="gamification-admin__form">
-            <h2>{editingId !== null ? 'Edit achievement' : 'New achievement'}</h2>
+        <Drawer
+          open
+          onClose={close}
+          title={editingId !== null ? 'Edit achievement' : 'New achievement'}
+          busy={saving}
+          footer={(requestClose) => (
+            <>
+              <Button variant="ghost" onClick={requestClose}>
+                Cancel
+              </Button>
+              <Button onClick={save} isLoading={saving}>
+                {editingId !== null ? 'Save changes' : 'Create achievement'}
+              </Button>
+            </>
+          )}
+        >
+          <div className="gamification-admin__form">
             <label className="input-label">
               Name
               <input
@@ -262,16 +287,8 @@ export function AdminAchievementsPage() {
               />
               Active
             </label>
-            <div className="gamification-admin__actions">
-              <Button variant="ghost" onClick={close}>
-                Cancel
-              </Button>
-              <Button onClick={save} isLoading={saving}>
-                {editingId !== null ? 'Save changes' : 'Create achievement'}
-              </Button>
-            </div>
-          </Card>
-        </div>
+          </div>
+        </Drawer>
       ) : null}
     </div>
   );

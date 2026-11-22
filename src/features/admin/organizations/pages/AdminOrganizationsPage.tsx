@@ -8,10 +8,11 @@ import {
   Input,
   PageHeader,
   Pagination,
-  Skeleton,
+  Drawer,
   toast,
 } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
+import { AdminOrganizationsSkeleton } from './AdminOrganizationsSkeleton';
 import { useAdminOrganizations, useCreateOrganization } from '../hooks';
 import type { CreateOrgPayload } from '../hooks';
 
@@ -56,7 +57,7 @@ export function AdminOrganizationsPage() {
     return () => clearTimeout(timer);
   }, [draft, search]);
 
-  const { data, isLoading, isError, error, refetch } = useAdminOrganizations({
+  const { data, isLoading, isError, error, refetch, isRefetching } = useAdminOrganizations({
     search: search || undefined,
     page,
     pageSize: PAGE_SIZE,
@@ -119,10 +120,14 @@ export function AdminOrganizationsPage() {
     );
   };
 
+  // Reference time for the created-at window, fixed at mount so the memo stays pure
+  const [referenceNow] = useState(() => Date.now());
+
   // Filter organizations client-side with rich multi-criteria and sorting
   const filteredOrgs = useMemo(() => {
-    if (!data?.data) return [];
-    let list = [...data.data];
+    const source = data?.data;
+    if (!source) return [];
+    let list = [...source];
 
     if (selectedIndustry !== 'all') {
       list = list.filter((org) => org.industry?.toLowerCase() === selectedIndustry.toLowerCase());
@@ -135,7 +140,7 @@ export function AdminOrganizationsPage() {
     }
 
     if (timeFilter !== 'all') {
-      const now = Date.now();
+      const now = referenceNow;
       const cutoffDays = timeFilter === '30d' ? 30 : timeFilter === '90d' ? 90 : 365;
       const cutoffTime = now - cutoffDays * 86_400_000;
       list = list.filter((org) => new Date(org.createdAt).getTime() >= cutoffTime);
@@ -152,7 +157,7 @@ export function AdminOrganizationsPage() {
     });
 
     return list;
-  }, [data?.data, selectedIndustry, billingFilter, timeFilter, sortBy]);
+  }, [data, referenceNow, selectedIndustry, billingFilter, timeFilter, sortBy]);
 
   // Unique industries for filter dropdown
   const availableIndustries = useMemo(() => {
@@ -162,15 +167,15 @@ export function AdminOrganizationsPage() {
       if (org.industry) set.add(org.industry);
     });
     return Array.from(set);
-  }, [data?.data]);
+  }, [data]);
 
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
         title="Organizations"
         actions={
-          <Button variant="primary" size="sm" onClick={openCreateDrawer}>
-            + New Organization
+          <Button variant="primary" size="sm" iconName="plus" onClick={openCreateDrawer}>
+            New organization
           </Button>
         }
       />
@@ -203,7 +208,7 @@ export function AdminOrganizationsPage() {
             id="org-sort-filter"
             className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
             value={sortBy}
-            onChange={(e) => setSortBy(e.target.value as any)}
+            onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
           >
             <option value="newest">Newest First</option>
             <option value="oldest">Oldest First</option>
@@ -215,7 +220,7 @@ export function AdminOrganizationsPage() {
             id="org-billing-filter"
             className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
             value={billingFilter}
-            onChange={(e) => setBillingFilter(e.target.value as any)}
+            onChange={(e) => setBillingFilter(e.target.value as typeof billingFilter)}
           >
             <option value="all">All Contacts</option>
             <option value="with_billing">Has Billing</option>
@@ -226,7 +231,7 @@ export function AdminOrganizationsPage() {
             id="org-time-filter"
             className="filter-input flex-initial min-w-0 transition-colors focus:border-accent"
             value={timeFilter}
-            onChange={(e) => setTimeFilter(e.target.value as any)}
+            onChange={(e) => setTimeFilter(e.target.value as typeof timeFilter)}
           >
             <option value="all">All Time</option>
             <option value="30d">Past 30D</option>
@@ -264,34 +269,17 @@ export function AdminOrganizationsPage() {
           <ErrorState
             message={error?.message ?? 'Unable to load organizations.'}
             onRetry={() => void refetch()}
+            retrying={isRefetching}
           />
         ) : isLoading ? (
-          <div className="w-full max-w-full overflow-x-auto">
-            <div className="divide-y divide-border/60">
-              {Array.from({ length: 8 }, (_, i) => (
-                <div key={i} className="flex items-center justify-between px-3 py-3">
-                  <div className="space-y-1.5 w-1/3">
-                    <Skeleton className="h-4 w-40 rounded-xs" />
-                    <Skeleton className="h-3 w-48 rounded-xs" />
-                  </div>
-                  <Skeleton className="h-4 w-28 rounded-xs" />
-                  <Skeleton className="h-4 w-24 rounded-xs" />
-                  <Skeleton className="h-4 w-20 rounded-xs" />
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdminOrganizationsSkeleton />
         ) : filteredOrgs.length === 0 ? (
           <EmptyState
+            icon="organization"
             title={
               search || selectedIndustry !== 'all'
                 ? 'No matching organizations'
                 : 'No organizations yet'
-            }
-            description={
-              search || selectedIndustry !== 'all'
-                ? 'Try a different search term or filter.'
-                : 'Create the first organization to get started.'
             }
             action={
               !search && selectedIndustry === 'all' ? (
@@ -304,7 +292,7 @@ export function AdminOrganizationsPage() {
             <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+                  <tr className="text-xs uppercase tracking-wide text-muted">
                     <th className="px-3 py-2 font-medium">Organization</th>
                     <th className="px-3 py-2 font-medium">Slug</th>
                     <th className="px-3 py-2 font-medium">Industry</th>
@@ -323,7 +311,7 @@ export function AdminOrganizationsPage() {
                           ),
                         )
                       }
-                      className="border-b border-border/60 last:border-0 hover:bg-surface/80 active:bg-surface-hover/60 cursor-pointer transition-colors group"
+                      className="hover:bg-surface/80 active:bg-surface-hover/60 cursor-pointer transition-colors group"
                     >
                       <td className="px-3 py-3">
                         <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
@@ -358,130 +346,98 @@ export function AdminOrganizationsPage() {
         )}
       </Card>
 
-      {/* Right Slide-Over Drawer for New Organization */}
-      {isDrawerOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-            onClick={closeCreateDrawer}
+      <Drawer
+        open={isDrawerOpen}
+        onClose={closeCreateDrawer}
+        title="New organization"
+        dirty={JSON.stringify(form) !== JSON.stringify(EMPTY_FORM)}
+        busy={create.isPending}
+        footer={(requestClose) => (
+          <>
+            <Button variant="secondary" onClick={requestClose} disabled={create.isPending}>
+              Cancel
+            </Button>
+            <Button onClick={submitCreate} isLoading={create.isPending}>
+              Create organization
+            </Button>
+          </>
+        )}
+      >
+        <div className="space-y-4">
+          <Input
+            label="Organization name"
+            placeholder="e.g. Acme University"
+            value={form.name}
+            error={nameError ?? undefined}
+            onChange={(e) => {
+              if (nameError) setNameError(null);
+              const name = e.target.value;
+              const slug = name
+                .toLowerCase()
+                .replace(/[^a-z0-9]+/g, '-')
+                .replace(/^-|-$/g, '');
+              setForm({
+                ...form,
+                name,
+                slug:
+                  form.slug === '' ||
+                  form.slug ===
+                    form.name
+                      .toLowerCase()
+                      .replace(/[^a-z0-9]+/g, '-')
+                      .replace(/^-|-$/g, '')
+                    ? slug
+                    : form.slug,
+              });
+            }}
+            required
           />
-
-          {/* Drawer Container */}
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-card border-l border-border rounded-l-md p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-border pb-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-card-foreground">New Organization</h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={closeCreateDrawer}
-                    className="p-1.5 text-muted hover:text-card-foreground transition-colors"
-                    aria-label="Close drawer"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <Input
-                    label="Organization name"
-                    placeholder="e.g. Acme University"
-                    value={form.name}
-                    error={nameError ?? undefined}
-                    onChange={(e) => {
-                      if (nameError) setNameError(null);
-                      const name = e.target.value;
-                      const slug = name
-                        .toLowerCase()
-                        .replace(/[^a-z0-9]+/g, '-')
-                        .replace(/^-|-$/g, '');
-                      setForm({
-                        ...form,
-                        name,
-                        slug:
-                          form.slug === '' ||
-                          form.slug ===
-                            form.name
-                              .toLowerCase()
-                              .replace(/[^a-z0-9]+/g, '-')
-                              .replace(/^-|-$/g, '')
-                            ? slug
-                            : form.slug,
-                      });
-                    }}
-                    required
-                  />
-                  <Input
-                    label="URL slug"
-                    placeholder="e.g. acme-university"
-                    value={form.slug}
-                    error={slugError ?? undefined}
-                    onChange={(e) => {
-                      if (slugError) setSlugError(null);
-                      setForm({ ...form, slug: e.target.value });
-                    }}
-                    hint="Unique lowercase identifier used in platform workspaces."
-                    required
-                  />
-                  <div>
-                    <label htmlFor="drawer-org-desc" className="input-label">
-                      Description
-                    </label>
-                    <textarea
-                      id="drawer-org-desc"
-                      rows={3}
-                      className="input-field w-full"
-                      placeholder="Brief description of the tenant or department…"
-                      value={form.description ?? ''}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
-                    />
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <Input
-                      label="Website"
-                      placeholder="https://acme.edu"
-                      value={form.website ?? ''}
-                      onChange={(e) => setForm({ ...form, website: e.target.value })}
-                    />
-                    <Input
-                      label="Industry"
-                      placeholder="Higher Education, Enterprise"
-                      value={form.industry ?? ''}
-                      onChange={(e) => setForm({ ...form, industry: e.target.value })}
-                    />
-                  </div>
-                  <Input
-                    label="Billing email"
-                    type="email"
-                    placeholder="finance@acme.edu"
-                    value={form.billingEmail ?? ''}
-                    onChange={(e) => setForm({ ...form, billingEmail: e.target.value })}
-                  />
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border mt-6">
-                <Button variant="secondary" onClick={closeCreateDrawer}>
-                  Cancel
-                </Button>
-                <Button onClick={submitCreate} isLoading={create.isPending}>
-                  Create organization
-                </Button>
-              </div>
-            </div>
+          <Input
+            label="URL slug"
+            placeholder="e.g. acme-university"
+            value={form.slug}
+            error={slugError ?? undefined}
+            onChange={(e) => {
+              if (slugError) setSlugError(null);
+              setForm({ ...form, slug: e.target.value });
+            }}
+            required
+          />
+          <div>
+            <label htmlFor="drawer-org-desc" className="input-label">
+              Description
+            </label>
+            <textarea
+              id="drawer-org-desc"
+              rows={3}
+              className="input-field w-full"
+              value={form.description ?? ''}
+              onChange={(e) => setForm({ ...form, description: e.target.value })}
+            />
           </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <Input
+              label="Website"
+              placeholder="https://acme.edu"
+              value={form.website ?? ''}
+              onChange={(e) => setForm({ ...form, website: e.target.value })}
+            />
+            <Input
+              label="Industry"
+              placeholder="Higher Education, Enterprise"
+              value={form.industry ?? ''}
+              onChange={(e) => setForm({ ...form, industry: e.target.value })}
+            />
+          </div>
+          <Input
+            label="Billing email"
+            type="email"
+            placeholder="finance@acme.edu"
+            value={form.billingEmail ?? ''}
+            onChange={(e) => setForm({ ...form, billingEmail: e.target.value })}
+          />
         </div>
-      )}
+      </Drawer>
     </div>
   );
 }

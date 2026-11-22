@@ -202,8 +202,8 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
                   : '12px',
               }}
             >
-              <div className="flex items-center gap-2 mb-1.5 pb-1 border-b border-border/60">
-                <span className="px-1.5 py-0.5 bg-accent text-accent-foreground font-bold text-[0.625rem]">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-accent font-bold text-[0.625rem]">
                   {hoveredCountry.countryCode}
                 </span>
                 <span className="font-semibold text-card-foreground">
@@ -248,7 +248,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
               <span className="w-3 h-2 bg-accent/70" />
               <span className="w-3 h-2 bg-accent" />
             </div>
-            <span>Darker = More Users</span>
+            <span>More Learners</span>
           </div>
         </div>
       </div>
@@ -274,9 +274,7 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 min-w-0">
-                  <span className="px-1 py-0.5 border border-border bg-surface text-[0.625rem] font-bold">
-                    {c.countryCode}
-                  </span>
+                  <span className="text-accent text-[0.625rem] font-bold">{c.countryCode}</span>
                   <span className="text-card-foreground font-medium truncate text-[0.6875rem]">
                     {c.countryName || getCountryName(c.countryCode)}
                   </span>

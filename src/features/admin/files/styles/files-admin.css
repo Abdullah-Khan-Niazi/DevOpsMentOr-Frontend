@@ -1,5 +1,5 @@
 /* ─── F8 Admin Files (SCR-F8-17) ───────────────────────────────────────────── */
-/* Dual-theme tokens only — zero hardcoded hex values. */
+/* Dual-theme tokens only - zero hardcoded hex values. */
 
 .files-admin-page {
   display: flex;
@@ -57,20 +57,22 @@
 }
 
 .files-admin-page__item-visibility {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--color-bg-sunken);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--color-text-tertiary);
   font-size: var(--text-caption);
   font-weight: 600;
 }
 
 .files-admin-page__item-visibility[data-public='true'] {
-  background: var(--color-accent-950);
-  color: var(--color-accent-400);
+  color: var(--color-success);
 }
 
 .files-admin-page__item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
   margin-top: var(--space-2);
   color: var(--color-text-tertiary);
   font-size: 0.8125rem;

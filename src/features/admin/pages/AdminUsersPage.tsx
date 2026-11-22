@@ -1,12 +1,22 @@
 import { useState, useEffect, useRef } from 'react';
 import { useMutation } from '@tanstack/react-query';
-import { Button, Card, ErrorState, PageHeader, Pagination, toast } from '@/shared/components';
+import {
+  Button,
+  Card,
+  Drawer,
+  ErrorState,
+  PageHeader,
+  Pagination,
+  toast,
+  Icon,
+} from '@/shared/components';
 import { cn } from '@/shared/utils';
 import { apiClient } from '@/shared/services';
 import { useAdminUsers } from '../hooks';
 import { useAdminOrganizations } from '../organizations/hooks';
 import { adminService } from '../services';
 import { AdminUserTable } from '../components/AdminUserTable';
+import { AdminUsersSkeleton } from './AdminUsersSkeleton';
 
 const PAGE_SIZE = 25;
 
@@ -161,7 +171,7 @@ export function AdminUsersPage() {
           : ('false' as const),
   };
 
-  const { data, isLoading, isError, error, refetch } = useAdminUsers(queryParams);
+  const { data, isLoading, isError, error, refetch, isRefetching } = useAdminUsers(queryParams);
 
   const inviteMutation = useMutation({
     mutationFn: (payload: {
@@ -241,6 +251,23 @@ export function AdminUsersPage() {
       country: undefined,
     });
   };
+
+  const closeInvite = () => {
+    setIsInviteOpen(false);
+    setInviteEmailError(null);
+    setInviteOrgError(null);
+  };
+
+  const pristineFilters =
+    draft === '' &&
+    filters.page === 1 &&
+    !filters.search &&
+    !filters.role &&
+    !filters.organizationId &&
+    !filters.country &&
+    filters.status === 'active';
+
+  if (isLoading && pristineFilters) return <AdminUsersSkeleton />;
 
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
@@ -345,10 +372,7 @@ export function AdminUsersPage() {
         </div>
 
         {isError ? (
-          <ErrorState
-            message={error?.message ?? 'Unable to load users.'}
-            onRetry={() => void refetch()}
-          />
+          <ErrorState error={error} onRetry={() => void refetch()} retrying={isRefetching} />
         ) : (
           <>
             <AdminUserTable users={data?.data ?? []} isLoading={isLoading} />
@@ -365,285 +389,194 @@ export function AdminUsersPage() {
         )}
       </Card>
 
-      {/* Right Slide-Over Drawer for Inviting User(s) */}
-      {isInviteOpen && (
-        <div className="fixed inset-0 z-50 overflow-hidden">
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity"
-            onClick={() => setIsInviteOpen(false)}
-          />
+      <Drawer
+        open={isInviteOpen}
+        onClose={closeInvite}
+        title="Invite User(s)"
+        size="md"
+        dirty={inviteEmails.trim().length > 0}
+        busy={inviteMutation.isPending}
+        footer={(requestClose) => (
+          <>
+            <Button variant="secondary" onClick={requestClose} disabled={inviteMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendInvites}
+              isLoading={inviteMutation.isPending}
+              disabled={inviteMutation.isPending}
+            >
+              Send Invitations
+            </Button>
+          </>
+        )}
+      >
+        <div className="space-y-4">
+          <div>
+            <label className="input-label">Learner Type</label>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              <button
+                type="button"
+                onClick={() => {
+                  setInviteType('individual_learner');
+                  setInviteRole('individual_learner');
+                  setInviteOrgError(null);
+                }}
+                className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
+                  inviteType === 'individual_learner'
+                    ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold shadow-xs'
+                    : 'border-border bg-surface text-card-foreground hover:bg-surface-hover/60'
+                }`}
+              >
+                <div className="text-sm font-medium">Individual Learner</div>
+              </button>
 
-          <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-            <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-md">
-              <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-border pb-4">
-                  <div>
-                    <h2 className="text-lg font-bold text-card-foreground">Invite User(s)</h2>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setIsInviteOpen(false);
-                      setInviteEmailError(null);
-                      setInviteOrgError(null);
-                    }}
-                    className="p-1.5 text-muted hover:text-card-foreground transition-colors cursor-pointer rounded-xs"
-                    aria-label="Close drawer"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="input-label">Learner Type</label>
-                    <div className="grid grid-cols-2 gap-2 mt-1">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInviteType('individual_learner');
-                          setInviteRole('individual_learner');
-                          setInviteOrgError(null);
-                        }}
-                        className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
-                          inviteType === 'individual_learner'
-                            ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold shadow-xs'
-                            : 'border-border bg-surface text-card-foreground hover:bg-surface-hover/60'
-                        }`}
-                      >
-                        <div className="text-sm font-medium">Individual Learner</div>
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setInviteType('organization');
-                          setInviteRole('org_student');
-                        }}
-                        className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
-                          inviteType === 'organization'
-                            ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold shadow-xs'
-                            : 'border-border bg-surface text-card-foreground hover:bg-surface-hover/60'
-                        }`}
-                      >
-                        <div className="text-sm font-medium">Organization Member</div>
-                      </button>
-                    </div>
-                  </div>
-
-                  {inviteType === 'organization' && (
-                    <>
-                      <div>
-                        <label htmlFor="invite-org-select" className="input-label">
-                          Organization
-                        </label>
-                        <select
-                          id="invite-org-select"
-                          className={cn(
-                            'input-field w-full mt-1 rounded-md transition-colors',
-                            inviteOrgError &&
-                              'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5',
-                          )}
-                          value={inviteOrgId ?? ''}
-                          onChange={(e) => {
-                            setInviteOrgId(e.target.value ? Number(e.target.value) : undefined);
-                            if (inviteOrgError) setInviteOrgError(null);
-                          }}
-                        >
-                          <option value="">Select Organization…</option>
-                          {orgsData?.data.map((org) => (
-                            <option key={org.organizationId} value={org.organizationId}>
-                              {org.name}
-                            </option>
-                          ))}
-                        </select>
-                        {inviteOrgError ? (
-                          <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
-                            <svg
-                              className="w-3.5 h-3.5 shrink-0"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                              <line
-                                x1="12"
-                                y1="8"
-                                x2="12"
-                                y2="12"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                              />
-                              <line
-                                x1="12"
-                                y1="16"
-                                x2="12.01"
-                                y2="16"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                              />
-                            </svg>
-                            {inviteOrgError}
-                          </p>
-                        ) : null}
-                      </div>
-
-                      <div>
-                        <label htmlFor="invite-role-select" className="input-label">
-                          Assigned Role
-                        </label>
-                        <select
-                          id="invite-role-select"
-                          className="input-field w-full mt-1 rounded-md"
-                          value={inviteRole}
-                          onChange={(e) =>
-                            setInviteRole(
-                              e.target.value as 'org_student' | 'org_admin' | 'professor',
-                            )
-                          }
-                        >
-                          <option value="org_student">Student (org_student)</option>
-                          <option value="professor">Professor (professor)</option>
-                          <option value="org_admin">Organization Admin (org_admin)</option>
-                        </select>
-                      </div>
-                    </>
-                  )}
-
-                  <div>
-                    <div className="flex items-center justify-between">
-                      <label className="input-label mb-0">Import from CSV File</label>
-                      <button
-                        type="button"
-                        onClick={handleDownloadSampleCsv}
-                        className="text-xs font-mono text-brand-600 hover:underline cursor-pointer"
-                      >
-                        ↓ Download Sample CSV
-                      </button>
-                    </div>
-                    <div
-                      onDragOver={(e) => {
-                        e.preventDefault();
-                        setIsDraggingCsv(true);
-                      }}
-                      onDragLeave={(e) => {
-                        e.preventDefault();
-                        setIsDraggingCsv(false);
-                      }}
-                      onDrop={(e) => {
-                        e.preventDefault();
-                        setIsDraggingCsv(false);
-                        void handleCsvFile(e.dataTransfer.files);
-                      }}
-                      onClick={() => fileInputRef.current?.click()}
-                      className={`mt-1 border border-dashed p-3 text-center cursor-pointer transition-colors rounded-md ${
-                        isDraggingCsv
-                          ? 'border-brand-600 bg-brand-50/20'
-                          : 'border-border bg-surface/50 hover:bg-surface'
-                      }`}
-                    >
-                      <input
-                        ref={fileInputRef}
-                        type="file"
-                        accept=".csv,text/csv"
-                        className="hidden"
-                        onChange={(e) => void handleCsvFile(e.target.files)}
-                      />
-                      <div className="text-xs font-medium text-card-foreground">
-                        Drag & drop a CSV file here, or{' '}
-                        <span className="text-brand-600 underline">browse</span>
-                      </div>
-                      <div className="text-[0.6875rem] text-muted mt-0.5">
-                        Accepts format:{' '}
-                        <span className="font-mono text-card-foreground">email,role,fullName</span>{' '}
-                        (roles: student, professor, admin) or list of emails.
-                      </div>
-                      {csvParsedCount !== null && (
-                        <div className="mt-1.5 text-xs text-card-foreground font-semibold">
-                          ✓ Imported {csvParsedCount} email(s) from CSV
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  <div>
-                    <label htmlFor="invite-emails-area" className="input-label">
-                      Email Address(es)
-                    </label>
-                    <textarea
-                      id="invite-emails-area"
-                      rows={4}
-                      className={cn(
-                        'input-field w-full mt-1 font-mono text-xs rounded-lg transition-colors',
-                        inviteEmailError &&
-                          'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5',
-                      )}
-                      placeholder="student1@example.com&#10;student2@example.com, student3@example.com"
-                      value={inviteEmails}
-                      onChange={(e) => {
-                        setInviteEmails(e.target.value);
-                        if (inviteEmailError) setInviteEmailError(null);
-                      }}
-                    />
-                    {inviteEmailError ? (
-                      <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
-                        <svg
-                          className="w-3.5 h-3.5 shrink-0"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                        >
-                          <circle cx="12" cy="12" r="10" strokeWidth="2" />
-                          <line
-                            x1="12"
-                            y1="8"
-                            x2="12"
-                            y2="12"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                          <line
-                            x1="12"
-                            y1="16"
-                            x2="12.01"
-                            y2="16"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                        {inviteEmailError}
-                      </p>
-                    ) : null}
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border mt-6">
-                <Button
-                  variant="secondary"
-                  onClick={() => {
-                    setIsInviteOpen(false);
-                    setInviteEmailError(null);
-                    setInviteOrgError(null);
-                  }}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleSendInvites} isLoading={inviteMutation.isPending}>
-                  Send Invitations
-                </Button>
-              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setInviteType('organization');
+                  setInviteRole('org_student');
+                }}
+                className={`border p-3 text-left transition-colors rounded-md cursor-pointer ${
+                  inviteType === 'organization'
+                    ? 'border-brand-600 bg-brand-50/10 text-brand-600 font-semibold shadow-xs'
+                    : 'border-border bg-surface text-card-foreground hover:bg-surface-hover/60'
+                }`}
+              >
+                <div className="text-sm font-medium">Organization Member</div>
+              </button>
             </div>
           </div>
+
+          {inviteType === 'organization' && (
+            <>
+              <div>
+                <label htmlFor="invite-org-select" className="input-label">
+                  Organization
+                </label>
+                <select
+                  id="invite-org-select"
+                  className={cn(
+                    'input-field w-full mt-1 rounded-md transition-colors',
+                    inviteOrgError &&
+                      'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5',
+                  )}
+                  value={inviteOrgId ?? ''}
+                  onChange={(e) => {
+                    setInviteOrgId(e.target.value ? Number(e.target.value) : undefined);
+                    if (inviteOrgError) setInviteOrgError(null);
+                  }}
+                >
+                  <option value="">Select Organization…</option>
+                  {orgsData?.data.map((org) => (
+                    <option key={org.organizationId} value={org.organizationId}>
+                      {org.name}
+                    </option>
+                  ))}
+                </select>
+                {inviteOrgError ? (
+                  <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
+                    <Icon name="warning" size={14} className="shrink-0" />
+                    {inviteOrgError}
+                  </p>
+                ) : null}
+              </div>
+
+              <div>
+                <label htmlFor="invite-role-select" className="input-label">
+                  Assigned Role
+                </label>
+                <select
+                  id="invite-role-select"
+                  className="input-field w-full mt-1 rounded-md"
+                  value={inviteRole}
+                  onChange={(e) =>
+                    setInviteRole(e.target.value as 'org_student' | 'org_admin' | 'professor')
+                  }
+                >
+                  <option value="org_student">Student (org_student)</option>
+                  <option value="professor">Professor (professor)</option>
+                  <option value="org_admin">Organization Admin (org_admin)</option>
+                </select>
+              </div>
+            </>
+          )}
+
+          <div>
+            <div className="flex items-center justify-between">
+              <label className="input-label mb-0">Import from CSV File</label>
+              <Button type="button" variant="ghost" size="sm" onClick={handleDownloadSampleCsv}>
+                Download sample CSV
+              </Button>
+            </div>
+            <div
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDraggingCsv(true);
+              }}
+              onDragLeave={(e) => {
+                e.preventDefault();
+                setIsDraggingCsv(false);
+              }}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDraggingCsv(false);
+                void handleCsvFile(e.dataTransfer.files);
+              }}
+              onClick={() => fileInputRef.current?.click()}
+              className={`mt-1 border border-dashed p-3 text-center cursor-pointer transition-colors rounded-md ${
+                isDraggingCsv
+                  ? 'border-brand-600 bg-brand-50/20'
+                  : 'border-border bg-surface/50 hover:bg-surface'
+              }`}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".csv,text/csv"
+                className="hidden"
+                onChange={(e) => void handleCsvFile(e.target.files)}
+              />
+              <div className="text-xs font-medium text-card-foreground">
+                Drag & drop a CSV file here, or{' '}
+                <span className="text-brand-600 underline">browse</span>
+              </div>
+              {csvParsedCount !== null && (
+                <div className="mt-1.5 text-xs text-card-foreground font-semibold">
+                  Imported {csvParsedCount} email(s) from CSV
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <label htmlFor="invite-emails-area" className="input-label">
+              Email Address(es)
+            </label>
+            <textarea
+              id="invite-emails-area"
+              rows={4}
+              className={cn(
+                'input-field w-full mt-1 font-mono text-xs rounded-lg transition-colors',
+                inviteEmailError &&
+                  'border-signal outline-signal focus:border-signal focus:ring-1 focus:ring-signal bg-signal/5',
+              )}
+              placeholder="student1@example.com&#10;student2@example.com, student3@example.com"
+              value={inviteEmails}
+              onChange={(e) => {
+                setInviteEmails(e.target.value);
+                if (inviteEmailError) setInviteEmailError(null);
+              }}
+            />
+            {inviteEmailError ? (
+              <p className="mt-1.5 text-xs text-signal font-medium flex items-center gap-1">
+                <Icon name="warning" size={14} className="shrink-0" />
+                {inviteEmailError}
+              </p>
+            ) : null}
+          </div>
         </div>
-      )}
+      </Drawer>
     </div>
   );
 }

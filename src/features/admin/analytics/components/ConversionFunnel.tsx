@@ -1,3 +1,4 @@
+import { EmptyState } from '@/shared/components';
 import type { FunnelStageDto } from '../types';
 
 interface ConversionFunnelProps {
@@ -6,11 +7,7 @@ interface ConversionFunnelProps {
 
 export function ConversionFunnel({ stages }: ConversionFunnelProps) {
   if (!stages || stages.length === 0) {
-    return (
-      <div className="flex h-40 items-center justify-center border border-dashed border-border text-xs text-muted font-mono">
-        No funnel data available yet.
-      </div>
-    );
+    return <EmptyState title="No funnel data available yet" />;
   }
 
   return (

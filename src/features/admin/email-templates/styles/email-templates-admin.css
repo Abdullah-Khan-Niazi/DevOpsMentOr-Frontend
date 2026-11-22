@@ -1,5 +1,5 @@
 /* ─── F8 Admin Email Templates (SCR-F8-13) ─────────────────────────────────── */
-/* Dual-theme tokens only — zero hardcoded hex values. */
+/* Dual-theme tokens only - zero hardcoded hex values. */
 
 .email-templates-admin-page__list {
   display: grid;
@@ -18,9 +18,6 @@
 }
 
 .email-templates-admin-page__item-key {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--color-bg-sunken);
   color: var(--color-text-tertiary);
   font-family: var(--font-mono);
   font-size: var(--text-caption);
@@ -33,6 +30,9 @@
 }
 
 .email-templates-admin-page__item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
   margin-top: var(--space-1);
   color: var(--color-text-tertiary);
   font-size: var(--text-caption);
@@ -107,6 +107,8 @@
 }
 
 .email-templates-admin-page__preview-html {
-  color: var(--color-text-secondary);
-  line-height: 1.6;
+  width: 100%;
+  min-height: 60vh;
+  border: 0;
+  background: white;
 }

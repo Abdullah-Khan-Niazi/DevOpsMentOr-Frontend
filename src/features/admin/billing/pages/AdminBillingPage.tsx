@@ -6,9 +6,12 @@ import {
   PageHeader,
   Pagination,
   Skeleton,
-  TabRow,
+  TabPanel,
+  TabSwitcher,
+  type TabSwitcherItem,
   toast,
 } from '@/shared/components';
+import { useUrlState } from '@/shared/hooks';
 import { BillingKpiStrip } from '../components/BillingKpiStrip';
 import {
   useAdminBillingOverview,
@@ -24,7 +27,14 @@ import type { AdminBillingOverview, AdminSubscriptionRow, PlanType } from '../ty
 import { Modal } from '@/shared/components/Modal';
 import './admin-billing.css';
 
-type AdminTab = 'subscriptions' | 'orders' | 'coupons';
+const TAB_IDS = ['subscriptions', 'orders', 'coupons'] as const;
+type AdminTab = (typeof TAB_IDS)[number];
+
+const TAB_ITEMS: ReadonlyArray<TabSwitcherItem<AdminTab>> = [
+  { id: 'subscriptions', label: 'Subscriptions' },
+  { id: 'orders', label: 'Orders' },
+  { id: 'coupons', label: 'Coupons' },
+];
 
 const PLAN_LABELS: Record<PlanType, string> = {
   free: 'Free',
@@ -47,7 +57,7 @@ function formatMoney(value: number, currency: string): string {
 
 function formatDate(iso: string | null): string {
   if (!iso) {
-    return '—';
+    return '-';
   }
   return new Date(iso).toLocaleDateString(undefined, {
     year: 'numeric',
@@ -159,7 +169,7 @@ function CouponCreateForm({ onClose }: { onClose: () => void }) {
 
 /** SCR-F9-05: platform billing administration (BIL-15..22). */
 export function AdminBillingPage() {
-  const [tab, setTab] = useState<AdminTab>('subscriptions');
+  const [tab, setTab] = useUrlState<AdminTab>('tab', TAB_IDS, 'subscriptions');
   const [page, setPage] = useState(1);
   const [adjusting, setAdjusting] = useState<AdminSubscriptionRow | null>(null);
   const [draft, setDraft] = useState<AdjustDraft | null>(null);
@@ -214,30 +224,25 @@ export function AdminBillingPage() {
 
   return (
     <div className="admin-billing">
-      <PageHeader
-        title="Billing"
-        description="Subscriptions, orders and coupons across the platform."
-      />
+      <PageHeader title="Billing" />
 
       <BillingKpiStrip overview={overview.data as AdminBillingOverview} />
 
-      <TabRow
-        items={[
-          { id: 'subscriptions', label: 'Subscriptions' },
-          { id: 'orders', label: 'Orders' },
-          { id: 'coupons', label: 'Coupons' },
-        ]}
-        activeId={tab}
-        onChange={(id) => {
-          setTab(id as AdminTab);
+      <TabSwitcher
+        items={TAB_ITEMS}
+        value={tab}
+        onChange={(next) => {
+          setTab(next);
           setPage(1);
         }}
+        ariaLabel="Billing sections"
+        idPrefix="billing"
       />
 
       {active.isLoading ? (
         <div className="space-y-2 py-4">
           {Array.from({ length: 5 }, (_, i) => (
-            <div key={i} className="flex items-center justify-between py-2.5 px-3 border-b border-border/40">
+            <div key={i} className="flex items-center justify-between py-2.5 px-3">
               <Skeleton className="h-4 w-40 rounded-xs" />
               <Skeleton className="h-4 w-24 rounded-xs" />
               <Skeleton className="h-4 w-20 rounded-xs" />
@@ -249,128 +254,133 @@ export function AdminBillingPage() {
       ) : null}
       {active.isError ? <p className="admin-billing__hint">Could not load data.</p> : null}
 
-      {tab === 'subscriptions' && !subscriptions.isLoading && !subscriptions.isError ? (
-        <table className="admin-billing__table">
-          <thead>
-            <tr>
-              <th>User</th>
-              <th>Plan</th>
-              <th>Auto-renew</th>
-              <th>Status</th>
-              <th>Renews on</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {(subscriptions.data?.items ?? []).map((row) => (
-              <tr key={row.subscriptionId}>
-                <td>{row.userEmail || row.userFullName || `User #${row.userId}`}</td>
-                <td>{row.planName}</td>
-                <td>{row.autoRenew ? 'On' : 'Off'}</td>
-                <td>{row.isActive ? 'Active' : 'Inactive'}</td>
-                <td>{formatDate(row.endDate)}</td>
-                <td>
-                  <Button variant="ghost" size="sm" onClick={() => openAdjust(row)}>
-                    Adjust
-                  </Button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : null}
-
-      {tab === 'orders' && !orders.isLoading && !orders.isError ? (
-        <table className="admin-billing__table">
-          <thead>
-            <tr>
-              <th>Order</th>
-              <th>User</th>
-              <th>Total</th>
-              <th>Status</th>
-              <th>Paid</th>
-              <th />
-            </tr>
-          </thead>
-          <tbody>
-            {(orders.data?.items ?? []).map((row) => (
-              <tr key={row.orderId}>
-                <td>{row.orderNumber}</td>
-                <td>{row.userEmail || row.userFullName || `User #${row.userId}`}</td>
-                <td>{formatMoney(row.finalAmount, row.currency)}</td>
-                <td>{ORDER_STATUS_LABELS[row.status]}</td>
-                <td>{formatDate(row.paidAt)}</td>
-                <td>
-                  {row.status === 'paid' ? (
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() =>
-                        setRefunding({ orderId: row.orderId, orderNumber: row.orderNumber })
-                      }
-                    >
-                      Flag refund
-                    </Button>
-                  ) : null}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      ) : null}
-
-      {tab === 'coupons' && !coupons.isLoading && !coupons.isError ? (
-        <div className="admin-billing__coupons">
-          <div className="admin-billing__coupons-header">
-            <p className="admin-billing__hint">Coupons apply at checkout (BIL-19..21).</p>
-            <Button size="sm" onClick={() => setCouponOpen(true)}>
-              New coupon
-            </Button>
-          </div>
+      <TabPanel idPrefix="billing" id="subscriptions" active={tab === 'subscriptions'}>
+        {!subscriptions.isLoading && !subscriptions.isError ? (
           <table className="admin-billing__table">
             <thead>
               <tr>
-                <th>Code</th>
-                <th>Discount</th>
-                <th>Redeemed</th>
-                <th>Expires</th>
-                <th>Active</th>
+                <th>User</th>
+                <th>Plan</th>
+                <th>Auto-renew</th>
+                <th>Status</th>
+                <th>Renews on</th>
                 <th />
               </tr>
             </thead>
             <tbody>
-              {(coupons.data?.items ?? []).map((row) => (
-                <tr key={row.couponId}>
-                  <td>{row.code}</td>
+              {(subscriptions.data?.items ?? []).map((row) => (
+                <tr key={row.subscriptionId}>
+                  <td>{row.userEmail || row.userFullName || `User #${row.userId}`}</td>
+                  <td>{row.planName}</td>
+                  <td>{row.autoRenew ? 'On' : 'Off'}</td>
+                  <td>{row.isActive ? 'Active' : 'Inactive'}</td>
+                  <td>{formatDate(row.endDate)}</td>
                   <td>
-                    {row.discountType === 'percentage'
-                      ? `${row.discountValue}%`
-                      : `$${row.discountValue.toFixed(2)}`}
-                  </td>
-                  <td>
-                    {row.usedCount}
-                    {row.maxUses > 0 ? ` / ${row.maxUses}` : ''}
-                  </td>
-                  <td>{formatDate(row.expiresAt)}</td>
-                  <td>{row.isActive ? 'Yes' : 'No'}</td>
-                  <td>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      isLoading={toggleCoupon.isPending}
-                      onClick={() =>
-                        toggleCoupon.mutate({ couponId: row.couponId, isActive: !row.isActive })
-                      }
-                    >
-                      {row.isActive ? 'Deactivate' : 'Activate'}
+                    <Button variant="ghost" size="sm" onClick={() => openAdjust(row)}>
+                      Adjust
                     </Button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
-        </div>
-      ) : null}
+        ) : null}
+      </TabPanel>
+
+      <TabPanel idPrefix="billing" id="orders" active={tab === 'orders'}>
+        {!orders.isLoading && !orders.isError ? (
+          <table className="admin-billing__table">
+            <thead>
+              <tr>
+                <th>Order</th>
+                <th>User</th>
+                <th>Total</th>
+                <th>Status</th>
+                <th>Paid</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {(orders.data?.items ?? []).map((row) => (
+                <tr key={row.orderId}>
+                  <td>{row.orderNumber}</td>
+                  <td>{row.userEmail || row.userFullName || `User #${row.userId}`}</td>
+                  <td>{formatMoney(row.finalAmount, row.currency)}</td>
+                  <td>{ORDER_STATUS_LABELS[row.status]}</td>
+                  <td>{formatDate(row.paidAt)}</td>
+                  <td>
+                    {row.status === 'paid' ? (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() =>
+                          setRefunding({ orderId: row.orderId, orderNumber: row.orderNumber })
+                        }
+                      >
+                        Flag refund
+                      </Button>
+                    ) : null}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        ) : null}
+      </TabPanel>
+
+      <TabPanel idPrefix="billing" id="coupons" active={tab === 'coupons'}>
+        {!coupons.isLoading && !coupons.isError ? (
+          <div className="admin-billing__coupons">
+            <div className="admin-billing__coupons-header">
+              <Button size="sm" onClick={() => setCouponOpen(true)}>
+                New coupon
+              </Button>
+            </div>
+            <table className="admin-billing__table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Discount</th>
+                  <th>Redeemed</th>
+                  <th>Expires</th>
+                  <th>Active</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {(coupons.data?.items ?? []).map((row) => (
+                  <tr key={row.couponId}>
+                    <td>{row.code}</td>
+                    <td>
+                      {row.discountType === 'percentage'
+                        ? `${row.discountValue}%`
+                        : `$${row.discountValue.toFixed(2)}`}
+                    </td>
+                    <td>
+                      {row.usedCount}
+                      {row.maxUses > 0 ? ` / ${row.maxUses}` : ''}
+                    </td>
+                    <td>{formatDate(row.expiresAt)}</td>
+                    <td>{row.isActive ? 'Yes' : 'No'}</td>
+                    <td>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        isLoading={toggleCoupon.isPending}
+                        onClick={() =>
+                          toggleCoupon.mutate({ couponId: row.couponId, isActive: !row.isActive })
+                        }
+                      >
+                        {row.isActive ? 'Deactivate' : 'Activate'}
+                      </Button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+      </TabPanel>
 
       {active.data && active.data.total > active.data.limit ? (
         <Pagination
@@ -385,10 +395,6 @@ export function AdminBillingPage() {
       {adjusting && draft ? (
         <Modal open title={`Adjust ${adjusting.planName}`} onClose={() => setAdjusting(null)}>
           <div className="admin-billing__form">
-            <p className="admin-billing__hint">
-              {adjusting.userEmail || adjusting.userFullName || `User #${adjusting.userId}`} —
-              renews on {formatDate(adjusting.endDate)}
-            </p>
             <label className="admin-billing__field">
               <span>Plan</span>
               <select
@@ -448,7 +454,6 @@ export function AdminBillingPage() {
           onClose={() => setRefunding(null)}
         >
           <div className="admin-billing__form">
-            <p className="admin-billing__hint">The payment will be marked for refund processing.</p>
             <div className="admin-billing__form-actions">
               <Button variant="ghost" size="sm" onClick={() => setRefunding(null)}>
                 Cancel

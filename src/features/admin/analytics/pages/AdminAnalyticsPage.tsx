@@ -1,6 +1,6 @@
 import '../styles/analytics-admin.css';
 import { useState, useMemo } from 'react';
-import { Card, ErrorState, AnalyticsPageSkeleton, PageHeader } from '@/shared/components';
+import { Card, ErrorState, PageHeader } from '@/shared/components';
 import {
   ActivityLineChart,
   ContributionHeatmap,
@@ -14,6 +14,7 @@ import {
 } from '../components';
 import { SystemTelemetryMonitor } from '../../components/SystemTelemetryMonitor';
 import { useAdminDashboard } from '../../hooks';
+import { AdminAnalyticsSkeleton } from './AdminAnalyticsSkeleton';
 import {
   useActivityTrend,
   useAnalyticsOverview,
@@ -73,13 +74,18 @@ export function AdminAnalyticsPage() {
     return (
       <ErrorState
         title="Could not load platform analytics"
-        message="Please check database connection and try again."
+        error={overview.error ?? trend.error}
+        onRetry={() => {
+          void overview.refetch();
+          void trend.refetch();
+        }}
+        retrying={overview.isRefetching || trend.isRefetching}
       />
     );
   }
 
   if (overview.isLoading || trend.isLoading) {
-    return <AnalyticsPageSkeleton />;
+    return <AdminAnalyticsSkeleton />;
   }
 
   // Derive dynamic sparkline heights from the trend slice
@@ -105,60 +111,41 @@ export function AdminAnalyticsPage() {
       label: 'Active Users (7d)',
       value: overview.data?.activeUsers7d ?? 0,
       spark: getSliceLevels('activeUsers', [2, 3, 4, 3, 5]),
-      context: 'Active learner accounts generating interaction records over the past 7 days.',
-      subtext: 'Unique active learner sessions',
     },
     {
       label: 'New Signups (30d)',
       value: overview.data?.newSignups30d ?? 0,
       spark: getSliceLevels('newSignups', [1, 2, 3, 4, 5]),
-      context:
-        'New student and practitioner profiles created and verified during the past 30 days.',
-      subtext: 'Verified account onboarding',
     },
     {
       label: 'Certifications (30d)',
       value: overview.data?.courseCompletions30d ?? 0,
       spark: getSliceLevels('courseCompletions', [1, 2, 2, 3, 4]),
-      context: 'Officially accredited course graduation certificates recorded in the last 30 days.',
-      subtext: 'Accredited certificates issued',
     },
     {
       label: 'Points Awarded (7d)',
       value: overview.data?.pointsAwarded7d ?? 0,
       spark: getSliceLevels('pointsAwarded', [2, 3, 5, 4, 5]),
-      context:
-        'Total gamified knowledge experience points accrued across lab exercises and quizzes.',
-      subtext: 'Knowledge XP points earned',
     },
     {
       label: 'Active Subscriptions',
       value: subsVal,
       spark: [2, 3, 4, 4, Math.max(1, Math.min(5, Math.round(subsVal / 2) + 2))],
-      context:
-        'Current unexpired recurring billing records across individual and enterprise plans.',
-      subtext: 'Enterprise & Pro memberships',
     },
     {
       label: 'System Notifications (7d)',
       value: notifVal,
       spark: [1, 2, 4, 3, Math.max(1, Math.min(5, Math.round(notifVal / 3) + 1))],
-      context: 'Operational alerts, verification emails, and achievement messages dispatched.',
-      subtext: 'Alerts & emails dispatched',
     },
     {
       label: 'Pending Moderation',
       value: reportsVal,
       spark: [1, 2, 1, Math.max(1, Math.min(3, reportsVal)), Math.max(0, Math.min(5, reportsVal))],
-      context: 'Open user and content violation reports awaiting administrative resolution.',
-      subtext: 'Flagged reports in queue',
     },
     {
       label: 'Learner Reviews (7d)',
       value: reviewsVal,
       spark: [2, 3, 3, 4, Math.max(1, Math.min(5, Math.round(reviewsVal / 2) + 2))],
-      context: 'Curriculum evaluation ratings and written module reviews submitted.',
-      subtext: 'Course ratings & feedback',
     },
   ];
 
@@ -287,7 +274,6 @@ export function AdminAnalyticsPage() {
               Platform Interaction & Growth Heatmap
             </h2>
           </div>
-          <span className="text-xs font-mono text-accent">Active Matrix</span>
         </div>
 
         <div className="pt-2 overflow-x-auto">
@@ -308,19 +294,9 @@ export function AdminAnalyticsPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
                 Learner Progression Funnel
               </h2>
-              <p className="text-xs text-muted">
-                Conversion milestones from initial registration through sandbox certification
-              </p>
             </div>
 
-            <FluidFunnelChart
-              stages={detailed.data?.funnel ?? []}
-              headlineGrowth="+0.4% vs prior 30 days"
-            />
-          </div>
-          <div className="mt-4 pt-2 border-t border-border/60 text-[0.6875rem] font-mono text-muted flex justify-between">
-            <span>Milestone criteria: Progress &gt;= 1 lesson &gt;= 1 sandbox</span>
-            <span>Accredited certs issued</span>
+            <FluidFunnelChart stages={detailed.data?.funnel ?? []} />
           </div>
         </Card>
 
@@ -341,8 +317,6 @@ export function AdminAnalyticsPage() {
                 value: sub.count,
               }))}
               headlineValue={overview.data?.activeSubscriptions ?? 0}
-              headlineSubtext="Active subscription accounts in billing cycle"
-              headlineGrowth="+1.2% vs prior 30 days"
             />
           </div>
         </Card>
@@ -361,7 +335,7 @@ export function AdminAnalyticsPage() {
         <RegionalMap countries={detailed.data?.countries ?? []} />
       </Card>
 
-      {/* Dual Deep Dive Columns: 24-Hour Traffic Curve (PKT) & Container Sandbox Infrastructure Telemetry */}
+      {/* Dual Deep Dive Columns: 24-Hour Traffic Curve (PKT) & Lab environment infrastructure telemetry */}
       <div className="grid gap-6 lg:grid-cols-2 items-stretch w-full min-w-0 max-w-full">
         {/* Peak Activity Traffic Density Curve in PKT (Day / 7D / Month) */}
         <Card className="p-5 flex flex-col justify-between min-w-0 max-w-full overflow-hidden">
@@ -397,8 +371,8 @@ export function AdminAnalyticsPage() {
                 </div>
 
                 {dashboardData?.kpis.peakActivity?.peakHour && (
-                  <div className="flex items-center gap-1 text-muted text-[0.625rem] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap">
-                    <span className="text-[0.5625rem] uppercase">PEAK:</span>
+                  <div className="flex items-center gap-1 text-muted text-[0.625rem] font-mono shrink-0 whitespace-nowrap">
+                    <span className="text-[0.5625rem] uppercase">Peak</span>
                     <span className="font-bold text-card-foreground">
                       {dashboardData.kpis.peakActivity.peakHour}
                     </span>
@@ -424,7 +398,7 @@ export function AdminAnalyticsPage() {
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground">
-                  Container Sandbox Infrastructure Telemetry
+                  Lab environment infrastructure telemetry
                 </h2>
               </div>
             </div>
@@ -459,9 +433,6 @@ export function AdminAnalyticsPage() {
                 <span className="text-xl font-bold text-card-foreground">
                   {detailed.data?.pwnbox?.avgDurationMinutes ?? 0}m
                 </span>
-                <span className="text-[0.625rem] text-muted block mt-0.5">
-                  Average pod active time
-                </span>
               </div>
 
               <div className="p-3 border border-border bg-surface/50">
@@ -470,7 +441,7 @@ export function AdminAnalyticsPage() {
                   {detailed.data?.pwnbox?.terminatedInstances ?? 0}
                 </span>
                 <span className="text-[0.625rem] text-muted block mt-0.5">
-                  Terminated • {detailed.data?.pwnbox?.errorInstances ?? 0} errors
+                  Terminated, {detailed.data?.pwnbox?.errorInstances ?? 0} errors
                 </span>
               </div>
             </div>
@@ -488,8 +459,6 @@ function AnalyticsKpiCard({
     label: string;
     value: number;
     spark: number[];
-    context: string;
-    subtext: string;
   };
 }) {
   return (
@@ -509,10 +478,6 @@ function AnalyticsKpiCard({
           {kpi.value.toLocaleString()}
         </span>
       </div>
-
-      <p className="mt-2 pt-1.5 border-t border-border/40 text-[0.6875rem] font-mono text-muted group-hover:text-card-foreground/80 transition-colors truncate">
-        {kpi.subtext}
-      </p>
     </Card>
   );
 }

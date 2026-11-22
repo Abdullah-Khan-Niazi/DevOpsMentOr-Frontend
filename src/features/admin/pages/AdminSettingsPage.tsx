@@ -2,14 +2,15 @@ import { useState, useMemo } from 'react';
 import {
   Button,
   Card,
+  EmptyState,
   ErrorState,
   Modal,
   PageHeader,
-  DetailFormSkeleton,
   toast,
 } from '@/shared/components';
 import { useAdminSystemSettings } from '../hooks';
 import type { SystemSetting } from '../types';
+import { AdminSettingsSkeleton } from './AdminSettingsSkeleton';
 
 function displayValue(value: unknown): string {
   if (typeof value === 'string') return value;
@@ -79,7 +80,7 @@ export function AdminSettingsPage() {
   }, [query.data, selectedGroup, search]);
 
   if (query.isLoading) {
-    return <DetailFormSkeleton />;
+    return <AdminSettingsSkeleton />;
   }
 
   return (
@@ -88,8 +89,9 @@ export function AdminSettingsPage() {
 
       {query.isError ? (
         <ErrorState
-          message={query.error?.message ?? 'Unable to load settings.'}
+          error={query.error}
           onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
         />
       ) : null}
 
@@ -137,7 +139,7 @@ export function AdminSettingsPage() {
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead>
-                <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
+                <tr className="text-[0.6875rem] uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Setting Key</th>
                   <th className="px-3 py-2 font-medium">Value</th>
                   <th className="px-3 py-2 font-medium w-28">Group</th>
@@ -147,10 +149,7 @@ export function AdminSettingsPage() {
               </thead>
               <tbody>
                 {filteredSettings.map((setting) => (
-                  <tr
-                    key={setting.settingId}
-                    className="border-b border-border/60 last:border-0 hover:bg-surface/50 transition-colors"
-                  >
+                  <tr key={setting.settingId} className="hover:bg-surface/50 transition-colors">
                     <td className="px-3 py-2 font-semibold text-card-foreground">
                       {setting.settingKey}
                     </td>
@@ -158,20 +157,21 @@ export function AdminSettingsPage() {
                       <span>{displayValue(setting.settingValue)}</span>
                     </td>
                     <td className="px-3 py-2 text-muted-foreground whitespace-nowrap">
-                      {setting.groupName ?? '—'}
+                      {setting.groupName ?? '-'}
                     </td>
                     <td className="px-3 py-2 text-muted whitespace-nowrap">
-                      {setting.updatedAt ? new Date(setting.updatedAt).toLocaleDateString() : '—'}
+                      {setting.updatedAt ? new Date(setting.updatedAt).toLocaleDateString() : '-'}
                     </td>
                     <td className="px-3 py-2 text-right whitespace-nowrap">
                       {setting.isEditable ? (
-                        <button
+                        <Button
                           type="button"
+                          variant="ghost"
+                          size="sm"
                           onClick={() => openEditor(setting)}
-                          className="px-2.5 py-1 text-xs font-mono rounded-xs border border-border bg-surface text-card-foreground hover:bg-card-foreground hover:text-surface transition-colors cursor-pointer"
                         >
                           Edit
-                        </button>
+                        </Button>
                       ) : (
                         <span className="text-[0.6875rem] text-muted">Read-only</span>
                       )}
@@ -180,6 +180,9 @@ export function AdminSettingsPage() {
                 ))}
               </tbody>
             </table>
+            {filteredSettings.length === 0 ? (
+              <EmptyState icon="settings" title="No settings match these filters" />
+            ) : null}
           </div>
         </Card>
       ) : null}

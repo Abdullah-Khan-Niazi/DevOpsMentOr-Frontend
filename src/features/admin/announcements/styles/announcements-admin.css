@@ -1,5 +1,5 @@
 /* ─── F8 Admin Announcements (SCR-F8-09) ───────────────────────────────────── */
-/* Dual-theme tokens only — zero hardcoded hex values. */
+/* Dual-theme tokens only - zero hardcoded hex values. */
 
 .announcements-admin-page {
   display: flex;
@@ -78,17 +78,16 @@
 }
 
 .announcements-admin-page__item-status {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--color-bg-sunken);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
   color: var(--color-text-tertiary);
   font-size: var(--text-caption);
   font-weight: 600;
 }
 
 .announcements-admin-page__item-status[data-published='true'] {
-  background: var(--color-accent-950);
-  color: var(--color-accent-400);
+  color: var(--color-success);
 }
 
 .announcements-admin-page__item-content {
@@ -98,6 +97,9 @@
 }
 
 .announcements-admin-page__item-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-4);
   margin-top: var(--space-2);
   color: var(--color-text-tertiary);
   font-size: var(--text-caption);

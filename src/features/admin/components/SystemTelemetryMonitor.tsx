@@ -188,8 +188,12 @@ export function SystemTelemetryMonitor({
             : (pt.allocatedContainers ?? defaultContainers),
           allocatedRamGb: isLatest ? defaultRamGb : (pt.allocatedRamGb ?? defaultRamGb),
           allocatedCpuCores: isLatest ? defaultCores : (pt.allocatedCpuCores ?? defaultCores),
-          consumedRamMb: isLatest ? defaultConsumedRamMb : (pt.consumedRamMb ?? defaultConsumedRamMb),
-          consumedRamGb: isLatest ? defaultConsumedRamGb : (pt.consumedRamGb ?? defaultConsumedRamGb),
+          consumedRamMb: isLatest
+            ? defaultConsumedRamMb
+            : (pt.consumedRamMb ?? defaultConsumedRamMb),
+          consumedRamGb: isLatest
+            ? defaultConsumedRamGb
+            : (pt.consumedRamGb ?? defaultConsumedRamGb),
           consumedCpuCores: isLatest
             ? defaultConsumedCpuCores
             : (pt.consumedCpuCores ?? defaultConsumedCpuCores),
@@ -244,8 +248,12 @@ export function SystemTelemetryMonitor({
             : (pt.allocatedContainers ?? defaultContainers),
           allocatedRamGb: isLatest ? defaultRamGb : (pt.allocatedRamGb ?? defaultRamGb),
           allocatedCpuCores: isLatest ? defaultCores : (pt.allocatedCpuCores ?? defaultCores),
-          consumedRamMb: isLatest ? defaultConsumedRamMb : (pt.consumedRamMb ?? defaultConsumedRamMb),
-          consumedRamGb: isLatest ? defaultConsumedRamGb : (pt.consumedRamGb ?? defaultConsumedRamGb),
+          consumedRamMb: isLatest
+            ? defaultConsumedRamMb
+            : (pt.consumedRamMb ?? defaultConsumedRamMb),
+          consumedRamGb: isLatest
+            ? defaultConsumedRamGb
+            : (pt.consumedRamGb ?? defaultConsumedRamGb),
           consumedCpuCores: isLatest
             ? defaultConsumedCpuCores
             : (pt.consumedCpuCores ?? defaultConsumedCpuCores),
@@ -295,8 +303,12 @@ export function SystemTelemetryMonitor({
           allocatedContainers: defaultContainers,
           allocatedRamGb: defaultRamGb,
           allocatedCpuCores: defaultCores,
-          consumedRamMb: isLatest ? defaultConsumedRamMb : (pt.consumedRamMb ?? defaultConsumedRamMb),
-          consumedRamGb: isLatest ? defaultConsumedRamGb : (pt.consumedRamGb ?? defaultConsumedRamGb),
+          consumedRamMb: isLatest
+            ? defaultConsumedRamMb
+            : (pt.consumedRamMb ?? defaultConsumedRamMb),
+          consumedRamGb: isLatest
+            ? defaultConsumedRamGb
+            : (pt.consumedRamGb ?? defaultConsumedRamGb),
           consumedCpuCores: isLatest
             ? defaultConsumedCpuCores
             : (pt.consumedCpuCores ?? defaultConsumedCpuCores),
@@ -405,7 +417,7 @@ export function SystemTelemetryMonitor({
     <Card
       className={`p-5 flex flex-col gap-4 font-mono text-xs w-full min-w-0 max-w-full overflow-hidden ${className}`}
     >
-      {/* Top Header & Multilevel Tab Switcher — Single Horizontal Level */}
+      {/* Top Header & Multilevel Tab Switcher - Single Horizontal Level */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-card-foreground font-mono whitespace-nowrap">
@@ -940,7 +952,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[0.625rem]">
                               {timeRange === '7d'
@@ -1266,10 +1278,10 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-card-foreground font-bold uppercase text-[0.625rem]">
-                              Sandbox Pods
+                              Lab environments
                             </span>
                           </div>
                           <div className="space-y-1">
@@ -1301,7 +1313,7 @@ export function SystemTelemetryMonitor({
                               );
                             })}
                           </div>
-                          <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between gap-3">
+                          <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between gap-3">
                             <span>Cluster: {item?.kubernetesStatus ?? k8sStatus}</span>
                             <span>
                               CPU Util:{' '}
@@ -1615,7 +1627,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[0.625rem]">
                               Host Hardware
@@ -1636,7 +1648,7 @@ export function SystemTelemetryMonitor({
                             ))}
                           </div>
                           {item && (
-                            <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                            <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between">
                               <span>
                                 CPU Min/Max: {item.cpuMin ?? 0}% / {item.cpuMax ?? 0}%
                               </span>
@@ -1910,7 +1922,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[0.625rem]">
                               Infrastructure
@@ -1930,7 +1942,7 @@ export function SystemTelemetryMonitor({
                               </div>
                             ))}
                           </div>
-                          <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                          <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between">
                             <span>Redis: {cache?.status ?? 'CONNECTED'}</span>
                             <span>Quota Safe (&lt; 25MB)</span>
                           </div>
@@ -2182,7 +2194,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-info uppercase text-[0.625rem]">Web Traffic</span>
                           </div>
@@ -2201,7 +2213,7 @@ export function SystemTelemetryMonitor({
                             ))}
                           </div>
                           {item && (
-                            <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                            <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between">
                               <span>
                                 Req Min/Max: {item.requestsMin ?? 0} / {item.requestsMax ?? 0}
                               </span>

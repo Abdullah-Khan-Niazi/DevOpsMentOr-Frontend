@@ -1,5 +1,5 @@
 /* ─── F8 Admin Moderation (SCR-F8-11/12) ───────────────────────────────────── */
-/* Dual-theme tokens only — zero hardcoded hex values. */
+/* Dual-theme tokens only - zero hardcoded hex values. */
 
 .moderation-admin-page {
   display: flex;
@@ -25,21 +25,6 @@
 
 .moderation-item__author {
   font-weight: 600;
-}
-
-.moderation-item__badge {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--color-bg-sunken);
-  color: var(--color-text-tertiary);
-  font-size: var(--text-caption);
-  font-weight: 600;
-  text-transform: capitalize;
-}
-
-.moderation-item__badge[data-pending='true'] {
-  background: var(--color-warning);
-  color: var(--color-text-on-accent);
 }
 
 .moderation-item__meta {

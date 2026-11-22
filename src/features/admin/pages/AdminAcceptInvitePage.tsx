@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { z } from 'zod';
 import { Button, Input, PasswordInput } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
@@ -67,7 +67,7 @@ export default function AdminAcceptInvitePage() {
 
   if (!token) {
     return (
-      <AuthLayout title="Invalid invitation" subtitle="This link is missing its invitation token.">
+      <AuthLayout title="Invalid invitation">
         <div className="flex flex-col gap-4">
           <p className="auth-alert auth-alert--error" role="alert">
             The invitation link is incomplete. Ask the platform administrator who invited you to
@@ -88,16 +88,12 @@ export default function AdminAcceptInvitePage() {
 
   if (accepted) {
     return (
-      <AuthLayout title="Account activated" subtitle="You are now a platform administrator.">
+      <AuthLayout title="Account activated">
         <div className="flex flex-col gap-4">
           <p className="auth-alert auth-alert--success auth-alert--margin" role="status">
             Your admin account is active. Sign in to manage platform administrators.
           </p>
-          <Button
-            type="button"
-            className="w-full"
-            onClick={() => void navigate(ROUTES.LOGIN)}
-          >
+          <Button type="button" className="w-full" onClick={() => void navigate(ROUTES.LOGIN)}>
             Go to sign in
           </Button>
         </div>
@@ -106,10 +102,7 @@ export default function AdminAcceptInvitePage() {
   }
 
   return (
-    <AuthLayout
-      title="Accept invitation"
-      subtitle="Set your credentials to activate your admin account."
-    >
+    <AuthLayout title="Accept invitation">
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
         <Input
           label="Username"
@@ -152,11 +145,14 @@ export default function AdminAcceptInvitePage() {
           Activate admin account
         </Button>
 
-        <p className="auth-link-row">
-          <Link to={ROUTES.HOME} className="auth-link">
-            Back to home
-          </Link>
-        </p>
+        <Button
+          type="button"
+          variant="ghost"
+          className="w-full"
+          onClick={() => void navigate(ROUTES.HOME)}
+        >
+          Back to home
+        </Button>
       </form>
     </AuthLayout>
   );

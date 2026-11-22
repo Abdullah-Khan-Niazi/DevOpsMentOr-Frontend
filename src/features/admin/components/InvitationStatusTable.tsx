@@ -1,7 +1,7 @@
 import { Button, EmptyState, Skeleton } from '@/shared/components';
 import type { PendingAdminInvite } from '@/features/auth/types';
 
-// InvitationStatusTable — pending platform-admin invitations with revoke
+// InvitationStatusTable - pending platform-admin invitations with revoke
 // (plain-text status, no pills/badges §2.2; confirm dialog before revoke).
 
 interface InvitationStatusTableProps {
@@ -25,7 +25,7 @@ export function InvitationStatusTable({
 }: InvitationStatusTableProps) {
   if (isLoading) {
     return (
-      <div className="admin-table-card divide-y divide-border/60">
+      <div className="admin-table-card" role="status" aria-label="Loading invitations">
         {Array.from({ length: 4 }, (_, i) => (
           <div key={i} className="flex items-center justify-between px-3 py-3">
             <Skeleton className="h-4 w-32 rounded-xs" />
@@ -41,7 +41,7 @@ export function InvitationStatusTable({
   if (!invites || invites.length === 0) {
     return (
       <div className="admin-table-card">
-        <EmptyState title="No pending invitations." description="" />
+        <EmptyState title="No pending invitations." />
       </div>
     );
   }

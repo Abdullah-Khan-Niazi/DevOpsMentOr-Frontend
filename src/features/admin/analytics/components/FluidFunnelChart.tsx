@@ -1,3 +1,5 @@
+import { EmptyState } from '@/shared/components';
+
 export interface FunnelStageItem {
   stage: string;
   count: number;
@@ -35,9 +37,7 @@ export function FluidFunnelChart({
             {headlineSubtext && <p className="text-xs text-muted mt-0.5">{headlineSubtext}</p>}
           </div>
         )}
-        <div className="flex h-44 items-center justify-center border border-dashed border-border text-xs text-muted font-mono">
-          No funnel data recorded.
-        </div>
+        <EmptyState title="No funnel data recorded" />
       </div>
     );
   }
@@ -160,9 +160,7 @@ export function FluidFunnelChart({
           <span className="text-2xl font-bold font-mono tracking-tight text-card-foreground">
             {overallRate}
           </span>
-          <p className="text-xs text-muted mt-0.5">
-            {headlineSubtext ?? `Progression rate across ${stages.length} core platform milestones`}
-          </p>
+          {headlineSubtext ? <p className="text-xs text-muted mt-0.5">{headlineSubtext}</p> : null}
         </div>
         {headlineGrowth && (
           <span className="text-xs font-mono font-medium text-success">{headlineGrowth}</span>

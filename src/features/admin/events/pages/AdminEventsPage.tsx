@@ -3,16 +3,17 @@ import { useState } from 'react';
 import {
   Button,
   Card,
+  EmptyState,
   ErrorState,
   Input,
   PageHeader,
-  Skeleton,
   toast,
 } from '@/shared/components';
+import { AdminEventsSkeleton } from './AdminEventsSkeleton';
 import { useAdminEventAttendees, useAdminEvents } from '../hooks/useAdminEvents';
 import type { EventType } from '../types';
 
-// SCR-F8-10: admin events — create form plus attendee roster lookup.
+// SCR-F8-10: admin events - create form plus attendee roster lookup.
 // Backend F8 exposes OPS-24..26 only (create/update/attendees); there is
 // intentionally no admin list endpoint in the F8 contract, so the page is
 // form-first and attendees are looked up by event id.
@@ -127,10 +128,7 @@ export function AdminEventsPage() {
 
   return (
     <div className="events-admin-page">
-      <PageHeader
-        title="Events"
-        description="Create webinars, workshops and competitions; view attendee rosters."
-      />
+      <PageHeader title="Events" />
 
       <Card className="events-admin-page__form">
         <h2 className="events-admin-page__form-title">New event</h2>
@@ -251,24 +249,24 @@ export function AdminEventsPage() {
             value={attendeeLookup}
             onChange={(event) => setAttendeeLookup(event.target.value)}
           />
-          <Button variant="secondary" onClick={handleLookup}>
+          <Button
+            variant="secondary"
+            onClick={handleLookup}
+            isLoading={attendees.isFetching && attendeeId !== null}
+          >
             Load roster
           </Button>
         </div>
         {attendeeId !== null ? (
           attendees.isError ? (
-            <ErrorState title="Could not load attendees" message="Please try again later." />
+            <ErrorState
+              title="Could not load attendees"
+              error={attendees.error}
+              onRetry={() => void attendees.refetch()}
+              retrying={attendees.isRefetching}
+            />
           ) : attendees.isLoading ? (
-            <div className="space-y-2 py-2">
-              {Array.from({ length: 4 }, (_, i) => (
-                <div key={i} className="flex items-center justify-between py-2 border-b border-border/40">
-                  <Skeleton className="h-4 w-28 rounded-xs" />
-                  <Skeleton className="h-4 w-40 rounded-xs" />
-                  <Skeleton className="h-4 w-20 rounded-xs" />
-                  <Skeleton className="h-4 w-24 rounded-xs" />
-                </div>
-              ))}
-            </div>
+            <AdminEventsSkeleton />
           ) : attendees.data && attendees.data.data.length > 0 ? (
             <table className="events-admin-page__table">
               <thead>
@@ -293,7 +291,7 @@ export function AdminEventsPage() {
               </tbody>
             </table>
           ) : (
-            <p className="events-admin-page__empty">No attendees for this event yet.</p>
+            <EmptyState icon="group-add" title="No attendees for this event yet" />
           )
         ) : null}
       </Card>

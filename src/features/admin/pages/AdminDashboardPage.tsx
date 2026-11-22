@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, ErrorState, PageHeader, AdminDashboardSkeleton } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import {
   ActivityLineChart,
@@ -14,6 +14,7 @@ import {
 import { SystemTelemetryMonitor } from '../components/SystemTelemetryMonitor';
 import { useActivityTrend } from '../analytics/hooks/useAnalytics';
 import { useAdminDashboard } from '../hooks';
+import { AdminDashboardSkeleton } from './AdminDashboardSkeleton';
 
 function formatPktDate(value: string): string {
   try {
@@ -35,7 +36,9 @@ function formatPktDate(value: string): string {
 type AuditFilterCategory = 'ALL' | 'USER' | 'ORG' | 'AUTH' | 'SETTING';
 
 export function AdminDashboardPage() {
-  const { data, isLoading, isError, error, refetch } = useAdminDashboard({ refetchInterval: 8000 });
+  const { data, isLoading, isError, error, refetch, isRefetching } = useAdminDashboard({
+    refetchInterval: 8000,
+  });
   const [trendDays, setTrendDays] = useState<number>(14);
   const trend = useActivityTrend(trendDays);
 
@@ -115,83 +118,24 @@ export function AdminDashboardPage() {
 
   const totalAuditPages = Math.max(1, Math.ceil(filteredAuditLogs.length / AUDIT_PAGE_SIZE));
 
-  const userbaseLevels = useMemo(() => {
-    if (data?.kpis?.sparklines?.userbase) return data.kpis.sparklines.userbase;
-    const series = data?.kpis?.peakActivity?.sevenDayDistribution?.map((p) => p.count) ?? [];
-    if (series.length >= 5) {
-      const slice = series.slice(-5);
-      const min = Math.min(...slice);
-      const max = Math.max(...slice);
-      const range = max - min || 1;
-      return slice.map((val) =>
-        Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)),
-      );
-    }
-    const u = data?.kpis?.totalUsers ?? data?.kpis?.totalIndividualLearners ?? 1;
-    return [
-      Math.max(1, Math.min(5, Math.round(u * 0.4) || 2)),
-      Math.max(1, Math.min(5, Math.round(u * 0.6) || 3)),
-      Math.max(1, Math.min(5, Math.round(u * 0.8) || 4)),
-      Math.max(1, Math.min(5, Math.round(u * 0.7) || 3)),
-      Math.max(1, Math.min(5, Math.round(u * 1.0) || 5)),
-    ];
-  }, [data]);
+  // Sparklines come only from real series (backend sparklines, else the real peak-activity
+  // distributions). With no data the card simply renders no sparkline.
+  const userbaseLevels = useMemo(
+    () =>
+      data?.kpis?.sparklines?.userbase ??
+      toSparklineLevels(data?.kpis?.peakActivity?.sevenDayDistribution?.map((p) => p.count)),
+    [data],
+  );
+  const podsLevels = useMemo(() => data?.kpis?.sparklines?.pods, [data]);
+  const computeLevels = useMemo(() => data?.kpis?.sparklines?.compute, [data]);
+  const learnersLevels = useMemo(
+    () =>
+      data?.kpis?.sparklines?.learners ??
+      toSparklineLevels(data?.kpis?.peakActivity?.hourlyDistribution?.map((h) => h.count)),
+    [data],
+  );
 
-  const podsLevels = useMemo(() => {
-    if (data?.kpis?.sparklines?.pods) return data.kpis.sparklines.pods;
-    const active = data?.kpis?.pwnbox?.activePods ?? 0;
-    const pending = data?.kpis?.pwnbox?.pendingPods ?? 0;
-    const errors = data?.kpis?.pwnbox?.errorPods ?? 0;
-    const stopped = data?.kpis?.pwnbox?.stoppedPods ?? 0;
-    const total = active + pending + errors + stopped || 1;
-    return [
-      Math.max(1, Math.min(5, Math.round((stopped / total) * 5) + 1)),
-      Math.max(1, Math.min(5, Math.round((errors / total) * 5) + 1)),
-      Math.max(1, Math.min(5, Math.round((pending / total) * 5) + 1)),
-      Math.max(1, Math.min(5, Math.round((active / total) * 5) + 1)),
-      Math.max(1, Math.min(5, Math.round(active > 0 ? 5 : 1))),
-    ];
-  }, [data]);
-
-  const computeLevels = useMemo(() => {
-    if (data?.kpis?.sparklines?.compute) return data.kpis.sparklines.compute;
-    const ram =
-      data?.kpis?.pwnbox?.totalActiveRamGb ?? data?.kpis?.hostTelemetry?.memoryUsagePercent ?? 20;
-    const cpu =
-      data?.kpis?.pwnbox?.totalActiveCpuCores ??
-      data?.kpis?.hostTelemetry?.activeCpuLoadPercent ??
-      15;
-    const heap = data?.kpis?.hostTelemetry?.heapUsedMb ?? 60;
-    return [
-      Math.max(1, Math.min(5, Math.round(cpu / 20) + 1)),
-      Math.max(1, Math.min(5, Math.round(ram / 20) + 1)),
-      Math.max(1, Math.min(5, Math.round(heap / 40) + 1)),
-      Math.max(1, Math.min(5, Math.round((cpu + ram) / 40) + 1)),
-      Math.max(1, Math.min(5, Math.round(ram > 0 ? 4 : 1))),
-    ];
-  }, [data]);
-
-  const learnersLevels = useMemo(() => {
-    if (data?.kpis?.sparklines?.learners) return data.kpis.sparklines.learners;
-    const hourly = data?.kpis?.peakActivity?.hourlyDistribution?.map((h) => h.count) ?? [];
-    if (hourly.length >= 5) {
-      const slice = hourly.slice(-5);
-      const min = Math.min(...slice);
-      const max = Math.max(...slice);
-      const range = max - min || 1;
-      return slice.map((val) =>
-        Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)),
-      );
-    }
-    const l = data?.kpis?.activeLearners ?? 1;
-    return [
-      Math.max(1, Math.min(5, Math.round(l * 0.5) || 2)),
-      Math.max(1, Math.min(5, Math.round(l * 0.7) || 3)),
-      Math.max(1, Math.min(5, Math.round(l * 0.6) || 2)),
-      Math.max(1, Math.min(5, Math.round(l * 0.9) || 4)),
-      Math.max(1, Math.min(5, Math.round(l * 1.0) || 5)),
-    ];
-  }, [data]);
+  if (isLoading) return <AdminDashboardSkeleton />;
 
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
@@ -228,13 +172,8 @@ export function AdminDashboardPage() {
         }
       />
 
-      {isLoading ? <AdminDashboardSkeleton /> : null}
-
       {isError ? (
-        <ErrorState
-          message={error?.message ?? 'Unable to load the platform dashboard.'}
-          onRetry={() => void refetch()}
-        />
+        <ErrorState error={error} onRetry={() => void refetch()} retrying={isRefetching} />
       ) : null}
 
       {data ? (
@@ -253,13 +192,13 @@ export function AdminDashboardPage() {
 
             {/* Live Active Pods */}
             <NothingKpiCard
-              label="Live Sandbox Pods"
+              label="Live lab environments"
               value={data.kpis.pwnbox?.activePods ?? 0}
-              subtext={`${data.kpis.pwnbox?.pendingPods ?? 0} queued in buffer • ${data.kpis.pwnbox?.errorPods ?? 0} errors`}
+              subtext={`${data.kpis.pwnbox?.pendingPods ?? 0} queued, ${data.kpis.pwnbox?.errorPods ?? 0} errors`}
               href={ROUTES.ADMIN_ANALYTICS}
               sparklineLevels={podsLevels}
               accentValue="ACTIVE"
-              tooltipContext="Live interactive browser sandboxes currently running in container orchestrator."
+              tooltipContext="Live lab environments currently running in the container orchestrator."
             />
 
             {/* Live Compute Allocation & Actual Consumption */}
@@ -276,10 +215,10 @@ export function AdminDashboardPage() {
                     : `${(data.kpis.pwnbox?.consumedRamGb ?? 0).toFixed(2)} GB`,
                 subtext: `${(data.kpis.pwnbox?.consumedCpuCores ?? 0).toFixed(2)} cores (${(data.kpis.pwnbox?.consumedCpuPercent ?? 0).toFixed(1)}% CPU) used`,
               }}
-              subtext={`${data.kpis.pwnbox?.activePods ?? 0} running pod(s) • Real-time Docker cgroup telemetry`}
+              subtext={`${data.kpis.pwnbox?.activePods ?? 0} running pod(s), real-time Docker cgroup telemetry`}
               href={ROUTES.ADMIN_ANALYTICS}
               sparklineLevels={computeLevels}
-              tooltipContext="Provisioned vs. actual real-time consumed RAM and CPU cores across all currently opened learner lab sandboxes."
+              tooltipContext="Provisioned vs. actual real-time consumed RAM and CPU cores across all currently opened learner lab environments."
             />
 
             {/* Active Learners Past 30 Days */}
@@ -313,10 +252,7 @@ export function AdminDashboardPage() {
                 <h2 className="text-xs font-semibold uppercase tracking-wider font-mono text-card-foreground mb-4">
                   Learner Progression Funnel
                 </h2>
-                <FluidFunnelChart
-                  stages={data.kpis.funnel ?? []}
-                  headlineGrowth="+0.4% vs prior 30 days"
-                />
+                <FluidFunnelChart stages={data.kpis.funnel ?? []} />
               </div>
             </Card>
 
@@ -333,8 +269,6 @@ export function AdminDashboardPage() {
                     percentage: u.percentage,
                   }))}
                   headlineValue={data.kpis.totalUsers ?? 0}
-                  headlineSubtext="Total registered accounts across all tenant organizations"
-                  headlineGrowth="+0.5% vs prior 30 days"
                 />
               </div>
             </Card>
@@ -387,8 +321,8 @@ export function AdminDashboardPage() {
                     </div>
 
                     {data.kpis.peakActivity?.peakHour && (
-                      <div className="flex items-center gap-1 text-muted text-[0.625rem] border border-border px-1.5 py-0.5 bg-surface font-mono shrink-0 whitespace-nowrap rounded-md">
-                        <span className="text-[0.5625rem] uppercase">PEAK:</span>
+                      <div className="flex items-center gap-1 text-muted text-[0.625rem] font-mono shrink-0 whitespace-nowrap">
+                        <span className="text-[0.5625rem] uppercase">Peak</span>
                         <span className="font-bold text-card-foreground">
                           {data.kpis.peakActivity.peakHour}
                         </span>
@@ -461,16 +395,14 @@ export function AdminDashboardPage() {
                 </div>
 
                 {/* Single Column Feed List */}
-                <div className="mt-2 divide-y divide-border/60">
+                <div className="mt-2">
                   {paginatedLogs.length === 0 ? (
-                    <div className="flex h-64 items-center justify-center border border-dashed border-border text-xs text-muted font-mono">
-                      No matching audit records found.
-                    </div>
+                    <EmptyState icon="history" title="No matching audit records" className="h-64" />
                   ) : (
                     paginatedLogs.map((log) => (
                       <div
                         key={log.logId}
-                        className="py-2.5 px-2 border-b border-border/40 last:border-b-0 hover:bg-surface/50 transition-colors font-mono space-y-1"
+                        className="py-2.5 px-2 hover:bg-surface/50 transition-colors font-mono space-y-1"
                       >
                         <div className="flex items-center justify-between gap-3 text-xs">
                           <span className="font-bold text-accent uppercase tracking-wide truncate">
@@ -497,27 +429,29 @@ export function AdminDashboardPage() {
 
               {/* Single Column Pagination Controls */}
               {totalAuditPages > 1 && (
-                <div className="flex items-center justify-between pt-3 border-t border-border text-xs font-mono text-muted">
+                <div className="flex items-center justify-between pt-3 text-xs font-mono text-muted">
                   <span>
                     Page {auditPage} of {totalAuditPages}
                   </span>
                   <div className="flex items-center gap-1">
-                    <button
+                    <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
                       disabled={auditPage <= 1}
                       onClick={() => setAuditPage((p) => p - 1)}
-                      className="px-2.5 py-1 border border-border rounded-md disabled:opacity-40 hover:border-card-foreground transition-colors cursor-pointer"
                     >
                       Prev
-                    </button>
-                    <button
+                    </Button>
+                    <Button
                       type="button"
+                      variant="secondary"
+                      size="sm"
                       disabled={auditPage >= totalAuditPages}
                       onClick={() => setAuditPage((p) => p + 1)}
-                      className="px-2.5 py-1 border border-border rounded-md disabled:opacity-40 hover:border-card-foreground transition-colors cursor-pointer"
                     >
                       Next
-                    </button>
+                    </Button>
                   </div>
                 </div>
               )}
@@ -527,6 +461,15 @@ export function AdminDashboardPage() {
       ) : null}
     </div>
   );
+}
+
+/** Last 5 points of a real series scaled to 1-5 bar levels; undefined when fewer than 5 points. */
+function toSparklineLevels(series: number[] | undefined): number[] | undefined {
+  if (!series || series.length < 5) return undefined;
+  const slice = series.slice(-5);
+  const min = Math.min(...slice);
+  const range = Math.max(...slice) - min || 1;
+  return slice.map((val) => Math.min(5, Math.max(1, Math.round(((val - min) / range) * 4) + 1)));
 }
 
 function NothingKpiCard({
@@ -575,7 +518,7 @@ function NothingKpiCard({
               </p>
             )}
           </div>
-          <div className="min-w-0 border-l border-border/60 pl-3">
+          <div className="min-w-0 pl-3">
             <p className="text-[0.625rem] font-mono uppercase tracking-wider text-muted">
               {secondaryMetric.label}
             </p>
@@ -598,7 +541,7 @@ function NothingKpiCard({
         </div>
       )}
 
-      <p className="text-xs text-muted group-hover:text-card-foreground/80 transition-colors border-t border-border/40 pt-1.5 leading-snug">
+      <p className="text-xs text-muted group-hover:text-card-foreground/80 transition-colors pt-1.5 leading-snug">
         {subtext}
       </p>
     </Card>

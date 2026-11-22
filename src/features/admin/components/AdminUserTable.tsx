@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Skeleton } from '@/shared/components';
+import { EmptyState, Icon } from '@/shared/components';
+import { AdminUserTableSkeleton } from '../pages/AdminUsersSkeleton';
 import { ROUTES } from '@/shared/constants';
 import type { AdminUserListItem } from '../types';
 
@@ -28,49 +29,28 @@ interface AdminUserTableProps {
 function SortIcon({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
   if (!active) {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      <Icon
+        name="sort"
+        size={14}
         className="w-3.5 h-3.5 text-muted/60 group-hover:text-muted transition-colors shrink-0"
-        aria-hidden="true"
-      >
-        <path d="m5 10 3 3 3-3M5 6l3-3 3 3" />
-      </svg>
+      />
     );
   }
   if (direction === 'asc') {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      <Icon
+        name="arrow-up"
+        size={14}
         className="w-3.5 h-3.5 text-ink transition-transform shrink-0"
-        aria-hidden="true"
-      >
-        <path d="M8 13V3M4 7l4-4 4 4" />
-      </svg>
+      />
     );
   }
   return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <Icon
+      name="arrow-down"
+      size={14}
       className="w-3.5 h-3.5 text-ink transition-transform shrink-0"
-      aria-hidden="true"
-    >
-      <path d="M8 3v10m-4-4 4 4 4-4" />
-    </svg>
+    />
   );
 }
 
@@ -130,36 +110,28 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
   }, [users, sortColumn, sortDirection]);
 
   if (isLoading) {
-    return (
-      <div className="w-full max-w-full overflow-x-auto">
-        <div className="divide-y divide-border/60">
-          {Array.from({ length: 8 }, (_, i) => (
-            <div key={i} className="flex items-center justify-between px-3 py-3">
-              <div className="space-y-1.5 w-1/3">
-                <Skeleton className="h-4 w-36 rounded-xs" />
-                <Skeleton className="h-3 w-48 rounded-xs" />
-              </div>
-              <Skeleton className="h-4 w-28 rounded-xs hidden md:block" />
-              <Skeleton className="h-4 w-32 rounded-xs hidden lg:block" />
-              <Skeleton className="h-4 w-20 rounded-xs" />
-              <Skeleton className="h-4 w-24 rounded-xs" />
-            </div>
-          ))}
-        </div>
-      </div>
-    );
+    return <AdminUserTableSkeleton />;
   }
 
   if (users.length === 0) {
-    return <p className="py-6 text-sm text-muted">No users found matching filters.</p>;
+    return <EmptyState icon="users" title="No users match these filters" />;
   }
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
-            <th className="px-3 py-2 font-medium">
+          <tr className="text-xs uppercase tracking-wide text-muted">
+            <th
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortColumn === 'user'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
+            >
               <button
                 type="button"
                 onClick={() => handleSort('user')}
@@ -169,7 +141,16 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
                 <SortIcon active={sortColumn === 'user'} direction={sortDirection} />
               </button>
             </th>
-            <th className="px-3 py-2 font-medium">
+            <th
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortColumn === 'roles'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
+            >
               <button
                 type="button"
                 onClick={() => handleSort('roles')}
@@ -179,7 +160,16 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
                 <SortIcon active={sortColumn === 'roles'} direction={sortDirection} />
               </button>
             </th>
-            <th className="px-3 py-2 font-medium">
+            <th
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortColumn === 'organization'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
+            >
               <button
                 type="button"
                 onClick={() => handleSort('organization')}
@@ -189,7 +179,16 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
                 <SortIcon active={sortColumn === 'organization'} direction={sortDirection} />
               </button>
             </th>
-            <th className="px-3 py-2 font-medium">
+            <th
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortColumn === 'country'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
+            >
               <button
                 type="button"
                 onClick={() => handleSort('country')}
@@ -199,7 +198,16 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
                 <SortIcon active={sortColumn === 'country'} direction={sortDirection} />
               </button>
             </th>
-            <th className="px-3 py-2 font-medium text-right">
+            <th
+              className="px-3 py-2 font-medium text-right"
+              aria-sort={
+                sortColumn === 'joined'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
+            >
               <button
                 type="button"
                 onClick={() => handleSort('joined')}
@@ -218,14 +226,14 @@ export function AdminUserTable({ users, isLoading }: AdminUserTableProps) {
               onClick={() =>
                 navigate(ROUTES.ADMIN_USER_DETAIL.replace(':userId', String(user.userId)))
               }
-              className="border-b border-border/60 last:border-0 hover:bg-surface-hover cursor-pointer transition-colors group"
+              className="hover:bg-surface-hover cursor-pointer transition-colors group"
             >
               <td className="px-3 py-3">
                 <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
                   {user.fullName ?? user.username}
                 </div>
                 <div className="text-xs text-muted">
-                  @{user.username} · {user.email}
+                  @{user.username} {user.email}
                 </div>
               </td>
               <td className="px-3 py-3 text-card-foreground text-xs font-normal">

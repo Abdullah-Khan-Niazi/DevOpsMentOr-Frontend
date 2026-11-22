@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Button, Card, ConfirmDialog, toast } from '@/shared/components';
+import { Card, ConfirmDialog, ErrorState, toast } from '@/shared/components';
 import { useAdminInvites } from '@/features/auth/hooks';
 import type { AdminInvitePayload, PendingAdminInvite } from '@/features/auth/types';
 import { AdminInviteForm } from '../components/AdminInviteForm';
 import { InvitationStatusTable } from '../components/InvitationStatusTable';
+import { AdminPlatformAdminsSkeleton } from './AdminPlatformAdminsSkeleton';
 import '@/shared/styles/app.css';
 import './AdminPlatformAdminsPage.css';
 
@@ -40,6 +41,8 @@ export default function AdminPlatformAdminsPage() {
     });
   };
 
+  if (list.isLoading) return <AdminPlatformAdminsSkeleton />;
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <header className="app-page-header">
@@ -55,14 +58,12 @@ export default function AdminPlatformAdminsPage() {
         <Card className="admin-card">
           <h2 className="admin-card__title">Pending invitations</h2>
           {list.isError ? (
-            <div className="flex flex-col gap-3">
-              <p className="auth-alert auth-alert--error" role="alert">
-                {list.error.message}
-              </p>
-              <Button type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
-                Retry
-              </Button>
-            </div>
+            <ErrorState
+              error={list.error}
+              onRetry={() => void refetch()}
+              retrying={list.isRefetching}
+              compact
+            />
           ) : (
             <InvitationStatusTable
               invites={list.data}
