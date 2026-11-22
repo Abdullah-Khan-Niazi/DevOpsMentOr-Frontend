@@ -3,7 +3,7 @@ import { Card } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import type { ClassDto } from '../types';
 
-/** F3 contract §10: class summary card — title, professor, capacity, dates. */
+/** F3 contract §10: class summary card - title, professor, capacity, dates. */
 export function ClassCard({ klass }: { klass: ClassDto }) {
   return (
     <Link
@@ -13,13 +13,13 @@ export function ClassCard({ klass }: { klass: ClassDto }) {
       <Card interactive className="h-full p-5">
         <div className="flex items-start justify-between gap-3">
           <h3 className="font-semibold text-card-foreground">{klass.className}</h3>
-          <span className="rounded-sm bg-brand-50 px-2 py-0.5 text-xs font-medium text-brand-700">
+          <span className="text-xs font-medium text-muted-foreground">
             {klass.studentCount}/{klass.maxStudents}
           </span>
         </div>
-        <p className="mt-1 line-clamp-2 text-sm text-muted">
-          {klass.description || 'No description provided.'}
-        </p>
+        {klass.description ? (
+          <p className="mt-1 line-clamp-2 text-sm text-muted">{klass.description}</p>
+        ) : null}
         <dl className="mt-4 space-y-1 text-xs text-muted">
           <div className="flex justify-between">
             <dt>Professor</dt>

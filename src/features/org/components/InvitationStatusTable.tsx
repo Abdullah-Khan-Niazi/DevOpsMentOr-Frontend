@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
-import { Button } from '@/shared/components';
+import { Button, EmptyState, Icon } from '@/shared/components';
 import type { InvitationDto } from '../types';
+import { OrgTableSkeleton } from './OrgTableSkeleton';
 
 type SortColumn = 'inviteeEmail' | 'status' | 'createdAt' | 'expiresAt';
 type SortDirection = 'asc' | 'desc';
@@ -10,7 +11,7 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
     <span
       className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
     >
-      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+      <Icon name={active ? (direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'sort'} size={14} />
     </span>
   );
 }
@@ -83,52 +84,82 @@ export function InvitationStatusTable({
   }, [invitations, sortCol, sortDir]);
 
   if (isLoading) {
-    return (
-      <div className="py-8 text-center text-xs font-mono text-muted">Loading invitations…</div>
-    );
+    return <OrgTableSkeleton label="Loading invitations" columns={canResend ? 5 : 4} />;
   }
 
   if (invitations.length === 0) {
-    return (
-      <div className="py-10 text-center text-xs font-mono text-muted border border-dashed border-border/80 p-6">
-        No active invitations recorded for this cohort.
-      </div>
-    );
+    return <EmptyState icon="email" title="No invitations for this cohort yet" />;
   }
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm border-collapse">
         <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+          <tr className="text-xs uppercase tracking-wide text-muted font-mono">
             <th
-              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('inviteeEmail')}
+              className="px-4 py-3 font-medium"
+              aria-sort={
+                sortCol === 'inviteeEmail'
+                  ? sortDir === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
             >
-              Invitee Email <SortIcon active={sortCol === 'inviteeEmail'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('inviteeEmail')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Invitee Email <SortIcon active={sortCol === 'inviteeEmail'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('status')}
+              className="px-4 py-3 font-medium"
+              aria-sort={
+                sortCol === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('status')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('createdAt')}
+              className="px-4 py-3 font-medium"
+              aria-sort={
+                sortCol === 'createdAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Sent On <SortIcon active={sortCol === 'createdAt'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('createdAt')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Sent On <SortIcon active={sortCol === 'createdAt'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('expiresAt')}
+              className="px-4 py-3 font-medium"
+              aria-sort={
+                sortCol === 'expiresAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Expires On <SortIcon active={sortCol === 'expiresAt'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('expiresAt')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Expires On <SortIcon active={sortCol === 'expiresAt'} direction={sortDir} />
+              </button>
             </th>
             {canResend ? <th className="px-4 py-3 font-medium text-right">Actions</th> : null}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border/60">
+        <tbody>
           {sortedInvitations.map((invite) => (
             <tr key={invite.invitationId} className="hover:bg-surface/80 transition-colors">
               <td className="px-4 py-3.5 font-mono text-xs font-semibold text-card-foreground">
@@ -136,13 +167,13 @@ export function InvitationStatusTable({
               </td>
               <td className="px-4 py-3.5">
                 <span
-                  className={`inline-block px-2 py-0.5 border text-[0.625rem] font-mono font-semibold uppercase tracking-wider rounded-sm ${
+                  className={
                     invite.status === 'accepted'
-                      ? 'border-border-strong bg-accent/10 text-card-foreground'
+                      ? 'text-success'
                       : invite.status === 'pending'
-                        ? 'border-warning/50 bg-warning/10 text-warning'
-                        : 'border-border bg-surface text-muted'
-                  }`}
+                        ? 'text-warning'
+                        : 'text-muted'
+                  }
                 >
                   {STATUS_LABEL[invite.status]}
                 </span>

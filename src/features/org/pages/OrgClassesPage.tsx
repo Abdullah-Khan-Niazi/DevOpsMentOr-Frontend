@@ -1,18 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import {
-  Button,
-  Card,
-  EmptyState,
-  ErrorState,
-  PageHeader,
-  Pagination,
-} from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, Pagination } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useOrgClasses } from '../hooks';
 import type { ClassDto } from '../types';
 import { NewCohortDrawer, OrgInviteDrawer } from '../components';
+import { OrgClassesPageSkeleton } from './OrgClassesPageSkeleton';
 
 const PAGE_SIZE = 15;
 
@@ -64,13 +58,15 @@ export function OrgClassesPage() {
     });
   };
 
-  const { data, isLoading, isError, error, refetch } = useOrgClasses({
+  const { data, isLoading, isError, error, refetch, isRefetching } = useOrgClasses({
     search: search || undefined,
     page,
     pageSize: PAGE_SIZE,
   });
 
   const cohorts = useMemo<ClassDto[]>(() => data?.data ?? [], [data?.data]);
+
+  if (isLoading) return <OrgClassesPageSkeleton />;
 
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
@@ -115,37 +111,26 @@ export function OrgClassesPage() {
           <ErrorState
             message={error?.message ?? 'Unable to load cohorts.'}
             onRetry={() => void refetch()}
+            retrying={isRefetching}
           />
-        ) : isLoading ? (
-          <p className="py-8 text-center text-xs text-muted font-mono">Loading cohorts…</p>
         ) : cohorts.length === 0 ? (
-          <EmptyState
-            title={search ? 'No matching cohorts found' : 'No cohorts provisioned yet'}
-            description={
-              search
-                ? 'Try a different search keyword.'
-                : 'Provision your first academic cohort to start assigning faculty and enrolling students.'
-            }
-          />
+          <EmptyState title={search ? 'No matching cohorts found' : 'No cohorts provisioned yet'} />
         ) : (
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+                <tr className="text-xs uppercase tracking-wide text-muted font-mono">
                   <th className="px-4 py-3 font-medium">Cohort</th>
                   <th className="px-4 py-3 font-medium">Lead Professor</th>
                   <th className="px-4 py-3 font-medium">Enrolled Students</th>
                   <th className="px-4 py-3 font-medium text-right">Creation Date</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60">
+              <tbody>
                 {cohorts.map((cohort) => {
                   const percent =
                     cohort.maxStudents > 0
-                      ? Math.min(
-                          100,
-                          Math.round((cohort.studentCount / cohort.maxStudents) * 100),
-                        )
+                      ? Math.min(100, Math.round((cohort.studentCount / cohort.maxStudents) * 100))
                       : 0;
 
                   return (
@@ -209,7 +194,7 @@ export function OrgClassesPage() {
         )}
 
         {data && data.totalPages > 1 ? (
-          <div className="pt-4 border-t border-border">
+          <div className="pt-4">
             <Pagination
               page={data.page}
               pageSize={data.pageSize}

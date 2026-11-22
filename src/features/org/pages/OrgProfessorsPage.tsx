@@ -1,11 +1,12 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Card, ErrorState, PageHeader } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, Icon } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useOrgUsers } from '../hooks';
 import { OrgInviteDrawer, OrgMemberDetailDrawer } from '../components';
 import type { OrgUserDto } from '../types';
+import { OrgProfessorsPageSkeleton } from './OrgProfessorsPageSkeleton';
 
 type MemberRoleTab = 'ALL' | 'PROFESSOR' | 'ORG_STUDENT' | 'ORG_ADMIN';
 
@@ -17,7 +18,7 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
     <span
       className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
     >
-      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+      <Icon name={active ? (direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'sort'} size={14} />
     </span>
   );
 }
@@ -139,6 +140,8 @@ export function OrgProfessorsPage() {
     };
   }, [orgUsersQuery.data]);
 
+  if (orgUsersQuery.isLoading) return <OrgProfessorsPageSkeleton />;
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader
@@ -167,7 +170,7 @@ export function OrgProfessorsPage() {
             />
           </div>
 
-          {/* Role Filter Tabs — universal .tab-switcher */}
+          {/* Role Filter Tabs - universal .tab-switcher */}
           <div className="tab-switcher shrink-0 text-[0.625rem] sm:text-[0.6875rem]">
             {(
               [
@@ -195,54 +198,80 @@ export function OrgProfessorsPage() {
           <ErrorState
             message={orgUsersQuery.error?.message ?? 'Unable to load organization members.'}
             onRetry={() => void orgUsersQuery.refetch()}
+            retrying={orgUsersQuery.isRefetching}
           />
-        ) : orgUsersQuery.isLoading ? (
-          <div className="py-8 text-center text-xs text-muted font-mono">
-            Loading organization roster…
-          </div>
         ) : sortedMembers.length === 0 ? (
-          <div className="py-12 text-center text-xs text-muted font-mono space-y-2">
-            <p className="text-sm font-semibold text-card-foreground">No members found</p>
-            <p>
-              {searchQuery
-                ? 'Try adjusting your search criteria or role filter.'
-                : 'No members have been added to this roster yet.'}
-            </p>
-          </div>
+          <EmptyState
+            icon="users"
+            title={searchQuery ? 'No matching members found' : 'No members yet'}
+          />
         ) : (
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+                <tr className="text-xs uppercase tracking-wide text-muted font-mono">
                   <th
-                    className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-                    onClick={() => handleSort('fullName')}
+                    className="px-4 py-3 font-medium"
+                    aria-sort={
+                      sortCol === 'fullName'
+                        ? sortDir === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                   >
-                    Member <SortIcon active={sortCol === 'fullName'} direction={sortDir} />
+                    <button
+                      type="button"
+                      onClick={() => handleSort('fullName')}
+                      className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                    >
+                      Member <SortIcon active={sortCol === 'fullName'} direction={sortDir} />
+                    </button>
                   </th>
                   <th
-                    className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-                    onClick={() => handleSort('role')}
+                    className="px-4 py-3 font-medium"
+                    aria-sort={
+                      sortCol === 'role' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+                    }
                   >
-                    Role <SortIcon active={sortCol === 'role'} direction={sortDir} />
+                    <button
+                      type="button"
+                      onClick={() => handleSort('role')}
+                      className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                    >
+                      Role <SortIcon active={sortCol === 'role'} direction={sortDir} />
+                    </button>
                   </th>
                   <th
-                    className="px-4 py-3 font-medium cursor-pointer select-none hover:text-card-foreground"
-                    onClick={() => handleSort('classes')}
+                    className="px-4 py-3 font-medium"
+                    aria-sort={
+                      sortCol === 'classes'
+                        ? sortDir === 'asc'
+                          ? 'ascending'
+                          : 'descending'
+                        : 'none'
+                    }
                   >
-                    Assigned Cohorts <SortIcon active={sortCol === 'classes'} direction={sortDir} />
+                    <button
+                      type="button"
+                      onClick={() => handleSort('classes')}
+                      className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                    >
+                      Assigned Cohorts{' '}
+                      <SortIcon active={sortCol === 'classes'} direction={sortDir} />
+                    </button>
                   </th>
                   <th className="px-4 py-3 font-medium text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-border/60">
+              <tbody>
                 {sortedMembers.map((member: OrgUserDto) => {
                   const roleBadge =
                     member.role === 'org_admin'
-                      ? 'border border-border text-muted bg-surface'
+                      ? 'text-muted'
                       : member.role === 'professor'
-                        ? 'border border-accent text-accent font-semibold bg-accent/10'
-                        : 'border border-border/70 text-card-foreground bg-pearl-200';
+                        ? 'text-accent font-semibold'
+                        : 'text-card-foreground';
 
                   const roleLabel =
                     member.role === 'org_admin'
@@ -264,39 +293,30 @@ export function OrgProfessorsPage() {
                         <div className="text-xs text-muted font-mono">{member.email}</div>
                       </td>
                       <td className="px-4 py-3 text-xs font-mono">
-                        <span
-                          className={`px-2 py-0.5 rounded-sm uppercase text-[0.625rem] tracking-wide ${roleBadge}`}
-                        >
-                          {roleLabel}
-                        </span>
+                        <span className={roleBadge}>{roleLabel}</span>
                       </td>
                       <td className="px-4 py-3 text-xs text-card-foreground font-mono">
                         {member.classes && member.classes.length > 0 ? (
-                          <div className="flex flex-wrap gap-1">
+                          <div className="flex flex-wrap gap-x-3 gap-y-1">
                             {member.classes.map((c) => (
-                              <span
-                                key={c.classId}
-                                className="border border-border px-1.5 py-0.5 rounded-sm bg-surface text-[0.625rem]"
-                              >
-                                {c.className}
-                              </span>
+                              <span key={c.classId}>{c.className}</span>
                             ))}
                           </div>
                         ) : (
-                          <span className="text-muted text-[0.6875rem]">—</span>
+                          <span className="text-muted text-[0.6875rem]">-</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <button
-                          type="button"
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={(e) => {
                             e.stopPropagation();
                             setSelectedUserId(member.userId);
                           }}
-                          className="text-xs font-mono text-muted hover:text-card-foreground hover:underline transition-colors cursor-pointer"
                         >
-                          View detail &rarr;
-                        </button>
+                          View detail
+                        </Button>
                       </td>
                     </tr>
                   );

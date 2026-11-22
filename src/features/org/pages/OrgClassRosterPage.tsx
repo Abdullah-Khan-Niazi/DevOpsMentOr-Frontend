@@ -5,10 +5,7 @@ import { ROUTES } from '@/shared/constants';
 export function OrgClassRosterPage() {
   const { classId = '' } = useParams<{ classId: string }>();
   return (
-    <Navigate
-      to={`${ROUTES.ORG_CLASS_DETAIL.replace(':classId', classId)}?tab=students`}
-      replace
-    />
+    <Navigate to={`${ROUTES.ORG_CLASS_DETAIL.replace(':classId', classId)}?tab=students`} replace />
   );
 }
 

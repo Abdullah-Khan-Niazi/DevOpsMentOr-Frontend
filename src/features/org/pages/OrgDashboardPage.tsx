@@ -8,16 +8,23 @@ import {
   OrgDashboardSkeleton,
   Skeleton,
   PageHeader,
-  TabRow,
-  type TabItem,
+  Icon,
+  TabPanel,
+  TabSwitcher,
+  type TabSwitcherItem,
 } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
+import { useUrlState } from '@/shared/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useMyOrg, useOrgClasses, useOrgUsers } from '../hooks';
 import type { ClassDto, OrgUserDto } from '../types';
 import { NewCohortDrawer, OrgInviteDrawer, OrgMemberDetailDrawer } from '../components';
+import { safeHttpUrl } from '@/shared/utils';
 
-const TABS: TabItem[] = [
+const TAB_IDS = ['cohorts', 'members'] as const;
+type OrgDashboardTab = (typeof TAB_IDS)[number];
+
+const TABS: ReadonlyArray<TabSwitcherItem<OrgDashboardTab>> = [
   { id: 'cohorts', label: 'Cohorts' },
   { id: 'members', label: 'Organization Members' },
 ];
@@ -37,26 +44,24 @@ export function OrgDashboardPage() {
   const orgUsersQuery = useOrgUsers(canManageOrg);
 
   const canInvite = permissions.some((p) =>
-    ['org:professors:invite', 'org:students:invite', 'class:students:invite', 'org:manage'].includes(p),
+    [
+      'org:professors:invite',
+      'org:students:invite',
+      'class:students:invite',
+      'org:manage',
+    ].includes(p),
   );
   const canViewSettings = canManageOrg;
 
-  // Synchronize active tab with URL query parameters. Professors do not receive
-  // the org-directory tab; only org admins may see organization members.
+  // Active tab lives in the URL. Professors do not receive the org-directory
+  // tab; only org admins may see organization members.
+  const [urlTab, setUrlTab] = useUrlState<OrgDashboardTab>('tab', TAB_IDS, 'cohorts');
+  const activeTab: OrgDashboardTab = canManageOrg ? urlTab : 'cohorts';
   const tabs = canManageOrg ? TABS : TABS.slice(0, 1);
-  const tabParam = searchParams.get('tab') || 'cohorts';
-  const activeTab = canManageOrg && tabParam === 'members' ? 'members' : 'cohorts';
 
-  const setActiveTab = (tabId: string) => {
+  const setActiveTab = (tabId: OrgDashboardTab) => {
     if (tabId === 'members' && !canManageOrg) return;
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('tab', tabId);
-        return next;
-      },
-      { replace: true },
-    );
+    setUrlTab(tabId);
   };
 
   // Drawer states bound to search parameters for seamless back button support
@@ -156,8 +161,8 @@ export function OrgDashboardPage() {
         actions={
           <div className="flex items-center gap-2">
             {canCreateCohort ? (
-              <Button variant="primary" size="sm" onClick={openCohortDrawer}>
-                + New Cohort
+              <Button variant="primary" size="sm" iconName="plus" onClick={openCohortDrawer}>
+                New Cohort
               </Button>
             ) : null}
             {canInvite ? (
@@ -173,9 +178,9 @@ export function OrgDashboardPage() {
       <Card className="p-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div className="flex items-center gap-4 min-w-0">
-            {org.logoUrl ? (
+            {safeHttpUrl(org.logoUrl) ? (
               <img
-                src={org.logoUrl}
+                src={safeHttpUrl(org.logoUrl) ?? undefined}
                 alt={`${org.name} logo`}
                 className="h-12 w-12 border border-border object-contain shrink-0"
               />
@@ -188,39 +193,36 @@ export function OrgDashboardPage() {
               <div className="flex items-center gap-2">
                 <h2 className="text-lg font-bold text-card-foreground truncate">{org.name}</h2>
                 {org.isVerified ? (
-                  <span className="border border-border bg-secondary px-1.5 py-0.5 text-[0.625rem] font-semibold uppercase tracking-wider text-secondary-foreground font-mono">
-                    Verified
-                  </span>
+                  <Icon
+                    name="verified"
+                    size={16}
+                    title="Verified organization"
+                    className="text-muted shrink-0"
+                  />
                 ) : null}
               </div>
-              <p className="mt-0.5 text-xs text-muted font-mono">
-                {[
-                  org.industry,
-                  org.emailDomain ? `@${org.emailDomain} restricted` : 'Open enrollment',
-                ]
-                  .filter(Boolean)
-                  .join(' · ')}
-              </p>
+              <div className="mt-0.5 flex flex-wrap items-center gap-3 text-xs text-muted font-mono">
+                {org.industry ? <span>{org.industry}</span> : null}
+                <span>
+                  {org.emailDomain ? `@${org.emailDomain} restricted` : 'Open enrollment'}
+                </span>
+              </div>
             </div>
           </div>
           {canViewSettings ? (
             <Link to={ROUTES.ORG_SETTINGS} className="shrink-0">
-              <Button variant="ghost" size="sm">
-                Organization settings &rarr;
+              <Button variant="ghost" size="sm" iconName="arrow-right" iconPosition="right">
+                Organization settings
               </Button>
             </Link>
           ) : null}
         </div>
       </Card>
 
-      {/* Top Organization Vitals Strip — Pure DB-driven metrics with micro-interactions */}
+      {/* Organization vitals: DB-driven metrics */}
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div onClick={() => setActiveTab('cohorts')} className="cursor-pointer">
-          <OrgKpiTile
-            label="Active Cohorts"
-            value={org.stats.classCount}
-            subtext="Provisioned cohorts in organization"
-          />
+          <OrgKpiTile label="Active Cohorts" value={org.stats.classCount} />
         </div>
         <div
           onClick={() => {
@@ -233,7 +235,6 @@ export function OrgDashboardPage() {
           <OrgKpiTile
             label="Enrolled Students"
             value={org.stats.studentCount}
-            subtext="Active learners across all rosters"
             interactive={canManageOrg}
           />
         </div>
@@ -248,7 +249,6 @@ export function OrgDashboardPage() {
           <OrgKpiTile
             label="Students & Professors"
             value={org.stats.professorCount}
-            subtext="Academic professors and cohort educators"
             interactive={canManageOrg}
           />
         </div>
@@ -256,35 +256,35 @@ export function OrgDashboardPage() {
           <OrgKpiTile
             label="Seat Utilization"
             value={totalCapacity > 0 ? `${utilizationRate}%` : 'Nominal'}
-            subtext={
-              totalCapacity > 0
-                ? `${org.stats.studentCount} of ${totalCapacity} allocated seats`
-                : 'Quota ceiling active'
-            }
             interactive={false}
           />
         </div>
       </div>
 
-      {/* Workspace Navigation Tabs */}
-      <TabRow items={tabs} activeId={activeTab} onChange={setActiveTab} />
+      <TabSwitcher
+        items={tabs}
+        value={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Organization dashboard sections"
+        idPrefix="org-dashboard"
+      />
 
       {/* ─── TAB 1: Cohorts Workspaces ─── */}
-      {activeTab === 'cohorts' && (
+      <TabPanel idPrefix="org-dashboard" id="cohorts" active={activeTab === 'cohorts'}>
         <Card className="p-6 space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
             <div>
               <h3 className="text-base font-semibold text-card-foreground">Cohorts</h3>
             </div>
             <Link to={ROUTES.ORG_CLASSES}>
-              <Button variant="secondary" size="sm">
-                View All Cohorts &rarr;
+              <Button variant="secondary" size="sm" iconName="arrow-right" iconPosition="right">
+                View All Cohorts
               </Button>
             </Link>
           </div>
 
           {classesQuery.isLoading ? (
-            <div className="divide-y divide-border/60 border-t border-border/80 pt-2">
+            <div>
               {Array.from({ length: 4 }, (_, i) => (
                 <div key={i} className="flex items-center justify-between py-3.5 px-4">
                   <div className="space-y-1.5 w-1/3">
@@ -301,22 +301,19 @@ export function OrgDashboardPage() {
               ))}
             </div>
           ) : cohorts.length === 0 ? (
-            <EmptyState
-              title="No cohorts provisioned yet"
-              description="Create your first cohort using the button on top to start inviting students and tracking lab telemetry."
-            />
+            <EmptyState title="No cohorts provisioned yet" />
           ) : (
             <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+                  <tr className="text-xs text-muted font-mono">
                     <th className="px-4 py-3 font-medium">Cohort</th>
                     <th className="px-4 py-3 font-medium">Lead Professor</th>
                     <th className="px-4 py-3 font-medium">Enrolled Capacity</th>
                     <th className="px-4 py-3 font-medium text-right">Provisioned</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60">
+                <tbody>
                   {cohorts.map((c: ClassDto) => {
                     const percent =
                       c.maxStudents > 0
@@ -376,12 +373,12 @@ export function OrgDashboardPage() {
             </div>
           )}
         </Card>
-      )}
+      </TabPanel>
 
       {/* ─── TAB 2: Organization Members & Telemetry (org admins only) ─── */}
-      {canManageOrg && activeTab === 'members' && (
+      <TabPanel idPrefix="org-dashboard" id="members" active={activeTab === 'members'}>
         <Card className="p-6 space-y-4">
-          <div className="border-b border-border pb-4">
+          <div>
             <h3 className="text-base font-semibold text-card-foreground">Organization Members</h3>
           </div>
 
@@ -412,7 +409,7 @@ export function OrgDashboardPage() {
           </div>
 
           {orgUsersQuery.isLoading ? (
-            <div className="divide-y divide-border/60 border-t border-border/80 pt-2">
+            <div>
               {Array.from({ length: 6 }, (_, j) => (
                 <div key={j} className="flex items-center justify-between py-3 px-4">
                   <div className="flex items-center gap-3 w-1/3">
@@ -432,17 +429,12 @@ export function OrgDashboardPage() {
           ) : filteredMembers.length === 0 ? (
             <EmptyState
               title={memberSearch ? 'No matching members' : 'No organization members found'}
-              description={
-                memberSearch
-                  ? 'Try adjusting your search query or filter.'
-                  : 'Invite students or professors using the button above to populate your organization workspace.'
-              }
             />
           ) : (
             <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-sm border-collapse">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+                  <tr className="text-xs text-muted font-mono">
                     <th className="px-4 py-3 font-medium">Member</th>
                     <th className="px-4 py-3 font-medium">Role</th>
                     <th className="px-4 py-3 font-medium">Assigned Cohorts</th>
@@ -450,7 +442,7 @@ export function OrgDashboardPage() {
                     <th className="px-4 py-3 font-medium text-right">Joined</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60">
+                <tbody>
                   {filteredMembers.map((m: OrgUserDto) => {
                     const roleLabel =
                       m.role === 'org_admin'
@@ -493,7 +485,7 @@ export function OrgDashboardPage() {
                           {m.classes.length > 0 ? (
                             m.classes.map((c) => c.className).join(', ')
                           ) : (
-                            <span className="text-muted/60">—</span>
+                            <span className="text-muted/60">-</span>
                           )}
                         </td>
                         <td className="px-4 py-3 text-xs text-card-foreground font-mono text-center">
@@ -510,7 +502,7 @@ export function OrgDashboardPage() {
             </div>
           )}
         </Card>
-      )}
+      </TabPanel>
 
       {/* ─── SLIDE-OVER DRAWERS ─── */}
       <NewCohortDrawer
@@ -549,12 +541,10 @@ export function OrgDashboardPage() {
 function OrgKpiTile({
   label,
   value,
-  subtext,
   interactive = true,
 }: {
   label: string;
   value: string | number;
-  subtext: string;
   interactive?: boolean;
 }) {
   return (
@@ -564,14 +554,13 @@ function OrgKpiTile({
       }`}
     >
       <div>
-        <p className="text-xs font-medium uppercase tracking-wider text-muted transition-colors group-hover:text-card-foreground font-mono">
+        <p className="text-xs font-medium text-muted transition-colors group-hover:text-card-foreground font-mono">
           {label}
         </p>
         <p className="mt-1.5 text-3xl font-bold tracking-tight text-card-foreground font-mono">
           {typeof value === 'number' ? value.toLocaleString() : value}
         </p>
       </div>
-      <p className="mt-2 text-xs text-muted">{subtext}</p>
     </Card>
   );
 }

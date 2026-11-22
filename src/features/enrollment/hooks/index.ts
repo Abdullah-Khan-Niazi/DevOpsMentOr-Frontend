@@ -1,1 +1,6 @@
-export { useAcceptInvitation, useMyClass, useMyClasses, useValidateInvitation } from './useEnrollment';
+export {
+  useAcceptInvitation,
+  useMyClass,
+  useMyClasses,
+  useValidateInvitation,
+} from './useEnrollment';

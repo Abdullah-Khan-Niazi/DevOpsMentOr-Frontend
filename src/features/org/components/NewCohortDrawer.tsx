@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Button, Input, toast } from '@/shared/components';
+import { useState } from 'react';
+import { Button, Drawer, Input, toast } from '@/shared/components';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useCreateClass, useOrgProfessors } from '../hooks';
 import { classService } from '../services';
@@ -15,11 +15,22 @@ interface NewCohortDrawerProps {
  * opening starts from a clean draft without a state-resetting effect.
  */
 export function NewCohortDrawer({ isOpen, onClose, onSuccess }: NewCohortDrawerProps) {
-  if (!isOpen) return null;
-  return <NewCohortDrawerForm onClose={onClose} onSuccess={onSuccess} />;
+  const [session, setSession] = useState(0);
+  const [wasOpen, setWasOpen] = useState(isOpen);
+  if (isOpen !== wasOpen) {
+    setWasOpen(isOpen);
+    if (isOpen) setSession((n) => n + 1);
+  }
+  return (
+    <NewCohortDrawerForm key={session} open={isOpen} onClose={onClose} onSuccess={onSuccess} />
+  );
 }
 
-function NewCohortDrawerForm({ onClose, onSuccess }: Omit<NewCohortDrawerProps, 'isOpen'>) {
+function NewCohortDrawerForm({
+  open,
+  onClose,
+  onSuccess,
+}: Omit<NewCohortDrawerProps, 'isOpen'> & { open: boolean }) {
   const [className, setClassName] = useState('');
   const [nameError, setNameError] = useState<string | null>(null);
   const [slug, setSlug] = useState('');
@@ -36,16 +47,12 @@ function NewCohortDrawerForm({ onClose, onSuccess }: Omit<NewCohortDrawerProps, 
   const professorsQuery = useOrgProfessors(canAssignProfessor);
   const professors = professorsQuery.query.data ?? [];
 
-  // Handle ESC key press
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  const dirty =
+    className !== '' ||
+    slug !== '' ||
+    description !== '' ||
+    maxStudents !== '50' ||
+    selectedProfessorId !== '';
 
   const handleNameChange = (name: string) => {
     setClassName(name);
@@ -108,117 +115,92 @@ function NewCohortDrawerForm({ onClose, onSuccess }: Omit<NewCohortDrawerProps, 
   };
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-ink/50 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title="New Class Cohort"
+      dirty={dirty}
+      busy={isSubmitting}
+      footer={(requestClose) => (
+        <>
+          <Button variant="secondary" onClick={requestClose} disabled={isSubmitting}>
+            Cancel
+          </Button>
+          <Button type="submit" form="new-cohort-form" isLoading={isSubmitting}>
+            Provision Cohort
+          </Button>
+        </>
+      )}
+    >
+      <form id="new-cohort-form" onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          label="Cohort / Class Name"
+          placeholder="e.g. CS 101: Intro to Systems"
+          value={className}
+          error={nameError ?? undefined}
+          onChange={(e) => handleNameChange(e.target.value)}
+          required
+        />
 
-      {/* Slide-over panel */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <h2 className="text-lg font-bold text-card-foreground">New Class Cohort</h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 text-muted hover:text-card-foreground transition-colors rounded-sm cursor-pointer"
-                aria-label="Close drawer"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
-            </div>
+        <Input
+          label="Identifier / Slug"
+          placeholder="e.g. cs-101-systems"
+          value={slug}
+          error={slugError ?? undefined}
+          onChange={(e) => {
+            setSlug(e.target.value);
+            if (slugError) setSlugError(null);
+          }}
+          required
+        />
 
-            <form id="new-cohort-form" onSubmit={handleSubmit} className="space-y-4">
-              <Input
-                label="Cohort / Class Name"
-                placeholder="e.g. CS 101 — Intro to Systems"
-                value={className}
-                error={nameError ?? undefined}
-                onChange={(e) => handleNameChange(e.target.value)}
-                required
-              />
-
-              <Input
-                label="Identifier / Slug"
-                placeholder="e.g. cs-101-systems"
-                value={slug}
-                error={slugError ?? undefined}
-                onChange={(e) => {
-                  setSlug(e.target.value);
-                  if (slugError) setSlugError(null);
-                }}
-                required
-              />
-
-              <div>
-                <label htmlFor="cohort-desc" className="input-label">
-                  Description
-                </label>
-                <textarea
-                  id="cohort-desc"
-                  rows={3}
-                  className="input-field w-full"
-                  placeholder="Syllabus outline, expectations, or cohort objectives…"
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                />
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-2">
-                <Input
-                  label="Student Capacity Ceiling"
-                  type="number"
-                  min={1}
-                  placeholder="50"
-                  value={maxStudents}
-                  onChange={(e) => setMaxStudents(e.target.value)}
-                  required
-                />
-
-                {canAssignProfessor ? (
-                  <div>
-                    <label htmlFor="cohort-professor" className="input-label">
-                      Lead Faculty / Professor
-                    </label>
-                    <select
-                      id="cohort-professor"
-                      className="input-field w-full"
-                      value={selectedProfessorId}
-                      onChange={(e) => setSelectedProfessorId(e.target.value)}
-                    >
-                      <option value="">Unassigned (assign later)</option>
-                      {professors.map((p) => (
-                        <option key={p.userId} value={String(p.userId)}>
-                          {p.fullName ? `${p.fullName} (${p.email})` : p.email}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                ) : null}
-              </div>
-            </form>
-          </div>
-
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-border mt-6">
-            <Button variant="secondary" onClick={onClose} disabled={isSubmitting}>
-              Cancel
-            </Button>
-            <Button type="submit" form="new-cohort-form" isLoading={isSubmitting}>
-              Provision Cohort
-            </Button>
-          </div>
+        <div>
+          <label htmlFor="cohort-desc" className="input-label">
+            Description
+          </label>
+          <textarea
+            id="cohort-desc"
+            rows={3}
+            className="input-field w-full"
+            placeholder="Syllabus outline, expectations, or cohort objectives…"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Input
+            label="Student Capacity Ceiling"
+            type="number"
+            min={1}
+            placeholder="50"
+            value={maxStudents}
+            onChange={(e) => setMaxStudents(e.target.value)}
+            required
+          />
+
+          {canAssignProfessor ? (
+            <div>
+              <label htmlFor="cohort-professor" className="input-label">
+                Lead Faculty / Professor
+              </label>
+              <select
+                id="cohort-professor"
+                className="input-field w-full"
+                value={selectedProfessorId}
+                onChange={(e) => setSelectedProfessorId(e.target.value)}
+              >
+                <option value="">Unassigned (assign later)</option>
+                {professors.map((p) => (
+                  <option key={p.userId} value={String(p.userId)}>
+                    {p.fullName ? `${p.fullName} (${p.email})` : p.email}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
+        </div>
+      </form>
+    </Drawer>
   );
 }

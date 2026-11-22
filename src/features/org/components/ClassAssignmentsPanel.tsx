@@ -1,14 +1,7 @@
 import { useMemo, useState } from 'react';
-import {
-  Button,
-  Card,
-  ConfirmDialog,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  toast,
-} from '@/shared/components';
+import { Button, Card, ConfirmDialog, EmptyState, ErrorState, toast } from '@/shared/components';
 import { cn } from '@/shared/utils';
+import { ClassAssignmentsPanelSkeleton } from './ClassAssignmentsPanelSkeleton';
 import type { AssignmentDeadlineState, ClassAssignmentWithStatsDto } from '../types';
 import {
   useClassAssignments,
@@ -27,11 +20,11 @@ const STATE_LABELS: Record<AssignmentDeadlineState, string> = {
 };
 
 const STATE_CLASSES: Record<AssignmentDeadlineState, string> = {
-  completed: 'border-success/40 bg-success/10 text-success',
-  overdue: 'border-error/40 bg-error/10 text-error',
-  due_soon: 'border-warning/40 bg-warning/10 text-warning',
-  on_track: 'border-border bg-surface text-muted',
-  no_deadline: 'border-border bg-surface text-muted',
+  completed: 'text-success',
+  overdue: 'text-error',
+  due_soon: 'text-warning',
+  on_track: 'text-muted',
+  no_deadline: 'text-muted',
 };
 
 function formatDate(value: string | null): string {
@@ -128,7 +121,7 @@ export function ClassAssignmentsPanel({ classId, canManage }: ClassAssignmentsPa
   };
 
   if (assignmentsQuery.isLoading) {
-    return <LoadingState label="Loading cohort assignments…" />;
+    return <ClassAssignmentsPanelSkeleton />;
   }
 
   if (assignmentsQuery.isError) {
@@ -136,6 +129,7 @@ export function ClassAssignmentsPanel({ classId, canManage }: ClassAssignmentsPa
       <ErrorState
         message={assignmentsQuery.error?.message ?? 'Unable to load cohort assignments.'}
         onRetry={() => void assignmentsQuery.refetch()}
+        retrying={assignmentsQuery.isRefetching}
       />
     );
   }
@@ -144,13 +138,7 @@ export function ClassAssignmentsPanel({ classId, canManage }: ClassAssignmentsPa
     <div className="space-y-6">
       {canManage ? (
         <Card className="space-y-4 p-6">
-          <div>
-            <h3 className="text-base font-semibold text-card-foreground">Assign a course</h3>
-            <p className="mt-0.5 text-xs text-muted">
-              Course-level assignments with an optional deadline. Assigned courses are always
-              accessible to this cohort; deadlines drive the task board and compliance stats.
-            </p>
-          </div>
+          <h3 className="text-base font-semibold text-card-foreground">Assign a course</h3>
 
           <div className="grid gap-4 lg:grid-cols-[2fr_1.4fr_auto_auto] lg:items-end">
             <div>
@@ -219,14 +207,7 @@ export function ClassAssignmentsPanel({ classId, canManage }: ClassAssignmentsPa
       ) : null}
 
       {assignments.length === 0 ? (
-        <EmptyState
-          title="No courses assigned yet"
-          description={
-            canManage
-              ? 'Assign the first course above so this cohort gets a task board and compliance tracking.'
-              : 'Your professor has not assigned a course to this cohort yet.'
-          }
-        />
+        <EmptyState title="No courses assigned yet" />
       ) : (
         <div className="space-y-3">
           {assignments.map((assignment) => {
@@ -243,15 +224,10 @@ export function ClassAssignmentsPanel({ classId, canManage }: ClassAssignmentsPa
                     </p>
                     <p className="mt-0.5 text-xs text-muted">
                       {formatDate(assignment.dueDate)}
-                      {assignment.isMandatory ? ' · Mandatory' : ' · Optional'}
+                      {assignment.isMandatory ? ', Mandatory' : ', Optional'}
                     </p>
                   </div>
-                  <span
-                    className={cn(
-                      'rounded-xs border px-2 py-0.5 text-xs font-medium',
-                      STATE_CLASSES[assignment.state],
-                    )}
-                  >
+                  <span className={cn('text-xs font-medium', STATE_CLASSES[assignment.state])}>
                     {STATE_LABELS[assignment.state]}
                   </span>
                 </div>
@@ -266,7 +242,7 @@ export function ClassAssignmentsPanel({ classId, canManage }: ClassAssignmentsPa
                 </div>
 
                 {canManage ? (
-                  <div className="flex flex-wrap items-end gap-2 border-t border-border pt-3">
+                  <div className="flex flex-wrap items-end gap-2 pt-3">
                     <div>
                       <label
                         htmlFor={`assignment-due-${assignment.assignmentId}`}
