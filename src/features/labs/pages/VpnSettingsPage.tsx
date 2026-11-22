@@ -1,6 +1,7 @@
 import '../styles/labs.css';
 import { useState } from 'react';
-import { Button, Card, ErrorState, LoadingState, PageHeader } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader } from '@/shared/components';
+import { VpnSettingsSkeleton } from './VpnSettingsSkeleton';
 import { useVpnConfig } from '../hooks';
 import type { VpnRegion } from '../types';
 
@@ -10,21 +11,19 @@ export function VpnSettingsPage() {
   const { data, isLoading, isError, error, refetch, isFetching } = useVpnConfig();
 
   if (isLoading) {
-    return <LoadingState />;
+    return <VpnSettingsSkeleton />;
   }
 
   return (
     <div className="vpn-settings">
-      <PageHeader
-        title="VPN"
-        description="Your secure network assignment for lab instances. The config link expires after one hour."
-      />
+      <PageHeader title="VPN" />
 
       {isError ? (
         <ErrorState
           title="Could not load VPN config"
           message={error.message}
           onRetry={() => void refetch()}
+          retrying={isFetching}
         />
       ) : (
         <Card className="vpn-settings__card">
@@ -54,10 +53,7 @@ export function VpnSettingsPage() {
               )}
             </dl>
           ) : (
-            <p className="vpn-settings__empty">
-              You do not have a VPN assignment yet. It is created automatically when you start a
-              lab.
-            </p>
+            <EmptyState title="No VPN assignment yet" icon="vpn" />
           )}
 
           <div className="vpn-settings__actions">
@@ -84,14 +80,9 @@ export function VpnSettingsPage() {
               </Button>
             </div>
             {data?.ovpnConfigUrl && (
-              <a
-                className="btn btn--primary btn--md"
-                href={data.ovpnConfigUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <Button href={data.ovpnConfigUrl} external>
                 Download OpenVPN config
-              </a>
+              </Button>
             )}
           </div>
         </Card>

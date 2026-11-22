@@ -1,6 +1,17 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, toast } from '@/shared/components';
-import { aiMentorService } from '../services/aiMentorService';
+import {
+  Button,
+  Drawer,
+  EmptyState,
+  ErrorState,
+  IconButton,
+  Icon,
+  Markdown,
+  Textarea,
+} from '@/shared/components';
+import { useRetryAfter } from '@/shared/hooks';
+import { getErrorMessage } from '@/shared/services/apiError';
+import { aiMentorService, AiMentorError } from '../services/aiMentorService';
 import { MentorOrb, type MentorOrbState } from './MentorOrb';
 
 interface ChatMessage {
@@ -8,199 +19,271 @@ interface ChatMessage {
   content: string;
 }
 
-interface AiMentorModalProps {
-  lessonId: number;
+export interface AiMentorDrawerProps {
+  /** Defaults to true: callers that mount the drawer only while it is open may omit it. */
+  open?: boolean;
+  onClose: () => void;
+  /** Lesson context (item page). Omit both ids for general mode (personal dashboard). */
+  lessonId?: number;
+  /** Lab context (lab workspace). */
   labId?: number;
-  onClose?: () => void;
+  /** @deprecated the orb state is shown inside the drawer; kept for the legacy LabWorkspace. */
   onBotStateChange?: (state: MentorOrbState) => void;
 }
 
+const MAX_MESSAGE_LENGTH = 2000;
+
 /**
- * Floating AI Mentor chat modal originating from the bottom-right isometric trigger.
- * Streams SSE deltas and drives the dotted 3D spherical orb across all bot states.
+ * AI Mentor chat on the shared `Drawer` (portal, focus trap, Esc, overlay stack).
+ * States: empty (prompt only), streaming (partial reply with a stop button), error
+ * with retry, and rate-limited with a countdown. Replies are rendered through the
+ * shared sanitized `Markdown`. The bearer token and the 401 refresh live in
+ * `aiMentorService`; no URL comes from the user.
  */
-export function AiMentorModal({ lessonId, labId, onClose, onBotStateChange }: AiMentorModalProps) {
+export function AiMentorDrawer({
+  open = true,
+  onClose,
+  lessonId,
+  labId,
+  onBotStateChange,
+}: AiMentorDrawerProps) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [input, setInput] = useState('');
-  const [isStreaming, setIsStreaming] = useState(false);
+  const [draft, setDraft] = useState('');
+  const [streaming, setStreaming] = useState(false);
   const [pendingText, setPendingText] = useState('');
-  const [botState, setBotState] = useState<MentorOrbState>('rest');
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const resetTimerRef = useRef<number | null>(null);
+  const [error, setError] = useState<unknown>(null);
+  const [lastQuestion, setLastQuestion] = useState<string | null>(null);
 
-  const updateBotState = (next: MentorOrbState): void => {
-    setBotState(next);
-    onBotStateChange?.(next);
-  };
+  const historyRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
+  const abortRef = useRef<AbortController | null>(null);
 
-  useEffect(() => {
-    scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
-  }, [messages, pendingText]);
+  const { secondsLeft, blocked } = useRetryAfter(error);
+  const rateLimited = error instanceof AiMentorError && error.reason === 'rate_limited';
 
-  useEffect(() => {
-    if (!onClose) return;
-    const handleKeyDown = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [onClose]);
+  const orbState: MentorOrbState = streaming
+    ? pendingText.length > 0
+      ? 'working'
+      : 'thinking'
+    : error
+      ? 'error'
+      : draft.trim().length > 0
+        ? 'listening'
+        : 'rest';
 
   useEffect(() => {
-    return () => {
-      if (resetTimerRef.current !== null) {
-        window.clearTimeout(resetTimerRef.current);
-      }
-    };
-  }, []);
+    onBotStateChange?.(orbState);
+  }, [orbState, onBotStateChange]);
 
-  const scheduleRest = (delayMs: number): void => {
-    if (resetTimerRef.current !== null) {
-      window.clearTimeout(resetTimerRef.current);
-    }
-    resetTimerRef.current = window.setTimeout(() => {
-      updateBotState('rest');
-    }, delayMs);
-  };
+  useEffect(() => {
+    historyRef.current?.scrollTo({ top: historyRef.current.scrollHeight, behavior: 'smooth' });
+  }, [messages, pendingText, error]);
 
-  const send = async (): Promise<void> => {
-    const content = input.trim();
-    if (content.length === 0 || isStreaming) {
-      return;
-    }
-    if (resetTimerRef.current !== null) {
-      window.clearTimeout(resetTimerRef.current);
-    }
-    setInput('');
-    setIsStreaming(true);
-    updateBotState('thinking');
-    setMessages((prev) => [...prev, { role: 'user', content }]);
+  // Closing (or leaving the page) stops an in-flight reply so nothing updates a closed drawer.
+  useEffect(() => {
+    if (!open) abortRef.current?.abort();
+    return () => abortRef.current?.abort();
+  }, [open]);
+
+  const runStream = async (content: string, appendUser: boolean) => {
+    abortRef.current?.abort();
+    const controller = new AbortController();
+    abortRef.current = controller;
+
+    setError(null);
+    setLastQuestion(content);
+    setStreaming(true);
     setPendingText('');
-    let hadError = false;
+    if (appendUser) {
+      setMessages((prev) => [...prev, { role: 'user', content }]);
+    }
+
     try {
-      const events = await aiMentorService.streamMessage(content, lessonId, labId);
-      let reply = '';
-      for (const event of events) {
-        if (event.delta !== undefined) {
-          if (reply.length === 0) {
-            updateBotState('working');
-          }
-          reply += event.delta;
-          setPendingText(reply);
-        }
-        if (event.done) {
-          break;
-        }
-        if (event.error) {
-          hadError = true;
-          toast.error(event.error);
-        }
-      }
-      if (reply.length > 0) {
+      const reply = await aiMentorService.streamMessage(
+        { message: content, lessonId, labId },
+        {
+          signal: controller.signal,
+          onDelta: (text) => setPendingText((prev) => prev + text),
+        },
+      );
+      if (controller.signal.aborted) return;
+      if (reply.trim().length > 0) {
         setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       }
-      if (hadError) {
-        updateBotState('error');
-        scheduleRest(1400);
-      } else {
-        updateBotState('success');
-        scheduleRest(1200);
-      }
-    } catch (error) {
-      toast.error((error as Error).message ?? 'AI Mentor is temporarily unavailable.');
-      updateBotState('error');
-      scheduleRest(1400);
+    } catch (failure) {
+      if (controller.signal.aborted) return;
+      setError(failure);
     } finally {
-      setPendingText('');
-      setIsStreaming(false);
+      if (abortRef.current === controller) {
+        abortRef.current = null;
+        setPendingText('');
+        setStreaming(false);
+      }
     }
   };
 
-  const clear = (): void => {
-    if (!window.confirm('Clear conversation history?')) {
-      return;
-    }
+  const canSend = !streaming && !blocked && draft.trim().length > 0;
+
+  const submit = () => {
+    const content = draft.trim();
+    if (!canSend || content.length === 0) return;
+    setDraft('');
+    void runStream(content, true);
+  };
+
+  const stop = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setPendingText('');
+    setStreaming(false);
+  };
+
+  const retry = () => {
+    if (!lastQuestion || streaming || blocked) return;
+    void runStream(lastQuestion, false);
+  };
+
+  const clear = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
     setMessages([]);
     setPendingText('');
-    updateBotState('rest');
+    setError(null);
+    setLastQuestion(null);
+    setStreaming(false);
   };
 
-  return (
-    <section
-      className="ai-mentor-modal"
-      data-testid="ai-mentor-modal"
-      role="dialog"
-      aria-label="AI Mentor"
-    >
-      <header className="ai-mentor-modal__header">
-        <div className="ai-mentor-modal__identity">
-          <MentorOrb state={botState} size="sm" />
-          <h2 className="ai-mentor-modal__title">AI Mentor</h2>
-        </div>
-        <div className="ai-mentor-modal__header-actions">
-          {messages.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clear}>
-              Clear
-            </Button>
-          )}
-          {onClose && (
-            <Button variant="ghost" size="sm" onClick={onClose} aria-label="Close AI Mentor">
-              ✕
-            </Button>
-          )}
-        </div>
-      </header>
+  const errorMessage = error
+    ? getErrorMessage(error, 'AI Mentor is temporarily unavailable.')
+    : null;
+  const canRetry =
+    lastQuestion !== null &&
+    error !== null &&
+    !(error instanceof AiMentorError && error.reason === 'forbidden');
 
-      <div className="ai-mentor-modal__history" ref={scrollRef}>
-        {messages.length === 0 && !pendingText && (
-          <p className="ai-mentor-modal__empty">Ask me anything about this lesson or lab.</p>
-        )}
-        {messages.map((message, index) => (
-          <div
-            key={`${message.role}-${index}`}
-            className={`ai-mentor-message ai-mentor-message--${message.role}`}
-          >
-            {message.content}
-          </div>
-        ))}
-        {isStreaming && (
-          <div className="ai-mentor-message ai-mentor-message--assistant">
-            {pendingText}
-            <span className="ai-mentor-modal__typing" aria-label="AI Mentor is typing" />
-          </div>
-        )}
-      </div>
-
-      <footer className="ai-mentor-modal__input-row">
-        <textarea
-          className="ai-mentor-modal__input"
-          value={input}
-          maxLength={2000}
+  const footer = (
+    <div className="flex flex-col gap-2">
+      <div className="flex items-end gap-2">
+        <Textarea
+          ref={inputRef}
+          aria-label="Message to the AI Mentor"
+          className="min-h-0 flex-1 resize-none"
+          value={draft}
+          maxLength={MAX_MESSAGE_LENGTH}
           rows={2}
           placeholder="Ask the AI Mentor…"
-          onChange={(event) => {
-            const nextVal = event.target.value;
-            setInput(nextVal);
-            if (!isStreaming) {
-              updateBotState(nextVal.trim().length > 0 ? 'listening' : 'rest');
-            }
-          }}
+          disabled={blocked}
+          onChange={(event) => setDraft(event.target.value)}
           onKeyDown={(event) => {
-            if (event.key === 'Enter' && !event.shiftKey) {
+            if (event.key === 'Enter' && !event.shiftKey && !event.nativeEvent.isComposing) {
               event.preventDefault();
-              void send();
+              submit();
             }
           }}
         />
-        <Button onClick={() => void send()} isLoading={isStreaming} size="sm">
-          Send
-        </Button>
-      </footer>
-    </section>
+        {streaming ? (
+          <IconButton icon="stop" label="Stop reply" onClick={stop} />
+        ) : (
+          <Button
+            size="sm"
+            iconName="send"
+            onClick={submit}
+            disabled={!canSend}
+            aria-describedby={blocked ? 'ai-mentor-retry-status' : undefined}
+          >
+            Send
+          </Button>
+        )}
+      </div>
+      {blocked ? (
+        <p id="ai-mentor-retry-status" className="text-xs text-muted-foreground" role="status">
+          Too many questions. You can ask again in {secondsLeft}s.
+        </p>
+      ) : null}
+    </div>
+  );
+
+  return (
+    <Drawer
+      open={open}
+      onClose={onClose}
+      title="AI Mentor"
+      size="lg"
+      dirty={draft.trim().length > 0}
+      initialFocusRef={inputRef}
+      footer={footer}
+    >
+      <div className="flex min-h-full flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <MentorOrb state={orbState} size="sm" />
+          {messages.length > 0 && !streaming ? (
+            <Button variant="ghost" size="sm" onClick={clear} className="ml-auto">
+              Clear
+            </Button>
+          ) : null}
+        </div>
+
+        <div ref={historyRef} className="flex min-h-0 flex-1 flex-col gap-3" aria-live="polite">
+          {messages.length === 0 && !streaming && !error ? (
+            <EmptyState icon="mentor" title="Ask your first question" />
+          ) : null}
+
+          {messages.map((message, index) =>
+            message.role === 'user' ? (
+              <div
+                key={`user-${index}`}
+                className="motion-fade-in ml-auto max-w-[85%] whitespace-pre-wrap break-words rounded-2xl bg-surface-hover px-3 py-2 text-sm text-card-foreground"
+              >
+                {message.content}
+              </div>
+            ) : (
+              <div
+                key={`assistant-${index}`}
+                className="motion-fade-in min-w-0 max-w-full text-sm text-card-foreground"
+              >
+                <Markdown variant="compact">{message.content}</Markdown>
+              </div>
+            ),
+          )}
+
+          {streaming ? (
+            <div
+              className="min-w-0 max-w-full text-sm text-card-foreground"
+              aria-label="AI Mentor is replying"
+            >
+              {pendingText.length > 0 ? <Markdown variant="compact">{pendingText}</Markdown> : null}
+              {pendingText.length === 0 ? (
+                <p className="flex items-center gap-2 text-muted-foreground">
+                  <Icon name="hourglass" size={16} />
+                  Thinking…
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
+          {error ? (
+            <div className="motion-fade-in flex flex-col gap-1">
+              <ErrorState
+                compact
+                error={error}
+                message={errorMessage ?? undefined}
+                onRetry={canRetry && !blocked ? retry : undefined}
+                retrying={streaming}
+              />
+              {rateLimited && secondsLeft > 0 ? (
+                <p className="text-xs text-muted-foreground" role="status">
+                  Ready again in {secondsLeft}s.
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+        </div>
+      </div>
+    </Drawer>
   );
 }
 
-export const AiMentorDrawer = AiMentorModal;
-export default AiMentorModal;
+/** @deprecated legacy name of `AiMentorDrawer` (LabWorkspace, removed in wave 4). */
+export const AiMentorModal = AiMentorDrawer;
+
+export default AiMentorDrawer;

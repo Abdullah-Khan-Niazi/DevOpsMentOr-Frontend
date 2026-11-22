@@ -1,14 +1,7 @@
 import { useEffect, useRef } from 'react';
 
 export type MentorOrbState =
-  | 'rest'
-  | 'doodling'
-  | 'listening'
-  | 'thinking'
-  | 'working'
-  | 'success'
-  | 'error'
-  | 'disabled';
+  'rest' | 'doodling' | 'listening' | 'thinking' | 'working' | 'success' | 'error' | 'disabled';
 
 interface MentorOrbProps {
   state?: MentorOrbState;
@@ -62,6 +55,12 @@ function createSphereLattice(): SpherePoint[] {
 }
 
 const SPHERE_POINTS = createSphereLattice();
+
+const ORB_SIZE_CLASS: Record<NonNullable<MentorOrbProps['size']>, string> = {
+  sm: 'size-6',
+  md: 'size-12',
+  lg: 'size-14',
+};
 
 interface StateMotion {
   dialSpeed: number;
@@ -150,8 +149,12 @@ function getStateMotion(state: MentorOrbState, t: number): StateMotion {
   }
 }
 
+/**
+ * Dotted orb. Each dot is a CSS-positioned span (no inline SVG); positions are
+ * percentages of the 36-unit field. Reduced motion draws one still frame.
+ */
 export function MentorOrb({ state = 'rest', size = 'md', className = '' }: MentorOrbProps) {
-  const circlesRef = useRef<Array<SVGCircleElement | null>>([]);
+  const dotsRef = useRef<Array<HTMLSpanElement | null>>([]);
   const stateRef = useRef<MentorOrbState>(state);
 
   useEffect(() => {
@@ -176,7 +179,7 @@ export function MentorOrb({ state = 'rest', size = 'md', className = '' }: Mento
       if (!prefersReducedMotion) {
         if (motion.dialStep) {
           // Stepped dial ticks for thinking state
-          const tick = Math.floor(t * 3.5) * 0.55 + (t * 0.45);
+          const tick = Math.floor(t * 3.5) * 0.55 + t * 0.45;
           angle = tick;
         } else {
           angle += dt * motion.dialSpeed;
@@ -189,7 +192,7 @@ export function MentorOrb({ state = 'rest', size = 'md', className = '' }: Mento
       const fov = 36;
 
       for (let i = 0; i < SPHERE_POINTS.length; i++) {
-        const el = circlesRef.current[i];
+        const el = dotsRef.current[i];
         if (!el) continue;
 
         const p = SPHERE_POINTS[i];
@@ -209,7 +212,10 @@ export function MentorOrb({ state = 'rest', size = 'md', className = '' }: Mento
 
         // 3D Cartesian coordinates on sphere
         const x0 = rSphere * sinPhi * Math.cos(thetaRot);
-        const y0 = -rSphere * cosPhi * (1 + upperWeight * motion.upperExpand * 0.25 + lowerWeight * motion.lowerExpand * 0.25);
+        const y0 =
+          -rSphere *
+          cosPhi *
+          (1 + upperWeight * motion.upperExpand * 0.25 + lowerWeight * motion.lowerExpand * 0.25);
         const z0 = rSphere * sinPhi * Math.sin(thetaRot);
 
         // Apply isometric/3D X-tilt
@@ -224,15 +230,16 @@ export function MentorOrb({ state = 'rest', size = 'md', className = '' }: Mento
         // Depth-based + per-layer/intra-layer distinct dot size with live variation
         const depthNorm = Math.max(-1, Math.min(1, z1 / baseRadius));
         const sizePulse =
-          stateRef.current === 'disabled'
-            ? 1
-            : 1 + 0.16 * Math.sin(t * 2.8 + p.phase);
+          stateRef.current === 'disabled' ? 1 : 1 + 0.16 * Math.sin(t * 2.8 + p.phase);
         const dotRadius = (0.48 + (depthNorm + 1) * 0.46) * p.sizeFactor * sizePulse;
         const opacity = 0.14 + Math.pow((depthNorm + 1) * 0.5, 1.35) * 0.86;
 
-        el.setAttribute('cx', px.toFixed(2));
-        el.setAttribute('cy', py.toFixed(2));
-        el.setAttribute('r', dotRadius.toFixed(2));
+        // Field units (0..36) to percent of the orb box; the dot is centred on (px, py).
+        const diameterPct = ((dotRadius * 2) / 36) * 100;
+        el.style.left = `${((px / 36) * 100).toFixed(3)}%`;
+        el.style.top = `${((py / 36) * 100).toFixed(3)}%`;
+        el.style.width = `${diameterPct.toFixed(3)}%`;
+        el.style.height = `${diameterPct.toFixed(3)}%`;
         el.style.opacity = opacity.toFixed(2);
       }
 
@@ -251,24 +258,22 @@ export function MentorOrb({ state = 'rest', size = 'md', className = '' }: Mento
 
   return (
     <span
-      className={`mentor-orb mentor-orb--${state} mentor-orb--${size} ${className}`.trim()}
+      // Size and layout are self-contained (Tailwind), so the orb renders on pages that do not
+      // load labs.css (the personal dashboard); the `mentor-orb--*` classes only add state colour.
+      className={`relative inline-flex shrink-0 ${ORB_SIZE_CLASS[size]} mentor-orb mentor-orb--${state} ${className}`.trim()}
       data-orb-state={state}
       aria-hidden="true"
     >
-      <svg className="mentor-orb__svg" viewBox="0 0 36 36" fill="none">
-        {SPHERE_POINTS.map((_, idx) => (
-          <circle
-            key={idx}
-            ref={(el) => {
-              circlesRef.current[idx] = el;
-            }}
-            cx="18"
-            cy="18"
-            r="1"
-            fill="currentColor"
-          />
-        ))}
-      </svg>
+      {SPHERE_POINTS.map((_, idx) => (
+        <span
+          key={idx}
+          ref={(el) => {
+            dotsRef.current[idx] = el;
+          }}
+          className="absolute rounded-full bg-current"
+          style={{ transform: 'translate(-50%, -50%)' }}
+        />
+      ))}
     </span>
   );
 }
