@@ -1,5 +1,5 @@
 import { lazy, Suspense, type ReactNode } from 'react';
-import { Route, Routes, Navigate } from 'react-router-dom';
+import { Route, Routes, Navigate, useParams } from 'react-router-dom';
 import { ProtectedRoute } from '@/features/auth';
 import {
   AdminShell,
@@ -10,10 +10,16 @@ import {
   TablePageSkeleton,
   DetailFormSkeleton,
   DashboardSkeleton,
-  CurriculumSkeleton,
   PublicPageSkeleton,
   AuthPageSkeleton,
 } from '@/shared/components';
+import { LearnPageSkeleton } from '@/features/curriculum/pages/LearnPageSkeleton';
+import { LearnCoursePageSkeleton } from '@/features/curriculum/pages/LearnCoursePageSkeleton';
+import { LearnModulePageSkeleton } from '@/features/curriculum/pages/LearnModulePageSkeleton';
+import { LessonPageSkeleton } from '@/features/curriculum/pages/LessonPageSkeleton';
+import { LabWorkspacePageSkeleton } from '@/features/labs/pages/LabWorkspacePageSkeleton';
+import { QuizPageSkeleton } from '@/features/progress/pages/QuizPageSkeleton';
+import { OrgCurriculumPageSkeleton } from '@/features/org/pages/OrgCurriculumPageSkeleton';
 import { PermissionRouteGuard } from '@/shared/guards';
 import { ROUTES } from '@/shared/constants';
 import HomePage from '@/pages/site/HomePage';
@@ -53,6 +59,8 @@ const AdminOrganizationDetailPage = lazy(
 );
 // ─── F3 organization workspace + enrollment ─────────────────────────────────
 const OrgAdminShell = lazy(() => import('@/features/org/components/OrgAdminShell'));
+const OrgCurriculumPage = lazy(() => import('@/features/org/pages/OrgCurriculumPage'));
+const OrgAdminAcceptPage = lazy(() => import('@/features/org/pages/OrgAdminAcceptPage'));
 const OrgDashboardPage = lazy(() => import('@/features/org/pages/OrgDashboardPage'));
 const OrgClassesPage = lazy(() => import('@/features/org/pages/OrgClassesPage'));
 const OrgClassCreatePage = lazy(() => import('@/features/org/pages/OrgClassCreatePage'));
@@ -65,10 +73,12 @@ const EnrollAcceptPage = lazy(() => import('@/features/enrollment/pages/EnrollAc
 const StudentMyClassPage = lazy(() => import('@/features/enrollment/pages/StudentMyClassPage'));
 // ─── F4 canonical curriculum (admin + learner) ─────────────────────────────
 const AdminCurriculumPage = lazy(() => import('@/features/curriculum/pages/AdminCurriculumPage'));
-const LearnCurriculumPage = lazy(() => import('@/features/curriculum/pages/LearnCurriculumPage'));
+const LearnPage = lazy(() => import('@/features/curriculum/pages/LearnPage'));
+const LearnCoursePage = lazy(() => import('@/features/curriculum/pages/LearnCoursePage'));
+const LearnModulePage = lazy(() => import('@/features/curriculum/pages/LearnModulePage'));
 const LearnLessonPage = lazy(() => import('@/features/curriculum/pages/LearnLessonPage'));
 // ─── F5 learning experience & progress tracking ─────────────────────────────
-const QuizAttemptPage = lazy(() => import('@/features/progress/pages/QuizAttemptPage'));
+const QuizPage = lazy(() => import('@/features/progress/pages/QuizPage'));
 const ProfessorClassProgressPage = lazy(
   () => import('@/features/progress/pages/ProfessorClassProgressPage'),
 );
@@ -77,6 +87,7 @@ const OrgStudentsProgressPage = lazy(
 );
 const AdminUserProgressPage = lazy(() => import('@/features/progress/pages/AdminUserProgressPage'));
 // ─── F6 labs, execution engine & AI Mentor ────────────────────────────────
+const LearnLabPage = lazy(() => import('@/features/labs/pages/LearnLabPage'));
 const VpnSettingsPage = lazy(() => import('@/features/labs/pages/VpnSettingsPage'));
 // ─── F9 billing (learner portal) and pricing checkout ─────────────────
 const BillingPage = lazy(() => import('@/features/billing/pages/BillingPage'));
@@ -84,7 +95,6 @@ const PaymentMethodsPage = lazy(() => import('@/features/billing/pages/PaymentMe
 const BillingHistoryPage = lazy(() => import('@/features/billing/pages/BillingHistoryPage'));
 const AdminBillingPage = lazy(() => import('@/features/admin/billing/pages/AdminBillingPage'));
 const AdminLabsPage = lazy(() => import('@/features/labs/pages/AdminLabsPage'));
-const AdminTracksPage = lazy(() => import('@/features/labs/pages/AdminTracksPage'));
 const AdminLabInstancesPage = lazy(() => import('@/features/labs/pages/AdminLabInstancesPage'));
 // ─── F7 achievements, gamification & certification ─────────────────────────
 const AchievementsPage = lazy(() => import('@/features/achievements/pages/AchievementsPage'));
@@ -138,6 +148,14 @@ const CareersPage = lazy(() => import('@/pages/site/CareersPage'));
 const DocumentationPage = lazy(() => import('@/pages/site/DocumentationPage'));
 const PrivacyPage = lazy(() => import('@/pages/site/PrivacyPage'));
 const TermsPage = lazy(() => import('@/pages/site/TermsPage'));
+
+/** Old lab URLs (`/labs/:labSlug...`) open the Labs tab of the Learn hub filtered to that lab. */
+function LegacyLabRedirect() {
+  const { labSlug } = useParams<{ labSlug: string }>();
+  const query = new URLSearchParams({ tab: 'labs' });
+  if (labSlug) query.set('q', labSlug);
+  return <Navigate to={`${ROUTES.LEARN}?${query.toString()}`} replace />;
+}
 
 function LazyPage({ children, skeleton }: { children: ReactNode; skeleton?: ReactNode }) {
   return <Suspense fallback={skeleton ?? <PublicPageSkeleton />}>{children}</Suspense>;
@@ -302,25 +320,31 @@ export function AppRoutes() {
           <Route
             path={ROUTES.USERS}
             element={
-              <LazyPage skeleton={<TablePageSkeleton />}>
-                <UsersPage />
-              </LazyPage>
+              <PermissionRouteGuard permission="platform.admin.access">
+                <LazyPage skeleton={<TablePageSkeleton />}>
+                  <UsersPage />
+                </LazyPage>
+              </PermissionRouteGuard>
             }
           />
           <Route
             path={ROUTES.ROLES}
             element={
-              <LazyPage skeleton={<TablePageSkeleton />}>
-                <RolesPage />
-              </LazyPage>
+              <PermissionRouteGuard permission="platform.admin.access">
+                <LazyPage skeleton={<TablePageSkeleton />}>
+                  <RolesPage />
+                </LazyPage>
+              </PermissionRouteGuard>
             }
           />
           <Route
             path={ROUTES.REPORTS}
             element={
-              <LazyPage skeleton={<TablePageSkeleton />}>
-                <ReportsPage />
-              </LazyPage>
+              <PermissionRouteGuard permission="platform.admin.access">
+                <LazyPage skeleton={<TablePageSkeleton />}>
+                  <ReportsPage />
+                </LazyPage>
+              </PermissionRouteGuard>
             }
           />
           <Route
@@ -375,7 +399,7 @@ export function AppRoutes() {
             path={ROUTES.STUDENT_MY_CLASS}
             element={
               <PermissionRouteGuard permission="enrollment:read" roles="org_student">
-                <LazyPage skeleton={<CurriculumSkeleton />}>
+                <LazyPage skeleton={<LearnPageSkeleton />}>
                   <StudentMyClassPage />
                 </LazyPage>
               </PermissionRouteGuard>
@@ -386,8 +410,28 @@ export function AppRoutes() {
             path={ROUTES.LEARN}
             element={
               <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
-                <LazyPage skeleton={<CurriculumSkeleton />}>
-                  <LearnCurriculumPage />
+                <LazyPage skeleton={<LearnPageSkeleton />}>
+                  <LearnPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.LEARN_COURSE}
+            element={
+              <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
+                <LazyPage skeleton={<LearnCoursePageSkeleton />}>
+                  <LearnCoursePage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.LEARN_MODULE}
+            element={
+              <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
+                <LazyPage skeleton={<LearnModulePageSkeleton />}>
+                  <LearnModulePage />
                 </LazyPage>
               </PermissionRouteGuard>
             }
@@ -396,8 +440,18 @@ export function AppRoutes() {
             path={ROUTES.LEARN_LESSON}
             element={
               <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
-                <LazyPage skeleton={<CurriculumSkeleton />}>
+                <LazyPage skeleton={<LessonPageSkeleton />}>
                   <LearnLessonPage />
+                </LazyPage>
+              </PermissionRouteGuard>
+            }
+          />
+          <Route
+            path={ROUTES.LEARN_LAB}
+            element={
+              <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
+                <LazyPage skeleton={<LabWorkspacePageSkeleton />}>
+                  <LearnLabPage />
                 </LazyPage>
               </PermissionRouteGuard>
             }
@@ -407,8 +461,8 @@ export function AppRoutes() {
             path={ROUTES.LEARN_QUIZ}
             element={
               <PermissionRouteGuard permission="progress.self.read">
-                <LazyPage skeleton={<CurriculumSkeleton />}>
-                  <QuizAttemptPage />
+                <LazyPage skeleton={<QuizPageSkeleton />}>
+                  <QuizPage />
                 </LazyPage>
               </PermissionRouteGuard>
             }
@@ -426,11 +480,8 @@ export function AppRoutes() {
           />
           {/* ─── F6 labs catalog & tracks deprecated — redirected to unified learner curriculum ── */}
           <Route path={ROUTES.LABS} element={<Navigate to={ROUTES.LEARN} replace />} />
-          <Route path={ROUTES.LAB_DETAIL} element={<Navigate to={ROUTES.LEARN} replace />} />
-          <Route
-            path={ROUTES.SHERLOCK_DIAGNOSTIC}
-            element={<Navigate to={ROUTES.LEARN} replace />}
-          />
+          <Route path={ROUTES.LAB_DETAIL} element={<LegacyLabRedirect />} />
+          <Route path={ROUTES.SHERLOCK_DIAGNOSTIC} element={<LegacyLabRedirect />} />
           <Route path={ROUTES.TRACKS} element={<Navigate to={ROUTES.LEARN} replace />} />
           <Route path={ROUTES.TRACK_DETAIL} element={<Navigate to={ROUTES.LEARN} replace />} />
           <Route
@@ -525,8 +576,8 @@ export function AppRoutes() {
             }
           />
         </Route>
-        {/* ─── F6 lab session deprecated — all lab sessions launch within /learn/lessons/:lessonId ─── */}
-        <Route path={ROUTES.LAB_SESSION} element={<Navigate to={ROUTES.LEARN} replace />} />
+        {/* Legacy lab session URL: opens the Labs tab filtered to that lab. */}
+        <Route path={ROUTES.LAB_SESSION} element={<LegacyLabRedirect />} />
       </Route>
 
       {/* ─── F2 admin console (AdminShell layout, permission-gated) ─────── */}
@@ -734,15 +785,7 @@ export function AppRoutes() {
       />
       <Route
         path={ROUTES.ADMIN_TRACKS}
-        element={
-          <PermissionRouteGuard permission="platform.labs.manage">
-            <AdminShell>
-              <LazyPage skeleton={<TablePageSkeleton />}>
-                <AdminTracksPage />
-              </LazyPage>
-            </AdminShell>
-          </PermissionRouteGuard>
-        }
+        element={<Navigate to={`${ROUTES.ADMIN_CURRICULUM}?tab=tracks`} replace />}
       />
       <Route
         path={ROUTES.ADMIN_LAB_INSTANCES}
@@ -770,6 +813,16 @@ export function AppRoutes() {
           </PermissionRouteGuard>
         }
       />
+      <Route element={<ProtectedRoute />}>
+        <Route
+          path={ROUTES.ORG_ADMIN_ACCEPT}
+          element={
+            <LazyPage skeleton={<DetailFormSkeleton />}>
+              <OrgAdminAcceptPage />
+            </LazyPage>
+          }
+        />
+      </Route>
       <Route
         path={ROUTES.ADMIN_ORGANIZATION_DETAIL}
         element={
@@ -789,7 +842,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<CurriculumSkeleton />}>
+              <LazyPage skeleton={<LearnPageSkeleton />}>
                 <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
@@ -801,7 +854,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<CurriculumSkeleton />}>
+              <LazyPage skeleton={<LearnPageSkeleton />}>
                 <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
@@ -813,7 +866,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<CurriculumSkeleton />}>
+              <LazyPage skeleton={<LearnPageSkeleton />}>
                 <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
@@ -825,7 +878,7 @@ export function AppRoutes() {
         element={
           <PermissionRouteGuard permission="platform.curriculum.manage">
             <AdminShell>
-              <LazyPage skeleton={<CurriculumSkeleton />}>
+              <LazyPage skeleton={<LearnPageSkeleton />}>
                 <AdminCurriculumPage />
               </LazyPage>
             </AdminShell>
@@ -946,17 +999,19 @@ export function AppRoutes() {
           </PermissionRouteGuard>
         }
       />
-      {/* Context-aware curriculum: staff stay inside the org workspace. */}
+      {/* Read-only curriculum for org staff, with assign-to-class. */}
       <Route
         path={ROUTES.ORG_CURRICULUM}
         element={
-          <Suspense fallback={<DetailFormSkeleton />}>
-            <OrgAdminShell>
-              <LazyPage skeleton={<DetailFormSkeleton />}>
-                <LearnCurriculumPage />
-              </LazyPage>
-            </OrgAdminShell>
-          </Suspense>
+          <PermissionRouteGuard permission={['curriculum.read', 'curriculum:read']}>
+            <Suspense fallback={<OrgCurriculumPageSkeleton />}>
+              <OrgAdminShell>
+                <LazyPage skeleton={<OrgCurriculumPageSkeleton />}>
+                  <OrgCurriculumPage />
+                </LazyPage>
+              </OrgAdminShell>
+            </Suspense>
+          </PermissionRouteGuard>
         }
       />
       {/* ─── F5 org-admin student analytics (OrgAdminShell, permission-gated) ─ */}

@@ -1,17 +1,25 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import * as DropdownMenu from '@radix-ui/react-dropdown-menu';
 import { SiteLogo } from '@/shared/components/Logo';
 import { Icon } from '@/shared/components/Icon';
+import { TabRowNav } from '@/shared/components/TabRow';
+import { OfflineBanner } from '@/shared/components/OfflineBanner';
+import { hasOpenOverlay } from '@/shared/components/Overlay';
+import { toast } from '@/shared/components/Toast';
 import { WorkspaceSwitcher } from './WorkspaceSwitcher';
 import { useLogout } from '@/features/auth/hooks';
 import { useMyClass } from '@/features/enrollment/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useUiStore } from '@/shared/stores';
-import { ROUTES } from '@/shared/constants';
+import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { cn } from '@/shared/utils';
 import { AnnouncementBanner } from '@/features/notifications/components/AnnouncementBanner';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { usePublishedAnnouncements } from '@/features/notifications/hooks/useNotifications';
+import { XpChip } from '@/features/achievements/components/XpChip';
+import { gamificationService } from '@/features/achievements/services/gamificationService';
 import { buildNavItems, type AppNavItem } from './navigation';
 import {
   isPlatformAdmin as isPlatformAdminUser,
@@ -20,7 +28,7 @@ import {
 } from './workspaceContext';
 import './AppChrome.css';
 
-// Unified authenticated chrome — responsive layout:
+// Unified authenticated chrome, responsive layout:
 //   mobile & tablet (< 1024px): top navigation header + dedicated slide-out drawer
 //   desktop (>= 1024px): Gemini-style collapsible sidebar with instant dock tooltips
 
@@ -41,18 +49,58 @@ function userInitials(fullName?: string | null): string {
     .toUpperCase();
 }
 
+/** Toasts achievements and badges unlocked after the first load of this session, once per id. */
+function useAchievementWatcher(enabled: boolean) {
+  const queryClient = useQueryClient();
+  const { data } = useQuery({
+    queryKey: QUERY_KEYS.gamification.profile,
+    queryFn: () => gamificationService.getMyProfile(),
+    enabled,
+    retry: false,
+  });
+  const seenRef = useRef<Set<string> | null>(null);
+
+  useEffect(() => {
+    if (!data) return;
+    const unlocked = [
+      ...data.achievements.map((achievement) => ({
+        key: `achievement:${achievement.achievementId}`,
+        name: achievement.name,
+      })),
+      ...data.badges.map((badge) => ({
+        key: `badge:${badge.badgeId}`,
+        name: badge.badgeName,
+      })),
+    ];
+    const seen = seenRef.current;
+    if (seen === null) {
+      // First snapshot: existing unlocks are the baseline, not news.
+      seenRef.current = new Set(unlocked.map((item) => item.key));
+      return;
+    }
+    const fresh = unlocked.filter((item) => !seen.has(item.key));
+    if (fresh.length === 0) return;
+    for (const item of fresh) {
+      seen.add(item.key);
+      toast.success(`Achievement unlocked: ${item.name}`);
+    }
+    void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.notifications.unreadCount });
+  }, [data, queryClient]);
+}
+
 export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
   const { isSidebarOpen, toggleSidebar } = useUiStore();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [profileDropdownOpen, setProfileDropdownOpen] = useState(false);
   const [hoveredTooltip, setHoveredTooltip] = useState<{ text: string; top: number } | null>(null);
-  const profileDropdownRef = useRef<HTMLDivElement>(null);
+  const topbarRef = useRef<HTMLElement>(null);
+  const scrollSentinelRef = useRef<HTMLDivElement>(null);
   const user = useAuthStore((state) => state.user);
   const logout = useLogout();
   const location = useLocation();
   const { data: announcements } = usePublishedAnnouncements();
   const permissions = new Set(user?.permissions ?? []);
   const canSeeNotifications = permissions.has('notifications:inbox:read');
+  const canSeeGamification = permissions.has('gamification:profile:read');
 
   const roles = new Set(user?.roles ?? []);
   const platformAdmin = isPlatformAdminUser(user);
@@ -66,19 +114,34 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
   const showSidebarNav = !showTopbarNav;
   const resolvedLogoTo = logoTo ?? workspaceHome(activeContext);
 
+  useAchievementWatcher(canSeeGamification);
+
+  // The top bar gains its elevation once the page scrolls under it. Only main
+  // scrolls (full-height shell), so main is the observer root.
   useEffect(() => {
-    if (!profileDropdownOpen) return;
-    const handleClickOutside = (event: MouseEvent) => {
-      if (
-        profileDropdownRef.current &&
-        !profileDropdownRef.current.contains(event.target as Node)
-      ) {
-        setProfileDropdownOpen(false);
-      }
+    const sentinel = scrollSentinelRef.current;
+    const topbar = topbarRef.current;
+    if (!sentinel || !topbar || typeof IntersectionObserver === 'undefined') return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        topbar.dataset.scrolled = String(!entry.isIntersecting);
+      },
+      { root: sentinel.parentElement },
+    );
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [location.pathname, showTopbarNav]);
+
+  // Escape closes the mobile drawer unless a modal opened from it is on top.
+  useEffect(() => {
+    if (!mobileMenuOpen) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || event.defaultPrevented || hasOpenOverlay()) return;
+      setMobileMenuOpen(false);
     };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [profileDropdownOpen]);
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, [mobileMenuOpen]);
 
   const profileName = user?.fullName ?? user?.username ?? 'Account';
   const profileTo = user?.userId
@@ -120,7 +183,7 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
     <div className={cn('app-chrome', showTopbarNav && 'app-chrome--topbar')}>
       {/* ─── Learner Top Navigation Bar (d.webp layout) ────────────────────────── */}
       {showTopbarNav && (
-        <header className="app-chrome__topbar">
+        <header className="app-chrome__topbar" ref={topbarRef}>
           <div className="app-chrome__topbar-inner">
             {/* Left: Site Logo & Workspace Context Switcher */}
             <div className="flex items-center gap-4">
@@ -134,104 +197,82 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
               {!platformAdmin && <WorkspaceSwitcher variant="topbar" />}
             </div>
 
-            {/* Center: Role-aware navigation matching SiteHeader nav style */}
-            <nav className="app-chrome__topbar-nav" aria-label="Learner Primary">
-              {topbarItems.map((item) => (
-                <NavLink
-                  key={item.to}
-                  to={item.to}
-                  className={({ isActive }) =>
-                    cn(
-                      'app-chrome__topbar-nav-item',
-                      isActive && 'app-chrome__topbar-nav-item--active',
-                    )
-                  }
-                >
-                  <span>{item.label}</span>
-                </NavLink>
-              ))}
-            </nav>
+            {/* Center: primary navigation */}
+            <div className="app-chrome__topbar-nav">
+              <TabRowNav
+                ariaLabel="Learner Primary"
+                items={topbarItems.map((item) => ({
+                  to: item.to,
+                  label: item.label,
+                  icon: item.icon,
+                }))}
+              />
+            </div>
 
-            {/* Right: Notifications & User Profile Chip */}
+            {/* Right: XP, notifications & profile menu */}
             <div className="flex items-center gap-3">
+              {canSeeGamification && <XpChip />}
               {canSeeNotifications && <NotificationBell />}
 
-              {/* Profile Chip with Dropdown */}
-              <div className="relative" ref={profileDropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setProfileDropdownOpen(!profileDropdownOpen)}
-                  className="flex items-center gap-2.5 p-1.5 pr-3 rounded-full border border-border hover:bg-pearl-200 transition-colors cursor-pointer text-left"
-                  aria-expanded={profileDropdownOpen}
-                  aria-label="User menu"
-                >
-                  <span className="w-8 h-8 rounded-full bg-ink text-pearl-100 flex items-center justify-center font-bold text-xs shrink-0">
-                    {userInitials(profileName)}
-                  </span>
-                  <div className="hidden xl:flex flex-col text-left">
-                    <span className="text-xs font-semibold text-ink leading-tight truncate max-w-[7.5rem]">
-                      Hi, {user?.fullName?.split(' ')[0] || user?.username || 'Learner'}!
+              <DropdownMenu.Root>
+                <DropdownMenu.Trigger asChild>
+                  <button
+                    type="button"
+                    className="app-chrome__profile-trigger"
+                    aria-label="User menu"
+                  >
+                    <span className="w-8 h-8 rounded-full bg-ink text-pearl-100 flex items-center justify-center font-bold text-xs shrink-0">
+                      {userInitials(profileName)}
                     </span>
-                    <span className="text-[0.625rem] text-muted truncate max-w-[7.5rem] font-mono">
-                      {user?.email ?? ''}
-                    </span>
-                  </div>
-                  <Icon
-                    name={profileDropdownOpen ? 'chevrons-right' : 'chevrons-left'}
-                    size={12}
-                    className="text-muted -rotate-90"
-                  />
-                </button>
+                    <Icon name="chevron-down" size={12} className="text-muted" />
+                  </button>
+                </DropdownMenu.Trigger>
 
-                {/* Profile Dropdown Menu */}
-                {profileDropdownOpen && (
-                  <div className="absolute right-0 mt-2 w-56 rounded-xl border border-border bg-card shadow-lg py-1.5 z-50 text-card-foreground">
-                    <div className="px-3.5 py-2 border-b border-border">
-                      <p className="text-xs font-semibold text-card-foreground truncate">
-                        {profileName}
-                      </p>
-                      <p className="text-[0.6875rem] text-muted truncate font-mono">
-                        {user?.email}
-                      </p>
-                    </div>
+                <DropdownMenu.Portal>
+                  <DropdownMenu.Content
+                    align="end"
+                    sideOffset={8}
+                    className="z-(--z-dropdown) w-56 rounded-xl border border-border bg-card shadow-lg py-1.5 text-card-foreground"
+                  >
+                    <DropdownMenu.Label className="px-3.5 py-2 text-xs font-semibold text-card-foreground truncate">
+                      {profileName}
+                    </DropdownMenu.Label>
 
                     <div className="py-1">
-                      <Link
-                        to={profileTo}
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
-                      >
-                        <Icon name="users" size={14} className="text-muted" />
-                        <span>View Profile</span>
-                      </Link>
+                      <DropdownMenu.Item asChild>
+                        <Link
+                          to={profileTo}
+                          className="flex cursor-pointer select-none items-center gap-2.5 px-3.5 py-2 text-xs outline-none data-[highlighted]:bg-surface-hover transition-colors"
+                        >
+                          <Icon name="users" size={14} className="text-muted" />
+                          <span>View Profile</span>
+                        </Link>
+                      </DropdownMenu.Item>
 
-                      <Link
-                        to={ROUTES.SETTINGS}
-                        onClick={() => setProfileDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3.5 py-2 text-xs hover:bg-surface-hover transition-colors"
-                      >
-                        <Icon name="settings" size={14} className="text-muted" />
-                        <span>Account Settings</span>
-                      </Link>
+                      <DropdownMenu.Item asChild>
+                        <Link
+                          to={ROUTES.SETTINGS}
+                          className="flex cursor-pointer select-none items-center gap-2.5 px-3.5 py-2 text-xs outline-none data-[highlighted]:bg-surface-hover transition-colors"
+                        >
+                          <Icon name="settings" size={14} className="text-muted" />
+                          <span>Account Settings</span>
+                        </Link>
+                      </DropdownMenu.Item>
                     </div>
 
-                    <div className="pt-1 border-t border-border">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setProfileDropdownOpen(false);
-                          logout.mutate();
-                        }}
+                    <div className="pt-1">
+                      <DropdownMenu.Item
                         disabled={logout.isPending}
-                        className="w-full flex items-center gap-2.5 px-3.5 py-2 text-xs text-error hover:bg-surface-hover transition-colors cursor-pointer text-left"
+                        onSelect={() => logout.mutate()}
+                        className="flex w-full cursor-pointer select-none items-center gap-2.5 px-3.5 py-2 text-xs text-error outline-none data-[highlighted]:bg-surface-hover transition-colors data-[disabled]:opacity-50"
                       >
                         <Icon name="logout" size={14} />
                         <span>Sign Out</span>
-                      </button>
+                      </DropdownMenu.Item>
                     </div>
-                  </div>
-                )}
-              </div>
+                  </DropdownMenu.Content>
+                </DropdownMenu.Portal>
+              </DropdownMenu.Root>
             </div>
           </div>
         </header>
@@ -246,6 +287,7 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
           <SiteLogo />
         </Link>
         <div className="flex items-center gap-2">
+          {canSeeGamification && <XpChip />}
           {canSeeNotifications && <NotificationBell />}
           <Link to={profileTo} className="app-chrome__mobile-avatar" title={profileName}>
             {userInitials(profileName)}
@@ -308,7 +350,7 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
             </div>
 
             {!platformAdmin && (
-              <div className="px-4 py-3 border-b border-border">
+              <div className="px-4 py-3">
                 <WorkspaceSwitcher
                   variant="mobile"
                   onAfterSwitch={() => setMobileMenuOpen(false)}
@@ -331,8 +373,16 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
                         cn('app-chrome__nav-item', isActive && 'app-chrome__nav-item--active')
                       }
                     >
-                      <Icon name={item.icon} className="app-chrome__nav-icon" />
-                      <span className="app-chrome__nav-label">{item.label}</span>
+                      {({ isActive }) => (
+                        <>
+                          <Icon
+                            name={item.icon}
+                            className="app-chrome__nav-icon"
+                            selected={isActive}
+                          />
+                          <span className="app-chrome__nav-label">{item.label}</span>
+                        </>
+                      )}
                     </NavLink>
                   ))}
                 </div>
@@ -395,7 +445,7 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
           </div>
 
           {!platformAdmin && (
-            <div className="px-3 py-2 border-b border-border">
+            <div className="px-3 py-2">
               <WorkspaceSwitcher variant="sidebar" isCollapsed={!isSidebarOpen} />
             </div>
           )}
@@ -422,8 +472,16 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
                     onMouseLeave={() => setHoveredTooltip(null)}
                     onClick={() => setHoveredTooltip(null)}
                   >
-                    <Icon name={item.icon} className="app-chrome__nav-icon" />
-                    <span className="app-chrome__nav-label">{item.label}</span>
+                    {({ isActive }) => (
+                      <>
+                        <Icon
+                          name={item.icon}
+                          className="app-chrome__nav-icon"
+                          selected={isActive}
+                        />
+                        <span className="app-chrome__nav-label">{item.label}</span>
+                      </>
+                    )}
                   </NavLink>
                 ))}
               </div>
@@ -481,12 +539,18 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
       )}
 
       {/* ─── Main Content Shell ────────────────────────────────────────────── */}
-      <main className="app-chrome__main">
-        {announcements && announcements.length > 0 ? (
-          <AnnouncementBanner announcements={announcements} />
-        ) : null}
-        {children}
-      </main>
+      {/* Column that fills the rest of the shell: the offline bar sits under the
+          top bar / mobile header (and beside the staff sidebar), main scrolls. */}
+      <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+        <OfflineBanner />
+        <main key={location.pathname} className="app-chrome__main motion-page">
+          <div ref={scrollSentinelRef} aria-hidden="true" style={{ height: 1, flex: 'none' }} />
+          {announcements && announcements.length > 0 ? (
+            <AnnouncementBanner announcements={announcements} />
+          ) : null}
+          {children}
+        </main>
+      </div>
     </div>
   );
 }

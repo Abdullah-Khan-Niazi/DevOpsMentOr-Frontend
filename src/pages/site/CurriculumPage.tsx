@@ -477,16 +477,18 @@ export default function CurriculumPage() {
   const isNavigating = useRef<boolean>(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
 
-  // Sync with search parameter (?slide=N or ?module=N)
-  useEffect(() => {
-    const param = searchParams.get('slide') || searchParams.get('module');
-    if (param !== null) {
-      const parsed = parseInt(param, 10);
+  // Sync with search parameter (?slide=N or ?module=N), adjusting state during render.
+  const slideParam = searchParams.get('slide') || searchParams.get('module');
+  const [syncedParam, setSyncedParam] = useState<string | null | undefined>(undefined);
+  if (slideParam !== syncedParam) {
+    setSyncedParam(slideParam);
+    if (slideParam !== null) {
+      const parsed = parseInt(slideParam, 10);
       if (!isNaN(parsed) && parsed >= 0 && parsed < TOTAL_SLIDES) {
         setActiveSlide(parsed);
       }
     }
-  }, [searchParams]);
+  }
 
   // Suppress document-level scrollbar while on the slide deck
   useEffect(() => {
