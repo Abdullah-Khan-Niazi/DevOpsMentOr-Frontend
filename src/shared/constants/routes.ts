@@ -38,16 +38,23 @@ export const ROUTES = {
   ORG_CLASS_INVITE: '/org/classes/:classId/invite',
   ORG_PROFESSORS: '/org/professors',
   ORG_SETTINGS: '/org/settings',
+  /** Org admin invitation accept (matches the backend email link). */
+  ORG_ADMIN_ACCEPT: '/admin/organizations/accept-admin',
   // ─── F3 enrollment (student + invitation accept) ────────────────────────────
   ENROLL_ACCEPT: '/enroll/accept',
   STUDENT_MY_CLASS: '/student/class',
-  // ─── F4 canonical curriculum (platform admin + learner) ─────────────────────
+  // ─── Curriculum (platform admin + learner) ─────────────────────
   ADMIN_CURRICULUM: '/admin/curriculum',
   ADMIN_CURRICULUM_MODULE: '/admin/curriculum/modules/:moduleId',
   ADMIN_CURRICULUM_LESSON: '/admin/curriculum/lessons/:lessonId',
   ADMIN_CURRICULUM_QUIZ: '/admin/curriculum/quizzes/:quizId',
+  /** Learn hub (`?tab=courses|modules|labs&q=`). */
   LEARN: '/learn',
+  LEARN_COURSE: '/learn/courses/:courseId',
+  LEARN_MODULE: '/learn/modules/:moduleId',
   LEARN_LESSON: '/learn/lessons/:lessonId',
+  /** Lab workspace (`?itemId=` optional module context). */
+  LEARN_LAB: '/learn/labs/:labId',
   // ─── F5 learning experience & progress tracking ────────────────────────────
   LEARN_QUIZ: '/learn/quizzes/:quizId',
   PROFESSOR_CLASS_PROGRESS: '/professor/classes/:classId/progress',

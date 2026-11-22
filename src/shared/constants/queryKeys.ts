@@ -70,14 +70,36 @@ export const QUERY_KEYS = {
       ['admin', 'curriculum', 'quizzes', String(quizId)] as const,
     tags: ['admin', 'curriculum', 'tags'] as const,
   },
+  /** Staff curriculum control panel (tracks, courses, modules, items). */
+  curriculumAdmin: {
+    all: ['admin', 'curriculum'] as const,
+    courses: (params: string) => ['admin', 'curriculum', 'courses', params] as const,
+    course: (courseId: number) => ['admin', 'curriculum', 'course', String(courseId)] as const,
+    courseModules: (courseId: number) =>
+      ['admin', 'curriculum', 'course', String(courseId), 'modules'] as const,
+    /** `{ module, items }` */
+    module: (moduleId: number) => ['admin', 'curriculum', 'module', String(moduleId)] as const,
+    lesson: (lessonId: number) => ['admin', 'curriculum', 'lesson', String(lessonId)] as const,
+    quiz: (quizId: number) => ['admin', 'curriculum', 'quiz', String(quizId)] as const,
+    tags: ['admin', 'curriculum', 'tags'] as const,
+    difficulties: ['admin', 'curriculum', 'difficulties'] as const,
+    categories: ['admin', 'curriculum', 'categories'] as const,
+  },
   learn: {
     overview: ['learn', 'overview'] as const,
     module: (moduleId: string | number) => ['learn', 'modules', String(moduleId)] as const,
     moduleLessons: (moduleId: string | number) =>
       ['learn', 'modules', String(moduleId), 'lessons'] as const,
     lesson: (lessonId: string | number) => ['learn', 'lessons', String(lessonId)] as const,
+    /** AI mentor lesson context for an item. */
+    lessonContext: (itemId: number) => ['learn', 'lessons', String(itemId), 'context'] as const,
     quizzes: (moduleId: string | number) =>
       ['learn', 'modules', String(moduleId), 'quizzes'] as const,
+    courses: ['learn', 'courses'] as const,
+    course: (courseId: number) => ['learn', 'courses', String(courseId)] as const,
+    courseModules: (courseId: number) => ['learn', 'courses', String(courseId), 'modules'] as const,
+    moduleItems: (moduleId: number) => ['learn', 'modules', String(moduleId), 'items'] as const,
+    labs: ['learn', 'labs'] as const,
   },
   progress: {
     course: ['progress', 'course'] as const,
@@ -95,6 +117,15 @@ export const QUERY_KEYS = {
       ['progress', 'classes', String(classId), 'students', String(userId)] as const,
     orgStudents: (orgId: number | null) => ['progress', 'orgs', String(orgId), 'students'] as const,
     adminUser: (userId: string | number) => ['progress', 'admin', 'users', String(userId)] as const,
+    courses: ['progress', 'courses'] as const,
+    courseDetail: (courseId: number) => ['progress', 'courses', String(courseId)] as const,
+    courseModules: (courseId: number) =>
+      ['progress', 'courses', String(courseId), 'modules'] as const,
+    moduleItems: (moduleId: number) => ['progress', 'modules', String(moduleId), 'items'] as const,
+    quizStatus: (quizId: number) => ['progress', 'quizzes', String(quizId), 'status'] as const,
+    quizAttempt: (attemptId: number) => ['progress', 'quiz-attempts', String(attemptId)] as const,
+    quizReview: (attemptId: number) =>
+      ['progress', 'quiz-attempts', String(attemptId), 'review'] as const,
   },
   labs: {
     all: ['labs'] as const,
@@ -107,11 +138,22 @@ export const QUERY_KEYS = {
     trackProgress: (trackId: string | number) => ['tracks', String(trackId), 'progress'] as const,
     aiMentorSession: (lessonId: number) =>
       ['labs', 'ai-mentor', 'session', String(lessonId)] as const,
+    /** Learner step state (`LabStepsStateDto`): the single source for step progress. */
+    steps: (labId: number) => ['labs', String(labId), 'steps'] as const,
+    /** Lab walkthrough markdown (`GET /labs/:labId/walkthrough`). */
+    walkthrough: (labId: number) => ['labs', String(labId), 'walkthrough'] as const,
+    /** Presigned slide deck URL (`GET /labs/:labId/slides`). */
+    slides: (labId: number) => ['labs', String(labId), 'slides'] as const,
   },
   adminLabs: {
     labs: (params: string) => ['admin', 'labs', params] as const,
     tracks: (params: string) => ['admin', 'tracks', params] as const,
     instances: (params: string) => ['admin', 'lab-instances', params] as const,
+    list: ['admin', 'labs', 'list'] as const,
+    detail: (labId: number) => ['admin', 'labs', 'detail', String(labId)] as const,
+    catalog: (unusedOnly: boolean) => ['admin', 'labs', 'catalog', String(unusedOnly)] as const,
+    trackList: ['admin', 'tracks', 'list'] as const,
+    track: (trackId: number) => ['admin', 'tracks', 'detail', String(trackId)] as const,
   },
   // ─── F7 achievements, gamification & certification ───────────────────────
   gamification: {
@@ -119,6 +161,8 @@ export const QUERY_KEYS = {
     badgeCatalog: ['gamification', 'badges'] as const,
     achievementCatalog: ['gamification', 'achievements'] as const,
     pointsHistory: (page: number) => ['gamification', 'points', 'history', String(page)] as const,
+    /** Top bar XP chip (`GET /gamification/me/summary`). */
+    summary: ['gamification', 'me', 'summary'] as const,
   },
   leaderboard: {
     seasons: ['leaderboard', 'seasons'] as const,

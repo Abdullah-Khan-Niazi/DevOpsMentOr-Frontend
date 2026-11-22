@@ -1,6 +1,7 @@
 export { ENV } from './env';
 export { ROUTES, type AppRoute } from './routes';
 export { QUERY_KEYS } from './queryKeys';
+export { ERROR_CODES, isErrorCode, type ErrorCode } from './errorCodes';
 export {
   TELEMETRY_TOKENS,
   SURFACE_TOKENS,
