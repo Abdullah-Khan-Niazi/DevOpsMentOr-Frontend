@@ -50,6 +50,7 @@
   --color-success: var(--accent);
   --color-check-success: var(--accent-success);
   --color-error: #b83232;
+  --color-danger: var(--color-error);
   --color-warning: var(--accent-warn);
   --color-info: #2a628f;
   --color-input: var(--paper-line);
@@ -82,7 +83,7 @@
 }
 
 /* Off-scale micro typography used by dense admin surfaces. Declared inline so the
-   generated text-micro / text-caption utilities keep these exact sizes — the legacy
+   generated text-micro / text-caption utilities keep these exact sizes: the legacy
    unlayered :root --text-caption token (0.75rem) stays untouched for CSS consumers. */
 @theme inline {
   --text-micro: 0.625rem;
@@ -148,55 +149,15 @@ table thead th {
   user-select: none;
 }
 
-/* ─── Universal Tab & Segmented Switcher System (Paper & Ink Minimal Roundness) ─ */
-.tab-switcher {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.125rem;
-  padding: 0.125rem;
-  background-color: var(--pearl-100);
-  border: 0.0625rem solid var(--paper-line);
-  border-radius: var(--radius-sm);
-  box-shadow: inset 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 3%, transparent);
-}
+/* The segmented `.tab-switcher` control lives in
+   src/shared/components/TabSwitcher/TabSwitcher.css (same class names). */
 
-.tab-switcher__tab {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem 0.625rem;
-  font-family: var(--font-mono);
-  font-size: 0.6875rem;
-  font-weight: 500;
-  line-height: 1.2;
-  white-space: nowrap;
-  border-radius: var(--radius-xs);
-  border: 0.0625rem solid transparent;
-  color: var(--text-secondary);
-  background: transparent;
-  cursor: pointer;
-  transition: all 140ms ease;
-  user-select: none;
-}
-
-.tab-switcher__tab:hover:not(.tab-switcher__tab--active) {
-  color: var(--ink);
-  background-color: var(--pearl-200);
-}
-
-.tab-switcher__tab--active {
-  background-color: var(--ink) !important;
-  color: var(--pearl-100) !important;
-  font-weight: 600;
-  border-color: var(--ink) !important;
-  box-shadow: 0 0.0625rem 0.125rem rgba(20, 20, 15, 0.08);
-}
-
-.tab-switcher__tab--active:hover {
-  background-color: var(--pearl-100) !important;
-  color: var(--ink) !important;
-  border-color: var(--ink) !important;
-  outline: 0.0625rem solid var(--ink) !important;
+/* Full-height logged-in shell: the viewport height is the page height (C4). The marketing
+   site still scrolls the document (content overflows the 100% boxes; min-height stays below). */
+html,
+body,
+#root {
+  height: 100%;
 }
 
 html,
@@ -225,32 +186,37 @@ body {
 /* ─── Contract v8 Design Tokens (Single Light Theme) ───────────────────────── */
 :root {
   /* ---- Paper / light surfaces ---- */
-  --paper: #faf9f6; /* primary page background — warm off-white, not clinical */
+  --paper: #faf9f6; /* primary page background: warm off-white, not clinical */
   --paper-dim: #f1efe9; /* secondary surface, one step down */
   --paper-line: #e2dfd5; /* hairline borders / dividers on paper */
-  --paper-line-strong: #cec9bd; /* emphasized hairline — hover borders on paper */
+  --paper-line-strong: #cec9bd; /* emphasized hairline: hover borders on paper */
 
-  /* ---- Pearl white — the button/card "white" family, not the page background ---- */
+  /* ---- Pearl white: the button/card "white" family, not the page background ---- */
   --pearl-100: #fdfcfa; /* lightest pearl, near-white but not pure */
   --pearl-200: #f3f1ec;
   --pearl-300: #e7e4dc;
 
-  /* ---- Ink / pearl black — the primary color family, never pure #000 ---- */
-  --ink: #14140f; /* pearl black — PRIMARY color, replaces the old accent-green role */
+  /* ---- Ink / pearl black: the primary color family, never pure #000 ---- */
+  --ink: #14140f; /* pearl black: PRIMARY color, replaces the old accent-green role */
   --ink-soft: #232320; /* secondary ink, one step lighter */
   --ink-faint: #3a3a35; /* tertiary ink, for de-emphasized dark text/icons */
-  --ink-deep: #0c0c09; /* pressed state — deepest step of the ink ramp */
+  --ink-deep: #0c0c09; /* pressed state: deepest step of the ink ramp */
 
   /* ---- Neutral text scale ---- */
   --text-primary: var(--ink);
   --text-secondary: #5b5b54;
   --text-tertiary: #8a897f;
 
-  /* ---- Functional accent — Paper & Ink primary color family ---- */
-  --accent: var(--ink); /* ink — primary accent, replaces legacy green role */
-  --accent-signal: #d71921; /* NothingOS red — live signal & pulse dots only */
-  --accent-success: #16a34a; /* green — passed check & objective verification */
-  --accent-warn: #9c5b12; /* muted amber — pending/retry states only */
+  /* ---- Functional accent: Paper & Ink primary color family ---- */
+  --accent: var(--ink); /* ink: primary accent, replaces legacy green role */
+  --accent-signal: #d71921; /* NothingOS red: live signal & pulse dots only */
+  --accent-success: #16a34a; /* green: passed check & objective verification */
+  --accent-warn: #9c5b12; /* muted amber: pending/retry states only */
+  --accent-icon: var(--ink); /* selected icon glyph colour (filled + accent) */
+
+  /* ---- Skeleton shimmer: base and sweep highlight (paper family) ---- */
+  --skeleton-base: var(--paper-dim);
+  --skeleton-highlight: var(--pearl-100); /* lighter than the base so the sweep reads on paper */
 
   /* ---- Danger action ramp (red family, derives from --accent-signal) ---- */
   --signal-300: #eb343c; /* danger hover highlight */
@@ -350,6 +316,7 @@ body {
 
   --color-success: var(--accent);
   --color-error: #b83232;
+  --color-danger: var(--color-error);
   --color-warning: var(--accent-warn);
   --color-info: #2a628f;
 
@@ -361,11 +328,22 @@ body {
   --z-raised: 10;
   --z-floating: 100;
   --z-sticky: 200;
+  --z-topbar: var(--z-sticky); /* top bar + mobile header */
+  --z-sidebar: 210;
   --z-workspace: 300;
   --z-workspace-fab: 350;
   --z-workspace-drawer: 400;
-  --z-overlay: 500;
+  --z-workspace-overlay: 450;
+  --z-overlay: 500; /* modal + drawer root */
+  --z-dropdown: 600; /* menus, selects, context switcher: above the top bar and inside overlays */
+  --z-popover: 650;
+  --z-tooltip: 800;
   --z-toast: 900;
+
+  /* Focus ring (logged-in UI and overlays) */
+  --focus-ring-color: var(--ink);
+  --focus-ring: 0 0 0 0.125rem var(--paper), 0 0 0 0.25rem var(--focus-ring-color);
+  --focus-ring-danger: 0 0 0 0.125rem var(--paper), 0 0 0 0.25rem var(--signal-600);
 
   /* Motion */
   --ease-standard: cubic-bezier(0.16, 1, 0.3, 1);
@@ -380,6 +358,103 @@ body {
   --duration-slower: 720ms;
   --duration-scroll: 900ms;
 
+  /* Apple-like curves for page/content movement */
+  --ease-apple: cubic-bezier(0.32, 0.72, 0, 1); /* sheets, drawers, page enter */
+  --ease-apple-out: cubic-bezier(0.25, 1, 0.5, 1); /* content reveal */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+
+  /* Spring micro-interactions (precomputed damped springs, stiffness k / damping c) */
+  --spring-snappy: linear(
+    0,
+    0.052,
+    0.171,
+    0.316,
+    0.463,
+    0.597,
+    0.711,
+    0.803,
+    0.873,
+    0.925,
+    0.962,
+    0.986,
+    1.001,
+    1.009,
+    1.013,
+    1.014,
+    1.013,
+    1.012,
+    1.01,
+    1.007,
+    1.006,
+    1.004,
+    1.003,
+    1.002,
+    1
+  ); /* k500 c36, 380ms */
+  --spring-bouncy: linear(
+    0,
+    0.11,
+    0.35,
+    0.613,
+    0.837,
+    0.994,
+    1.083,
+    1.115,
+    1.11,
+    1.085,
+    1.054,
+    1.026,
+    1.005,
+    0.993,
+    0.987,
+    0.987,
+    0.989,
+    0.993,
+    0.996,
+    0.999,
+    1,
+    1.001,
+    1.002,
+    1.001,
+    1
+  ); /* k380 c22, 640ms */
+  --spring-gentle: linear(
+    0,
+    0.057,
+    0.178,
+    0.317,
+    0.451,
+    0.568,
+    0.667,
+    0.746,
+    0.809,
+    0.858,
+    0.895,
+    0.922,
+    0.943,
+    0.959,
+    0.97,
+    0.978,
+    0.984,
+    0.989,
+    0.992,
+    0.994,
+    0.996,
+    0.997,
+    0.998,
+    0.999,
+    1
+  ); /* k170 c26, 700ms */
+
+  --duration-press: 90ms;
+  --duration-micro: 140ms;
+  --duration-spring-snappy: 380ms;
+  --duration-spring-bouncy: 640ms;
+  --duration-page: 320ms;
+  --duration-drawer: 360ms;
+  --press-scale: 0.96;
+  --lift-y: -0.0625rem;
+
   /* Gradients purged */
   --gradient-atmosphere: none;
   --gradient-atmosphere-sober: none;
@@ -389,4 +464,232 @@ body {
   --node-stroke-dim: var(--paper-line);
   --node-fill-dot: var(--ink);
   --node-canvas-bg: var(--pearl-100);
+}
+
+/* ─── Motion, focus and shared utility layer ───────────────────────────────
+   One source for micro-interactions used by every shared component. The
+   preserved marketing site (`.site-root`) keeps its own motion rules. */
+@layer components {
+  .icon {
+    flex-shrink: 0;
+    transition: transform var(--duration-micro) var(--spring-snappy);
+  }
+
+  /* Focus parity: one ring for every interactive element in the app and overlays. */
+  :where(.app-chrome, .overlay-root)
+    :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: none;
+    box-shadow: var(--focus-ring);
+    border-radius: var(--radius-sm);
+  }
+
+  /* Press: quick scale down, spring release. */
+  .motion-press {
+    transition: transform var(--duration-spring-snappy) var(--spring-snappy);
+  }
+
+  .motion-press:active:not(:disabled):not([aria-disabled='true']) {
+    transform: scale(var(--press-scale));
+    transition-duration: var(--duration-press);
+    transition-timing-function: var(--ease-standard);
+  }
+
+  /* Lift: hover raise with a soft shadow. */
+  .motion-lift {
+    transition:
+      transform var(--duration-spring-snappy) var(--spring-snappy),
+      box-shadow var(--duration-fast) var(--ease-standard);
+  }
+
+  .motion-lift:hover {
+    transform: translateY(var(--lift-y));
+    box-shadow: var(--shadow-sm);
+  }
+
+  .motion-page {
+    animation: page-enter var(--duration-page) var(--ease-apple-out) both;
+  }
+
+  .motion-fade-in {
+    animation: fade-in var(--duration-base) var(--ease-apple-out) both;
+  }
+
+  .motion-pop-in {
+    animation: pop-in var(--duration-spring-bouncy) var(--spring-bouncy) both;
+  }
+
+  /* Height animation without measuring: grid rows 0fr -> 1fr. */
+  .collapsible {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows var(--duration-base) var(--ease-apple);
+  }
+
+  .collapsible[data-open='true'] {
+    grid-template-rows: 1fr;
+  }
+
+  .collapsible > * {
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .chevron-rotate {
+    transition: transform var(--duration-spring-snappy) var(--spring-snappy);
+  }
+
+  .chevron-rotate[data-open='true'] {
+    transform: rotate(180deg);
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      var(--skeleton-base) 0%,
+      var(--skeleton-highlight) 50%,
+      var(--skeleton-base) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer-sweep 1.4s linear infinite;
+  }
+
+  .flash-new {
+    animation: flash-new 1.2s var(--ease-standard) both;
+  }
+
+  .prose-measure {
+    max-width: 72ch;
+  }
+
+  /* Ring spinner (no SVG): inherits the current text color. */
+  .spin-ring {
+    display: inline-block;
+    width: 1em;
+    height: 1em;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    border: 0.125em solid currentColor;
+    border-right-color: transparent;
+    animation: spin-ring 0.7s linear infinite;
+  }
+
+  /* CSS tooltip from `data-tooltip`, shown after a short delay on hover or keyboard focus. */
+  .has-tooltip {
+    position: relative;
+  }
+
+  .has-tooltip[data-tooltip]::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    left: 50%;
+    top: calc(100% + 0.375rem);
+    z-index: var(--z-tooltip);
+    padding: 0.3125rem 0.625rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--ink);
+    color: var(--pearl-100);
+    font-family: var(--font-body);
+    font-size: 0.75rem;
+    font-weight: 500;
+    line-height: 1.2;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, -0.125rem);
+    transition:
+      opacity var(--duration-micro) var(--ease-standard),
+      transform var(--duration-micro) var(--ease-standard);
+    transition-delay: 0ms;
+  }
+
+  .has-tooltip[data-tooltip-side='top']::after {
+    top: auto;
+    bottom: calc(100% + 0.375rem);
+    transform: translate(-50%, 0.125rem);
+  }
+
+  .has-tooltip[data-tooltip]:hover::after,
+  .has-tooltip[data-tooltip]:focus-visible::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 400ms;
+  }
+}
+
+@keyframes page-enter {
+  from {
+    opacity: 0;
+    transform: translateY(0.375rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes shimmer-sweep {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes flash-new {
+  from {
+    background-color: var(--pearl-200);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+@keyframes spin-ring {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Single reduced-motion override for the app (the marketing site keeps its own rules). */
+@media (prefers-reduced-motion: reduce) {
+  :where(:not(.site-root, .site-root *)),
+  :where(:not(.site-root, .site-root *))::before,
+  :where(:not(.site-root, .site-root *))::after {
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .shimmer {
+    animation: none;
+    background: var(--skeleton-base);
+  }
+
+  /* Loading indicators stay readable without rotation. */
+  .spin-ring {
+    animation: none;
+    border-right-color: color-mix(in srgb, currentColor 35%, transparent);
+  }
 }
