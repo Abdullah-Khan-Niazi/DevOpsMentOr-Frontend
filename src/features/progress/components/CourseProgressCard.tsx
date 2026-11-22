@@ -1,5 +1,5 @@
 import type { CourseProgressDto } from '../types';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar } from '@/shared/components/ProgressBar';
 
 interface CourseProgressCardProps {
   course: CourseProgressDto | null;
@@ -65,7 +65,7 @@ export function CourseProgressCard({ course, isLoading }: CourseProgressCardProp
             {course?.completedLessonCount ?? 0} of {course?.totalLessons ?? 0} lessons completed
           </p>
           <div className="mt-3">
-            <ProgressBar percentage={percentage} label="Course progress" size="sm" />
+            <ProgressBar value={percentage} label="Course progress" size="sm" />
           </div>
         </div>
       </div>

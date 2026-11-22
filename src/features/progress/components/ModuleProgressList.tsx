@@ -1,5 +1,5 @@
 import type { ModuleProgressSummary } from '../types';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar } from '@/shared/components/ProgressBar';
 
 interface ModuleProgressListProps {
   modules: ModuleProgressSummary[];
@@ -43,7 +43,7 @@ export function ModuleProgressList({ modules, isLoading }: ModuleProgressListPro
               </span>
             </div>
             <ProgressBar
-              percentage={module.progressPercentage}
+              value={module.progressPercentage}
               label={`${module.moduleTitle} progress`}
               size="sm"
             />

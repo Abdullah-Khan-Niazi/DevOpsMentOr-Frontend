@@ -1,6 +1,7 @@
 import { useState, useMemo } from 'react';
 import { ACTIVITY_LABELS, formatDateTime } from './activityFormat';
 import type { ActivityLogDto } from '../types';
+import { Button, EmptyState, Icon, Skeleton } from '@/shared/components';
 
 type SortColumn = 'event' | 'when';
 
@@ -12,49 +13,28 @@ interface ActivityLogTableProps {
 function SortIcon({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
   if (!active) {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      <Icon
+        name="sort"
+        size={14}
         className="w-3.5 h-3.5 text-muted/60 group-hover:text-muted transition-colors shrink-0"
-        aria-hidden="true"
-      >
-        <path d="m5 10 3 3 3-3M5 6l3-3 3 3" />
-      </svg>
+      />
     );
   }
   if (direction === 'asc') {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      <Icon
+        name="arrow-up"
+        size={14}
         className="w-3.5 h-3.5 text-ink transition-transform shrink-0"
-        aria-hidden="true"
-      >
-        <path d="M8 13V3M4 7l4-4 4 4" />
-      </svg>
+      />
     );
   }
   return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+    <Icon
+      name="arrow-down"
+      size={14}
       className="w-3.5 h-3.5 text-ink transition-transform shrink-0"
-      aria-hidden="true"
-    >
-      <path d="M8 3v10m-4-4 4 4 4-4" />
-    </svg>
+    />
   );
 }
 
@@ -90,22 +70,26 @@ export function ActivityLogTable({ items, isLoading }: ActivityLogTableProps) {
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-full overflow-x-auto">
-        <table className="w-full text-left text-sm" aria-label="Activity log">
+      <div
+        className="w-full max-w-full overflow-x-auto"
+        role="status"
+        aria-label="Loading activity log"
+      >
+        <table className="w-full text-left text-sm" aria-hidden="true">
           <thead>
-            <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+            <tr className="text-xs text-muted">
               <th className="px-3 py-2 font-medium">Event</th>
               <th className="px-3 py-2 font-medium">When</th>
             </tr>
           </thead>
           <tbody>
             {Array.from({ length: 3 }, (_, index) => (
-              <tr key={index} className="border-b border-border/60 last:border-0">
+              <tr key={index}>
                 <td className="px-3 py-3">
-                  <div className="h-3 w-2/3 rounded-sm bg-border animate-pulse" />
+                  <Skeleton className="h-3 w-2/3 rounded-xs" />
                 </td>
                 <td className="px-3 py-3">
-                  <div className="h-3 w-24 rounded-sm bg-border animate-pulse" />
+                  <Skeleton className="h-3 w-24 rounded-xs" />
                 </td>
               </tr>
             ))}
@@ -116,43 +100,57 @@ export function ActivityLogTable({ items, isLoading }: ActivityLogTableProps) {
   }
 
   if (items.length === 0) {
-    return <p className="py-6 text-sm text-muted">No activity recorded yet.</p>;
+    return <EmptyState title="No activity recorded yet." icon="history" />;
   }
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+          <tr className="text-xs text-muted">
             <th
-              aria-sort={sortColumn === 'event' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+              aria-sort={
+                sortColumn === 'event'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
               className="px-3 py-2 font-medium"
             >
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleSort('event')}
-                className="group inline-flex items-center gap-1.5 transition-colors hover:text-ink cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink rounded-sm"
+                className="group"
               >
                 <span>Event</span>
                 <SortIcon active={sortColumn === 'event'} direction={sortDirection} />
-              </button>
+              </Button>
             </th>
             <th
-              aria-sort={sortColumn === 'when' ? (sortDirection === 'asc' ? 'ascending' : 'descending') : 'none'}
+              aria-sort={
+                sortColumn === 'when'
+                  ? sortDirection === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
               className="px-3 py-2 font-medium"
             >
-              <button
-                type="button"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={() => handleSort('when')}
-                className="group inline-flex items-center gap-1.5 transition-colors hover:text-ink cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink rounded-sm"
+                className="group"
               >
                 <span>When</span>
                 <SortIcon active={sortColumn === 'when'} direction={sortDirection} />
-              </button>
+              </Button>
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border/60">
+        <tbody>
           {sortedItems.map((item) => (
             <tr key={item.logId} className="hover:bg-surface/50 transition-colors">
               <td className="px-3 py-2.5 text-card-foreground">

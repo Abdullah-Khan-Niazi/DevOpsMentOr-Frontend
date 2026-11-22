@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import type { ContinueLearningPointerDto } from '../types';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar } from '@/shared/components/ProgressBar';
 
 interface ContinueLearningCardProps {
   pointer: ContinueLearningPointerDto | null;
@@ -45,7 +45,7 @@ export function ContinueLearningCard({ pointer, isLoading }: ContinueLearningCar
       <p className="mt-2 text-xs uppercase tracking-wide text-muted">{pointer.moduleTitle}</p>
       <p className="mt-1 text-base font-medium text-card-foreground">{pointer.lessonTitle}</p>
       <div className="mt-3">
-        <ProgressBar percentage={pointer.progressPct} label="Course progress" size="sm" />
+        <ProgressBar value={pointer.progressPct} label="Course progress" size="sm" />
       </div>
       <Link
         to={ROUTES.LEARN_LESSON.replace(':lessonId', String(pointer.lessonId))}

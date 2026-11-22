@@ -11,6 +11,14 @@ export const ACTIVITY_LABELS: Record<LearningActivityType, string> = {
   QUIZ_PASSED: 'Passed a quiz',
   QUIZ_FAILED: 'Failed a quiz',
   COURSE_COMPLETED: 'Completed the course',
+  LAB_TERMINATED: 'Ended a lab environment',
+  TRACK_COMPLETED: 'Completed a track',
+  AI_MENTOR_SESSION: 'Asked the AI mentor',
+  LAB_STEP_STAGED: 'Prepared a lab step',
+  LAB_STEP_PASSED: 'Passed a lab step',
+  LAB_STEP_FAILED: 'Checked a lab step',
+  LAB_HINT_REVEALED: 'Revealed a hint',
+  QUIZ_TERMINAL_STAGED: 'Prepared a terminal question',
 };
 
 export function formatActivityTime(value: string): string {

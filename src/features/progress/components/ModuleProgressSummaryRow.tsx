@@ -1,5 +1,5 @@
 import type { ModuleAverageDto } from '../types';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar } from '@/shared/components/ProgressBar';
 
 interface ModuleProgressSummaryRowProps {
   modules: ModuleAverageDto[];
@@ -42,7 +42,7 @@ export function ModuleProgressSummaryRow({ modules, isLoading }: ModuleProgressS
               </span>
             </div>
             <ProgressBar
-              percentage={module.averageProgressPercentage}
+              value={module.averageProgressPercentage}
               label={`${module.moduleTitle} class average`}
               size="sm"
             />

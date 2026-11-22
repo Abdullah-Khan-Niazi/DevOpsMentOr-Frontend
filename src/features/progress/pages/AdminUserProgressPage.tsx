@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, DetailFormSkeleton, ErrorState, PageHeader, Pagination } from '@/shared/components';
+import { useParams, useSearchParams } from 'react-router-dom';
+import {
+  Card,
+  DetailFormSkeleton,
+  ErrorState,
+  PageHeader,
+  Pagination,
+  Select,
+} from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { ActivityLogTable } from '../components/ActivityLogTable';
 import { CourseProgressCard } from '../components/CourseProgressCard';
@@ -9,17 +16,52 @@ import { useAdminUserProgress } from '../hooks';
 
 const PAGE_SIZE = 20;
 
+/** Positive integer from `?courseId=`, or null when absent or invalid. */
+function readCourseId(raw: string | null): number | null {
+  const value = Number(raw);
+  return raw !== null && Number.isInteger(value) && value > 0 ? value : null;
+}
+
 /** SCR-F5-05: platform-admin full progress view for one user (F5-API-12). */
 export function AdminUserProgressPage() {
   const { userId = '' } = useParams<{ userId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const courseId = readCourseId(searchParams.get('courseId'));
   const [page, setPage] = useState(1);
 
-  const query = useAdminUserProgress(userId);
+  const query = useAdminUserProgress(userId, courseId);
   const data = query.data;
 
   const activity = useMemo(() => data?.activity ?? [], [data]);
   const pagedActivity = activity.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
   const totalPages = Math.max(1, Math.ceil(activity.length / PAGE_SIZE));
+
+  const courseOptions = data?.courseOptions ?? [];
+  const selectedCourseId = courseId ?? courseOptions[0]?.courseId ?? null;
+
+  function selectCourse(next: number) {
+    setSearchParams(
+      (current) => {
+        const params = new URLSearchParams(current);
+        params.set('courseId', String(next));
+        return params;
+      },
+      { replace: true },
+    );
+  }
+
+  const courseSelect =
+    courseOptions.length > 1 ? (
+      <Select
+        label="Course"
+        value={selectedCourseId ?? ''}
+        onChange={(event) => selectCourse(Number(event.target.value))}
+        options={courseOptions.map((option) => ({
+          value: String(option.courseId),
+          label: option.title,
+        }))}
+      />
+    ) : null;
 
   if (query.isLoading) {
     return <DetailFormSkeleton />;
@@ -45,6 +87,7 @@ export function AdminUserProgressPage() {
       <PageHeader
         title={user.fullName ?? user.username ?? 'User Progress'}
         backTo={ROUTES.ADMIN_USERS}
+        actions={courseSelect}
       />
 
       <div className="grid gap-6 lg:grid-cols-2">
