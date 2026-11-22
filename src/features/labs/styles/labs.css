@@ -405,8 +405,6 @@
   }
 }
 
-
-
 /* Dark-surface tertiary Run Checks button: no white hover/pressed bg, bright/bold text + checking animation */
 .lab-run-checks-btn {
   position: relative;
@@ -459,12 +457,7 @@
   bottom: 0.125rem;
   height: 0.125rem;
   border-radius: var(--radius-full);
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    var(--accent-success) 50%,
-    transparent 100%
-  );
+  background: linear-gradient(90deg, transparent 0%, var(--accent-success) 50%, transparent 100%);
   background-size: 200% 100%;
   animation: labChecksSweep 1s linear infinite;
 }
@@ -1064,18 +1057,12 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: var(--space-2) var(--space-3);
-  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .admin-table td {
   padding: var(--space-3);
-  border-bottom: 0.0625rem solid var(--color-border-subtle);
   color: var(--color-text-primary);
   vertical-align: middle;
-}
-
-.admin-table tr:last-child td {
-  border-bottom: 0;
 }
 
 .admin-table__muted {

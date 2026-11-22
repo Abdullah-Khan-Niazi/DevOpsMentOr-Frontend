@@ -1,17 +1,22 @@
-import { apiClient } from '@/shared/services';
+import { apiClient, LONG_REQUEST_TIMEOUT_MS } from '@/shared/services';
 import type {
   ActiveInstanceDto,
   AdminInstancesResponseDto,
   AdminLabDto,
   AdminTrackDto,
-  AssertionResultDto,
   CreateLabPayload,
   CreateTrackPayload,
   ExtendInstanceDto,
+  HintRevealResultDto,
   LabDetailDto,
   LabDto,
+  LabStepCheckPayload,
+  LabStepCheckResultDto,
+  LabStepStageResultDto,
+  LabStepsStateDto,
+  LabSlidesDto,
+  LabWalkthroughDto,
   ProvisionInstanceDto,
-  SherlockSubmissionResultDto,
   StopInstanceDto,
   TerminateInstanceDto,
   TrackDetailDto,
@@ -33,10 +38,68 @@ export const labsService = {
     return unwrap(data).labs;
   },
 
-  /** LAB-02 */
+  /** LAB-02: `LabDetailDto` (C§4.1), no secrets. */
   async getLabDetail(labId: number): Promise<LabDetailDto> {
     const { data } = await apiClient.get<{ data: { lab: LabDetailDto } }>(`/labs/${labId}`);
     return unwrap(data).lab;
+  },
+
+  /** C§4.1 learner step state (`LabStepsStateDto`): the single source for step progress. */
+  async getSteps(labId: number): Promise<LabStepsStateDto> {
+    const { data } = await apiClient.get<{ data: { state: LabStepsStateDto } }>(
+      `/labs/${labId}/steps`,
+    );
+    return unwrap(data).state;
+  },
+
+  /** C§4.1 stage a step on a running instance (setup commands run server-side). */
+  async stageStep(instanceId: number, stepId: string): Promise<LabStepStageResultDto> {
+    const { data } = await apiClient.post<{ data: { stage: LabStepStageResultDto } }>(
+      `/labs/instances/${instanceId}/steps/${encodeURIComponent(stepId)}/stage`,
+      {},
+      { timeout: LONG_REQUEST_TIMEOUT_MS },
+    );
+    return unwrap(data).stage;
+  },
+
+  /** C§4.1 check a step; `answer` only for question steps. */
+  async checkStep(
+    instanceId: number,
+    stepId: string,
+    answer?: string,
+  ): Promise<LabStepCheckResultDto> {
+    const body: LabStepCheckPayload = answer === undefined ? {} : { answer };
+    const { data } = await apiClient.post<{ data: { result: LabStepCheckResultDto } }>(
+      `/labs/instances/${instanceId}/steps/${encodeURIComponent(stepId)}/check`,
+      body,
+      { timeout: LONG_REQUEST_TIMEOUT_MS },
+    );
+    return unwrap(data).result;
+  },
+
+  /** C§4.1 reveal the hint at `hintIndex` (sequential; costs the step's hint cost). */
+  async revealHint(labId: number, stepId: string, hintIndex: number): Promise<HintRevealResultDto> {
+    const { data } = await apiClient.post<{ data: { hint: HintRevealResultDto } }>(
+      `/labs/${labId}/steps/${encodeURIComponent(stepId)}/hints/${hintIndex}/reveal`,
+      {},
+    );
+    return unwrap(data).hint;
+  },
+
+  /** C§4.1 / C2 lab walkthrough markdown (sanitized by the renderer). */
+  async getWalkthrough(labId: number): Promise<LabWalkthroughDto> {
+    const { data } = await apiClient.get<{ data: { walkthrough: LabWalkthroughDto } }>(
+      `/labs/${labId}/walkthrough`,
+    );
+    return unwrap(data).walkthrough;
+  },
+
+  /** Presigned (5 minute) URL of the course slide deck for a lab. */
+  async getSlides(labId: number): Promise<LabSlidesDto> {
+    const { data } = await apiClient.get<{ data: { slides: LabSlidesDto } }>(
+      `/labs/${labId}/slides`,
+    );
+    return unwrap(data).slides;
   },
 
   /** LAB-03 */
@@ -44,6 +107,7 @@ export const labsService = {
     const { data } = await apiClient.post<{ data: { instance: ProvisionInstanceDto } }>(
       `/labs/${labId}/instances`,
       { region },
+      { timeout: LONG_REQUEST_TIMEOUT_MS },
     );
     return unwrap(data).instance;
   },
@@ -76,26 +140,6 @@ export const labsService = {
   async extendInstance(instanceId: number): Promise<ExtendInstanceDto> {
     const { data } = await apiClient.patch<{ data: ExtendInstanceDto }>(
       `/labs/instances/${instanceId}/extend`,
-    );
-    return unwrap(data);
-  },
-
-  /** LAB-08 */
-  async runAssertions(instanceId: number): Promise<AssertionResultDto> {
-    const { data } = await apiClient.post<{ data: AssertionResultDto }>(
-      `/labs/instances/${instanceId}/assert`,
-    );
-    return unwrap(data);
-  },
-
-  /** LAB-09 */
-  async submitSherlockAnswers(
-    labId: number,
-    answers: Array<{ questionId: string; answer: string }>,
-  ): Promise<SherlockSubmissionResultDto> {
-    const { data } = await apiClient.post<{ data: SherlockSubmissionResultDto }>(
-      `/labs/${labId}/sherlock/submit`,
-      { answers },
     );
     return unwrap(data);
   },

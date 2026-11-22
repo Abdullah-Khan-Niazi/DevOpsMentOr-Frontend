@@ -1,4 +1,7 @@
-/** F6 domain types mirroring the backend response DTOs (§05). */
+/** F6 domain types mirroring the backend response DTOs (§05, C§4.1). */
+
+import type { XpDeltaDto } from '@/features/progress/types';
+import type { LabMode, LabStepKind } from './labSpec';
 
 export type LabType = 'pro_lab' | 'sherlock' | 'vip_lab';
 export type VpnRegion = 'US' | 'EU' | 'ASIA' | 'AUSTRALIA' | 'SOUTH_AMERICA' | 'AFRICA';
@@ -24,12 +27,14 @@ export interface LabDto {
   updatedAt: string;
 }
 
+/** @deprecated not part of any learner DTO anymore (C§4.1); read only by the legacy LabDetailPage. */
 export interface ProLabDetailDto {
   proLabId: number;
   labId: number;
   networkIpRange: string | null;
   totalMachines: number;
   requiredRootCount: number;
+  /** @deprecated checkpoint assertions are retired; learners see step state (C§4.1). */
   checkpoints: Array<{ checkpointId: string; assertionGroupId: string }>;
   activeUsersCount: number;
 }
@@ -44,19 +49,170 @@ export interface SherlockDetailDto {
   requiredCorrectAnswers: number;
 }
 
-export interface LabDetailDto extends LabDto {
-  proLab: ProLabDetailDto | null;
-  sherlock: SherlockDetailDto | null;
+/** One step of a lab as listed before starting it (no instructions, hints or checks). Points are scaled. */
+export interface LabStepSummaryDto {
+  stepId: string;
+  position: number;
+  title: string;
+  kind: LabStepKind;
+  points: number;
 }
 
+/** `GET /labs/:labId` (C§4.1). No checkpoints and no secrets: steps are listed without checks, setup or answers. */
+export interface LabDetailDto extends LabDto {
+  /** false when anonymous. */
+  isCompleted: boolean;
+  /** null when the spec is not ready. */
+  mode: LabMode | null;
+  /** Markdown. */
+  scenarioIntro: string;
+  stepCount: number;
+  /** Sum of scaled step points plus the scaled completion bonus (C3). */
+  pointsAvailable: number;
+  steps: LabStepSummaryDto[];
+  sherlock: SherlockDetailDto | null;
+  /**
+   * @deprecated the learner DTO no longer carries `proLab` (C§4.1); kept optional so the
+   * legacy LabDetailPage compiles until wave 4 removes it.
+   */
+  proLab?: ProLabDetailDto | null;
+}
+
+export type LabStepStatus = 'locked' | 'current' | 'passed';
+
+/**
+ * Learner view of one lab step (C§4.1). `points` is scaled by the difficulty multiplier;
+ * hint cost and penalties are the per-step values (never scaled).
+ */
+export interface LearnerLabStepDto {
+  stepId: string;
+  position: number;
+  title: string;
+  kind: LabStepKind;
+  status: LabStepStatus;
+  /** Markdown; null while the step is locked. */
+  instructions: string | null;
+  /** Points available for this step (round(step.points * multiplier)). */
+  points: number;
+  pointsAwarded: number;
+  passedAt: string | null;
+  /** `setup.length > 0 || kind === 'question'`. */
+  requiresStage: boolean;
+  /** Latest LAB_STEP_STAGED for the active instance. */
+  stagedOnInstanceId: number | null;
+  hints: {
+    total: number;
+    revealed: Array<{ hintIndex: number; text: string }>;
+    nextHintIndex: number | null;
+    /** Points deducted per reveal of this step's hint (step.hintCost). */
+    cost: number;
+  };
+  /** Per-step penalties; both 0 for task steps. */
+  penalties: { wrongAnswer: number; guess: number };
+}
+
+export interface LabStepsStateTotals {
+  pointsAvailable: number;
+  pointsEarned: number;
+  hintPenalties: number;
+  wrongAnswerPenalties: number;
+  guessPenalties: number;
+}
+
+/** `GET /labs/:labId/steps` (C§4.1). */
+export interface LabStepsStateDto {
+  labId: number;
+  slug: string;
+  labName: string;
+  mode: LabMode;
+  scenarioIntro: string;
+  steps: LearnerLabStepDto[];
+  currentStepId: string | null;
+  completedAt: string | null;
+  /** Scaled completion bonus of the spec. */
+  completionBonus: number;
+  totals: LabStepsStateTotals;
+  activeInstance: {
+    instanceId: number;
+    status: LabInstanceStatus;
+    expiresAt: string | null;
+    terminalWsUrl: string | null;
+  } | null;
+  /** Set when the user's active instance belongs to another lab, so the FE can offer "End it". */
+  otherActiveInstance: { instanceId: number; labId: number; labName: string } | null;
+}
+
+export type LabStepCheckReason = 'passed' | 'not_passed' | 'timeout' | 'wrong_answer';
+
+/** Body of `POST /labs/instances/:instanceId/steps/:stepId/check` (C§4.1, strict). `answer` for question steps only. */
+export interface LabStepCheckPayload {
+  answer?: string;
+}
+
+/** `POST .../steps/:stepId/check` response (C§4.1). `message` is generic: never stdout, stderr or hints. */
+export interface LabStepCheckResultDto {
+  stepId: string;
+  passed: boolean;
+  alreadyPassed: boolean;
+  reason: LabStepCheckReason;
+  message: string;
+  /** Question steps only. */
+  guessed: boolean;
+  pointsAwarded: number;
+  penalties: { wrongAnswer: number; guess: number };
+  nextStepId: string | null;
+  labCompleted: boolean;
+  completion: null | {
+    completedAt: string;
+    completionBonus: number;
+    completedLessonIds: number[];
+  };
+  xp: XpDeltaDto;
+}
+
+/** `POST .../steps/:stepId/stage` response (C§4.1). */
+export interface LabStepStageResultDto {
+  stepId: string;
+  instanceId: number;
+  stagedAt: string;
+  setupRan: boolean;
+}
+
+/** `POST /labs/:labId/steps/:stepId/hints/:hintIndex/reveal` response (C§4.1). */
+export interface HintRevealResultDto {
+  stepId: string;
+  hintIndex: number;
+  text: string;
+  alreadyRevealed: boolean;
+  penaltyApplied: number;
+  remaining: number;
+  xp: XpDeltaDto;
+}
+
+/** `GET /labs/:labId/walkthrough` response body (C§4.1, C2). Markdown is sanitized by the FE. */
+export interface LabWalkthroughDto {
+  labId: number;
+  slug: string;
+  markdown: string;
+}
+
+/** `GET /labs/:labId/slides` response body: short-lived presigned deck URL. */
+export interface LabSlidesDto {
+  labId: number;
+  url: string;
+  /** ISO instant after which the URL stops working. */
+  expiresAt: string;
+}
+
+/** `POST /labs/:labId/instances` response. No credential is generated or returned (D27). */
 export interface ProvisionInstanceDto {
   instanceId: number;
   labId: number;
+  labSlug: string;
   status: 'pending' | 'running';
   hostname: string | null;
   assignedIp: string | null;
   sshPort: number;
-  rootPassword: string;
   terminalWsUrl: string;
   expiresAt: string;
   vpnAssignment: { ovpnConfigUrl: string | null };
@@ -96,6 +252,7 @@ export interface ExtendInstanceDto {
   extensionsRemaining: number;
 }
 
+/** @deprecated assertion engine retired; replaced by `LabStepCheckResultDto` (C§4.1). */
 export interface AssertionResultDto {
   instanceId: number;
   assertions: Array<{ name: string; passed: boolean; message: string | null }>;
