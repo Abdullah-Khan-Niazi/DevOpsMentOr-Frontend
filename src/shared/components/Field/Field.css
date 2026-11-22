@@ -1,0 +1,313 @@
+/* Shared form fields (Textarea, Select, Switch, Checkbox, RadioGroup, SearchInput,
+   NumberInput). Base field surface comes from Input.css (`.input-field`). */
+
+.field-error {
+  animation: field-error-in var(--duration-base) var(--ease-apple-out) both;
+}
+
+@keyframes field-error-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.field-label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+/* Textarea */
+.field-textarea {
+  min-height: 6rem;
+  resize: vertical;
+}
+
+.field-textarea--mono {
+  font-family: var(--font-mono);
+  font-size: var(--text-body-s);
+}
+
+.field-counter {
+  font-size: var(--text-caption);
+  color: var(--color-text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.field-counter--over {
+  color: var(--accent-signal);
+}
+
+/* Select: native select with a Material chevron. */
+.field-select {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.field-select select.input-field {
+  appearance: none;
+  background-image: none;
+  padding-right: 2.25rem;
+  cursor: pointer;
+}
+
+.field-select__chevron {
+  position: absolute;
+  right: 0.625rem;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.field-select--sm select.input-field {
+  height: 2rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: var(--text-body-s);
+}
+
+/* Switch */
+.field-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  cursor: pointer;
+  user-select: none;
+}
+
+.field-switch--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.field-switch__track {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-full);
+  background-color: var(--pearl-300);
+  cursor: inherit;
+  transition: background-color var(--duration-micro) var(--ease-standard);
+}
+
+.field-switch__track[aria-checked='true'] {
+  background-color: var(--ink);
+}
+
+.field-switch__track:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.field-switch__track:disabled {
+  cursor: not-allowed;
+}
+
+.field-switch__thumb {
+  position: absolute;
+  top: 0.125rem;
+  left: 0.125rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  height: 1rem;
+  border-radius: var(--radius-full);
+  background-color: var(--pearl-100);
+  color: var(--ink);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--duration-spring-bouncy) var(--spring-bouncy);
+}
+
+.field-switch__track[aria-checked='true'] .field-switch__thumb {
+  transform: translateX(1rem);
+}
+
+.field-switch__track:active:not(:disabled) .field-switch__thumb {
+  width: 1.125rem;
+}
+
+.field-switch__thumb .spin-ring {
+  font-size: 0.625rem;
+}
+
+.field-switch--sm .field-switch__track {
+  width: 1.875rem;
+  height: 1rem;
+}
+
+.field-switch--sm .field-switch__thumb {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
+.field-switch--sm .field-switch__track[aria-checked='true'] .field-switch__thumb {
+  transform: translateX(0.875rem);
+}
+
+.field-switch__label {
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-primary);
+}
+
+/* Checkbox and radio */
+.field-check {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  cursor: pointer;
+  font-size: var(--text-body-s);
+  color: var(--color-text-primary);
+}
+
+.field-check--disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.field-check__input {
+  appearance: none;
+  position: relative;
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin: 0.125rem 0 0;
+  border: 0.09375rem solid var(--paper-line-strong);
+  border-radius: var(--radius-xs);
+  background-color: var(--pearl-100);
+  cursor: inherit;
+  transition:
+    background-color var(--duration-micro) var(--ease-standard),
+    border-color var(--duration-micro) var(--ease-standard),
+    transform var(--duration-spring-snappy) var(--spring-snappy);
+}
+
+.field-check__input[type='radio'] {
+  border-radius: var(--radius-full);
+}
+
+.field-check__input:checked {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+.field-check__input[type='checkbox']:checked::after {
+  content: '';
+  position: absolute;
+  left: 0.28rem;
+  top: 0.08rem;
+  width: 0.28rem;
+  height: 0.55rem;
+  border: solid var(--pearl-100);
+  border-width: 0 0.125rem 0.125rem 0;
+  transform: rotate(45deg);
+}
+
+.field-check__input[type='checkbox']:indeterminate {
+  background-color: var(--ink);
+  border-color: var(--ink);
+}
+
+.field-check__input[type='checkbox']:indeterminate::after {
+  content: '';
+  position: absolute;
+  left: 0.1875rem;
+  right: 0.1875rem;
+  top: calc(50% - 0.0625rem);
+  height: 0.125rem;
+  background-color: var(--pearl-100);
+}
+
+.field-check__input[type='radio']:checked::after {
+  content: '';
+  position: absolute;
+  inset: 0.21875rem;
+  border-radius: var(--radius-full);
+  background-color: var(--pearl-100);
+}
+
+.field-check__input:active:not(:disabled) {
+  transform: scale(0.9);
+}
+
+.field-check__input:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.field-check__input[aria-invalid='true'] {
+  border-color: var(--accent-signal);
+}
+
+.field-radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  margin: 0;
+  padding: 0;
+  border: none;
+  min-width: 0;
+}
+
+.field-radio-group--row {
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+}
+
+.field-radio-group legend {
+  padding: 0;
+  margin-bottom: var(--space-1);
+}
+
+/* Search */
+.field-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.field-search__icon {
+  position: absolute;
+  left: 0.625rem;
+  color: var(--color-text-tertiary);
+  pointer-events: none;
+}
+
+.field-search input.input-field {
+  padding-left: 2.125rem;
+  padding-right: 2.25rem;
+}
+
+.field-search input.input-field::-webkit-search-cancel-button {
+  appearance: none;
+}
+
+.field-search__clear {
+  position: absolute;
+  right: 0.25rem;
+}
+
+.field-search--sm input.input-field {
+  height: 2rem;
+  padding-top: 0;
+  padding-bottom: 0;
+  font-size: var(--text-body-s);
+}
+
+/* Number */
+.field-number input.input-field {
+  font-variant-numeric: tabular-nums;
+}

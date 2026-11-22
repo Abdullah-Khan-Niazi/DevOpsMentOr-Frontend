@@ -5,15 +5,13 @@ interface SpinnerProps {
   label?: string;
 }
 
+/** Ring spinner (CSS only); size follows the font size, defaults to 1.25rem. */
 export function Spinner({ className, label = 'Loading' }: SpinnerProps) {
   return (
-    <div
+    <span
       role="status"
       aria-label={label}
-      className={cn(
-        'inline-block size-5 animate-spin rounded-full border-2 border-border border-t-brand-600',
-        className,
-      )}
+      className={cn('spin-ring text-xl text-muted-foreground', className)}
     />
   );
 }
