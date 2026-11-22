@@ -1,16 +1,9 @@
 import { useState } from 'react';
-import {
-  Button,
-  Card,
-  DetailFormSkeleton,
-  ErrorState,
-  Input,
-  PageHeader,
-  toast,
-} from '@/shared/components';
+import { Button, Card, ErrorState, Input, PageHeader, toast } from '@/shared/components';
 import type { MyOrgDto } from '../types';
 import { useMyOrg } from '../hooks';
 import { ROUTES } from '@/shared/constants';
+import { OrgSettingsPageSkeleton } from './OrgSettingsPageSkeleton';
 
 interface FormHelpers {
   onSuccess: () => void;
@@ -81,7 +74,7 @@ function OrgSettingsForm({
   };
 
   return (
-    <div className="max-w-2xl w-full min-w-0">
+    <div className="w-full min-w-0">
       <PageHeader title="Organization Settings" backTo={ROUTES.ORG_DASHBOARD} />
 
       <Card className="space-y-4 p-6">
@@ -119,18 +112,12 @@ function OrgSettingsForm({
       </Card>
 
       <Card className="mt-4 space-y-4 p-6">
-        <div>
-          <h3 className="font-medium text-card-foreground">Email domain restriction</h3>
-          <p className="mt-1 text-sm text-muted">
-            When set, only invitations to emails at this domain are accepted by students.
-          </p>
-        </div>
+        <h3 className="font-medium text-card-foreground">Email domain restriction</h3>
         <Input
           label="Domain"
           placeholder="example.edu"
           value={emailDomain}
           onChange={(e) => setEmailDomainLocal(e.target.value)}
-          hint="Leave empty to allow any email domain."
         />
         <div className="flex justify-end">
           <Button onClick={saveDomain} isLoading={domainPending} variant="secondary">
@@ -147,7 +134,7 @@ export function OrgSettingsPage() {
   const { query, update, setEmailDomain } = useMyOrg();
 
   if (query.isLoading) {
-    return <DetailFormSkeleton />;
+    return <OrgSettingsPageSkeleton />;
   }
 
   if (query.isError || !query.data) {
@@ -157,6 +144,7 @@ export function OrgSettingsPage() {
         <ErrorState
           message={query.error?.message ?? 'Unable to load organization settings.'}
           onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
         />
       </div>
     );

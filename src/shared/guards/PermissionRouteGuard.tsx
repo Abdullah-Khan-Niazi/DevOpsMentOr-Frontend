@@ -1,7 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { LoadingState } from '@/shared/components';
+import { DashboardSkeleton, LoadingState } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
+import { useAuthReady } from '@/features/auth/hooks/useAuthBootstrap';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 
 const NotFoundPage = lazy(() => import('@/pages/site/NotFoundPage'));
@@ -28,13 +29,18 @@ export function PermissionRouteGuard({
 }) {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
+  const ready = useAuthReady();
+
+  if (!ready) {
+    return <DashboardSkeleton />;
+  }
 
   if (!isAuthenticated) {
     return <Navigate to={ROUTES.LOGIN} replace />;
   }
 
   if (!user?.permissions) {
-    return <LoadingState label="Checking access…" />;
+    return <DashboardSkeleton />;
   }
 
   const required = Array.isArray(permission) ? permission : [permission];

@@ -1,6 +1,13 @@
 import { useMemo, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, ErrorState, LoadingState, PageHeader } from '@/shared/components';
+import { useParams, useSearchParams } from 'react-router-dom';
+import {
+  Card,
+  ErrorState,
+  PageHeader,
+  Select,
+  Skeleton,
+  TablePageSkeleton,
+} from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { StudentProgressTable, type SortKey } from '../components/StudentProgressTable';
 import { useClassStudents, useStudentDetail } from '../hooks';
@@ -40,22 +47,61 @@ function sortStudents<
   return sorted;
 }
 
+/** Positive integer from `?courseId=`, or null when absent or invalid. */
+function readCourseId(raw: string | null): number | null {
+  const value = Number(raw);
+  return raw !== null && Number.isInteger(value) && value > 0 ? value : null;
+}
+
 /** SCR-F5-03: professor class analytics with student drill-down. */
 export function ProfessorClassProgressPage() {
   const { classId = '' } = useParams<{ classId: string }>();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const courseId = readCourseId(searchParams.get('courseId'));
   const [sort, setSort] = useState<SortKey>({
     column: 'fullName',
     direction: 'asc',
   });
   const [selectedUserId, setSelectedUserId] = useState<number | null>(null);
 
-  const classQuery = useClassStudents(classId);
-  const detail = useStudentDetail(classId, selectedUserId);
+  const classQuery = useClassStudents(classId, true, courseId);
+  const detail = useStudentDetail(classId, selectedUserId, courseId);
 
   const sortedStudents = useMemo(
     () => sortStudents(classQuery.data?.students ?? [], sort),
     [classQuery.data, sort],
   );
+
+  const courseOptions = classQuery.data?.courseOptions ?? [];
+  const selectedCourseId = courseId ?? courseOptions[0]?.courseId ?? null;
+
+  function selectCourse(next: number) {
+    setSearchParams(
+      (current) => {
+        const params = new URLSearchParams(current);
+        params.set('courseId', String(next));
+        return params;
+      },
+      { replace: true },
+    );
+  }
+
+  const courseSelect =
+    courseOptions.length > 1 ? (
+      <Select
+        label="Course"
+        value={selectedCourseId ?? ''}
+        onChange={(event) => selectCourse(Number(event.target.value))}
+        options={courseOptions.map((option) => ({
+          value: String(option.courseId),
+          label: option.title,
+        }))}
+      />
+    ) : null;
+
+  if (classQuery.isLoading) {
+    return <TablePageSkeleton />;
+  }
 
   if (classQuery.isError) {
     return (
@@ -74,10 +120,7 @@ export function ProfessorClassProgressPage() {
 
   return (
     <div>
-      <PageHeader
-        title={className}
-        backTo={ROUTES.ORG_CLASSES}
-      />
+      <PageHeader title={className} backTo={ROUTES.ORG_CLASSES} actions={courseSelect} />
 
       <ModuleProgressSummaryRow modules={moduleAverages ?? []} isLoading={classQuery.isLoading} />
 
@@ -94,7 +137,16 @@ export function ProfessorClassProgressPage() {
       {selectedUserId !== null ? (
         <div id="student-detail" className="mt-8">
           {detail.isLoading ? (
-            <LoadingState label="Loading student detail…" />
+            <div
+              className="space-y-6"
+              role="status"
+              aria-label="Loading student detail"
+              aria-busy="true"
+            >
+              <Skeleton className="h-10 w-64 rounded-md" />
+              <Skeleton className="h-40 w-full rounded-md" />
+              <Skeleton className="h-72 w-full rounded-md" />
+            </div>
           ) : detail.isError || !detail.data ? (
             <ErrorState
               message={detail.error?.message ?? 'Unable to load student detail.'}
@@ -104,7 +156,6 @@ export function ProfessorClassProgressPage() {
             <div className="space-y-6">
               <PageHeader
                 title={detail.data.student.fullName ?? 'Student'}
-                description={detail.data.student.email}
                 actions={
                   <button
                     type="button"

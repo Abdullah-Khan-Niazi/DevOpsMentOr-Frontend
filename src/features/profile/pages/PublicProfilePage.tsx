@@ -1,5 +1,6 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { Button, Card, ErrorState, PageHeader, Spinner } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader } from '@/shared/components';
+import { PublicProfileSkeleton } from './PublicProfileSkeleton';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { usePublicProfile } from '../hooks';
 import { FollowButton, ProfileHeader } from '../components';
@@ -23,9 +24,8 @@ export default function PublicProfilePage() {
   const authed = useAuthStore((state) => state.isAuthenticated);
   const id = Number(userId);
 
-  const { profile, isLoading, isError, error, isOwnProfile } = usePublicProfile(
-    Number.isFinite(id) ? id : 0,
-  );
+  const { profile, isLoading, isError, error, isOwnProfile, refetch, isRefetching } =
+    usePublicProfile(Number.isFinite(id) ? id : 0);
 
   if (!Number.isFinite(id) || id < 1) {
     return <ErrorState message="Invalid profile URL." onRetry={() => navigate('/')} />;
@@ -36,26 +36,22 @@ export default function PublicProfilePage() {
     return (
       <ErrorState
         message={message ?? 'Unable to load this profile.'}
-        onRetry={() => navigate('/')}
+        onRetry={() => void refetch()}
+        retrying={isRefetching}
       />
     );
   }
 
   if (isLoading || !profile) {
-    return (
-      <div className="flex items-center justify-center py-16">
-        <Spinner label="Loading profile…" />
-      </div>
-    );
+    return <PublicProfileSkeleton />;
   }
 
   const grouped = groupSkills(profile.skills);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-6">
+    <div className="space-y-6">
       <PageHeader
         title="Profile"
-        description={`@${profile.username}`}
         actions={
           authed ? (
             <FollowButton
@@ -74,20 +70,20 @@ export default function PublicProfilePage() {
           <div className="space-y-3">
             {[...grouped.entries()].map(([category, skills]) => (
               <div key={category}>
-                <h4 className="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
+                <h3 className="mb-2 text-sm font-semibold text-card-foreground">
                   {CATEGORY_LABELS[category] ?? category}
-                </h4>
-                <div className="flex flex-wrap gap-2">
+                </h3>
+                <div className="flex flex-wrap gap-x-5 gap-y-2">
                   {skills.map((skill) => (
                     <span
                       key={skill.skillId}
-                      className="inline-flex items-center gap-2 rounded-md border border-border bg-surface px-2.5 py-1 text-xs text-card-foreground font-medium"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-card-foreground"
                     >
                       {skill.skillName}
-                      <span className="text-xs text-muted">
-                        {skill.proficiencyLevel}
-                        {skill.yearsExperience > 0 ? ` · ${skill.yearsExperience}y` : ''}
-                      </span>
+                      <span className="text-xs text-muted">{skill.proficiencyLevel}</span>
+                      {skill.yearsExperience > 0 ? (
+                        <span className="text-xs text-muted">{skill.yearsExperience}y</span>
+                      ) : null}
                     </span>
                   ))}
                 </div>

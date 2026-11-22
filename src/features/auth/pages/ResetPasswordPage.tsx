@@ -56,10 +56,7 @@ export default function ResetPasswordPage() {
   };
 
   return (
-    <AuthLayout
-      title="Reset password"
-      subtitle="Enter the code from your email and a new password."
-    >
+    <AuthLayout title="Reset password">
       <div className="flex flex-col gap-4">
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4" noValidate>
           <Input

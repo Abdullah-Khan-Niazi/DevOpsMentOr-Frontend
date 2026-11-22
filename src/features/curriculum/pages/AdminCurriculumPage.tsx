@@ -1,14 +1,12 @@
-import { CurriculumMasterPanel } from '../components/CurriculumMasterPanel';
+import { CurriculumControlPanel } from '../components/admin/CurriculumControlPanel';
 
 /**
- * F4 SCR-F4-01 / REFACTOR: Unified Admin Curriculum Master Control Panel.
- * URL-driven Tracks / Courses / Modules tabs (`?tab=`) with an inline
- * indented hierarchy inside each tab and one task drawer at a time; deep
- * links to modules, lessons, quizzes, create actions and course edit keep
- * working.
+ * Staff curriculum control panel (`ADMIN_CURRICULUM`): URL-driven Tracks / Courses /
+ * Modules tabs, one shared tree and the drawer host. The loading state is
+ * `CurriculumPageSkeleton` (rendered by the panel while the root lists load).
  */
 export function AdminCurriculumPage() {
-  return <CurriculumMasterPanel />;
+  return <CurriculumControlPanel />;
 }
 
 export default AdminCurriculumPage;

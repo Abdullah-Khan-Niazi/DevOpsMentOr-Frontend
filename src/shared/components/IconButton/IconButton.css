@@ -1,0 +1,121 @@
+/* Icon-only control: no box at rest. The tinted circle (::before) appears on hover
+   and press; the focus ring is drawn on that circle. */
+
+.icon-btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-sm);
+  background-color: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color var(--duration-micro) var(--ease-standard),
+    transform var(--duration-spring-snappy) var(--spring-snappy);
+}
+
+.icon-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  margin: auto;
+  width: var(--icon-btn-circle);
+  height: var(--icon-btn-circle);
+  border-radius: 50%;
+  background-color: transparent;
+  pointer-events: none;
+  transition: background-color var(--duration-micro) var(--ease-standard);
+}
+
+.icon-btn--sm {
+  --icon-btn-circle: 1.625rem;
+  width: 1.75rem;
+  height: 1.75rem;
+}
+
+.icon-btn--md {
+  --icon-btn-circle: 1.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.icon-btn:hover:not(:disabled) {
+  color: var(--ink);
+}
+
+.icon-btn:hover:not(:disabled)::before {
+  background-color: var(--pearl-200);
+}
+
+.icon-btn:active:not(:disabled) {
+  transform: scale(var(--press-scale));
+  transition-duration: var(--duration-press);
+}
+
+.icon-btn:active:not(:disabled)::before {
+  background-color: var(--pearl-300);
+}
+
+.icon-btn:focus-visible {
+  outline: none;
+  box-shadow: none;
+}
+
+.icon-btn:focus-visible::before {
+  box-shadow: var(--focus-ring);
+}
+
+.icon-btn[aria-pressed='true'] {
+  color: var(--ink);
+}
+
+.icon-btn[aria-pressed='true']::before {
+  background-color: var(--pearl-200);
+}
+
+.icon-btn--danger {
+  color: var(--text-secondary);
+}
+
+.icon-btn--danger:hover:not(:disabled),
+.icon-btn--danger:active:not(:disabled) {
+  color: var(--signal-600);
+}
+
+.icon-btn--danger:hover:not(:disabled)::before,
+.icon-btn--danger:active:not(:disabled)::before {
+  background-color: color-mix(in srgb, var(--signal-600) 8%, transparent);
+}
+
+.icon-btn--danger:focus-visible::before {
+  box-shadow: var(--focus-ring-danger);
+}
+
+.icon-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.icon-btn[aria-busy='true'] {
+  cursor: progress;
+  opacity: 1;
+}
+
+.icon-btn:hover:not(:disabled) .icon {
+  transform: scale(1.06);
+}
+
+.icon-btn__spinner {
+  font-size: 1rem;
+}
+
+.icon-btn--sm .icon-btn__spinner {
+  font-size: 0.875rem;
+}

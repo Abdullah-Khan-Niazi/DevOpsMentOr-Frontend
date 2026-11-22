@@ -48,10 +48,14 @@ interface UnifiedPlotPoint {
   memoryAvg?: number;
   memoryUsedMb?: number;
   heapUsedMb?: number;
-  // Allocated Compute & Kubernetes Lab Containers
+  // Allocated & Actual Consumed Compute & Kubernetes Lab Containers
   allocatedContainers: number;
   allocatedRamGb: number;
   allocatedCpuCores: number;
+  consumedRamMb: number;
+  consumedRamGb: number;
+  consumedCpuCores: number;
+  consumedCpuPercent: number;
   pendingPods: number;
   kubernetesStatus?: string;
   // Infrastructure (Cache, DB, AI)
@@ -94,7 +98,9 @@ export function SystemTelemetryMonitor({
     compute_containers: true,
     compute_pending: true,
     compute_ramGb: true,
+    compute_consumedRamGb: true,
     compute_cores: true,
+    compute_consumedCores: true,
     // Host Hardware
     hardware_cpu: true,
     hardware_cpuMax: true,
@@ -124,14 +130,28 @@ export function SystemTelemetryMonitor({
   const allocatedRamGb = pwnbox?.totalActiveRamGb ?? host?.allocatedCompute?.allocatedRamGb ?? 0;
   const allocatedCpuCores =
     pwnbox?.totalActiveCpuCores ?? host?.allocatedCompute?.allocatedCpuCores ?? 0;
+  const consumedRamGb = pwnbox?.consumedRamGb ?? host?.allocatedCompute?.consumedRamGb ?? 0;
+  const consumedRamMb =
+    pwnbox?.consumedRamMb ??
+    host?.allocatedCompute?.consumedRamMb ??
+    Math.round(consumedRamGb * 1024);
+  const consumedCpuCores =
+    pwnbox?.consumedCpuCores ?? host?.allocatedCompute?.consumedCpuCores ?? 0;
+  const consumedCpuPercent =
+    pwnbox?.consumedCpuPercent ?? host?.allocatedCompute?.consumedCpuPercent ?? 0;
   const pendingPods = pwnbox?.pendingPods ?? host?.allocatedCompute?.pendingPods ?? 0;
   const k8sStatus = pwnbox?.errorPods && pwnbox.errorPods > 5 ? 'DEGRADED' : 'OPERATIONAL';
+  const [fallbackAnchorNow] = useState(() => Date.now());
 
   // Construct unified plot points according to selected timeRange (1h, 24h, 7d)
   const chartData: UnifiedPlotPoint[] = useMemo(() => {
     const defaultContainers = activeContainers;
     const defaultRamGb = allocatedRamGb;
     const defaultCores = allocatedCpuCores;
+    const defaultConsumedRamMb = consumedRamMb;
+    const defaultConsumedRamGb = consumedRamGb;
+    const defaultConsumedCpuCores = consumedCpuCores;
+    const defaultConsumedCpuPercent = consumedCpuPercent;
     const defaultPending = pendingPods;
     const cacheMemPct = cache?.memoryUsagePercent ?? 0;
     const cacheHitPct = cache?.hitRatioPercent ?? 0;
@@ -141,7 +161,8 @@ export function SystemTelemetryMonitor({
 
     // 1. Past 7 Days (168 hourly buckets)
     if (timeRange === '7d' && host?.sevenDayHistory && host.sevenDayHistory.length > 0) {
-      return host.sevenDayHistory.map((pt) => {
+      return host.sevenDayHistory.map((pt, idx, arr) => {
+        const isLatest = idx === arr.length - 1;
         const req = pt.requestsPerMinute || 0;
         return {
           time: pt.label,
@@ -162,10 +183,24 @@ export function SystemTelemetryMonitor({
           requestsMin: pt.requestsMin,
           requestsMax: pt.requestsMax,
           requestsTotal: pt.requestsTotal,
-          allocatedContainers: pt.allocatedContainers ?? defaultContainers,
-          allocatedRamGb: pt.allocatedRamGb ?? defaultRamGb,
-          allocatedCpuCores: pt.allocatedCpuCores ?? defaultCores,
-          pendingPods: pt.pendingPods ?? defaultPending,
+          allocatedContainers: isLatest
+            ? defaultContainers
+            : (pt.allocatedContainers ?? defaultContainers),
+          allocatedRamGb: isLatest ? defaultRamGb : (pt.allocatedRamGb ?? defaultRamGb),
+          allocatedCpuCores: isLatest ? defaultCores : (pt.allocatedCpuCores ?? defaultCores),
+          consumedRamMb: isLatest
+            ? defaultConsumedRamMb
+            : (pt.consumedRamMb ?? defaultConsumedRamMb),
+          consumedRamGb: isLatest
+            ? defaultConsumedRamGb
+            : (pt.consumedRamGb ?? defaultConsumedRamGb),
+          consumedCpuCores: isLatest
+            ? defaultConsumedCpuCores
+            : (pt.consumedCpuCores ?? defaultConsumedCpuCores),
+          consumedCpuPercent: isLatest
+            ? defaultConsumedCpuPercent
+            : (pt.consumedCpuPercent ?? defaultConsumedCpuPercent),
+          pendingPods: isLatest ? defaultPending : (pt.pendingPods ?? defaultPending),
           kubernetesStatus: pt.kubernetesStatus || k8sStatus,
           cacheMemoryPercent: Math.min(
             100,
@@ -186,7 +221,8 @@ export function SystemTelemetryMonitor({
     // 2. Past 24 Hours (last 24 hourly buckets)
     if (timeRange === '24h' && host?.sevenDayHistory && host.sevenDayHistory.length >= 24) {
       const slice24 = host.sevenDayHistory.slice(-24);
-      return slice24.map((pt) => {
+      return slice24.map((pt, idx, arr) => {
+        const isLatest = idx === arr.length - 1;
         const req = pt.requestsPerMinute || 6;
         return {
           time: pt.time,
@@ -207,10 +243,24 @@ export function SystemTelemetryMonitor({
           requestsMin: pt.requestsMin,
           requestsMax: pt.requestsMax,
           requestsTotal: pt.requestsTotal,
-          allocatedContainers: pt.allocatedContainers ?? defaultContainers,
-          allocatedRamGb: pt.allocatedRamGb ?? defaultRamGb,
-          allocatedCpuCores: pt.allocatedCpuCores ?? defaultCores,
-          pendingPods: pt.pendingPods ?? defaultPending,
+          allocatedContainers: isLatest
+            ? defaultContainers
+            : (pt.allocatedContainers ?? defaultContainers),
+          allocatedRamGb: isLatest ? defaultRamGb : (pt.allocatedRamGb ?? defaultRamGb),
+          allocatedCpuCores: isLatest ? defaultCores : (pt.allocatedCpuCores ?? defaultCores),
+          consumedRamMb: isLatest
+            ? defaultConsumedRamMb
+            : (pt.consumedRamMb ?? defaultConsumedRamMb),
+          consumedRamGb: isLatest
+            ? defaultConsumedRamGb
+            : (pt.consumedRamGb ?? defaultConsumedRamGb),
+          consumedCpuCores: isLatest
+            ? defaultConsumedCpuCores
+            : (pt.consumedCpuCores ?? defaultConsumedCpuCores),
+          consumedCpuPercent: isLatest
+            ? defaultConsumedCpuPercent
+            : (pt.consumedCpuPercent ?? defaultConsumedCpuPercent),
+          pendingPods: isLatest ? defaultPending : (pt.pendingPods ?? defaultPending),
           kubernetesStatus: pt.kubernetesStatus || k8sStatus,
           cacheMemoryPercent: Math.min(
             100,
@@ -230,7 +280,8 @@ export function SystemTelemetryMonitor({
 
     // 3. Live 1-Hour Buffer (high-resolution sliding samples)
     if (timeRange === '1h' && host?.history && host.history.length >= 2) {
-      return host.history.map((pt) => {
+      return host.history.map((pt, idx, arr) => {
+        const isLatest = idx === arr.length - 1;
         const req = pt.requestsPerMinute || 6;
         return {
           time: pt.time,
@@ -252,6 +303,18 @@ export function SystemTelemetryMonitor({
           allocatedContainers: defaultContainers,
           allocatedRamGb: defaultRamGb,
           allocatedCpuCores: defaultCores,
+          consumedRamMb: isLatest
+            ? defaultConsumedRamMb
+            : (pt.consumedRamMb ?? defaultConsumedRamMb),
+          consumedRamGb: isLatest
+            ? defaultConsumedRamGb
+            : (pt.consumedRamGb ?? defaultConsumedRamGb),
+          consumedCpuCores: isLatest
+            ? defaultConsumedCpuCores
+            : (pt.consumedCpuCores ?? defaultConsumedCpuCores),
+          consumedCpuPercent: isLatest
+            ? defaultConsumedCpuPercent
+            : (pt.consumedCpuPercent ?? defaultConsumedCpuPercent),
           pendingPods: defaultPending,
           kubernetesStatus: k8sStatus,
           cacheMemoryPercent: cacheMemPct,
@@ -266,7 +329,7 @@ export function SystemTelemetryMonitor({
 
     // Fallback: 24-point realistic hourly curve in Pakistani Standard Time
     const fallback: UnifiedPlotPoint[] = [];
-    const now = Date.now();
+    const now = fallbackAnchorNow;
     const baseCpu = cpuPercent || 12;
     const baseMem = memoryPercent || 42;
     const baseReq = request?.avgRequestsPerMinute ?? 10;
@@ -308,6 +371,10 @@ export function SystemTelemetryMonitor({
         allocatedContainers: cont,
         allocatedRamGb: defaultRamGb,
         allocatedCpuCores: defaultCores,
+        consumedRamMb: defaultConsumedRamMb,
+        consumedRamGb: defaultConsumedRamGb,
+        consumedCpuCores: defaultConsumedCpuCores,
+        consumedCpuPercent: defaultConsumedCpuPercent,
         pendingPods: defaultPending,
         kubernetesStatus: k8sStatus,
         cacheMemoryPercent: Math.min(
@@ -328,29 +395,29 @@ export function SystemTelemetryMonitor({
     return fallback;
   }, [
     timeRange,
-    host?.sevenDayHistory,
-    host?.history,
-    host?.usedMemoryMb,
-    host?.heapUsedMb,
+    host,
+    cache,
+    session,
+    request,
     cpuPercent,
     memoryPercent,
     activeContainers,
     allocatedRamGb,
     allocatedCpuCores,
+    consumedRamMb,
+    consumedRamGb,
+    consumedCpuCores,
+    consumedCpuPercent,
     pendingPods,
     k8sStatus,
-    cache?.memoryUsagePercent,
-    cache?.hitRatioPercent,
-    session?.currentlyActiveUsers,
-    session?.activeSessions,
-    request?.avgRequestsPerMinute,
+    fallbackAnchorNow,
   ]);
 
   return (
     <Card
       className={`p-5 flex flex-col gap-4 font-mono text-xs w-full min-w-0 max-w-full overflow-hidden ${className}`}
     >
-      {/* Top Header & Multilevel Tab Switcher — Single Horizontal Level */}
+      {/* Top Header & Multilevel Tab Switcher - Single Horizontal Level */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h2 className="text-xs font-semibold uppercase tracking-wider text-card-foreground font-mono whitespace-nowrap">
@@ -428,7 +495,24 @@ export function SystemTelemetryMonitor({
                   style={{ backgroundColor: TELEMETRY_TOKENS.usedRam }}
                 />
                 <span className="text-muted uppercase text-[0.625rem]">Pod RAM:</span>
-                <span className="font-bold text-card-foreground">{allocatedRamGb} GB</span>
+                <span className="font-bold text-card-foreground">
+                  {allocatedRamGb} GB alloc /{' '}
+                  {consumedRamMb > 0 && consumedRamGb < 1
+                    ? `${Math.round(consumedRamMb)} MB`
+                    : `${consumedRamGb} GB`}{' '}
+                  used
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: TELEMETRY_TOKENS.consumedCores }}
+                />
+                <span className="text-muted uppercase text-[0.625rem]">Pod CPU:</span>
+                <span className="font-bold text-card-foreground">
+                  {allocatedCpuCores} Cores alloc / {consumedCpuCores.toFixed(2)} Cores (
+                  {consumedCpuPercent}%) used
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span
@@ -496,10 +580,30 @@ export function SystemTelemetryMonitor({
               <div className="flex items-center gap-1.5">
                 <span
                   className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: TELEMETRY_TOKENS.consumedRam }}
+                />
+                <span className="text-muted uppercase text-[0.625rem]">Consumed RAM:</span>
+                <span className="font-bold text-card-foreground">
+                  {consumedRamMb.toFixed(1)} MB ({consumedRamGb.toFixed(2)} GB)
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-2 h-2 rounded-full"
                   style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }}
                 />
                 <span className="text-muted uppercase text-[0.625rem]">Allocated Cores:</span>
                 <span className="font-bold text-card-foreground">{allocatedCpuCores} Cores</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <span
+                  className="w-2 h-2 rounded-full"
+                  style={{ backgroundColor: TELEMETRY_TOKENS.consumedCores }}
+                />
+                <span className="text-muted uppercase text-[0.625rem]">Consumed CPU:</span>
+                <span className="font-bold text-card-foreground">
+                  {consumedCpuCores.toFixed(2)} Cores ({consumedCpuPercent.toFixed(1)}%)
+                </span>
               </div>
               <div className="flex items-center gap-1.5">
                 <span
@@ -848,7 +952,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[0.625rem]">
                               {timeRange === '7d'
@@ -1033,6 +1137,31 @@ export function SystemTelemetryMonitor({
 
               <button
                 type="button"
+                onClick={() => toggleSeries('compute_consumedRamGb')}
+                className={`flex items-center gap-1.5 cursor-pointer px-2 py-0.5 border transition-all active:scale-[0.97] ${
+                  seriesToggles.compute_consumedRamGb
+                    ? 'text-card-foreground font-semibold'
+                    : 'border-border/40 text-muted opacity-40 line-through'
+                }`}
+                style={{
+                  borderRadius: '4px',
+                  borderColor: seriesToggles.compute_consumedRamGb
+                    ? `${TELEMETRY_TOKENS.consumedRam}cc`
+                    : undefined,
+                  backgroundColor: seriesToggles.compute_consumedRamGb
+                    ? `${TELEMETRY_TOKENS.consumedRam}1a`
+                    : undefined,
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: TELEMETRY_TOKENS.consumedRam }}
+                />
+                <span>Consumed RAM (MB)</span>
+              </button>
+
+              <button
+                type="button"
                 onClick={() => toggleSeries('compute_cores')}
                 className={`flex items-center gap-1.5 cursor-pointer px-2 py-0.5 border transition-all active:scale-[0.97] ${
                   seriesToggles.compute_cores
@@ -1054,6 +1183,31 @@ export function SystemTelemetryMonitor({
                   style={{ backgroundColor: TELEMETRY_TOKENS.allocatedCores }}
                 />
                 <span>Allocated Cores</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => toggleSeries('compute_consumedCores')}
+                className={`flex items-center gap-1.5 cursor-pointer px-2 py-0.5 border transition-all active:scale-[0.97] ${
+                  seriesToggles.compute_consumedCores
+                    ? 'text-card-foreground font-semibold'
+                    : 'border-border/40 text-muted opacity-40 line-through'
+                }`}
+                style={{
+                  borderRadius: '4px',
+                  borderColor: seriesToggles.compute_consumedCores
+                    ? `${TELEMETRY_TOKENS.consumedCores}cc`
+                    : undefined,
+                  backgroundColor: seriesToggles.compute_consumedCores
+                    ? `${TELEMETRY_TOKENS.consumedCores}1a`
+                    : undefined,
+                }}
+              >
+                <span
+                  className="w-2 h-2 rounded-full shrink-0"
+                  style={{ backgroundColor: TELEMETRY_TOKENS.consumedCores }}
+                />
+                <span>Consumed CPU (%)</span>
               </button>
             </div>
 
@@ -1079,9 +1233,9 @@ export function SystemTelemetryMonitor({
                     tickLine={false}
                     axisLine={{ stroke: 'var(--color-border-default)' }}
                     domain={[0, 'auto']}
-                    allowDecimals={false}
+                    allowDecimals={true}
                     label={{
-                      value: 'Active Pods',
+                      value: 'Pods / Alloc (GB & Cores)',
                       angle: -90,
                       position: 'insideLeft',
                       offset: 12,
@@ -1101,9 +1255,9 @@ export function SystemTelemetryMonitor({
                     tickLine={false}
                     axisLine={{ stroke: 'var(--color-border-default)' }}
                     domain={[0, 'auto']}
-                    allowDecimals={false}
+                    allowDecimals={true}
                     label={{
-                      value: 'RAM (GB) & Cores',
+                      value: 'Consumed RAM (MB) / CPU (%)',
                       angle: 90,
                       position: 'insideRight',
                       offset: 12,
@@ -1124,33 +1278,47 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-card-foreground font-bold uppercase text-[0.625rem]">
-                              Sandbox Pods
+                              Lab environments
                             </span>
                           </div>
                           <div className="space-y-1">
-                            {payload.map((e) => (
-                              <div
-                                key={e.name}
-                                className="flex justify-between gap-4 text-[0.6875rem]"
-                              >
-                                <span style={{ color: e.color }}>{e.name}:</span>
-                                <span className="font-bold text-card-foreground">
-                                  {Number(e.value).toLocaleString()}
-                                  {String(e.name).includes('RAM')
-                                    ? ' GB'
-                                    : String(e.name).includes('Cores')
-                                      ? ' Cores'
-                                      : ' Pods'}
-                                </span>
-                              </div>
-                            ))}
+                            {payload.map((e) => {
+                              const seriesName = String(e.name);
+                              const numericVal = Number(e.value);
+                              let formattedVal = numericVal.toLocaleString();
+                              if (seriesName === 'Consumed RAM (MB)') {
+                                formattedVal = `${numericVal.toFixed(1)} MB (${item?.consumedRamGb.toFixed(2) ?? '0.00'} GB)`;
+                              } else if (seriesName.includes('RAM')) {
+                                formattedVal = `${numericVal.toLocaleString()} GB`;
+                              } else if (seriesName === 'Consumed CPU (%)') {
+                                formattedVal = `${numericVal.toFixed(1)}% (${item?.consumedCpuCores.toFixed(2) ?? '0.00'} Cores)`;
+                              } else if (seriesName.includes('Cores')) {
+                                formattedVal = `${numericVal.toLocaleString()} Cores`;
+                              } else {
+                                formattedVal = `${numericVal.toLocaleString()} Pods`;
+                              }
+                              return (
+                                <div
+                                  key={e.name}
+                                  className="flex justify-between gap-4 text-[0.6875rem]"
+                                >
+                                  <span style={{ color: e.color }}>{e.name}:</span>
+                                  <span className="font-bold text-card-foreground">
+                                    {formattedVal}
+                                  </span>
+                                </div>
+                              );
+                            })}
                           </div>
-                          <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                          <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between gap-3">
                             <span>Cluster: {item?.kubernetesStatus ?? k8sStatus}</span>
-                            <span>Max Capacity: 32 Pods</span>
+                            <span>
+                              CPU Util:{' '}
+                              {(item?.consumedCpuPercent ?? consumedCpuPercent).toFixed(1)}%
+                            </span>
                           </div>
                         </div>
                       );
@@ -1191,7 +1359,7 @@ export function SystemTelemetryMonitor({
                   )}
                   {seriesToggles.compute_ramGb && (
                     <Line
-                      yAxisId="right"
+                      yAxisId="left"
                       type="monotone"
                       dataKey="allocatedRamGb"
                       name="Allocated RAM (GB)"
@@ -1205,9 +1373,25 @@ export function SystemTelemetryMonitor({
                       activeDot={{ r: 5, fill: TELEMETRY_TOKENS.usedRam }}
                     />
                   )}
-                  {seriesToggles.compute_cores && (
+                  {seriesToggles.compute_consumedRamGb && (
                     <Line
                       yAxisId="right"
+                      type="monotone"
+                      dataKey="consumedRamMb"
+                      name="Consumed RAM (MB)"
+                      stroke={TELEMETRY_TOKENS.consumedRam}
+                      strokeWidth={2.5}
+                      dot={{
+                        r: 2.5,
+                        fill: TELEMETRY_TOKENS.consumedRam,
+                        stroke: TELEMETRY_TOKENS.consumedRam,
+                      }}
+                      activeDot={{ r: 5, fill: TELEMETRY_TOKENS.consumedRam }}
+                    />
+                  )}
+                  {seriesToggles.compute_cores && (
+                    <Line
+                      yAxisId="left"
                       type="monotone"
                       dataKey="allocatedCpuCores"
                       name="Allocated Cores"
@@ -1219,6 +1403,22 @@ export function SystemTelemetryMonitor({
                         stroke: TELEMETRY_TOKENS.allocatedCores,
                       }}
                       activeDot={{ r: 5, fill: TELEMETRY_TOKENS.allocatedCores }}
+                    />
+                  )}
+                  {seriesToggles.compute_consumedCores && (
+                    <Line
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey="consumedCpuPercent"
+                      name="Consumed CPU (%)"
+                      stroke={TELEMETRY_TOKENS.consumedCores}
+                      strokeWidth={2.5}
+                      dot={{
+                        r: 2.5,
+                        fill: TELEMETRY_TOKENS.consumedCores,
+                        stroke: TELEMETRY_TOKENS.consumedCores,
+                      }}
+                      activeDot={{ r: 5, fill: TELEMETRY_TOKENS.consumedCores }}
                     />
                   )}
                 </LineChart>
@@ -1427,7 +1627,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[0.625rem]">
                               Host Hardware
@@ -1448,7 +1648,7 @@ export function SystemTelemetryMonitor({
                             ))}
                           </div>
                           {item && (
-                            <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                            <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between">
                               <span>
                                 CPU Min/Max: {item.cpuMin ?? 0}% / {item.cpuMax ?? 0}%
                               </span>
@@ -1722,7 +1922,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-accent uppercase text-[0.625rem]">
                               Infrastructure
@@ -1742,7 +1942,7 @@ export function SystemTelemetryMonitor({
                               </div>
                             ))}
                           </div>
-                          <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                          <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between">
                             <span>Redis: {cache?.status ?? 'CONNECTED'}</span>
                             <span>Quota Safe (&lt; 25MB)</span>
                           </div>
@@ -1994,7 +2194,7 @@ export function SystemTelemetryMonitor({
                           className="border border-border bg-surface p-3 shadow-2xl font-mono text-xs z-30"
                           style={{ borderRadius: 'var(--radius-md)' }}
                         >
-                          <div className="font-bold text-card-foreground border-b border-border/60 pb-1 mb-2 flex justify-between gap-4">
+                          <div className="font-bold text-card-foreground mb-2 flex justify-between gap-4">
                             <span>{item?.fullLabel ?? label}</span>
                             <span className="text-info uppercase text-[0.625rem]">Web Traffic</span>
                           </div>
@@ -2013,7 +2213,7 @@ export function SystemTelemetryMonitor({
                             ))}
                           </div>
                           {item && (
-                            <div className="pt-2 mt-2 border-t border-border/40 text-[0.625rem] text-muted flex justify-between">
+                            <div className="pt-1 mt-2 text-[0.625rem] text-muted flex justify-between">
                               <span>
                                 Req Min/Max: {item.requestsMin ?? 0} / {item.requestsMax ?? 0}
                               </span>

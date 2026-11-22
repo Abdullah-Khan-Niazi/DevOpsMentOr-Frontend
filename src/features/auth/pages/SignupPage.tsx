@@ -17,9 +17,7 @@ export default function SignupPage() {
 
   const provider = searchParams.get('provider');
   const rawInvite =
-    searchParams.get('token') ||
-    searchParams.get('code') ||
-    searchParams.get('invite');
+    searchParams.get('token') || searchParams.get('code') || searchParams.get('invite');
 
   useEffect(() => {
     if (provider === 'google' || provider === 'github') {

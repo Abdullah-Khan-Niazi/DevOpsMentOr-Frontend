@@ -1,6 +1,15 @@
 import '../styles/gamification-admin.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, ErrorState, PageHeader, TablePageSkeleton, toast } from '@/shared/components';
+import {
+  Button,
+  Card,
+  Drawer,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  toast,
+} from '@/shared/components';
+import { AdminSeasonsSkeleton } from './AdminSeasonsSkeleton';
 import { useAdminSeasons } from '../hooks/useAdminGamification';
 import type { CreateSeasonPayload, SeasonContentPayload, UpdateSeasonPayload } from '../types';
 
@@ -167,27 +176,21 @@ export function AdminSeasonsPage() {
   };
 
   if (query.isLoading) {
-    return <TablePageSkeleton />;
+    return <AdminSeasonsSkeleton />;
   }
 
   return (
     <div>
-      <PageHeader
-        title="Seasons"
-        description="Create time-boxed ranking periods and assign labs to them."
-        actions={<Button onClick={openCreate}>New season</Button>}
-      />
+      <PageHeader title="Seasons" actions={<Button onClick={openCreate}>New season</Button>} />
 
       {query.isError ? (
         <ErrorState
           message={query.error?.message ?? 'Could not load seasons.'}
           onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
         />
       ) : (query.data?.length ?? 0) === 0 ? (
-        <EmptyState
-          title="No seasons yet"
-          description="Create a season to start ranking periods."
-        />
+        <EmptyState icon="calendar" title="No seasons yet" />
       ) : (
         <Card>
           <table className="admin-table">
@@ -224,6 +227,10 @@ export function AdminSeasonsPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => toggleActive(season.seasonId)}
+                        isLoading={
+                          update.isPending && update.variables?.seasonId === season.seasonId
+                        }
+                        disabled={update.isPending}
                       >
                         {season.isActive ? 'Deactivate' : 'Activate'}
                       </Button>
@@ -237,9 +244,23 @@ export function AdminSeasonsPage() {
       )}
 
       {draft ? (
-        <div className="modal-backdrop">
-          <Card className="gamification-admin__form">
-            <h2>{editingId !== null ? 'Edit season' : 'New season'}</h2>
+        <Drawer
+          open
+          onClose={close}
+          title={editingId !== null ? 'Edit season' : 'New season'}
+          busy={saving}
+          footer={(requestClose) => (
+            <>
+              <Button variant="ghost" onClick={requestClose}>
+                Cancel
+              </Button>
+              <Button onClick={save} isLoading={saving}>
+                {editingId !== null ? 'Save changes' : 'Create season'}
+              </Button>
+            </>
+          )}
+        >
+          <div className="gamification-admin__form">
             <div className="gamification-admin__grid">
               <label className="input-label">
                 Season name
@@ -344,16 +365,8 @@ export function AdminSeasonsPage() {
               />
               Active
             </label>
-            <div className="gamification-admin__actions">
-              <Button variant="ghost" onClick={close}>
-                Cancel
-              </Button>
-              <Button onClick={save} isLoading={saving}>
-                {editingId !== null ? 'Save changes' : 'Create season'}
-              </Button>
-            </div>
-          </Card>
-        </div>
+          </div>
+        </Drawer>
       ) : null}
     </div>
   );

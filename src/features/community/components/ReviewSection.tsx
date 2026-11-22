@@ -1,10 +1,11 @@
 import '../styles/community.css';
 import { useState } from 'react';
-import { Button, Card, EmptyState, Icon, Spinner, toast } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, Icon, IconButton, toast } from '@/shared/components';
 import { useAuthStore } from '@/features/auth';
 import { useCreateReview, useReviews } from '../hooks/useCommunity';
 import { relativeTime } from '@/features/notifications';
 import { ReportModal } from './ReportModal';
+import { ReviewSectionSkeleton } from './ReviewSectionSkeleton';
 import type { ReviewDto, ReviewTargetType } from '../types';
 
 // SCR-F8-05: embedded review section for course/lab pages. Shows the
@@ -33,18 +34,18 @@ function ReviewCard({ review }: { review: ReviewDto }) {
             className="review-section__stars"
             aria-label={`${review.rating ?? 0} out of 5 stars`}
           >
-            {'★'.repeat(review.rating ?? 0)}
-            {'☆'.repeat(5 - (review.rating ?? 0))}
+            {Array.from({ length: 5 }, (_, i) => (
+              <Icon key={i} name="star" size={14} filled={i < (review.rating ?? 0)} />
+            ))}
           </span>
           <span className="review-section__time">{relativeTime(review.createdAt)}</span>
         </div>
         {review.title ? <h3 className="review-section__title">{review.title}</h3> : null}
         {review.content ? <p className="review-section__content">{review.content}</p> : null}
         <div className="review-section__actions">
-          <button type="button" className="comment-row__action" onClick={() => setReportOpen(true)}>
-            <Icon name="flag" size={14} />
+          <Button variant="ghost" size="sm" iconName="flag" onClick={() => setReportOpen(true)}>
             Report
-          </button>
+          </Button>
         </div>
       </Card>
       <ReportModal
@@ -73,7 +74,10 @@ function ratingBars(reviews: Array<{ rating: number | null }>) {
 
 export function ReviewSection({ targetType, targetId }: ReviewSectionProps) {
   const user = useAuthStore((state) => state.user);
-  const { data, isLoading, isError } = useReviews(targetType, targetId);
+  const { data, isLoading, isError, error, refetch, isRefetching } = useReviews(
+    targetType,
+    targetId,
+  );
   const createReview = useCreateReview(targetType, targetId);
   const [rating, setRating] = useState(5);
   const [title, setTitle] = useState('');
@@ -108,17 +112,26 @@ export function ReviewSection({ targetType, targetId }: ReviewSectionProps) {
       <h2 className="review-section__heading">Reviews</h2>
 
       {isError ? (
-        <p className="review-section__error">Could not load reviews.</p>
+        <ErrorState
+          title="Could not load reviews"
+          error={error}
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+          compact
+        />
       ) : isLoading ? (
-        <Spinner />
+        <ReviewSectionSkeleton />
       ) : reviews.length === 0 ? (
-        <EmptyState title="No reviews yet." description="Be the first to review this content." />
+        <EmptyState title="No reviews yet." icon="star" />
       ) : (
         <>
           <div className="review-section__histogram">
             {bars.map(({ rating: barRating, count, pct }) => (
               <div key={barRating} className="review-section__bar-row">
-                <span className="review-section__bar-label">{barRating}★</span>
+                <span className="review-section__bar-label">
+                  {barRating}
+                  <Icon name="star" size={12} filled />
+                </span>
                 <div className="review-section__bar-track">
                   <div className="review-section__bar-fill" style={{ width: `${pct}%` }} />
                 </div>
@@ -139,18 +152,18 @@ export function ReviewSection({ targetType, targetId }: ReviewSectionProps) {
           <h3 className="review-section__form-title">Write a review</h3>
           <div className="review-section__rating" role="radiogroup" aria-label="Rating">
             {RATINGS.map((value) => (
-              <button
+              <IconButton
                 key={value}
-                type="button"
+                icon="star"
                 role="radio"
                 aria-checked={rating === value}
-                aria-label={`${value} stars`}
+                label={`${value} stars`}
                 className="review-section__star"
                 data-active={rating >= value}
+                filled={rating >= value}
+                showTooltip={false}
                 onClick={() => setRating(value)}
-              >
-                ★
-              </button>
+              />
             ))}
           </div>
           <input
@@ -172,11 +185,6 @@ export function ReviewSection({ targetType, targetId }: ReviewSectionProps) {
             <Button onClick={handleSubmit} isLoading={createReview.isPending}>
               Submit review
             </Button>
-            {!user ? (
-              <p className="review-section__hint">
-                <Icon name="users" size={14} /> Sign in to leave a review.
-              </p>
-            ) : null}
           </div>
         </div>
       ) : null}

@@ -9,10 +9,13 @@ import {
   LoadingState,
   PageHeader,
   Pagination,
-  TabRow,
+  TabPanel,
+  TabSwitcher,
+  type TabSwitcherItem,
   toast,
 } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
+import { useUrlState } from '@/shared/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import {
   ActivityLogTable,
@@ -44,7 +47,24 @@ import {
 import { ClassAssignmentsPanel } from '../components/ClassAssignmentsPanel';
 import type { ClassDetailDto, ClassJoinCodeDto, InvitationDto } from '../types';
 
-type ClassTab = 'overview' | 'students' | 'progress' | 'assignments' | 'invitations' | 'settings';
+const CLASS_TAB_IDS = [
+  'overview',
+  'students',
+  'progress',
+  'assignments',
+  'invitations',
+  'settings',
+] as const;
+type ClassTab = (typeof CLASS_TAB_IDS)[number];
+
+const CLASS_TAB_ITEMS: ReadonlyArray<TabSwitcherItem<ClassTab>> = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'students', label: 'Students' },
+  { id: 'progress', label: 'Progress' },
+  { id: 'assignments', label: 'Assignments' },
+  { id: 'invitations', label: 'Invitations' },
+  { id: 'settings', label: 'Settings' },
+];
 const ROSTER_PAGE_SIZE = 20;
 const INVITES_PAGE_SIZE = 20;
 
@@ -120,7 +140,7 @@ function ClassSettingsCard({ klass, canManage, update }: ClassSettingsCardProps)
 
   return (
     <Card className="p-6 space-y-5">
-      <div className="border-b border-border pb-4">
+      <div>
         <h3 className="text-base font-semibold text-card-foreground">Cohort Settings</h3>
       </div>
 
@@ -163,9 +183,6 @@ function ClassSettingsCard({ klass, canManage, update }: ClassSettingsCardProps)
               value={editMax}
               onChange={(e) => setEditMax(e.target.value)}
             />
-            <p className="mt-1 text-xs text-muted font-mono">
-              Currently {klass.studentCount} students enrolled
-            </p>
           </div>
 
           <div className="pt-2 flex items-center gap-3">
@@ -249,26 +266,7 @@ export function OrgClassDetailPage() {
   };
 
   // URL-driven tab state with fallback
-  const tabParam = searchParams.get('tab') as ClassTab | null;
-  const activeTab: ClassTab =
-    tabParam && ['overview', 'students', 'progress', 'invitations', 'settings'].includes(tabParam)
-      ? tabParam
-      : 'overview';
-
-  const setTab = (newTab: ClassTab) => {
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        if (newTab === 'overview') {
-          next.delete('tab');
-        } else {
-          next.set('tab', newTab);
-        }
-        return next;
-      },
-      { replace: true },
-    );
-  };
+  const [activeTab, setTab] = useUrlState<ClassTab>('tab', CLASS_TAB_IDS, 'overview');
 
   // Class detail queries & mutations
   const { query: detail, update, assignProfessor } = useClassDetail(classId);
@@ -405,21 +403,16 @@ export function OrgClassDetailPage() {
     <div className="space-y-6">
       <PageHeader title={klass.className} onBack={handleBack} />
 
-      <TabRow
-        items={[
-          { id: 'overview', label: 'Overview' },
-          { id: 'students', label: 'Students' },
-          { id: 'progress', label: 'Progress' },
-          { id: 'assignments', label: 'Assignments' },
-          { id: 'invitations', label: 'Invitations' },
-          { id: 'settings', label: 'Settings' },
-        ]}
-        activeId={activeTab}
-        onChange={(id) => setTab(id as ClassTab)}
+      <TabSwitcher
+        items={CLASS_TAB_ITEMS}
+        value={activeTab}
+        onChange={setTab}
+        ariaLabel="Cohort sections"
+        idPrefix="class-detail"
       />
 
       {/* ─── Overview Tab ─── */}
-      {activeTab === 'overview' && (
+      <TabPanel idPrefix="class-detail" id="overview" active={activeTab === 'overview'}>
         <div className="grid gap-6 lg:grid-cols-2 items-start">
           <Card className="space-y-4 p-5">
             <h3 className="font-medium text-card-foreground">Details</h3>
@@ -443,8 +436,8 @@ export function OrgClassDetailPage() {
                 </dd>
               </div>
             </dl>
-            <div className="border-t border-border pt-3">
-              <p className="text-xs uppercase tracking-wide text-muted">Description</p>
+            <div>
+              <p className="text-xs text-muted">Description</p>
               <p className="mt-1 text-sm text-card-foreground">
                 {klass.description || 'No description provided.'}
               </p>
@@ -474,10 +467,10 @@ export function OrgClassDetailPage() {
             </div>
           </Card>
         </div>
-      )}
+      </TabPanel>
 
       {/* ─── Students Tab ─── */}
-      {activeTab === 'students' && (
+      <TabPanel idPrefix="class-detail" id="students" active={activeTab === 'students'}>
         <Card className="space-y-4 p-5">
           <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3">
             <div className="grow max-w-md">
@@ -581,10 +574,10 @@ export function OrgClassDetailPage() {
             />
           )}
         </Card>
-      )}
+      </TabPanel>
 
       {/* ─── Progress Tab ─── */}
-      {activeTab === 'progress' && (
+      <TabPanel idPrefix="class-detail" id="progress" active={activeTab === 'progress'}>
         <div className="space-y-6">
           {classProgress.isLoading ? (
             <LoadingState label="Loading cohort progress…" />
@@ -623,15 +616,14 @@ export function OrgClassDetailPage() {
                     <div className="space-y-6">
                       <PageHeader
                         title={studentDetail.data.student.fullName ?? 'Student'}
-                        description={studentDetail.data.student.email}
                         actions={
-                          <button
-                            type="button"
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => setSelectedProgressUserId(null)}
-                            className="border border-border bg-surface px-3 py-1.5 text-xs font-mono font-medium text-muted hover:text-card-foreground transition-colors"
                           >
                             Close detail
-                          </button>
+                          </Button>
                         }
                       />
                       <CourseProgressCard course={studentDetail.data.course} isLoading={false} />
@@ -657,25 +649,25 @@ export function OrgClassDetailPage() {
             </>
           )}
         </div>
-      )}
+      </TabPanel>
+
+      {/* ─── Assignments Tab (chaos sprint) ─── */}
+      <TabPanel idPrefix="class-detail" id="assignments" active={activeTab === 'assignments'}>
+        <ClassAssignmentsPanel classId={classId} canManage={canManage} />
+      </TabPanel>
 
       {/* ─── Invitations Tab ─── */}
-      {/* ─── Assignments Tab (chaos sprint) ─── */}
-      {activeTab === 'assignments' && (
-        <ClassAssignmentsPanel classId={classId} canManage={canManage} />
-      )}
-
-      {activeTab === 'invitations' && (
+      <TabPanel idPrefix="class-detail" id="invitations" active={activeTab === 'invitations'}>
         <div className="space-y-6">
           <Card className="p-6 space-y-5">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-border pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <h3 className="text-base font-semibold text-card-foreground">Cohort Invitations</h3>
               </div>
               <div className="flex items-center gap-2">
                 {canInvite && (
-                  <Button variant="primary" size="sm" onClick={openInviteDrawer}>
-                    + Invite Students
+                  <Button variant="primary" size="sm" iconName="plus" onClick={openInviteDrawer}>
+                    Invite Students
                   </Button>
                 )}
               </div>
@@ -708,11 +700,11 @@ export function OrgClassDetailPage() {
             )}
           </Card>
         </div>
-      )}
+      </TabPanel>
 
       {/* ─── Settings Tab ─── */}
-      {activeTab === 'settings' && (
-        <div className="space-y-6 max-w-4xl">
+      <TabPanel idPrefix="class-detail" id="settings" active={activeTab === 'settings'}>
+        <div className="space-y-6">
           {/* General Cohort Settings */}
           <ClassSettingsCard
             key={klass.classId}
@@ -723,14 +715,10 @@ export function OrgClassDetailPage() {
 
           {/* Academic Leadership & Professor Assignment */}
           <Card className="p-6 space-y-4">
-            <div className="border-b border-border pb-4">
+            <div>
               <h3 className="text-base font-semibold text-card-foreground">
                 Lead Professor Assignment
               </h3>
-              <p className="mt-0.5 text-xs text-muted font-mono">
-                Assigned instructor responsible for monitoring progress, answering student queries,
-                and grading capstone labs.
-              </p>
             </div>
 
             <div>
@@ -754,15 +742,11 @@ export function OrgClassDetailPage() {
             </div>
           </Card>
 
-          {/* Reusable class code — students self-enroll without email invites. */}
+          {/* Reusable class code: students self-enroll without email invites. */}
           {canManage && (
             <Card className="p-6 space-y-4">
-              <div className="border-b border-border pb-4">
+              <div>
                 <h3 className="text-base font-semibold text-card-foreground">Class join code</h3>
-                <p className="mt-0.5 text-xs text-muted font-mono">
-                  Share a reusable code so students can enroll themselves. Codes expire after 7
-                  days.
-                </p>
               </div>
 
               {joinCode ? (
@@ -814,19 +798,10 @@ export function OrgClassDetailPage() {
           <Card className="p-6 space-y-4 border-red-500/40 bg-red-500/5">
             <div>
               <h3 className="text-base font-semibold text-red-500">Danger Zone</h3>
-              <p className="mt-0.5 text-xs text-muted font-mono">
-                Irreversible administrative actions for this cohort.
-              </p>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-2">
-              <div>
-                <p className="text-sm font-semibold text-card-foreground">Withdraw All Students</p>
-                <p className="text-xs text-muted">
-                  Remove all enrolled students from this cohort roster while preserving their
-                  progress history.
-                </p>
-              </div>
+              <p className="text-sm font-semibold text-card-foreground">Withdraw All Students</p>
               <Button
                 variant="danger"
                 size="sm"
@@ -837,21 +812,15 @@ export function OrgClassDetailPage() {
               </Button>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-t border-border pt-4">
-              <div>
-                <p className="text-sm font-semibold text-card-foreground">Delete Class</p>
-                <p className="text-xs text-muted">
-                  Permanently delete this class, its roster, invitations and active join codes. This
-                  cannot be undone.
-                </p>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+              <p className="text-sm font-semibold text-card-foreground">Delete Class</p>
               <Button variant="danger" size="sm" onClick={() => setDeleteClassOpen(true)}>
                 Delete Class
               </Button>
             </div>
           </Card>
         </div>
-      )}
+      </TabPanel>
 
       {/* ─── SLIDE-OVER INVITATION DRAWER ─── */}
       <OrgInviteDrawer

@@ -30,9 +30,7 @@ export default function VerifyEmailPage() {
   const [expiresAt, setExpiresAt] = useState<number | null>(() =>
     email ? Date.now() + OTP_TTL_SECONDS * 1000 : null,
   );
-  const [remaining, setRemaining] = useState<number | null>(() =>
-    email ? OTP_TTL_SECONDS : null,
-  );
+  const [remaining, setRemaining] = useState<number | null>(() => (email ? OTP_TTL_SECONDS : null));
 
   const verify = useVerifyEmail();
   const resend = useResendVerification();
@@ -99,7 +97,7 @@ export default function VerifyEmailPage() {
 
   if (verified) {
     return (
-      <AuthLayout title="Email verified" subtitle="Your account is ready to use.">
+      <AuthLayout title="Email verified">
         <div className="flex flex-col gap-6">
           {info ? (
             <p className="auth-alert auth-alert--success auth-alert--margin" role="status">
@@ -119,10 +117,7 @@ export default function VerifyEmailPage() {
   }
 
   return (
-    <AuthLayout
-      title="Verify your email"
-      subtitle="Check your inbox for a 6-digit verification code."
-    >
+    <AuthLayout title="Verify your email">
       <div className="flex flex-col gap-4">
         <Input
           label="Email address"

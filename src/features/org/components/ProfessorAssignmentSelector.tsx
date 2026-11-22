@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Button } from '@/shared/components';
+import { Button, EmptyState } from '@/shared/components';
 import type { ProfessorDto } from '../types';
 
 interface ProfessorAssignmentSelectorProps {
@@ -21,7 +21,7 @@ export function ProfessorAssignmentSelector({
   );
 
   if (professors.length === 0) {
-    return <p className="py-6 text-sm text-muted">Invite a professor first.</p>;
+    return <EmptyState icon="users" title="Invite a professor first" />;
   }
 
   const handleAssign = () => {
@@ -45,7 +45,7 @@ export function ProfessorAssignmentSelector({
           <option value="">Select a professor…</option>
           {professors.map((professor) => (
             <option key={professor.userId} value={professor.userId}>
-              {professor.fullName ?? professor.email} · {professor.email}
+              {professor.fullName ?? professor.email} ({professor.email})
             </option>
           ))}
         </select>

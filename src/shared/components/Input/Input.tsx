@@ -1,16 +1,20 @@
 import { forwardRef, type InputHTMLAttributes } from 'react';
+import { FieldError } from '@/shared/components/Field/FieldError';
 import { cn } from '@/shared/utils';
 import './Input.css';
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
   error?: string;
+  /** @deprecated Helper text is being removed app-wide (F1b deletes this prop). */
   hint?: string;
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, error, hint, className, id, ...props }, ref) => {
     const inputId = id ?? props.name;
+    const errorId = inputId ? `${inputId}-error` : undefined;
+    const hintId = inputId ? `${inputId}-hint` : undefined;
 
     return (
       <div className="input-root">
@@ -28,17 +32,14 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           ref={ref}
           id={inputId}
           className={cn('input-field', error && 'input-field--error', className)}
-          aria-invalid={Boolean(error)}
-          aria-describedby={error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined}
+          aria-invalid={Boolean(error) || undefined}
+          aria-errormessage={error ? errorId : undefined}
+          aria-describedby={error ? errorId : hint ? hintId : undefined}
           {...props}
         />
-        {error ? (
-          <p id={`${inputId}-error`} className="input-error">
-            {error}
-          </p>
-        ) : null}
+        <FieldError id={errorId} message={error} />
         {!error && hint ? (
-          <p id={`${inputId}-hint`} className="input-hint">
+          <p id={hintId} className="input-hint">
             {hint}
           </p>
         ) : null}

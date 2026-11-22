@@ -10,11 +10,6 @@
   gap: var(--space-4);
 }
 
-.payment-methods-page__hint {
-  margin: 0;
-  font-size: var(--text-body-s);
-  color: var(--color-text-tertiary);
-}
 .payment-methods-page__actions {
   display: flex;
   gap: var(--space-2);

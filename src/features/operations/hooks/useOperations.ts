@@ -1,4 +1,4 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
 import { operationsService } from '../services';
 import type { EventDto } from '../types';
@@ -7,6 +7,8 @@ export function useEvents(page = 1, upcomingOnly = true) {
   return useQuery({
     queryKey: QUERY_KEYS.events.list(page, upcomingOnly),
     queryFn: () => operationsService.listEvents(page, 12, upcomingOnly),
+    // Keep the previous page on screen while a new filter loads (inline pending, no skeleton).
+    placeholderData: keepPreviousData,
     retry: false,
   });
 }

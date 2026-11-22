@@ -10,6 +10,7 @@ import type {
   UpdateProfilePayload,
   UserSkill,
 } from '../types';
+import { safeHttpUrl } from '@/shared/utils';
 
 function unwrap<T>(envelope: { data: T }): T {
   return envelope.data;
@@ -20,8 +21,8 @@ export function resolveAssetUrl(path: string | null | undefined): string | null 
   if (!path) {
     return null;
   }
-  if (/^https?:\/\//.test(path)) {
-    return path;
+  if (/^[a-z][a-z0-9+.-]*:|^\/\//i.test(path)) {
+    return safeHttpUrl(path);
   }
   const origin = ENV.API_BASE_URL.replace(/\/api\/v1\/?$/, '');
   return `${origin}${path.startsWith('/') ? path : `/${path}`}`;

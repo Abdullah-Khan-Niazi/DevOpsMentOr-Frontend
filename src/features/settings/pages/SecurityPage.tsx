@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import { useQuery } from '@tanstack/react-query';
-import { Button, Card, toast } from '@/shared/components';
+import { useNavigate } from 'react-router-dom';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { Button, Card, ConfirmDialog, toast } from '@/shared/components';
+import { ROUTES } from '@/shared/constants';
 import { use2fa } from '@/features/auth/hooks';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { authService } from '@/features/auth/services';
@@ -264,6 +266,7 @@ export default function SecurityPage() {
         ) : null}
 
         <PasswordManagementCard />
+        <SignOutAllCard />
       </div>
     </div>
   );
@@ -386,6 +389,61 @@ function PasswordManagementCard() {
           </Button>
         </div>
       </form>
+    </Card>
+  );
+}
+
+function SignOutAllCard() {
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const clearSession = useAuthStore((state) => state.clearSession);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const signOutAll = useMutation<void, Error, void>({
+    mutationFn: () => authService.logoutAll(),
+    onSuccess: () => {
+      clearSession();
+      queryClient.clear();
+      void navigate(ROUTES.LOGIN, { replace: true });
+    },
+    onError: (err) => {
+      setConfirmOpen(false);
+      setError(err.message);
+    },
+  });
+
+  return (
+    <Card className="settings-card">
+      <h2 className="settings-card__title">Sign out of all sessions</h2>
+      <p className="settings-card__body">Ends every session on every device, including this one.</p>
+      {error ? (
+        <p className="auth-alert auth-alert--error" role="alert">
+          {error}
+        </p>
+      ) : null}
+      <div>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => {
+            setError(null);
+            setConfirmOpen(true);
+          }}
+        >
+          Sign out of all sessions
+        </Button>
+      </div>
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Sign out of all sessions?"
+        message="You will be signed out everywhere and need to sign in again."
+        confirmLabel="Sign out everywhere"
+        tone="danger"
+        isLoading={signOutAll.isPending}
+        onCancel={() => setConfirmOpen(false)}
+        onConfirm={() => signOutAll.mutate()}
+      />
     </Card>
   );
 }

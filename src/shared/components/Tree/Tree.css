@@ -1,0 +1,154 @@
+/* Tree (WAI-ARIA treeview). Rows separate by hover background only, no borders. */
+
+.tree,
+.tree-group {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tree-item {
+  outline: none;
+}
+
+/* The focus ring is drawn on the row, not on the whole item with its children. */
+.app-chrome .tree-item:focus-visible,
+.overlay-root .tree-item:focus-visible,
+.tree-item:focus-visible {
+  box-shadow: none;
+}
+
+.tree-item:focus-visible > .tree-row {
+  box-shadow: var(--focus-ring);
+}
+
+.tree-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 2.5rem;
+  padding-block: 0.25rem;
+  padding-inline-end: var(--space-2);
+  border-radius: var(--radius-sm);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  transition: background-color var(--duration-micro) var(--ease-standard);
+}
+
+.tree-row:hover {
+  background-color: var(--pearl-200);
+}
+
+.tree-row--selected,
+.tree-row--selected:hover {
+  background-color: var(--pearl-200);
+}
+
+.tree-row--muted .tree-row__label,
+.tree-row--muted .tree-row__icon {
+  color: var(--text-tertiary);
+}
+
+.tree-row__toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 1.5rem;
+  height: 1.5rem;
+  padding: 0;
+  border: none;
+  border-radius: var(--radius-xs);
+  background: transparent;
+  color: var(--text-secondary);
+  cursor: pointer;
+}
+
+.tree-row__toggle:hover {
+  color: var(--ink);
+}
+
+.tree-row__toggle .icon {
+  transition: transform var(--duration-spring-snappy) var(--spring-snappy);
+}
+
+.tree-row__toggle[data-open='true'] .icon {
+  transform: rotate(90deg);
+}
+
+.tree-row__spacer {
+  flex-shrink: 0;
+  width: 1.5rem;
+}
+
+.tree-row__icon {
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.tree-row__label {
+  min-width: 0;
+  flex: 0 1 auto;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: var(--text-body-s);
+  font-weight: 500;
+}
+
+.tree-row__meta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  font-size: var(--text-caption);
+  color: var(--text-tertiary);
+  font-variant-numeric: tabular-nums;
+}
+
+.tree-row__actions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  margin-inline-start: auto;
+  flex-shrink: 0;
+}
+
+/* Collapsed or leaf rows reveal their actions on hover and keyboard focus. */
+.tree-row__actions--reveal {
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-micro) var(--ease-standard);
+}
+
+.tree-row:hover .tree-row__actions--reveal,
+.tree-row:focus-within .tree-row__actions--reveal,
+.tree-item:focus > .tree-row .tree-row__actions--reveal {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+@media (hover: none) {
+  .tree-row__actions--reveal {
+    opacity: 1;
+    pointer-events: auto;
+  }
+}
+
+.tree-row__spacer-flex {
+  flex: 1 1 auto;
+}
+
+.tree-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  padding-block: var(--space-2);
+}
+
+.tree-status {
+  padding-block: var(--space-1);
+}

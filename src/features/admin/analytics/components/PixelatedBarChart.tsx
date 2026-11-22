@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { EmptyState } from '@/shared/components';
 
 export interface PixelatedBarPoint {
   label: string;
@@ -26,14 +27,7 @@ export function PixelatedBarChart({
   const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   if (!data || data.length === 0) {
-    return (
-      <div
-        className="flex items-center justify-center border border-dashed border-border text-xs text-muted font-mono"
-        style={{ height }}
-      >
-        No activity recorded for this period.
-      </div>
-    );
+    return <EmptyState title="No activity recorded for this period" />;
   }
 
   const maxValue = Math.max(
@@ -105,7 +99,7 @@ export function PixelatedBarChart({
       </div>
 
       {/* Monospace X-Axis Labels */}
-      <div className="flex items-center justify-between border-t border-border pt-2 text-[0.625rem] font-mono text-muted uppercase tracking-wider w-full min-w-0 overflow-hidden">
+      <div className="flex items-center justify-between pt-2 text-[0.625rem] font-mono text-muted uppercase tracking-wider w-full min-w-0 overflow-hidden">
         {data.map((point, idx) => {
           const showOnMobile =
             data.length <= 10 || idx === 0 || idx === data.length - 1 || idx % 4 === 0;

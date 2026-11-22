@@ -33,13 +33,7 @@ export function BulkImportPanel({ submitting, onImport, result }: BulkImportPane
 
   return (
     <Card className="space-y-4 p-5">
-      <div>
-        <h4 className="font-medium text-card-foreground">Bulk import students</h4>
-        <p className="mt-1 text-sm text-muted">
-          Upload a CSV with a single <code className="rounded bg-secondary px-1">Email</code> column
-          to invite many students at once.
-        </p>
-      </div>
+      <h4 className="font-medium text-card-foreground">Bulk import students</h4>
 
       <div className="flex flex-wrap items-center gap-2">
         <Button variant="ghost" size="sm" onClick={downloadCsvTemplate}>

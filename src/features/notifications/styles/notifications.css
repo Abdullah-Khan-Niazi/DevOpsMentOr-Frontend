@@ -1,10 +1,5 @@
 /* ─── F8 Notifications (SCR-F8-01..03) ─────────────────────────────────────── */
-/* Dual-theme tokens only — zero hardcoded hex values. */
-
-.notifications-page__skeleton {
-  display: grid;
-  gap: var(--space-3);
-}
+/* Dual-theme tokens only - zero hardcoded hex values. */
 
 .notifications-page__list {
   display: grid;
@@ -29,12 +24,6 @@
 .notification-item--unread {
   border-color: var(--color-accent-600);
   background: color-mix(in srgb, var(--color-accent-600) 6%, var(--color-bg-raised));
-}
-
-.notification-item--skeleton {
-  height: 4.75rem;
-  background: var(--color-bg-raised);
-  animation: skeleton-pulse 1.4s var(--ease-standard) infinite;
 }
 
 .notification-item__icon {
@@ -103,21 +92,6 @@
   font-size: var(--text-caption);
 }
 
-.notification-item__dismiss {
-  flex-shrink: 0;
-  padding: var(--space-1);
-  border: none;
-  border-radius: var(--radius-xs);
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-  transition: color var(--duration-instant) var(--ease-standard);
-}
-
-.notification-item__dismiss:hover {
-  color: var(--color-text-primary);
-}
-
 /* SCR-F8-01 sidebar bell (AppShell chrome) */
 .notification-bell {
   position: relative;
@@ -159,7 +133,6 @@
   align-items: center;
   gap: var(--space-3);
   padding: var(--space-3) var(--space-4);
-  border-bottom: 0.0625rem solid var(--color-border-default);
   background: var(--color-bg-raised);
 }
 
@@ -197,15 +170,6 @@
   white-space: nowrap;
 }
 
-.announcement-banner__dismiss {
-  flex-shrink: 0;
-  padding: var(--space-1);
-  border: none;
-  background: transparent;
-  color: var(--color-text-tertiary);
-  cursor: pointer;
-}
-
 /* SCR-F8-03 archive */
 .announcements-page__list {
   display: grid;
@@ -233,11 +197,8 @@
 }
 
 .announcements-page__priority {
-  padding: var(--space-1) var(--space-2);
-  border-radius: var(--radius-full);
   font-size: var(--text-caption);
   font-weight: 600;
-  background: var(--color-bg-sunken);
   color: var(--color-text-secondary);
 }
 
@@ -288,11 +249,8 @@
 }
 
 .preferences-page__dirty {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--color-warning);
-  color: var(--color-text-on-accent);
-  font-size: 0.6875rem;
+  color: var(--color-text-tertiary);
+  font-size: var(--text-caption);
   font-weight: 600;
 }
 
@@ -315,16 +273,6 @@
   accent-color: var(--color-accent-600);
   width: 1rem;
   height: 1rem;
-}
-
-@keyframes skeleton-pulse {
-  0%,
-  100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.45;
-  }
 }
 
 @media (max-width: 560px) {

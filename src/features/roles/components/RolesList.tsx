@@ -11,7 +11,7 @@ export function RolesList({ roles }: RolesListProps) {
         <li key={role.id} className="rounded-lg border border-border bg-card p-4">
           <h3 className="font-medium text-card-foreground">{role.name}</h3>
           <p className="mt-1 text-sm text-muted">{role.description}</p>
-          <p className="mt-2 text-xs text-muted">
+          <p className="mt-3 text-xs text-muted">
             {role.permissions.length} permission{role.permissions.length === 1 ? '' : 's'}
           </p>
         </li>

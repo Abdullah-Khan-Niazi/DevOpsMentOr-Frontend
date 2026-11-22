@@ -2,6 +2,7 @@ import '../styles/notifications.css';
 import { useState } from 'react';
 import { Button, EmptyState, ErrorState, PageHeader, Pagination, toast } from '@/shared/components';
 import { NotificationItem } from '../components/NotificationItem';
+import { NotificationInboxSkeleton } from './NotificationInboxSkeleton';
 import {
   useDismissNotification,
   useInbox,
@@ -9,7 +10,7 @@ import {
   useMarkRead,
 } from '../hooks/useNotifications';
 
-// SCR-F8-01: notification inbox — paginated list with per-row read/dismiss
+// SCR-F8-01: notification inbox - paginated list with per-row read/dismiss
 // and a "Mark all read" header action. Every row action is session-scoped
 // server-side (AC-14 IDOR mitigation).
 
@@ -17,7 +18,7 @@ const INBOX_PAGE_SIZE = 20;
 
 export function NotificationInboxPage() {
   const [page, setPage] = useState(1);
-  const { data, isLoading, isError, error } = useInbox(page);
+  const { data, isLoading, isError, error, refetch, isRefetching } = useInbox(page);
   const markRead = useMarkRead();
   const markAllRead = useMarkAllRead();
   const dismiss = useDismissNotification();
@@ -41,17 +42,19 @@ export function NotificationInboxPage() {
     });
   };
 
+  if (isLoading && !data) return <NotificationInboxSkeleton />;
+
   return (
     <div className="notifications-page">
       <PageHeader
         title="Notifications"
-        description="Updates on your achievements, events, labs and security."
         actions={
           <Button
             variant="secondary"
             size="sm"
             onClick={handleMarkAllRead}
-            disabled={isLoading || (data?.unreadCount ?? 0) === 0}
+            isLoading={markAllRead.isPending}
+            disabled={isLoading || markAllRead.isPending || (data?.unreadCount ?? 0) === 0}
           >
             Mark all read
           </Button>
@@ -62,13 +65,9 @@ export function NotificationInboxPage() {
         <ErrorState
           title="Could not load notifications"
           message={error?.message ?? 'Please try again later.'}
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
         />
-      ) : isLoading ? (
-        <div className="notifications-page__skeleton" aria-hidden="true">
-          {Array.from({ length: 5 }, (_, index) => (
-            <div key={index} className="notification-item notification-item--skeleton" />
-          ))}
-        </div>
       ) : data && data.data.length > 0 ? (
         <>
           <ul className="notifications-page__list">
@@ -91,10 +90,7 @@ export function NotificationInboxPage() {
           />
         </>
       ) : (
-        <EmptyState
-          title="You're all caught up."
-          description="New notifications about events, achievements and platform updates will appear here."
-        />
+        <EmptyState title="You're all caught up." icon="bell" />
       )}
     </div>
   );

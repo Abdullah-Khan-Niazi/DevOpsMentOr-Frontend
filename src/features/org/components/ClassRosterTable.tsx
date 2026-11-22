@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react';
-import { Button } from '@/shared/components';
+import { Button, EmptyState, Icon } from '@/shared/components';
 import type { RosterStudentDto } from '../types';
+import { OrgTableSkeleton } from './OrgTableSkeleton';
 
 type SortColumn = 'fullName' | 'status' | 'enrolledAt';
 type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
-      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
+      <Icon name={active ? (direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'sort'} size={14} />
     </span>
   );
 }
@@ -68,56 +71,73 @@ export function ClassRosterTable({
   }, [students, sortCol, sortDir]);
 
   if (isLoading) {
-    return <p className="py-6 text-sm text-muted font-mono">Loading roster…</p>;
+    return <OrgTableSkeleton label="Loading roster" columns={canManage ? 4 : 3} />;
   }
 
   if (students.length === 0) {
-    return <p className="py-6 text-sm text-muted font-mono">No students enrolled yet.</p>;
+    return <EmptyState icon="users" title="No students enrolled yet" />;
   }
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm border-collapse">
         <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+          <tr className="text-xs uppercase tracking-wide text-muted font-mono">
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('fullName')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'fullName' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Student <SortIcon active={sortCol === 'fullName'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('fullName')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Student <SortIcon active={sortCol === 'fullName'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('status')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('status')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('enrolledAt')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'enrolledAt' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Enrolled <SortIcon active={sortCol === 'enrolledAt'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('enrolledAt')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Enrolled <SortIcon active={sortCol === 'enrolledAt'} direction={sortDir} />
+              </button>
             </th>
             {canManage ? <th className="px-3 py-2 font-medium text-right">Actions</th> : null}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border/60">
+        <tbody>
           {sortedStudents.map((student) => (
-            <tr
-              key={student.userId}
-              className="hover:bg-surface/60 transition-colors"
-            >
+            <tr key={student.userId} className="hover:bg-surface/60 transition-colors">
               <td className="px-3 py-2.5">
-                <div className="font-medium text-card-foreground">{student.fullName ?? '—'}</div>
+                <div className="font-medium text-card-foreground">{student.fullName ?? '-'}</div>
                 <div className="text-xs text-muted font-mono">{student.email}</div>
               </td>
               <td className="px-3 py-2.5 text-xs font-mono">
                 <span
-                  className={`px-2 py-0.5 rounded-sm ${
-                    student.isActive
-                      ? 'border border-border/80 text-card-foreground bg-pearl-200'
-                      : 'border border-border/50 text-muted line-through'
-                  }`}
+                  className={student.isActive ? 'text-card-foreground' : 'text-muted line-through'}
                 >
                   {student.isActive ? 'Active' : 'Withdrawn'}
                 </span>

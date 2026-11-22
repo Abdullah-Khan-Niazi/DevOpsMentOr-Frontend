@@ -1,4 +1,5 @@
-import { Button, Card, EmptyState, LoadingState } from '@/shared/components';
+import { Card, EmptyState, ErrorState, PageHeader } from '@/shared/components';
+import { LoginHistorySkeleton } from './LoginHistorySkeleton';
 import { useLoginHistory } from '@/features/auth/hooks';
 import type { LoginHistoryEntry } from '@/features/auth/types';
 import '@/shared/styles/app.css';
@@ -16,39 +17,27 @@ function formatUserAgent(userAgent: string | null): string {
 }
 
 export default function LoginHistoryPage() {
-  const { data, isLoading, isError, error, refetch } = useLoginHistory();
+  const { data, isLoading, isError, error, refetch, isRefetching } = useLoginHistory();
+
+  if (isLoading) return <LoginHistorySkeleton />;
 
   return (
     <div>
-      <header className="app-page-header">
-        <h1 className="app-page-header__title">Login history</h1>
-        <p className="app-page-header__description">
-          Your recent sign-in attempts, including successful and failed logins.
-        </p>
-      </header>
+      <PageHeader title="Login history" />
 
       <div className="settings-stack">
         <Card className="settings-card">
           <h2 className="settings-card__title">Recent activity</h2>
 
-          {isLoading ? <LoadingState label="Loading history..." /> : null}
-
           {isError ? (
-            <div className="flex flex-col gap-3">
-              <p className="auth-alert auth-alert--error" role="alert">
-                {error.message}
-              </p>
-              <Button type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
-                Retry
-              </Button>
-            </div>
+            <ErrorState error={error} onRetry={() => void refetch()} retrying={isRefetching} />
           ) : null}
 
-          {!isLoading && !isError && data && data.length === 0 ? (
-            <EmptyState title="No login activity yet." description="" />
+          {!isError && data && data.length === 0 ? (
+            <EmptyState title="No login activity yet." icon="audit-logs" />
           ) : null}
 
-          {!isLoading && !isError && data && data.length > 0 ? (
+          {!isError && data && data.length > 0 ? (
             <div className="admin-table-card">
               <table className="admin-table">
                 <thead>

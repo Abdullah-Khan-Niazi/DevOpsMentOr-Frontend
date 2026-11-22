@@ -26,9 +26,7 @@ export type {
 } from './types';
 
 export { AdminCurriculumPage } from './pages/AdminCurriculumPage';
-export { LearnCurriculumPage } from './pages/LearnCurriculumPage';
+export { LearnPage } from './pages/LearnPage';
+export { LearnCoursePage } from './pages/LearnCoursePage';
+export { LearnModulePage } from './pages/LearnModulePage';
 export { LearnLessonPage } from './pages/LearnLessonPage';
-export { CurriculumTree } from './components/CurriculumTree';
-export { CurriculumDrawer } from './components/CurriculumDrawer';
-export { LessonForm } from './components/LessonForm';
-export { LabConfigForm } from './components/LabConfigForm';

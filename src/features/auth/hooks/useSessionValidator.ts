@@ -1,9 +1,9 @@
 import { useCallback, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/shared/constants';
-import { AUTH_TOKEN_KEY } from '@/shared/services';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
+import { useAuthReady } from './useAuthBootstrap';
 
 // Tracks which account produced the current query cache. If a different
 // account signs in in the same tab, the previous account's org/class/progress
@@ -16,6 +16,7 @@ let cachedUserId: number | null = null;
 export function useSessionValidator() {
   const queryClient = useQueryClient();
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const ready = useAuthReady();
   const setUser = useAuthStore((state) => state.setUser);
   const clearSession = useAuthStore((state) => state.clearSession);
 
@@ -55,11 +56,12 @@ export function useSessionValidator() {
   }, [endSession, queryClient, setUser]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    // Wait for the boot-time refresh so /auth/me never races it.
+    if (!ready || !isAuthenticated) return;
     void validate();
-  }, [isAuthenticated, validate]);
+  }, [ready, isAuthenticated, validate]);
 
-  // Cross-tab logout synchronization (BroadcastChannel + storage event fallback)
+  // Cross-tab logout synchronization (BroadcastChannel 'auth_sync')
   useEffect(() => {
     const handleLogout = () => {
       if (useAuthStore.getState().isAuthenticated) {
@@ -80,20 +82,7 @@ export function useSessionValidator() {
       // BroadcastChannel unavailable
     }
 
-    const handleStorage = (event: StorageEvent) => {
-      if (
-        (event.key === AUTH_TOKEN_KEY && event.newValue === null) ||
-        (event.key === 'auth-session' &&
-          (!event.newValue ||
-            !JSON.parse(event.newValue || '{}')?.state?.isAuthenticated))
-      ) {
-        handleLogout();
-      }
-    };
-
-    window.addEventListener('storage', handleStorage);
     return () => {
-      window.removeEventListener('storage', handleStorage);
       if (channel) {
         channel.close();
       }

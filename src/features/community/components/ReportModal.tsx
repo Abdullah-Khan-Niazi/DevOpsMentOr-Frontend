@@ -67,11 +67,10 @@ export function ReportModal({ open, onClose, targetType, targetId }: ReportModal
             maxLength={1000}
             value={description}
             onChange={(event) => setDescription(event.target.value)}
-            placeholder="Anything the moderators should know."
           />
         </label>
         <div className="report-modal__actions">
-          <Button variant="secondary" onClick={onClose}>
+          <Button variant="secondary" onClick={onClose} disabled={createReport.isPending}>
             Cancel
           </Button>
           <Button variant="danger" onClick={handleSubmit} isLoading={createReport.isPending}>

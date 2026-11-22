@@ -1,5 +1,6 @@
 import { Card, Icon } from '@/shared/components';
 import type { BadgeType } from '../types';
+import { safeHttpUrl } from '@/shared/utils';
 
 // SCR-F7-01 badge tile. Earned badges get a tier ring (badge_type → token
 // intensity, single accent hue per guidelines); locked badges render greyed
@@ -26,8 +27,13 @@ export function BadgeCard({
   return (
     <Card className={`badge-card ${tierClass}`}>
       <div className="badge-card__icon">
-        {iconUrl ? (
-          <img src={iconUrl} alt="" className="badge-card__img" loading="lazy" />
+        {safeHttpUrl(iconUrl) ? (
+          <img
+            src={safeHttpUrl(iconUrl) ?? undefined}
+            alt=""
+            className="badge-card__img"
+            loading="lazy"
+          />
         ) : (
           <Icon name="award" size={26} />
         )}

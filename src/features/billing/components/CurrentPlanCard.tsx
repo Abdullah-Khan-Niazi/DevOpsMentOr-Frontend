@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, ConfirmDialog, LoadingState } from '@/shared/components';
+import { Button, Card, ConfirmDialog, ErrorState, Skeleton } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import {
   useCancelSubscription,
@@ -9,10 +9,11 @@ import {
   usePortalSession,
 } from '../hooks/useBilling';
 import './current-plan.css';
+import { safeHttpUrl } from '@/shared/utils';
 
 function formatDate(iso: string | null | undefined): string {
   if (!iso) {
-    return '—';
+    return '-';
   }
   return new Date(iso).toLocaleDateString(undefined, {
     year: 'numeric',
@@ -32,15 +33,24 @@ function formatPrice(usd: number, cycle: 'monthly' | 'annual'): string {
 /** SCR-F9-02: current plan card with renewal date, cancel dialog and portal. */
 export function CurrentPlanCard() {
   const [confirmingCancel, setConfirmingCancel] = useState(false);
-  const { data: current, isLoading, isError } = useCurrentSubscription();
+  const {
+    data: current,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = useCurrentSubscription();
   const { data: catalog } = usePlans();
   const cancelMutation = useCancelSubscription();
   const portalMutation = usePortalSession();
 
   if (isLoading) {
     return (
-      <Card>
-        <LoadingState label="Loading your plan…" />
+      <Card className="current-plan" aria-hidden="true">
+        <Skeleton className="h-5 w-32 rounded-sm" />
+        <Skeleton className="h-4 w-24 rounded-xs" />
+        <Skeleton className="h-16 w-full rounded-sm" />
       </Card>
     );
   }
@@ -48,18 +58,19 @@ export function CurrentPlanCard() {
   const subscription = current?.subscription ?? null;
   const plan = catalog?.plans.find((p) => p.planType === current?.planType);
   const price = plan ? formatPrice(plan.monthlyPriceUsd, 'monthly') : null;
-  const badge = subscription
+  const status = subscription
     ? subscription.isActive
-      ? `Plan active until ${formatDate(subscription.endDate)}`
+      ? { text: `Plan active until ${formatDate(subscription.endDate)}`, tone: 'active' }
       : subscription.cancelledAt
-        ? `Cancels on ${formatDate(subscription.endDate)}`
-        : 'Plan inactive'
-    : 'No active plan';
+        ? { text: `Cancels on ${formatDate(subscription.endDate)}`, tone: 'cancelling' }
+        : { text: 'Plan inactive', tone: 'inactive' }
+    : { text: 'No active plan', tone: 'inactive' };
 
   const openPortal = (): void => {
     portalMutation.mutate(undefined, {
       onSuccess: (session) => {
-        window.open(session.url, '_blank', 'noopener,noreferrer');
+        const url = safeHttpUrl(session.url);
+        if (url) window.open(url, '_blank', 'noopener,noreferrer');
       },
     });
   };
@@ -71,7 +82,9 @@ export function CurrentPlanCard() {
           <h3 className="current-plan__name">{plan?.displayName ?? 'Free'}</h3>
           <p className="current-plan__price">{price ?? 'Free'}</p>
         </div>
-        <div className="current-plan__badge">{badge}</div>
+        <div className="current-plan__status" data-tone={status.tone}>
+          {status.text}
+        </div>
       </div>
 
       <dl className="current-plan__facts">
@@ -89,7 +102,15 @@ export function CurrentPlanCard() {
         </div>
       </dl>
 
-      {isError ? <p className="current-plan__error">Could not load your plan.</p> : null}
+      {isError ? (
+        <ErrorState
+          title="Could not load your plan"
+          error={error}
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+          compact
+        />
+      ) : null}
 
       <div className="current-plan__actions">
         {subscription ? (
@@ -106,7 +127,8 @@ export function CurrentPlanCard() {
               variant="ghost"
               size="sm"
               onClick={() => setConfirmingCancel(true)}
-              disabled={!subscription.isActive}
+              isLoading={cancelMutation.isPending}
+              disabled={!subscription.isActive || cancelMutation.isPending}
             >
               Cancel plan
             </Button>

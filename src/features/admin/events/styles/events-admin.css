@@ -1,5 +1,5 @@
 /* ─── F8 Admin Events (SCR-F8-10) ──────────────────────────────────────────── */
-/* Dual-theme tokens only — zero hardcoded hex values. */
+/* Dual-theme tokens only - zero hardcoded hex values. */
 
 .events-admin-page {
   display: flex;
@@ -76,51 +76,8 @@
   gap: var(--space-3);
 }
 
-.events-admin-page__list {
-  display: grid;
-  gap: var(--space-4);
-}
-
-.events-admin-page__item-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-
-.events-admin-page__item-title {
-  font-weight: 600;
-}
-
-.events-admin-page__item-type {
-  padding: 0.125rem var(--space-2);
-  border-radius: var(--radius-full);
-  background: var(--color-accent-950);
-  color: var(--color-accent-400);
-  font-size: var(--text-caption);
-  font-weight: 600;
-}
-
-.events-admin-page__item-meta {
-  margin-top: var(--space-2);
-  color: var(--color-text-tertiary);
-  font-size: 0.8125rem;
-}
-
-.events-admin-page__item-actions {
-  display: flex;
-  gap: var(--space-2);
-  margin-top: var(--space-3);
-}
-
 .events-admin-page__attendees {
   border-color: var(--color-accent-600);
-}
-
-.events-admin-page__attendees-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
 }
 
 .events-admin-page__table {
@@ -134,7 +91,6 @@
 .events-admin-page__table td {
   padding: var(--space-2) var(--space-3);
   text-align: left;
-  border-bottom: 0.0625rem solid var(--color-border-subtle);
 }
 
 .events-admin-page__table th {
@@ -145,7 +101,6 @@
   letter-spacing: 0.04em;
 }
 
-.events-admin-page__empty {
-  margin-top: var(--space-4);
-  color: var(--color-text-tertiary);
+.events-admin-page__table tbody tr:hover {
+  background: var(--color-bg-sunken);
 }

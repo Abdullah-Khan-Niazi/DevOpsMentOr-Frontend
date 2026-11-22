@@ -18,7 +18,23 @@ export function isPlatformAdmin(user: AuthUser | null): boolean {
   return roles.includes('platform_admin') || permissions.includes('platform.admin.access');
 }
 
-export function isOrgStaff(user: AuthUser | null): boolean {
+/** Per-organization role as returned by `GET /org/my-memberships`. */
+export interface WorkspaceMembership {
+  role: 'org_admin' | 'professor' | 'org_student';
+}
+
+/**
+ * Org staff = an org_admin or professor membership in any organization. The
+ * memberships list is authoritative (multi-org); the session roles cover the
+ * window before the list has loaded.
+ */
+export function isOrgStaff(
+  user: AuthUser | null,
+  memberships: readonly WorkspaceMembership[] = [],
+): boolean {
+  if (memberships.some((membership) => membership.role !== 'org_student')) {
+    return true;
+  }
   const roles = user?.roles ?? [];
   return roles.includes('org_admin') || roles.includes('professor');
 }
@@ -28,10 +44,7 @@ export function isOrgStudent(user: AuthUser | null): boolean {
 }
 
 /** Derive the active workspace from the route the user is actually on. */
-export function resolveWorkspaceKind(
-  pathname: string,
-  user: AuthUser | null,
-): WorkspaceKind {
+export function resolveWorkspaceKind(pathname: string, user: AuthUser | null): WorkspaceKind {
   // Platform administrators only have the platform surface.
   if (isPlatformAdmin(user)) {
     return 'platform';
@@ -79,7 +92,6 @@ export function hasMultipleWorkspaces(options: {
   canCreateOrg: boolean;
   canJoinClass: boolean;
 }): boolean {
-  const destinations =
-    1 + (options.isStaff && options.hasOrg ? 1 : 0) + (options.hasClass ? 1 : 0);
+  const destinations = 1 + (options.isStaff && options.hasOrg ? 1 : 0) + (options.hasClass ? 1 : 0);
   return destinations > 1 || options.canCreateOrg || options.canJoinClass;
 }

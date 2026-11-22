@@ -137,11 +137,7 @@ export function ProfileForm({ userId, initial }: ProfileFormProps) {
           <p id="bio-error" className="input-error">
             {errors.bio.message}
           </p>
-        ) : (
-          <p id="bio-hint" className="input-hint">
-            Short introduction (max 500 characters)
-          </p>
-        )}
+        ) : null}
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">

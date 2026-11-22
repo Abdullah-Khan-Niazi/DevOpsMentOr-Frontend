@@ -1,14 +1,15 @@
-import { Card } from '@/shared/components';
+import { Card, Icon } from '@/shared/components';
 import type { MyOrgDto } from '../types';
+import { safeHttpUrl } from '@/shared/utils';
 
 /** F3 contract §09 SCR-F3-03: org identity header shown on the org dashboard. */
 export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
   return (
     <Card className="p-6">
       <div className="flex flex-wrap items-center gap-4">
-        {org.logoUrl ? (
+        {safeHttpUrl(org.logoUrl) ? (
           <img
-            src={org.logoUrl}
+            src={safeHttpUrl(org.logoUrl) ?? undefined}
             alt={`${org.name} logo`}
             className="h-14 w-14 rounded-lg border border-border object-contain"
           />
@@ -21,17 +22,17 @@ export function OrgHeaderCard({ org }: { org: MyOrgDto }) {
           <div className="flex flex-wrap items-center gap-2">
             <h2 className="text-xl font-semibold text-card-foreground">{org.name}</h2>
             {org.isVerified ? (
-              <span className="text-micro font-mono font-bold uppercase tracking-wider text-card-foreground border border-border-strong px-2 py-0.5 bg-accent/10 rounded-xs">
+              <span className="inline-flex items-center gap-1 text-sm text-success">
+                <Icon name="verified" size={16} />
                 Verified
               </span>
             ) : null}
           </div>
-          <p className="mt-1 text-sm text-muted">{org.description || 'No description provided.'}</p>
+          {org.description ? <p className="mt-1 text-sm text-muted">{org.description}</p> : null}
           {org.website || org.emailDomain ? (
-            <p className="mt-1 text-sm text-muted">
-              {[org.website, org.emailDomain ? `@${org.emailDomain}` : null]
-                .filter(Boolean)
-                .join(' · ')}
+            <p className="mt-1 flex flex-wrap gap-x-3 text-sm text-muted">
+              {org.website ? <span>{org.website}</span> : null}
+              {org.emailDomain ? <span>@{org.emailDomain}</span> : null}
             </p>
           ) : null}
         </div>

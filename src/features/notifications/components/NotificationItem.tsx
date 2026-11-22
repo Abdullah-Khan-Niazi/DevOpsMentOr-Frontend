@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { Icon } from '@/shared/components/Icon';
+import { IconButton } from '@/shared/components/IconButton';
 import { relativeTime } from '../utils';
 import type { NotificationDto, NotificationType } from '../types';
+import { safeLinkUrl } from '@/shared/utils';
 
-// SCR-F8-01: one inbox row — type icon (color-coded by type), title,
+// SCR-F8-01: one inbox row - type icon (color-coded by type), title,
 // truncated message, relative timestamp, unread dot, dismiss ×.
 
 interface NotificationItemProps {
@@ -51,27 +53,40 @@ export function NotificationItem({ notification, onRead, onDismiss }: Notificati
         ) : null}
         <span className="notification-item__time">{relativeTime(notification.createdAt)}</span>
       </span>
-      <button
-        type="button"
-        className="notification-item__dismiss"
-        aria-label="Dismiss notification"
+      <IconButton
+        icon="x-circle"
+        label="Dismiss notification"
+        size="sm"
         onClick={(event) => {
           event.preventDefault();
           onDismiss(notification.notificationId);
         }}
-      >
-        <Icon name="x-circle" size={16} />
-      </button>
+      />
     </>
   );
 
   const className = `notification-item${notification.isRead ? '' : ' notification-item--unread'}`;
 
-  if (notification.linkUrl) {
+  // Server-provided link: app paths go through the router, absolute links must be http(s).
+  const link = safeLinkUrl(notification.linkUrl);
+  if (link && link.startsWith('/')) {
     return (
-      <Link to={notification.linkUrl} className={className} onClick={handleClick}>
+      <Link to={link} className={className} onClick={handleClick}>
         {body}
       </Link>
+    );
+  }
+  if (link && /^https?:/.test(link)) {
+    return (
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className={className}
+        onClick={handleClick}
+      >
+        {body}
+      </a>
     );
   }
   return (

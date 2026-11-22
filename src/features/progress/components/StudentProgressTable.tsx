@@ -1,6 +1,7 @@
 import type { StudentProgressDto } from '../types';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar } from '@/shared/components/ProgressBar';
 import { Button } from '@/shared/components/Button';
+import { EmptyState, Icon, Skeleton } from '@/shared/components';
 
 export interface SortKey {
   column: 'fullName' | 'progressPercentage' | 'labsCompleted' | 'lastActiveAt' | 'status';
@@ -31,78 +32,45 @@ function studentStatus(student: Pick<StudentProgressDto, 'progressPercentage'>):
 function SortIcon({ active, direction }: { active: boolean; direction: 'asc' | 'desc' }) {
   if (!active) {
     return (
-      <svg
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
+      <Icon
+        name="sort"
+        size={14}
         className="w-3.5 h-3.5 text-muted/60 group-hover:text-muted transition-colors"
-        aria-hidden="true"
-      >
-        <path d="m5 10 3 3 3-3M5 6l3-3 3 3" />
-      </svg>
+      />
     );
   }
   if (direction === 'asc') {
-    return (
-      <svg
-        viewBox="0 0 16 16"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="w-3.5 h-3.5 text-ink transition-transform"
-        aria-hidden="true"
-      >
-        <path d="M8 13V3M4 7l4-4 4 4" />
-      </svg>
-    );
+    return <Icon name="arrow-up" size={14} className="w-3.5 h-3.5 text-ink transition-transform" />;
   }
-  return (
-    <svg
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="w-3.5 h-3.5 text-ink transition-transform"
-      aria-hidden="true"
-    >
-      <path d="M8 3v10m-4-4 4 4 4-4" />
-    </svg>
-  );
+  return <Icon name="arrow-down" size={14} className="w-3.5 h-3.5 text-ink transition-transform" />;
 }
 
 function SkeletonRows() {
   return (
     <tbody>
       {Array.from({ length: 6 }, (_, index) => (
-        <tr key={index} className="border-b border-border/60 last:border-0 animate-pulse">
+        <tr key={index}>
           <td className="px-4 py-3.5">
-            <div className="h-3.5 w-36 rounded bg-paper-dim" />
-            <div className="mt-1.5 h-2.5 w-24 rounded bg-paper-dim" />
+            <Skeleton className="h-3.5 w-36 rounded-xs" />
+            <Skeleton className="mt-1.5 h-2.5 w-24 rounded-xs" />
           </td>
           <td className="px-4 py-3.5">
             <div className="flex items-center gap-2">
-              <div className="h-2 w-28 rounded-sm bg-paper-dim" />
-              <div className="h-3 w-8 rounded-sm bg-paper-dim" />
+              <Skeleton className="h-2 w-28 rounded-full" />
+              <Skeleton className="h-3 w-8 rounded-xs" />
             </div>
           </td>
           <td className="px-4 py-3.5">
-            <div className="h-3 w-16 rounded bg-paper-dim" />
+            <Skeleton className="h-3 w-16 rounded-xs" />
           </td>
           <td className="px-4 py-3.5">
-            <div className="h-3 w-20 rounded bg-paper-dim" />
+            <Skeleton className="h-3 w-20 rounded-xs" />
           </td>
           <td className="px-4 py-3.5">
-            <div className="h-3 w-16 rounded bg-paper-dim" />
+            <Skeleton className="h-3 w-16 rounded-xs" />
           </td>
           <td className="px-4 py-3.5">
-            <div className="h-7 w-20 rounded bg-paper-dim" />
+            <Skeleton className="h-7 w-20 rounded-md" />
           </td>
         </tr>
       ))}
@@ -127,19 +95,20 @@ function SortableHeader({
       aria-sort={active ? (sort.direction === 'asc' ? 'ascending' : 'descending') : 'none'}
       className="px-4 py-3 font-semibold text-xs tracking-wider uppercase text-muted"
     >
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="sm"
         onClick={() =>
           onSortChange({
             column,
             direction: active && sort.direction === 'asc' ? 'desc' : 'asc',
           })
         }
-        className="group inline-flex items-center gap-1.5 transition-colors hover:text-ink cursor-pointer focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink rounded"
+        className="group"
       >
         <span>{label}</span>
         <SortIcon active={active} direction={sort.direction} />
-      </button>
+      </Button>
     </th>
   );
 }
@@ -154,10 +123,14 @@ export function StudentProgressTable({
 }: StudentProgressTableProps) {
   if (isLoading) {
     return (
-      <div className="w-full max-w-full overflow-x-auto rounded-lg border border-border/80 bg-pearl-100 shadow-sm">
-        <table className="w-full text-left text-sm" aria-label="Student progress">
+      <div
+        className="w-full max-w-full overflow-x-auto rounded-lg border border-border/80 bg-pearl-100 shadow-sm"
+        role="status"
+        aria-label="Loading student progress"
+      >
+        <table className="w-full text-left text-sm" aria-hidden="true">
           <thead>
-            <tr className="border-b border-border text-xs text-muted">
+            <tr className="text-xs text-muted">
               <th className="px-4 py-3 font-medium">Student</th>
               <th className="px-4 py-3 font-medium">Progress</th>
               <th className="px-4 py-3 font-medium">Labs</th>
@@ -173,18 +146,14 @@ export function StudentProgressTable({
   }
 
   if (students.length === 0) {
-    return (
-      <div className="rounded-lg border border-border/80 bg-pearl-100 p-8 text-center text-sm text-muted shadow-sm">
-        No students enrolled yet.
-      </div>
-    );
+    return <EmptyState title="No students enrolled yet." icon="users" />;
   }
 
   return (
     <div className="w-full max-w-full overflow-x-auto rounded-lg border border-border/80 bg-pearl-100 shadow-sm">
       <table className="w-full text-left text-sm">
         <thead>
-          <tr className="border-b border-border/80 bg-pearl-200/50 text-xs text-muted">
+          <tr className="bg-pearl-200/50 text-xs text-muted">
             <SortableHeader
               label="Student"
               column="fullName"
@@ -222,7 +191,7 @@ export function StudentProgressTable({
             ) : null}
           </tr>
         </thead>
-        <tbody className="divide-y divide-border/60">
+        <tbody>
           {students.map((student) => (
             <tr
               key={student.userId}
@@ -238,7 +207,7 @@ export function StudentProgressTable({
                 <div className="flex items-center gap-2.5">
                   <div className="w-28">
                     <ProgressBar
-                      percentage={student.progressPercentage}
+                      value={student.progressPercentage}
                       label={`Progress for ${student.fullName ?? 'student'}`}
                       size="sm"
                     />
@@ -261,8 +230,8 @@ export function StudentProgressTable({
                 <span
                   className={
                     student.progressPercentage >= 100
-                      ? 'inline-flex items-center rounded-sm bg-success/10 px-2.5 py-0.5 text-xs font-medium text-success ring-1 ring-inset ring-success/20'
-                      : 'inline-flex items-center rounded-sm bg-pearl-200 px-2.5 py-0.5 text-xs font-medium text-text-secondary ring-1 ring-inset ring-paper-line'
+                      ? 'text-xs font-medium text-success'
+                      : 'text-xs font-medium text-muted'
                   }
                 >
                   {studentStatus(student)}

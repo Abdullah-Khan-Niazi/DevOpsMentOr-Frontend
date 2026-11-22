@@ -1,8 +1,21 @@
 /** F4 §07 response DTOs, mirrored from the backend curriculum DTOs. */
 
-export type ContentType = 'text' | 'video' | 'interactive' | 'lab';
+export type ContentType = 'text' | 'video' | 'interactive' | 'lab' | 'quiz';
 export type QuestionType =
-  'multiple_choice' | 'true_false' | 'fill_blank' | 'multiple_select' | 'bucket_sort' | 'ordering';
+  | 'multiple_choice'
+  | 'true_false'
+  | 'fill_blank'
+  | 'multiple_select'
+  | 'bucket_sort'
+  | 'ordering'
+  | 'terminal';
+
+/** Kind of a module item (C§4.2). Lessons, labs and quizzes share one ordered spine. */
+export type ModuleItemKind = 'lesson' | 'lab' | 'quiz';
+
+/** Why a learner can or cannot access a course (C§4.2 CourseAccessDto). */
+export type CourseAccessReason =
+  'platform_admin' | 'unpublished' | 'free' | 'assigned' | 'org_subscription' | 'not_entitled';
 
 export interface TagDto {
   tagId: number;
@@ -32,6 +45,12 @@ export interface CourseDto {
   updatedAt: string;
 }
 
+/** Course row as listed for learners (C§4.2 `GET /curriculum/courses`). */
+export interface LearnerCourseDto extends CourseDto {
+  moduleCount: number;
+  itemCount: number;
+}
+
 export interface ModuleDto {
   moduleId: number;
   courseId: number;
@@ -43,6 +62,10 @@ export interface ModuleDto {
   isPublished: boolean;
   createdAt: string;
   updatedAt: string;
+  /** Read-only positional slug `CxxMxx` derived from the course slug and `moduleOrder` (C1). */
+  slug: string;
+  /** Module slide deck URL (`slides/<moduleSlug>.pdf`), null when slides are disabled (C2). */
+  slidesUrl: string | null;
 }
 
 export interface LessonDto {
@@ -60,6 +83,62 @@ export interface LessonDto {
   tags: TagDto[];
   createdAt: string;
   updatedAt: string;
+  /** Item kind on the module spine; `content`/`videoUrl` are null for lab and quiz items. */
+  kind: ModuleItemKind;
+  /** Lab id for `kind === 'lab'`, otherwise null. */
+  labId: number | null;
+  /** Quiz id for `kind === 'quiz'`, otherwise null. */
+  quizId: number | null;
+  courseId: number;
+  /** Module slug `CxxMxx` the item belongs to. */
+  moduleSlug: string;
+  /** Module slide deck URL (see `ModuleDto.slidesUrl`). */
+  slidesUrl: string | null;
+}
+
+/** One item of a module outline (C§4.2 `ModuleItemDto`). Titles and counts only, never content. */
+export interface ModuleItemDto {
+  /** `lessons.lesson_id`. */
+  itemId: number;
+  moduleId: number;
+  /** 1-based position on the module spine (`lesson_order`). */
+  position: number;
+  kind: ModuleItemKind;
+  title: string;
+  /** Item slug `CxxMxxLxx`, server assigned for every kind. */
+  slug: string | null;
+  contentType: ContentType;
+  videoDurationSeconds: number | null;
+  lab: null | {
+    labId: number;
+    slug: string;
+    labName: string;
+    difficultyName: string | null;
+    estimatedHours: number;
+    stepCount: number;
+    isPremium: boolean;
+  };
+  quiz: null | {
+    quizId: number;
+    questionCount: number;
+    passingScore: number;
+    timeLimitMinutes: number | null;
+    isRequired: boolean;
+  };
+}
+
+export interface CourseAccessDto {
+  canAccess: boolean;
+  reason: CourseAccessReason;
+  /** User-safe explanation with the next action, sent with a denial. */
+  message?: string;
+}
+
+/** `GET /curriculum/courses/:courseId` (C§4.2). */
+export interface LearnerCourseDetailDto {
+  course: CourseDto;
+  modules: ModuleDto[];
+  access: CourseAccessDto;
 }
 
 export interface QuizDto {
@@ -123,6 +202,7 @@ export interface ModuleEditorDto extends ModuleDto {
   quizzes: QuizDetailDto[];
 }
 
+/** @deprecated canonical-course overview; replaced by `LearnerCourseDetailDto` (C§4.2). */
 export interface CourseOverviewDto {
   course: CourseDto;
   modules: ModuleDto[];

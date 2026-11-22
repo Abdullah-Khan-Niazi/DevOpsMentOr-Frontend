@@ -1,0 +1,23 @@
+.progress-bar {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background-color: var(--pearl-300);
+}
+
+.progress-bar--sm {
+  height: 0.25rem;
+}
+
+.progress-bar--md {
+  height: 0.5rem;
+}
+
+.progress-bar__fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background-color: var(--ink);
+  transition: width var(--duration-slow) var(--ease-apple);
+}

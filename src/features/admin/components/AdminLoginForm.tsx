@@ -46,7 +46,7 @@ export function AdminLoginForm() {
   if (twoFactorRequired && credentials) {
     return (
       <div className="flex flex-col gap-6">
-        <p className="auth-sub">Enter the 6-digit code from your authenticator app.</p>
+        <p className="auth-sub">Authenticator code</p>
 
         <div className="flex flex-col gap-4">
           <OtpInputGroup value={totpCode} onChange={setTotpCode} disabled={isPending} autoFocus />
@@ -67,9 +67,9 @@ export function AdminLoginForm() {
             Verify code
           </Button>
 
-          <button type="button" className="auth-link" onClick={reset} disabled={isPending}>
+          <Button type="button" variant="ghost" onClick={reset} disabled={isPending}>
             Back to sign in
-          </button>
+          </Button>
         </div>
       </div>
     );

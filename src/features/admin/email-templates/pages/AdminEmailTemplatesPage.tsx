@@ -3,17 +3,18 @@ import { useState } from 'react';
 import {
   Button,
   Card,
+  EmptyState,
   ErrorState,
   Input,
   Modal,
   PageHeader,
-  TablePageSkeleton,
   toast,
 } from '@/shared/components';
+import { AdminEmailTemplatesSkeleton } from './AdminEmailTemplatesSkeleton';
 import { useAdminEmailTemplates } from '../hooks/useAdminEmailTemplates';
 import type { EmailTemplateDto } from '../types';
 
-// SCR-F8-13: email template editor — subject/body editing with a rendered
+// SCR-F8-13: email template editor - subject/body editing with a rendered
 // HTML preview modal. Validation: subject min 5 chars, body_html required.
 
 interface EditState {
@@ -80,17 +81,20 @@ export function AdminEmailTemplatesPage() {
 
   return (
     <div className="email-templates-admin-page">
-      <PageHeader
-        title="Email templates"
-        description="Edit transactional email templates used by notifications."
-      />
+      <PageHeader title="Email templates" />
 
       {query.isError ? (
-        <ErrorState title="Could not load templates" message="Please try again later." />
+        <ErrorState
+          title="Could not load templates"
+          error={query.error}
+          onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
+        />
       ) : query.isLoading ? (
-        <TablePageSkeleton />
+        <AdminEmailTemplatesSkeleton />
       ) : (
         <div className="email-templates-admin-page__list">
+          {query.data?.length === 0 ? <EmptyState icon="email" title="No email templates" /> : null}
           {query.data?.map((template) => (
             <Card key={template.templateId} className="email-templates-admin-page__item">
               <div className="email-templates-admin-page__item-head">
@@ -101,12 +105,13 @@ export function AdminEmailTemplatesPage() {
                 Subject: {template.subject}
               </p>
               <p className="email-templates-admin-page__item-meta">
-                {template.placeholders?.length
-                  ? `Placeholders: ${template.placeholders.join(', ')}`
-                  : 'No placeholders'}
-                {' · '}
-                {template.isActive ? 'Active' : 'Inactive'} · Updated{' '}
-                {new Date(template.updatedAt).toLocaleDateString()}
+                <span>
+                  {template.placeholders?.length
+                    ? `Placeholders: ${template.placeholders.join(', ')}`
+                    : 'No placeholders'}
+                </span>
+                <span>{template.isActive ? 'Active' : 'Inactive'}</span>
+                <span>Updated {new Date(template.updatedAt).toLocaleDateString()}</span>
               </p>
               <div className="email-templates-admin-page__item-actions">
                 <Button variant="secondary" size="sm" onClick={() => startEdit(template)}>
@@ -154,7 +159,7 @@ export function AdminEmailTemplatesPage() {
               <span>Active (dispatchable)</span>
             </label>
             <div className="email-templates-admin-page__actions">
-              <Button variant="secondary" onClick={handlePreview}>
+              <Button variant="secondary" onClick={handlePreview} isLoading={preview.isPending}>
                 Preview
               </Button>
               <Button onClick={handleSave} isLoading={update.isPending}>
@@ -169,9 +174,11 @@ export function AdminEmailTemplatesPage() {
         {preview.data ? (
           <div className="email-templates-admin-page__preview">
             <p className="email-templates-admin-page__preview-subject">{preview.data.subject}</p>
-            <div
+            <iframe
               className="email-templates-admin-page__preview-html"
-              dangerouslySetInnerHTML={{ __html: preview.data.bodyHtml }}
+              title="Email preview"
+              sandbox=""
+              srcDoc={preview.data.bodyHtml}
             />
           </div>
         ) : null}

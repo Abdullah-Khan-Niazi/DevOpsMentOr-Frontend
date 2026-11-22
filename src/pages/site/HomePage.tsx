@@ -318,21 +318,20 @@ function LearningDashboardSection() {
   const [aiMentorCollapsed, setAiMentorCollapsed] = useState(false);
 
   // Animation playback state: 0 = typing sudo, 1 = lecture output, 2 = mentor hint stream
-  const [animStep, setAnimStep] = useState(0);
-  const [charIndex, setCharIndex] = useState(0);
+  const [animStepState, setAnimStep] = useState(0);
+  const [charIndexState, setCharIndex] = useState(0);
+  // Reduced motion shows the final frame directly (derived, no effect-driven state).
+  const showFinal = reduced && inView;
+  const animStep = showFinal ? 2 : animStepState;
+  const charIndex = showFinal ? OB1_MENTOR_HINT.length : charIndexState;
 
   useEffect(() => {
-    if (!inView) return;
-    if (reduced) {
-      setAnimStep(2);
-      setCharIndex(OB1_MENTOR_HINT.length);
-      return;
-    }
+    if (!inView || reduced) return;
 
     let timer: number;
-    if (animStep === 0) {
+    if (animStepState === 0) {
       // Type 'sudo' with slower, deliberate pace
-      if (charIndex < LINUX_SUDO_CMD.length) {
+      if (charIndexState < LINUX_SUDO_CMD.length) {
         timer = window.setTimeout(() => setCharIndex((c) => c + 1), 140);
       } else {
         timer = window.setTimeout(() => {
@@ -340,15 +339,15 @@ function LearningDashboardSection() {
           setCharIndex(0);
         }, 500);
       }
-    } else if (animStep === 1) {
+    } else if (animStepState === 1) {
       // Display classic lecture, pause, then stream OB-1 mentor guidance
       timer = window.setTimeout(() => {
         setAnimStep(2);
         setCharIndex(0);
       }, 750);
-    } else if (animStep === 2) {
+    } else if (animStepState === 2) {
       // Stream mentor hint tokens
-      if (charIndex < OB1_MENTOR_HINT.length) {
+      if (charIndexState < OB1_MENTOR_HINT.length) {
         timer = window.setTimeout(() => setCharIndex((c) => c + 2), 18);
       } else {
         // Automatically replay every 5 seconds
@@ -921,31 +920,29 @@ function FeatureGradingSection() {
 
   const [activeScenarioIdx, setActiveScenarioIdx] = useState(0);
   // step: 0=typing bad cmd, 1=bad cmd executed, 2=ob1 error streaming, 3=typing fix cmd, 4=fix cmd executed, 5=ob1 fix streaming, 6=pause before next
-  const [animStep, setAnimStep] = useState(0);
-  const [badCharIdx, setBadCharIdx] = useState(0);
-  const [ob1ErrorIdx, setOb1ErrorIdx] = useState(0);
-  const [fixCharIdx, setFixCharIdx] = useState(0);
-  const [ob1FixIdx, setOb1FixIdx] = useState(0);
+  const [animStepState, setAnimStep] = useState(0);
+  const [badCharIdxState, setBadCharIdx] = useState(0);
+  const [ob1ErrorIdxState, setOb1ErrorIdx] = useState(0);
+  const [fixCharIdxState, setFixCharIdx] = useState(0);
+  const [ob1FixIdxState, setOb1FixIdx] = useState(0);
 
   const sc = EVALUATOR_SCENARIOS[activeScenarioIdx];
+  // Reduced motion shows the final frame directly (derived, no effect-driven state).
+  const showFinal = reduced && inView;
+  const animStep = showFinal ? 5 : animStepState;
+  const badCharIdx = showFinal ? sc.badCommand.length : badCharIdxState;
+  const fixCharIdx = showFinal ? sc.fixCommand.length : fixCharIdxState;
+  const ob1ErrorIdx = showFinal ? sc.ob1ErrorText.length : ob1ErrorIdxState;
+  const ob1FixIdx = showFinal ? sc.ob1FixText.length : ob1FixIdxState;
 
   useEffect(() => {
-    if (!inView) return;
-
-    if (reduced) {
-      setAnimStep(5);
-      setBadCharIdx(sc.badCommand.length);
-      setFixCharIdx(sc.fixCommand.length);
-      setOb1ErrorIdx(sc.ob1ErrorText.length);
-      setOb1FixIdx(sc.ob1FixText.length);
-      return;
-    }
+    if (!inView || reduced) return;
 
     let timer: number;
 
-    if (animStep === 0) {
+    if (animStepState === 0) {
       // Slow deliberate typing for bad command with word smash drop
-      if (badCharIdx < sc.badCommand.length) {
+      if (badCharIdxState < sc.badCommand.length) {
         timer = window.setTimeout(() => {
           setBadCharIdx((c) => c + 1);
         }, 130);
@@ -954,15 +951,15 @@ function FeatureGradingSection() {
           setAnimStep(1);
         }, 500);
       }
-    } else if (animStep === 1) {
+    } else if (animStepState === 1) {
       // Display error output, then stream OB-1 error remark
       timer = window.setTimeout(() => {
         setAnimStep(2);
         setOb1ErrorIdx(0);
       }, 700);
-    } else if (animStep === 2) {
+    } else if (animStepState === 2) {
       // Stream OB-1 diagnosis with context-aware hint
-      if (ob1ErrorIdx < sc.ob1ErrorText.length) {
+      if (ob1ErrorIdxState < sc.ob1ErrorText.length) {
         timer = window.setTimeout(() => {
           setOb1ErrorIdx((c) => Math.min(c + 2, sc.ob1ErrorText.length));
         }, 18);
@@ -973,9 +970,9 @@ function FeatureGradingSection() {
           setFixCharIdx(0);
         }, 1800);
       }
-    } else if (animStep === 3) {
+    } else if (animStepState === 3) {
       // Slow deliberate typing for fix command with word smash drop
-      if (fixCharIdx < sc.fixCommand.length) {
+      if (fixCharIdxState < sc.fixCommand.length) {
         timer = window.setTimeout(() => {
           setFixCharIdx((c) => c + 1);
         }, 120);
@@ -984,15 +981,15 @@ function FeatureGradingSection() {
           setAnimStep(4);
         }, 500);
       }
-    } else if (animStep === 4) {
+    } else if (animStepState === 4) {
       // Fix output executed, assertions pass, stream OB-1 fix remark
       timer = window.setTimeout(() => {
         setAnimStep(5);
         setOb1FixIdx(0);
       }, 600);
-    } else if (animStep === 5) {
+    } else if (animStepState === 5) {
       // Stream OB-1 fix remark
-      if (ob1FixIdx < sc.ob1FixText.length) {
+      if (ob1FixIdxState < sc.ob1FixText.length) {
         timer = window.setTimeout(() => {
           setOb1FixIdx((c) => Math.min(c + 2, sc.ob1FixText.length));
         }, 18);
@@ -1014,11 +1011,11 @@ function FeatureGradingSection() {
     inView,
     reduced,
     activeScenarioIdx,
-    animStep,
-    badCharIdx,
-    ob1ErrorIdx,
-    fixCharIdx,
-    ob1FixIdx,
+    animStepState,
+    badCharIdxState,
+    ob1ErrorIdxState,
+    fixCharIdxState,
+    ob1FixIdxState,
     sc.badCommand.length,
     sc.ob1ErrorText.length,
     sc.fixCommand.length,

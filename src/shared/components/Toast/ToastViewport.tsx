@@ -1,112 +1,104 @@
-import { useToastStore, type ToastType } from './toastStore';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Icon, type IconName } from '@/shared/components/Icon';
+import { IconButton } from '@/shared/components/IconButton';
+import { useToastStore, type ToastItem, type ToastType } from './toastStore';
 import './Toast.css';
 
-// ToastNotification — top-right stack, semantic indicator, status icon, auto-dismiss
+// Toast stack (top-right). Portaled into `body` as its own `.overlay-root`, so it
+// stays interactive while a drawer or modal makes `#root` inert. Errors are
+// announced in an assertive live region, everything else politely.
 
-function ToastStatusIcon({ type }: { type: ToastType }) {
-  if (type === 'success') {
-    return (
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="toast__icon toast__icon--success"
-        aria-hidden="true"
-      >
-        <circle cx="10" cy="10" r="8" />
-        <path d="m6.5 10 2.5 2.5 4.5-4.5" />
-      </svg>
-    );
-  }
-  if (type === 'error') {
-    return (
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="toast__icon toast__icon--error"
-        aria-hidden="true"
-      >
-        <circle cx="10" cy="10" r="8" />
-        <line x1="12" y1="8" x2="8" y2="12" />
-        <line x1="8" y1="8" x2="12" y2="12" />
-      </svg>
-    );
-  }
-  if (type === 'warning') {
-    return (
-      <svg
-        viewBox="0 0 20 20"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="toast__icon toast__icon--warning"
-        aria-hidden="true"
-      >
-        <path d="m10 2.5 7.5 13.5H2.5L10 2.5z" />
-        <line x1="10" y1="8" x2="10" y2="11.5" />
-        <circle cx="10" cy="14" r="0.75" fill="currentColor" />
-      </svg>
-    );
-  }
+const ICON_BY_TYPE: Record<ToastType, IconName> = {
+  success: 'check-circle',
+  error: 'error',
+  warning: 'warning',
+  info: 'info',
+};
+
+function ToastCard({ item }: { item: ToastItem }) {
+  const dismiss = useToastStore((state) => state.dismiss);
+  const [paused, setPaused] = useState(false);
+  const remainingRef = useRef(item.durationMs);
+  const startedAtRef = useRef(0);
+
+  useEffect(() => {
+    if (paused || item.exiting) return;
+    startedAtRef.current = Date.now();
+    const timer = window.setTimeout(() => dismiss(item.id), remainingRef.current);
+    return () => {
+      window.clearTimeout(timer);
+      remainingRef.current = Math.max(
+        1000,
+        remainingRef.current - (Date.now() - startedAtRef.current),
+      );
+    };
+  }, [paused, item.exiting, item.id, dismiss]);
+
   return (
-    <svg
-      viewBox="0 0 20 20"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className="toast__icon toast__icon--info"
-      aria-hidden="true"
+    <div
+      className={`toast toast--${item.type}`}
+      data-state={item.exiting ? 'closed' : 'open'}
+      onMouseEnter={() => setPaused(true)}
+      onMouseLeave={() => setPaused(false)}
+      onFocus={() => setPaused(true)}
+      onBlur={(event) => {
+        if (!event.currentTarget.contains(event.relatedTarget as Node | null)) setPaused(false);
+      }}
     >
-      <circle cx="10" cy="10" r="8" />
-      <line x1="10" y1="9" x2="10" y2="14" />
-      <circle cx="10" cy="6.5" r="0.75" fill="currentColor" />
-    </svg>
+      <Icon
+        name={ICON_BY_TYPE[item.type]}
+        size={18}
+        filled={item.type === 'success'}
+        className={`toast__icon toast__icon--${item.type}`}
+      />
+      <div className="toast__message">{item.message}</div>
+      {item.action ? (
+        <button
+          type="button"
+          className="toast__action"
+          onClick={() => {
+            item.action?.onClick();
+            dismiss(item.id);
+          }}
+        >
+          {item.action.label}
+        </button>
+      ) : null}
+      <IconButton
+        icon="x"
+        label="Dismiss notification"
+        size="sm"
+        showTooltip={false}
+        className="toast__dismiss"
+        onClick={() => dismiss(item.id)}
+      />
+    </div>
   );
 }
 
 export function ToastViewport() {
   const items = useToastStore((state) => state.items);
-  const dismiss = useToastStore((state) => state.dismiss);
+  const errors = items.filter((item) => item.type === 'error');
+  const others = items.filter((item) => item.type !== 'error');
 
-  return (
-    <div className="toast-viewport" role="status" aria-live="polite" aria-atomic="false">
-      {items.map((item) => (
-        <div key={item.id} className={`toast toast--${item.type}`} role="alert">
-          <ToastStatusIcon type={item.type} />
-          <span className="toast__message">{item.message}</span>
-          <button
-            type="button"
-            className="toast__dismiss"
-            onClick={() => dismiss(item.id)}
-            aria-label="Dismiss notification"
-          >
-            <svg
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="toast__dismiss-icon"
-              aria-hidden="true"
-            >
-              <line x1="14" y1="6" x2="6" y2="14" />
-              <line x1="6" y1="6" x2="14" y2="14" />
-            </svg>
-          </button>
+  if (typeof document === 'undefined') return null;
+
+  return createPortal(
+    <div className="overlay-root toast-root">
+      <div className="toast-viewport">
+        <div className="toast-region" role="status" aria-live="polite" aria-relevant="additions">
+          {others.map((item) => (
+            <ToastCard key={item.id} item={item} />
+          ))}
         </div>
-      ))}
-    </div>
+        <div className="toast-region" aria-live="assertive" aria-relevant="additions">
+          {errors.map((item) => (
+            <ToastCard key={item.id} item={item} />
+          ))}
+        </div>
+      </div>
+    </div>,
+    document.body,
   );
 }

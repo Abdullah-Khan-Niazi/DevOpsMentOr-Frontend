@@ -1,8 +1,8 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { LoadingState } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
+import { AdminPlatformAdminsSkeleton } from '../pages/AdminPlatformAdminsSkeleton';
 
 // Zero client information leakage (§6): the admin panel chunk is only
 // imported after the permission check passes. Unauthorized users land on a
@@ -14,7 +14,7 @@ const NotFoundPage = lazy(() => import('@/pages/site/NotFoundPage'));
 const PLATFORM_ADMIN_INVITE = 'platform.admin.invite';
 
 function Suspended({ children, fallback }: { children: ReactNode; fallback?: ReactNode }) {
-  return <Suspense fallback={fallback ?? <LoadingState />}>{children}</Suspense>;
+  return <Suspense fallback={fallback ?? <AdminPlatformAdminsSkeleton />}>{children}</Suspense>;
 }
 
 export function AdminInviteRouteGuard() {
@@ -26,7 +26,7 @@ export function AdminInviteRouteGuard() {
   }
 
   if (!user?.permissions) {
-    return <LoadingState label="Checking access…" />;
+    return <AdminPlatformAdminsSkeleton />;
   }
 
   if (!user.permissions.includes(PLATFORM_ADMIN_INVITE)) {

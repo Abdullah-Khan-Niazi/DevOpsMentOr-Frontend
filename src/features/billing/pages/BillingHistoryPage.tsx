@@ -1,9 +1,11 @@
 import { useState } from 'react';
-import { Button, PageHeader, Pagination } from '@/shared/components';
+import { Button, EmptyState, ErrorState, PageHeader, Pagination, toast } from '@/shared/components';
+import { BillingHistorySkeleton } from './BillingHistorySkeleton';
 import { useInvoiceDownload, useOrders } from '../hooks/useBilling';
 import { ROUTES } from '@/shared/constants';
 import type { OrderStatus } from '../types';
 import './history.css';
+import { safeHttpUrl } from '@/shared/utils';
 
 const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: 'Pending',
@@ -19,7 +21,7 @@ function formatMoney(value: number, currency: string): string {
 
 function formatDate(iso: string | null): string {
   if (!iso) {
-    return '—';
+    return '-';
   }
   return new Date(iso).toLocaleDateString(undefined, {
     year: 'numeric',
@@ -37,7 +39,12 @@ function InvoiceDownloadButton({ invoiceId }: { invoiceId: number }) {
       isLoading={download.isPending}
       onClick={() =>
         download.mutate(invoiceId, {
-          onSuccess: (url) => window.open(url, '_blank', 'noopener,noreferrer'),
+          onSuccess: (url) => {
+            const safe = safeHttpUrl(url);
+            if (safe) window.open(safe, '_blank', 'noopener,noreferrer');
+            else toast.error('The invoice link is not valid.');
+          },
+          onError: () => toast.error('Could not download the invoice.'),
         })
       }
     >
@@ -52,17 +59,22 @@ export function BillingHistoryPage() {
   const orders = useOrders(page, 20);
   const orderItems = orders.data?.items ?? [];
 
+  if (orders.isLoading) return <BillingHistorySkeleton />;
+
   return (
     <div className="history-page">
-      <PageHeader
-        title="Billing History"
-        backTo={ROUTES.BILLING}
-      />
+      <PageHeader title="Billing History" backTo={ROUTES.BILLING} />
 
-      {orders.isLoading ? <p className="history-page__hint">Loading…</p> : null}
-      {orders.isError ? <p className="history-page__hint">Could not load history.</p> : null}
-      {!orders.isLoading && !orders.isError && orderItems.length === 0 ? (
-        <p className="history-page__hint">Nothing here yet.</p>
+      {orders.isError ? (
+        <ErrorState
+          title="Could not load history"
+          error={orders.error}
+          onRetry={() => void orders.refetch()}
+          retrying={orders.isRefetching}
+        />
+      ) : null}
+      {!orders.isError && orderItems.length === 0 ? (
+        <EmptyState title="No orders yet" icon="payments" />
       ) : null}
 
       {orderItems.length > 0 ? (
@@ -84,7 +96,7 @@ export function BillingHistoryPage() {
                 <td>{formatMoney(order.finalAmount, order.currency)}</td>
                 <td>{ORDER_STATUS_LABELS[order.status]}</td>
                 <td>
-                  {order.invoiceId ? <InvoiceDownloadButton invoiceId={order.invoiceId} /> : '—'}
+                  {order.invoiceId ? <InvoiceDownloadButton invoiceId={order.invoiceId} /> : '-'}
                 </td>
               </tr>
             ))}

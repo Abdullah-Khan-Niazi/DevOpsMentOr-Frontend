@@ -2,9 +2,35 @@ export {
   apiClient,
   AUTH_TOKEN_KEY,
   AUTH_REFRESH_TOKEN_KEY,
-  getAccessToken,
+  DEFAULT_REQUEST_TIMEOUT_MS,
+  LONG_REQUEST_TIMEOUT_MS,
   getRefreshToken,
+  refreshAccessToken,
   setAuthTokens,
   clearAuthTokens,
   rotateAuthTokens,
+  toApiError,
 } from './apiClient';
+export {
+  getAccessToken,
+  setAccessToken,
+  clearAccessToken,
+  onAccessTokenChange,
+  readCsrfToken,
+  registerTokenRefresher,
+  DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
+} from './authSession';
+export {
+  isApiError,
+  getErrorCode,
+  getErrorMessage,
+  getFieldErrors,
+  getRetryAfterSeconds,
+  getStatusCode,
+  hasCode,
+  isNetworkError,
+  isTimeoutError,
+  isCanceledError,
+} from './apiError';
+export { serverClock } from './serverClock';
+export { applyXpDelta, type XpChange } from './xp';

@@ -1,4 +1,4 @@
-import { Button, Card, ConfirmDialog } from '@/shared/components';
+import { Button, Card, ConfirmDialog, Icon } from '@/shared/components';
 import { useState } from 'react';
 import type { PaymentMethodDto } from '../types';
 import { useRemovePaymentMethod, useSetDefaultPaymentMethod } from '../hooks/useBilling';
@@ -28,7 +28,12 @@ export function PaymentMethodCard({ method }: { method: PaymentMethodDto }) {
       <div className="payment-method__row">
         <div className="payment-method__info">
           <span className="payment-method__label">{formatType(method)}</span>
-          {method.isDefault ? <span className="payment-method__tag">Default</span> : null}
+          {method.isDefault ? (
+            <span className="payment-method__default">
+              <Icon name="check" size={16} />
+              Default
+            </span>
+          ) : null}
         </div>
         <div className="payment-method__actions">
           {!method.isDefault ? (
@@ -36,6 +41,7 @@ export function PaymentMethodCard({ method }: { method: PaymentMethodDto }) {
               variant="ghost"
               size="sm"
               isLoading={setDefault.isPending}
+              disabled={remove.isPending}
               onClick={() => setDefault.mutate(method.paymentMethodId)}
             >
               Set default

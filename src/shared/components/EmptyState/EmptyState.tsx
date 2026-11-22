@@ -1,16 +1,25 @@
 import type { ReactNode } from 'react';
+import { Icon, type IconName } from '@/shared/components/Icon';
+import { cn } from '@/shared/utils';
 
 interface EmptyStateProps {
   title: string;
-  description?: string;
+  icon?: IconName;
   action?: ReactNode;
+  className?: string;
 }
 
-export function EmptyState({ title, description, action }: EmptyStateProps) {
+/** Empty collection state: icon, short title and an optional action. Transparent, no border. */
+export function EmptyState({ title, icon, action, className }: EmptyStateProps) {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-6 py-12 text-center">
+    <div
+      className={cn(
+        'motion-fade-in flex flex-col items-center justify-center gap-2 px-6 py-12 text-center',
+        className,
+      )}
+    >
+      {icon ? <Icon name={icon} size={28} className="mb-1 text-muted-foreground" /> : null}
       <h3 className="text-base font-semibold text-card-foreground">{title}</h3>
-      {description ? <p className="max-w-md text-sm text-muted">{description}</p> : null}
       {action ? <div className="mt-3">{action}</div> : null}
     </div>
   );

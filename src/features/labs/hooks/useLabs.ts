@@ -76,21 +76,6 @@ export function useExtendInstance() {
   });
 }
 
-/** LAB-08 */
-export function useRunAssertions() {
-  return useMutation({
-    mutationFn: (instanceId: number) => labsService.runAssertions(instanceId),
-  });
-}
-
-/** LAB-09 */
-export function useSubmitSherlockAnswers(labId: number) {
-  return useMutation({
-    mutationFn: (answers: Array<{ questionId: string; answer: string }>) =>
-      labsService.submitSherlockAnswers(labId, answers),
-  });
-}
-
 /** LAB-10 */
 export function useVpnConfig() {
   return useQuery({

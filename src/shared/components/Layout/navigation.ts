@@ -88,16 +88,13 @@ export function buildNavItems(
       {
         to: ROUTES.ADMIN_CURRICULUM,
         label: 'Curriculum',
-        icon: 'roles',
+        icon: 'curriculum',
         section: 'Administration',
       },
     );
 
     if (permissions.has('platform.labs.manage')) {
-      items.push(
-        { to: ROUTES.ADMIN_LABS, label: 'Labs', icon: 'lab', section: 'Administration' },
-        { to: ROUTES.ADMIN_TRACKS, label: 'Tracks', icon: 'track', section: 'Administration' },
-      );
+      items.push({ to: ROUTES.ADMIN_LABS, label: 'Labs', icon: 'lab', section: 'Administration' });
     }
     if (permissions.has('platform.labs.admin')) {
       items.push({
@@ -219,13 +216,13 @@ export function buildNavItems(
         section: 'Workspace',
       });
     }
-    if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
+    if (permissions.has('curriculum.read')) {
       items.push({
         // Context-aware: staff stay in the org workspace instead of being
         // silently teleported to the personal /learn shell.
         to: ROUTES.ORG_CURRICULUM,
         label: 'Curriculum',
-        icon: 'roles',
+        icon: 'curriculum',
         section: 'Workspace',
       });
     }
@@ -266,13 +263,13 @@ export function buildNavItems(
       icon: 'classes',
       section: 'Workspace',
     });
-    if (permissions.has('curriculum:read') || permissions.has('curriculum.read')) {
+    if (permissions.has('curriculum.read')) {
       items.push({
         // Context-aware: staff stay in the org workspace instead of being
         // silently teleported to the personal /learn shell.
         to: ROUTES.ORG_CURRICULUM,
         label: 'Curriculum',
-        icon: 'roles',
+        icon: 'curriculum',
         section: 'Workspace',
       });
     }
@@ -310,7 +307,7 @@ export function buildNavItems(
       items.push({
         to: ROUTES.LEARN,
         label: 'Learn',
-        icon: 'roles',
+        icon: 'curriculum',
         section: 'Workspace',
       });
     }
@@ -359,7 +356,7 @@ export function buildNavItems(
     items.push({
       to: ROUTES.LEARN,
       label: 'Learn',
-      icon: 'roles',
+      icon: 'curriculum',
       section: 'Workspace',
     });
   }

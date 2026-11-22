@@ -1,9 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, LoadingState, ErrorState, toast } from '@/shared/components';
+import { Button, Card, Drawer, ErrorState, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useOrgClasses, useOrgUserDetail } from '../hooks';
 import { classService } from '../services';
+import { OrgMemberDetailSkeleton } from './OrgMemberDetailSkeleton';
 
 interface OrgMemberDetailDrawerProps {
   userId: number | null;
@@ -24,6 +25,7 @@ export function OrgMemberDetailDrawer({
     isError,
     error,
     refetch,
+    isRefetching,
   } = useOrgUserDetail(userId, isOpen && Boolean(userId));
 
   const classesQuery = useOrgClasses();
@@ -32,18 +34,6 @@ export function OrgMemberDetailDrawer({
   const [selectedCohortToAdd, setSelectedCohortToAdd] = useState<string>('');
   const [isAssigning, setIsAssigning] = useState(false);
   const [withdrawingCohortId, setWithdrawingCohortId] = useState<number | null>(null);
-
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
-
-  if (!isOpen || !userId) return null;
 
   const roleText =
     member?.role === 'org_admin'
@@ -98,216 +88,181 @@ export function OrgMemberDetailDrawer({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 overflow-hidden">
-      {/* Backdrop */}
-      <div
-        className="fixed inset-0 bg-ink/50 backdrop-blur-xs transition-opacity"
-        onClick={onClose}
-      />
+  const busy = isAssigning || withdrawingCohortId !== null;
 
-      {/* Slide-over panel */}
-      <div className="fixed inset-y-0 right-0 max-w-full flex pl-10">
-        <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
-          <div className="space-y-6">
-            {/* Header */}
-            <div className="flex items-center justify-between border-b border-border pb-4">
-              <div>
-                <h2 className="text-lg font-bold text-card-foreground">Member Profile</h2>
-                <p className="text-xs text-muted mt-0.5">
-                  Academic record, cohort memberships, and telemetry.
-                </p>
+  return (
+    <Drawer
+      open={isOpen && Boolean(userId)}
+      onClose={onClose}
+      title="Member Profile"
+      size="lg"
+      busy={busy}
+      footer={(requestClose) => (
+        <Button variant="secondary" onClick={requestClose}>
+          Close
+        </Button>
+      )}
+    >
+      {isLoading ? (
+        <OrgMemberDetailSkeleton />
+      ) : isError || !member ? (
+        <ErrorState
+          message={error?.message ?? 'Failed to load member details.'}
+          onRetry={() => void refetch()}
+          retrying={isRefetching}
+        />
+      ) : (
+        <div className="space-y-6">
+          {/* Member Identity Card */}
+          <Card className="p-4 space-y-3">
+            <div className="flex items-center gap-3">
+              <div className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-surface text-base font-bold text-card-foreground shrink-0 font-mono">
+                {(member.fullName || member.username || 'U').charAt(0).toUpperCase()}
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="p-1.5 text-muted hover:text-card-foreground transition-colors rounded-sm cursor-pointer"
-                aria-label="Close drawer"
-              >
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              </button>
+              <div className="min-w-0">
+                <h3 className="font-bold text-card-foreground text-sm truncate">
+                  {member.fullName || member.username}
+                </h3>
+                <p className="text-xs text-muted truncate font-mono">{member.email}</p>
+              </div>
             </div>
 
-            {isLoading ? (
-              <LoadingState label="Loading member telemetry…" />
-            ) : isError || !member ? (
-              <ErrorState
-                message={error?.message ?? 'Failed to load member details.'}
-                onRetry={() => void refetch()}
-              />
-            ) : (
-              <div className="space-y-6">
-                {/* Member Identity Card */}
-                <Card className="p-4 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 items-center justify-center rounded-md border border-border bg-surface text-base font-bold text-card-foreground shrink-0 font-mono">
-                      {(member.fullName || member.username || 'U').charAt(0).toUpperCase()}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-card-foreground text-sm truncate">
-                        {member.fullName || member.username}
-                      </h3>
-                      <p className="text-xs text-muted truncate font-mono">{member.email}</p>
-                    </div>
-                  </div>
+            <div className="grid grid-cols-2 gap-3 pt-3 text-xs">
+              <div>
+                <span className="text-muted block">Role</span>
+                <span className="font-mono text-card-foreground font-medium">{roleText}</span>
+              </div>
+              <div>
+                <span className="text-muted block">Account Status</span>
+                <span className="font-mono text-card-foreground capitalize">{member.status}</span>
+              </div>
+              <div>
+                <span className="text-muted block">Country of Origin</span>
+                <span className="font-mono text-card-foreground">
+                  {member.countryCode ? member.countryCode.toUpperCase() : 'Not recorded'}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted block">Joined Date</span>
+                <span className="font-mono text-card-foreground">
+                  {new Date(member.enrolledAt).toLocaleDateString()}
+                </span>
+              </div>
+            </div>
+          </Card>
 
-                  <div className="grid grid-cols-2 gap-3 pt-3 border-t border-border/80 text-xs">
-                    <div>
-                      <span className="text-muted block">Role</span>
-                      <span className="font-mono text-card-foreground font-medium">{roleText}</span>
-                    </div>
-                    <div>
-                      <span className="text-muted block">Account Status</span>
-                      <span className="font-mono text-card-foreground capitalize">
-                        {member.status}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted block">Country of Origin</span>
-                      <span className="font-mono text-card-foreground">
-                        {member.countryCode ? member.countryCode.toUpperCase() : 'Not recorded'}
-                      </span>
-                    </div>
-                    <div>
-                      <span className="text-muted block">Joined Date</span>
-                      <span className="font-mono text-card-foreground">
-                        {new Date(member.enrolledAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-
-                {/* Telemetry Metrics Strip */}
-                <div>
-                  <h4 className="text-xs uppercase tracking-wider font-mono text-muted mb-2">
-                    Learning Telemetry
-                  </h4>
-                  <div className="grid grid-cols-3 gap-2">
-                    <Card className="p-3 text-center">
-                      <div className="text-2xl font-bold font-mono text-card-foreground">
-                        {member.completedModules}
-                      </div>
-                      <div className="text-[0.6875rem] text-muted mt-0.5">Modules Completed</div>
-                    </Card>
-                    <Card className="p-3 text-center">
-                      <div className="text-2xl font-bold font-mono text-card-foreground">
-                        {member.quizzesPassed}
-                      </div>
-                      <div className="text-[0.6875rem] text-muted mt-0.5">Quizzes Passed</div>
-                    </Card>
-                    <Card className="p-3 text-center">
-                      <div className="text-2xl font-bold font-mono text-card-foreground">
-                        {member.labHours}h
-                      </div>
-                      <div className="text-[0.6875rem] text-muted mt-0.5">Lab Hours</div>
-                    </Card>
-                  </div>
+          {/* Telemetry Metrics Strip */}
+          <div>
+            <h4 className="text-xs uppercase tracking-wider font-mono text-muted mb-2">
+              Learning Telemetry
+            </h4>
+            <div className="grid grid-cols-3 gap-2">
+              <Card className="p-3 text-center">
+                <div className="text-2xl font-bold font-mono text-card-foreground">
+                  {member.completedModules}
                 </div>
+                <div className="text-[0.6875rem] text-muted mt-0.5">Modules Completed</div>
+              </Card>
+              <Card className="p-3 text-center">
+                <div className="text-2xl font-bold font-mono text-card-foreground">
+                  {member.quizzesPassed}
+                </div>
+                <div className="text-[0.6875rem] text-muted mt-0.5">Quizzes Passed</div>
+              </Card>
+              <Card className="p-3 text-center">
+                <div className="text-2xl font-bold font-mono text-card-foreground">
+                  {member.labHours}h
+                </div>
+                <div className="text-[0.6875rem] text-muted mt-0.5">Lab Hours</div>
+              </Card>
+            </div>
+          </div>
 
-                {/* Associated Cohorts */}
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs uppercase tracking-wider font-mono text-muted">
-                      Associated Cohorts ({member.classes.length})
-                    </h4>
-                  </div>
+          {/* Associated Cohorts */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h4 className="text-xs uppercase tracking-wider font-mono text-muted">
+                Associated Cohorts ({member.classes.length})
+              </h4>
+            </div>
 
-                  {member.classes.length === 0 ? (
-                    <div className="border border-border/80 bg-surface/40 p-4 text-center text-xs text-muted font-mono rounded-md">
-                      No cohort assignments recorded for this member.
+            {member.classes.length === 0 ? (
+              <div className="border border-border/80 bg-surface/40 p-4 text-center text-xs text-muted font-mono rounded-md">
+                No cohort assignments recorded for this member.
+              </div>
+            ) : (
+              <div className="flex flex-col gap-1 rounded-md">
+                {member.classes.map((cls) => (
+                  <div
+                    key={cls.classId}
+                    className="p-3 flex items-center justify-between hover:bg-surface/50 transition-colors"
+                  >
+                    <div>
+                      <p className="text-xs font-semibold text-card-foreground">{cls.className}</p>
+                      <p className="text-[0.625rem] font-mono text-muted">Cohort #{cls.classId}</p>
                     </div>
-                  ) : (
-                    <div className="border border-border divide-y divide-border/60 rounded-md overflow-hidden">
-                      {member.classes.map((cls) => (
-                        <div
-                          key={cls.classId}
-                          className="p-3 flex items-center justify-between hover:bg-surface/50 transition-colors"
-                        >
-                          <div>
-                            <p className="text-xs font-semibold text-card-foreground">
-                              {cls.className}
-                            </p>
-                            <p className="text-[0.625rem] font-mono text-muted">
-                              Cohort #{cls.classId}
-                            </p>
-                          </div>
-                          <div className="flex items-center gap-2.5">
-                            <Link
-                              to={ROUTES.ORG_CLASS_DETAIL.replace(':classId', String(cls.classId))}
-                              className="text-xs text-brand-600 hover:text-brand-700 font-mono hover:underline"
-                              onClick={onClose}
-                            >
-                              Open &rarr;
-                            </Link>
-                            {member.role === 'org_student' && (
-                              <button
-                                type="button"
-                                disabled={withdrawingCohortId === cls.classId}
-                                onClick={() => handleWithdrawFromCohort(cls.classId)}
-                                className="text-[0.6875rem] text-destructive hover:underline font-mono cursor-pointer"
-                              >
-                                {withdrawingCohortId === cls.classId ? 'Removing…' : 'Withdraw'}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* Add / Assign Cohort Selector */}
-                  {member.role !== 'org_admin' && unassignedCohorts.length > 0 && (
-                    <div className="border border-dashed border-border p-3 space-y-2 bg-surface/20 rounded-md">
-                      <p className="text-xs font-semibold text-card-foreground">
-                        {member.role === 'professor'
-                          ? 'Assign to Another Cohort'
-                          : 'Enroll in Additional Cohort'}
-                      </p>
-                      <div className="flex items-center gap-2">
-                        <select
-                          className="input-field grow text-xs font-mono"
-                          value={selectedCohortToAdd}
-                          onChange={(e) => setSelectedCohortToAdd(e.target.value)}
-                        >
-                          <option value="">Select a cohort to assign…</option>
-                          {unassignedCohorts.map((c) => (
-                            <option key={c.classId} value={String(c.classId)}>
-                              {c.className} ({c.studentCount}/{c.maxStudents})
-                            </option>
-                          ))}
-                        </select>
+                    <div className="flex items-center gap-2.5">
+                      <Link
+                        to={ROUTES.ORG_CLASS_DETAIL.replace(':classId', String(cls.classId))}
+                        className="text-xs text-brand-600 hover:text-brand-700 font-mono hover:underline"
+                        onClick={onClose}
+                      >
+                        Open &rarr;
+                      </Link>
+                      {member.role === 'org_student' && (
                         <Button
+                          variant="ghost"
                           size="sm"
-                          variant="secondary"
-                          onClick={handleAssignCohort}
-                          isLoading={isAssigning}
-                          disabled={!selectedCohortToAdd}
+                          isLoading={withdrawingCohortId === cls.classId}
+                          disabled={withdrawingCohortId !== null}
+                          onClick={() => handleWithdrawFromCohort(cls.classId)}
                         >
-                          Assign
+                          Withdraw
                         </Button>
-                      </div>
+                      )}
                     </div>
-                  )}
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Add / Assign Cohort Selector */}
+            {member.role !== 'org_admin' && unassignedCohorts.length > 0 && (
+              <div className="border border-dashed border-border p-3 space-y-2 bg-surface/20 rounded-md">
+                <p className="text-xs font-semibold text-card-foreground">
+                  {member.role === 'professor'
+                    ? 'Assign to Another Cohort'
+                    : 'Enroll in Additional Cohort'}
+                </p>
+                <div className="flex items-center gap-2">
+                  <select
+                    className="input-field grow text-xs font-mono"
+                    value={selectedCohortToAdd}
+                    onChange={(e) => setSelectedCohortToAdd(e.target.value)}
+                  >
+                    <option value="">Select a cohort to assign…</option>
+                    {unassignedCohorts.map((c) => (
+                      <option key={c.classId} value={String(c.classId)}>
+                        {c.className} ({c.studentCount}/{c.maxStudents})
+                      </option>
+                    ))}
+                  </select>
+                  <Button
+                    size="sm"
+                    variant="secondary"
+                    onClick={handleAssignCohort}
+                    isLoading={isAssigning}
+                    disabled={!selectedCohortToAdd}
+                  >
+                    Assign
+                  </Button>
                 </div>
               </div>
             )}
           </div>
-
-          <div className="flex items-center justify-end pt-6 border-t border-border mt-6">
-            <Button variant="secondary" onClick={onClose}>
-              Close
-            </Button>
-          </div>
         </div>
-      </div>
-    </div>
+      )}
+    </Drawer>
   );
 }
 

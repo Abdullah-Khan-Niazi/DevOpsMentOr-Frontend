@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Button, Card, ErrorState, PageHeader, Pagination, Skeleton } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, Pagination } from '@/shared/components';
 import { useAdminAuditLogs, useAdminAuditMetadata } from '../hooks';
+import { AdminAuditLogRowsSkeleton, AdminAuditLogsSkeleton } from './AdminAuditLogsSkeleton';
 
 const PAGE_SIZE = 25;
 
@@ -47,7 +48,7 @@ export function AdminAuditLogsPage() {
     return () => clearTimeout(timer);
   }, [draftSearch, filters.search]);
 
-  const { data, isLoading, isError, error, refetch } = useAdminAuditLogs({
+  const { data, isLoading, isError, error, refetch, isRefetching } = useAdminAuditLogs({
     page: filters.page,
     pageSize: PAGE_SIZE,
     search: filters.search || undefined,
@@ -77,12 +78,14 @@ export function AdminAuditLogsPage() {
     filters.search || filters.action || filters.targetType || filters.from || filters.to,
   );
 
+  if (isLoading && !hasActiveFilters && filters.page === 1) return <AdminAuditLogsSkeleton />;
+
   return (
     <div className="space-y-6 w-full min-w-0 max-w-full">
       <PageHeader title="Audit Logs" />
 
       <Card>
-        {/* Single Responsive Filter Toolbar — No Apply Button */}
+        {/* Single Responsive Filter Toolbar - No Apply Button */}
         <div className="mb-4 flex items-center gap-1.5 w-full">
           <input
             id="audit-search"
@@ -155,37 +158,16 @@ export function AdminAuditLogsPage() {
         </div>
 
         {isError ? (
-          <ErrorState
-            message={error?.message ?? 'Unable to load audit logs.'}
-            onRetry={() => void refetch()}
-          />
+          <ErrorState error={error} onRetry={() => void refetch()} retrying={isRefetching} />
         ) : isLoading ? (
-          <div className="w-full max-w-full overflow-x-auto">
-            <div className="divide-y divide-border/60">
-              {Array.from({ length: 8 }, (_, i) => (
-                <div key={i} className="flex items-center justify-between px-3 py-3">
-                  <Skeleton className="h-4 w-28 rounded-xs" />
-                  <div className="space-y-1.5 w-1/4">
-                    <Skeleton className="h-4 w-32 rounded-xs" />
-                    <Skeleton className="h-3 w-40 rounded-xs" />
-                  </div>
-                  <Skeleton className="h-4 w-24 rounded-xs" />
-                  <Skeleton className="h-4 w-20 rounded-xs" />
-                  <Skeleton className="h-4 w-28 rounded-xs" />
-                  <Skeleton className="h-4 w-36 rounded-xs" />
-                </div>
-              ))}
-            </div>
-          </div>
+          <AdminAuditLogRowsSkeleton />
         ) : data && data.data.length === 0 ? (
-          <p className="py-6 text-sm text-muted font-mono">
-            No audit logs found matching criteria.
-          </p>
+          <EmptyState icon="history" title="No audit logs match these filters" />
         ) : data ? (
           <div className="w-full max-w-full overflow-x-auto">
             <table className="w-full text-left text-xs font-mono">
               <thead>
-                <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
+                <tr className="text-[0.6875rem] uppercase tracking-wide text-muted">
                   <th className="px-3 py-2 font-medium">Timestamp</th>
                   <th className="px-3 py-2 font-medium">Actor</th>
                   <th className="px-3 py-2 font-medium">Action</th>
@@ -198,7 +180,7 @@ export function AdminAuditLogsPage() {
                 {data.data.map((log) => (
                   <tr
                     key={log.logId}
-                    className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
+                    className="hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
                   >
                     <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
                       {formatDate(log.createdAt)}
@@ -223,11 +205,11 @@ export function AdminAuditLogsPage() {
                           {log.targetId ? ` #${log.targetId}` : ''}
                         </span>
                       ) : (
-                        '—'
+                        '-'
                       )}
                     </td>
                     <td className="px-3 py-2.5 whitespace-nowrap text-muted">
-                      {log.ipAddress ?? '—'}
+                      {log.ipAddress ?? '-'}
                     </td>
                     <td className="px-3 py-2.5 max-w-xs truncate">
                       {log.changes ? (
@@ -237,7 +219,7 @@ export function AdminAuditLogsPage() {
                             : JSON.stringify(log.changes)}
                         </span>
                       ) : (
-                        <span className="text-muted">—</span>
+                        <span className="text-muted">-</span>
                       )}
                     </td>
                   </tr>
@@ -248,7 +230,7 @@ export function AdminAuditLogsPage() {
         ) : null}
 
         {data && data.totalPages > 1 && (
-          <div className="mt-4 pt-3 border-t border-border/60">
+          <div className="mt-4">
             <Pagination
               page={data.page}
               pageSize={data.pageSize}

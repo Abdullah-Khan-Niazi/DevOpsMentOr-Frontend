@@ -11,6 +11,8 @@ export const TELEMETRY_TOKENS = {
   activePods: '#0D9488',
   queuedPods: '#D97706',
   allocatedCores: '#38BDF8',
+  consumedRam: '#10B981',
+  consumedCores: '#F59E0B',
   redisMemory: '#E11D48',
   cacheHitRatio: '#0D9488',
   mysqlQueries: '#2563EB',

@@ -36,9 +36,9 @@ const METRIC_TABS: MetricTabConfig[] = [
   {
     key: 'labs',
     label: 'Labs Completed',
-    nounSingle: 'sandbox lab session',
-    nounPlural: 'sandbox lab sessions',
-    description: 'Active Docker/K8s sandbox browser instances started',
+    nounSingle: 'lab session',
+    nounPlural: 'lab sessions',
+    description: 'Active Docker/K8s lab environment instances started',
   },
   {
     key: 'signups',
@@ -157,19 +157,16 @@ export function ContributionHeatmap({
 
   return (
     <div className={`flex flex-col gap-4 w-full min-w-0 max-w-full overflow-hidden ${className}`}>
-      {/* Metric Selector Tabs with Explanations & Source Table badges */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/60 pb-3">
-        <div className="flex flex-wrap items-center gap-1 border border-border p-0.5 bg-surface font-mono text-xs">
+      {/* Metric Selector Tabs */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="tab-switcher">
           {METRIC_TABS.map((tab) => (
             <button
               key={tab.key}
               type="button"
               onClick={() => setActiveMetric(tab.key)}
-              title={tab.description}
-              className={`px-2.5 py-1 transition-colors cursor-pointer ${
-                activeMetric === tab.key
-                  ? 'bg-accent text-accent-foreground font-bold'
-                  : 'text-muted hover:text-card-foreground'
+              className={`tab-switcher__tab ${
+                activeMetric === tab.key ? 'tab-switcher__tab--active' : ''
               }`}
             >
               {tab.label}
@@ -255,10 +252,7 @@ export function ContributionHeatmap({
       </div>
 
       {/* Bottom Footer & Legend */}
-      <div className="flex flex-wrap items-center justify-between text-[0.6875rem] font-mono text-muted pt-2 border-t border-border/60">
-        <div className="flex items-center gap-2">
-          <span>{currentTab.description}</span>
-        </div>
+      <div className="flex flex-wrap items-center justify-end text-[0.6875rem] font-mono text-muted pt-2">
         <div className="flex items-center gap-1.5">
           <span>Less</span>
           {[0, 1, 2, 3, 4].map((lvl) => (

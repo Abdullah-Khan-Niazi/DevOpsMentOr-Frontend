@@ -4,6 +4,7 @@ import type {
   BadgeDto,
   CertificateDownloadDto,
   GamificationProfileDto,
+  GamificationSummaryDto,
   PaginatedPointsHistory,
 } from '../types';
 
@@ -16,6 +17,14 @@ export const gamificationService = {
   /** GAM-01: own gamification profile. */
   async getMyProfile(): Promise<GamificationProfileDto> {
     const { data } = await apiClient.get<{ data: GamificationProfileDto }>('/gamification/me');
+    return unwrap(data);
+  },
+
+  /** Compact XP and streak summary for the top bar chip. */
+  async getSummary(): Promise<GamificationSummaryDto> {
+    const { data } = await apiClient.get<{ data: GamificationSummaryDto }>(
+      '/gamification/me/summary',
+    );
     return unwrap(data);
   },
 

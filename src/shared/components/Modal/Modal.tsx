@@ -1,75 +1,92 @@
-import { useEffect, useRef, type ReactNode } from 'react';
+import { useCallback, useId, useRef, type ReactNode, type RefObject } from 'react';
+import { createPortal } from 'react-dom';
+import { IconButton } from '@/shared/components/IconButton';
+import { useOverlayLayer, usePresence } from '@/shared/components/Overlay';
+import { useFocusTrap } from '@/shared/hooks/useFocusTrap';
+import { useScrollLock } from '@/shared/hooks/useScrollLock';
+import { cn } from '@/shared/utils';
 import './Modal.css';
 
-// Minimal accessible modal — overlay, Esc + backdrop dismissal, initial focus.
+const EXIT_MS = 160;
 
-interface ModalProps {
+export interface ModalProps {
   open: boolean;
   onClose: () => void;
   title: string;
   children: ReactNode;
+  size?: 'sm' | 'md' | 'lg';
+  /** Action row rendered under the content. */
+  footer?: ReactNode;
+  /** Blocks Esc, backdrop and close button (for example while a request is in flight). */
+  closeDisabled?: boolean;
+  initialFocusRef?: RefObject<HTMLElement | null>;
 }
 
-export function Modal({ open, onClose, title, children }: ModalProps) {
+/**
+ * Accessible modal dialog: portal to `body`, focus trap, shared overlay stack
+ * (only the top-most overlay handles Esc; `#root` is inert while open), scroll
+ * lock, pop-in and fade-out animation.
+ */
+export function Modal({
+  open,
+  onClose,
+  title,
+  children,
+  size = 'md',
+  footer,
+  closeDisabled = false,
+  initialFocusRef,
+}: ModalProps) {
+  const rootRef = useRef<HTMLDivElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const titleId = useId();
+  const { mounted, closing } = usePresence(open, EXIT_MS);
 
-  useEffect(() => {
-    if (!open) return;
+  const requestClose = useCallback(() => {
+    if (!closeDisabled) onClose();
+  }, [closeDisabled, onClose]);
 
-    const previouslyFocused = document.activeElement as HTMLElement | null;
-    panelRef.current?.focus();
+  useOverlayLayer(open && mounted, requestClose, rootRef);
+  // Default focus is the dialog itself (as before); callers can target a field or button.
+  useFocusTrap(panelRef, open && mounted, { initialFocusRef: initialFocusRef ?? panelRef });
+  useScrollLock(open && mounted);
 
-    function handleKeyDown(event: KeyboardEvent) {
-      if (event.key === 'Escape') {
-        onClose();
-      }
-    }
+  if (!mounted) return null;
 
-    document.addEventListener('keydown', handleKeyDown);
-    return () => {
-      document.removeEventListener('keydown', handleKeyDown);
-      previouslyFocused?.focus();
-    };
-  }, [open, onClose]);
-
-  if (!open) return null;
-
-  return (
-    <div className="modal-overlay" onMouseDown={onClose}>
+  return createPortal(
+    <div ref={rootRef} className="overlay-root modal-root" data-state={closing ? 'closed' : 'open'}>
       <div
-        ref={panelRef}
-        className="modal-panel"
-        role="dialog"
-        aria-modal="true"
-        aria-label={title}
-        tabIndex={-1}
-        onMouseDown={(event) => event.stopPropagation()}
+        className="modal-overlay"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget) requestClose();
+        }}
       >
-        <div className="modal-panel__header">
-          <h2 className="modal-panel__title">{title}</h2>
-          <button
-            type="button"
-            className="modal-panel__close"
-            onClick={onClose}
-            aria-label="Close dialog"
-          >
-            <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="modal-panel__close-icon"
-              aria-hidden="true"
-            >
-              <line x1="18" y1="6" x2="6" y2="18" />
-              <line x1="6" y1="6" x2="18" y2="18" />
-            </svg>
-          </button>
+        <div
+          ref={panelRef}
+          className={cn('modal-panel', size !== 'md' && `modal-panel--${size}`)}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+        >
+          <div className="modal-panel__header">
+            <h2 id={titleId} className="modal-panel__title">
+              {title}
+            </h2>
+            <IconButton
+              icon="x"
+              label="Close dialog"
+              size="sm"
+              showTooltip={false}
+              onClick={requestClose}
+              disabled={closeDisabled}
+            />
+          </div>
+          {children}
+          {footer ? <div className="modal-panel__actions">{footer}</div> : null}
         </div>
-        {children}
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

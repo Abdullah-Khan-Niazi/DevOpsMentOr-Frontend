@@ -1,7 +1,7 @@
-import { useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
-import { Button, Card, ErrorState, Input, LoadingState, toast } from '@/shared/components';
+import { Button, Card, ErrorState, Input, Skeleton, toast } from '@/shared/components';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
@@ -9,12 +9,38 @@ import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
 import { extractInvitationToken } from '@/features/auth/utils/invitation';
 import { useAcceptInvitation, useValidateInvitation } from '../hooks';
 
+/** Invitation preview while it is checked: mirrors the accept card. */
+function EnrollAcceptSkeleton() {
+  return (
+    <Card className="space-y-4 p-6" role="status" aria-label="Checking invitation" aria-busy="true">
+      <Skeleton className="h-4 w-3/4 rounded-xs" />
+      <Skeleton className="h-4 w-1/2 rounded-xs" />
+      <Skeleton className="h-10 w-full rounded-md" />
+    </Card>
+  );
+}
+
 /** F3 contract §09 SCR-F3-08: invitation accept (ENR-01 preview + ENR-02 accept), AuthLayout shell. */
 export function EnrollAcceptPage() {
   const [searchParams, setSearchParams] = useSearchParams();
   const rawParam =
     searchParams.get('token') || searchParams.get('code') || searchParams.get('invite') || '';
-  const token = extractInvitationToken(rawParam);
+
+  // The token is held in component state and removed from the address bar,
+  // so it never lingers in browser history or on screen after load.
+  const [token, setToken] = useState(() => extractInvitationToken(rawParam));
+  const [seenParam, setSeenParam] = useState(rawParam);
+  if (seenParam !== rawParam) {
+    setSeenParam(rawParam);
+    if (rawParam) {
+      setToken(extractInvitationToken(rawParam));
+    }
+  }
+  useEffect(() => {
+    if (rawParam) {
+      setSearchParams({}, { replace: true });
+    }
+  }, [rawParam, setSearchParams]);
 
   const [inputCode, setInputCode] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
@@ -33,13 +59,13 @@ export function EnrollAcceptPage() {
       return;
     }
     setInputError(null);
-    setSearchParams({ token: extracted });
+    setToken(extracted);
   };
 
   const handleResetToken = () => {
     setInputCode('');
     setInputError(null);
-    setSearchParams({});
+    setToken('');
   };
 
   const handleAccept = () => {
@@ -50,9 +76,14 @@ export function EnrollAcceptPage() {
 
         // Refresh identity so the new role (org_student / professor) shows up
         // immediately in nav, switcher and route guards. This also rotates the
-        // JWT because roles and permissions are embedded in it — updating the
+        // JWT because roles and permissions are embedded in it; updating the
         // store alone would leave the API denying the new workspace.
-        await refreshAuthSession();
+        const refreshed = await refreshAuthSession();
+        if (!refreshed) {
+          toast.error(
+            'Your session could not be refreshed. Sign in again to open your new workspace.',
+          );
+        }
 
         // Refetch context-scoped data so the success screen and the next
         // workspace the user opens show the freshly granted scope.
@@ -60,38 +91,33 @@ export function EnrollAcceptPage() {
         void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
         void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
       },
-      onError: (error) => toast.error(error.message),
+      onError: (error) => toast.error(error),
     });
   };
 
   if (!token) {
     return (
-      <AuthLayout title="Enrollment Gateway" subtitle="Join via invitation link or access code">
+      <AuthLayout title="Enrollment Gateway">
         <Card className="p-6">
           <form onSubmit={handleManualSubmit} className="space-y-4">
-            <div>
-              <Input
-                label="Invitation code or link"
-                placeholder="Paste invite link or enter access code"
-                value={inputCode}
-                error={inputError ?? undefined}
-                onChange={(e) => {
-                  setInputError(null);
-                  setInputCode(e.target.value);
-                }}
-                required
-              />
-              <p className="mt-2 text-xs text-muted">
-                Invitations are valid for 72 hours from issuance.
-              </p>
-            </div>
+            <Input
+              label="Invitation code or link"
+              placeholder="Paste invite link or enter access code"
+              value={inputCode}
+              error={inputError ?? undefined}
+              onChange={(e) => {
+                setInputError(null);
+                setInputCode(e.target.value);
+              }}
+              required
+            />
 
             <Button type="submit" className="w-full">
               Verify Invitation
             </Button>
           </form>
 
-          <div className="mt-6 border-t border-border pt-4 text-center">
+          <div className="mt-6 text-center">
             <p className="text-xs text-muted">
               Don't have an invitation?{' '}
               <Link to={ROUTES.SIGNUP} className="text-brand-600 hover:underline">
@@ -106,15 +132,15 @@ export function EnrollAcceptPage() {
 
   if (preview.isLoading) {
     return (
-      <AuthLayout title="Invitation" subtitle="Checking your invitation">
-        <LoadingState label="Checking invitation..." />
+      <AuthLayout title="Invitation">
+        <EnrollAcceptSkeleton />
       </AuthLayout>
     );
   }
 
   if (preview.isError || !preview.data) {
     return (
-      <AuthLayout title="Invitation" subtitle="Enrollment invitation">
+      <AuthLayout title="Invitation">
         <Card className="p-6 space-y-4 text-center">
           <ErrorState
             message={
@@ -133,7 +159,7 @@ export function EnrollAcceptPage() {
 
   if (accepted || accept.isSuccess || accept.data) {
     return (
-      <AuthLayout title="Invitation accepted" subtitle={`Welcome to ${invitee.organizationName}`}>
+      <AuthLayout title="Invitation accepted">
         <Card className="space-y-4 p-6 text-center">
           <p className="text-sm text-card-foreground">
             You're now enrolled in{' '}
@@ -161,25 +187,20 @@ export function EnrollAcceptPage() {
   }
 
   return (
-    <AuthLayout title="Accept invitation" subtitle={`Join ${invitee.organizationName}`}>
+    <AuthLayout title="Accept invitation">
       <Card className="space-y-4 p-6">
-        <div>
-          <p className="text-sm text-card-foreground">
-            You've been invited to join{' '}
-            <span className="font-semibold text-card-foreground">{invitee.organizationName}</span>
-            {invitee.kind === 'class' && invitee.className ? (
-              <>
-                {' '}
-                in cohort{' '}
-                <span className="font-semibold text-card-foreground">{invitee.className}</span>
-              </>
-            ) : null}
-            .
-          </p>
-          <p className="mt-1.5 text-xs text-muted">
-            Access window: Valid for 72 hours from issuance.
-          </p>
-        </div>
+        <p className="text-sm text-card-foreground">
+          You've been invited to join{' '}
+          <span className="font-semibold text-card-foreground">{invitee.organizationName}</span>
+          {invitee.kind === 'class' && invitee.className ? (
+            <>
+              {' '}
+              in cohort{' '}
+              <span className="font-semibold text-card-foreground">{invitee.className}</span>
+            </>
+          ) : null}
+          .
+        </p>
 
         {isAuthenticated ? (
           <Button className="w-full" onClick={handleAccept} isLoading={accept.isPending}>
@@ -192,7 +213,7 @@ export function EnrollAcceptPage() {
             </p>
             <div className="flex flex-col gap-2">
               <Link
-                to={`${ROUTES.LOGIN}?redirect=${encodeURIComponent(`${ROUTES.ENROLL_ACCEPT}?token=${token}`)}`}
+                to={`${ROUTES.LOGIN}?redirect=${encodeURIComponent(`${ROUTES.ENROLL_ACCEPT}?token=${encodeURIComponent(token)}`)}`}
                 className="w-full"
               >
                 <Button className="w-full" variant="primary">
@@ -211,7 +232,7 @@ export function EnrollAcceptPage() {
           </div>
         )}
 
-        <div className="border-t border-border pt-3 text-center">
+        <div className="text-center">
           <button
             type="button"
             onClick={handleResetToken}

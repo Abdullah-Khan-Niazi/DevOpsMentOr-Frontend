@@ -26,7 +26,6 @@ interface OAuthPending {
 
 interface OnboardingCopy {
   title: string;
-  subtitle: string;
 }
 
 function getOnboardingCopy(
@@ -36,39 +35,35 @@ function getOnboardingCopy(
   if (flow === 'oauth') {
     switch (step) {
       case 'account-type':
-        return { title: 'One last step', subtitle: 'Tell us how you will use DevOpsMentor.' };
+        return { title: 'One last step' };
       case 'organization':
         return {
           title: 'Name your organization',
-          subtitle: 'Workspaces keep your team’s projects in one place.',
         };
       case 'invitation':
         return {
           title: 'Join your organization',
-          subtitle: 'Enter the invitation code from your email.',
         };
       default:
-        return { title: 'Finishing up', subtitle: 'Securing your account.' };
+        return { title: 'Finishing up' };
     }
   }
 
   switch (step) {
     case 'credentials':
-      return { title: 'Create your account', subtitle: 'Start with your login details.' };
+      return { title: 'Create your account' };
     case 'account-type':
       return {
         title: 'What best describes you?',
-        subtitle: 'This tailors your workspace to how you work.',
       };
     case 'organization':
-      return { title: 'Set up your organization', subtitle: 'Tell us a little about your team.' };
+      return { title: 'Set up your organization' };
     case 'invitation':
       return {
         title: 'Join your organization',
-        subtitle: 'Enter the invitation code from your email.',
       };
     default:
-      return { title: 'Verify your email', subtitle: 'Enter the 6-digit code we just sent.' };
+      return { title: 'Verify your email' };
   }
 }
 
@@ -189,9 +184,7 @@ export default function OnboardingPage() {
 
   useEffect(() => {
     const rawInvite =
-      searchParams.get('token') ||
-      searchParams.get('code') ||
-      searchParams.get('invite');
+      searchParams.get('token') || searchParams.get('code') || searchParams.get('invite');
     if (rawInvite) {
       const extracted = extractInvitationToken(rawInvite);
       if (extracted) {
@@ -287,10 +280,7 @@ export default function OnboardingPage() {
   };
 
   return (
-    <AuthLayout
-      title={getOnboardingCopy(flow, step).title}
-      subtitle={getOnboardingCopy(flow, step).subtitle}
-    >
+    <AuthLayout title={getOnboardingCopy(flow, step).title}>
       <div className="auth-onboarding-body">{renderStep()}</div>
 
       {step !== 'finish' ? (

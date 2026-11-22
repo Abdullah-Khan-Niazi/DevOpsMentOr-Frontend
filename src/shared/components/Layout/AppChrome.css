@@ -1,11 +1,15 @@
-/* ─── App Chrome — unified authenticated shell (sidebar only) ────────────────
-   No top header: brand, navigation, collapse control, profile and logout all
-   live inside the Gemini-style collapsible sidebar. Every value is
-   token-driven — no hardcoded hex/px colors anywhere. */
+/* ─── App Chrome: unified authenticated shell ─────────────────────────────────
+   Learner top bar (full width, gutter only) and the collapsible staff sidebar.
+   Every value is token driven: no hardcoded hex/px colors anywhere. */
 
+/* Full-height shell (C4): the shell is exactly the viewport; only .app-chrome__main scrolls.
+   Staff layout is a row (sidebar + main); the learner top bar layout is a column. */
 .app-chrome {
   display: flex;
-  min-height: 100vh;
+  flex-direction: row;
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
   width: 100%;
   max-width: 100vw;
   overflow-x: clip;
@@ -14,35 +18,38 @@
   font-family: var(--font-body);
 }
 
-/* ─── Learner Top Navigation Bar — light Paper & Ink, matches SiteHeader ───── */
+/* ─── Learner Top Navigation Bar: light Paper & Ink, matches SiteHeader ───── */
 .app-chrome--topbar {
   flex-direction: column;
 }
 
 .app-chrome__topbar {
   display: flex;
+  flex: none;
   position: sticky;
   top: 0;
-  z-index: var(--z-sticky);
+  z-index: var(--z-topbar);
   width: 100%;
   background: color-mix(in srgb, var(--paper) 92%, transparent);
   backdrop-filter: blur(0.75rem);
   -webkit-backdrop-filter: blur(0.75rem);
   color: var(--text-primary);
-  border-bottom: 0.0625rem solid var(--paper-line);
+  transition: box-shadow var(--duration-base) var(--ease-standard);
+}
+
+/* Elevation only once the page scrolls under the bar (set by the shell). */
+.app-chrome__topbar[data-scrolled='true'] {
   box-shadow: var(--shadow-xs);
 }
 
-/* Match the public site header: same max width, gutter and height. */
+/* Full width: the gutter is the only horizontal spacing. */
 .app-chrome__topbar-inner {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-6);
   width: 100%;
-  max-width: var(--container-max);
   height: var(--space-16);
-  margin-inline: auto;
   padding-inline: var(--gutter);
 }
 
@@ -67,13 +74,237 @@
   }
 }
 
-.app-chrome--topbar .app-chrome__main {
-  width: 100%;
-  max-width: 87.5rem;
-  margin: 0 auto;
+/* ─── Fullscreen Lab Workspace: hide topbar & eliminate outer scrollbar ─────── */
+.app-chrome:has([data-testid='unified-lab-workspace']) {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
 }
 
-/* ─── Sidebar — Gemini-style collapse ─────────────────────────────────────── */
+.app-chrome:has([data-testid='unified-lab-workspace']) .app-chrome__topbar,
+.app-chrome:has([data-testid='unified-lab-workspace']) .app-chrome__mobile-header {
+  display: none !important;
+}
+
+/* ─── Topbar Nav Switcher (matches SiteHeader nav + all 6 interactive states) */
+.app-chrome__topbar-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(var(--space-2), 1.5vw, var(--space-5));
+  flex: 1;
+  min-width: 0;
+}
+
+.app-chrome__topbar-nav-item {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: 0.375rem var(--space-3);
+  border-radius: var(--radius-sm);
+  border: none;
+  background: transparent;
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    background-color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__topbar-nav-icon {
+  flex-shrink: 0;
+  transition: transform var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__topbar-nav-item::after {
+  content: '';
+  position: absolute;
+  left: var(--space-3);
+  right: var(--space-3);
+  bottom: 0.125rem;
+  height: 0.125rem;
+  background-color: var(--ink);
+  border-radius: var(--radius-full);
+  transform: scaleX(0);
+  transform-origin: center;
+  opacity: 0;
+  transition:
+    transform var(--duration-base) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
+}
+
+.app-chrome__topbar-nav-item:hover:not(:disabled):not([aria-disabled='true']) {
+  color: var(--ink);
+  background-color: color-mix(in srgb, var(--pearl-200) 70%, transparent);
+  transform: translateY(-0.0625rem);
+}
+
+.app-chrome__topbar-nav-item:hover:not(:disabled):not([aria-disabled='true'])
+  .app-chrome__topbar-nav-icon {
+  transform: scale(1.08);
+}
+
+.app-chrome__topbar-nav-item:hover:not(.app-chrome__topbar-nav-item--active):not(:disabled):not(
+    [aria-disabled='true']
+  )::after {
+  transform: scaleX(0.45);
+  opacity: 0.35;
+}
+
+.app-chrome__topbar-nav-item:focus-visible {
+  color: var(--ink);
+  background-color: color-mix(in srgb, var(--pearl-200) 70%, transparent);
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.app-chrome__topbar-nav-item:active:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(0) scale(0.97);
+  background-color: color-mix(in srgb, var(--pearl-300) 80%, transparent);
+}
+
+.app-chrome__topbar-nav-item:active:not(:disabled):not([aria-disabled='true'])
+  .app-chrome__topbar-nav-icon {
+  transform: scale(0.94);
+}
+
+.app-chrome__topbar-nav-item--active,
+.app-chrome__topbar-nav-item[aria-current='page'] {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.app-chrome__topbar-nav-item--active:hover:not(:disabled):not([aria-disabled='true']),
+.app-chrome__topbar-nav-item[aria-current='page']:hover:not(:disabled):not([aria-disabled='true']) {
+  transform: translateY(0);
+  background-color: color-mix(in srgb, var(--pearl-200) 55%, transparent);
+}
+
+.app-chrome__topbar-nav-item--active::after,
+.app-chrome__topbar-nav-item[aria-current='page']::after {
+  transform: scaleX(1);
+  opacity: 1;
+}
+
+.app-chrome__topbar-nav-item:disabled,
+.app-chrome__topbar-nav-item[aria-disabled='true'] {
+  opacity: 0.45;
+  cursor: not-allowed;
+  pointer-events: none;
+  transform: none;
+}
+
+.app-chrome--topbar .app-chrome__main {
+  width: 100%;
+}
+
+/* Page roots inside main fill at least the remaining height and grow with their content, so
+   main (not a shrunken page root) owns the scroll and keeps its bottom padding. Workspaces set
+   `height: 100%` to fill exactly and scroll inside their panes. The announcement banner keeps
+   its own height. */
+.app-chrome__main > :not(.announcement-banner) {
+  flex: 1 0 auto;
+  min-height: 0;
+}
+
+/* ─── Top bar hooks wired by the shell ──────────────────────────────────────── */
+/* XP chip: bolt icon + count, transparent and borderless. */
+.app-chrome__xp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  height: 2.25rem;
+  padding: 0 var(--space-2);
+  border: none;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-body-s);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-micro) var(--ease-standard),
+    transform var(--duration-spring-snappy) var(--spring-snappy);
+}
+
+.app-chrome__xp:hover {
+  background-color: var(--pearl-200);
+}
+
+.app-chrome__xp:active {
+  transform: scale(var(--press-scale));
+  transition-duration: var(--duration-press);
+}
+
+.app-chrome__xp:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Profile menu trigger: transparent and borderless. */
+.app-chrome__profile-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: 2.25rem;
+  padding: 0 var(--space-1);
+  border: none;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    background-color var(--duration-micro) var(--ease-standard),
+    transform var(--duration-spring-snappy) var(--spring-snappy);
+}
+
+.app-chrome__profile-trigger:hover,
+.app-chrome__profile-trigger[data-state='open'] {
+  background-color: var(--pearl-200);
+  color: var(--ink);
+}
+
+.app-chrome__profile-trigger:active {
+  transform: scale(var(--press-scale));
+  transition-duration: var(--duration-press);
+}
+
+.app-chrome__profile-trigger:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Offline bar directly under the top bar. The shell does not scroll (only main does), so the bar
+   is a fixed-height row; when mounted inside main it sticks to the top of the main scroller. */
+.app-chrome__offline {
+  position: sticky;
+  top: 0;
+  z-index: var(--z-topbar);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--gutter);
+  background-color: var(--ink);
+  color: var(--pearl-100);
+  font-size: var(--text-body-s);
+  font-weight: 500;
+}
+
+/* ─── Sidebar: Gemini-style collapse ─────────────────────────────────────── */
 .app-chrome__sidebar {
   display: flex;
   flex-direction: column;
@@ -88,7 +319,7 @@
   background-color: var(--color-bg-base);
   border-right: 0.0625rem solid var(--color-border-subtle);
   overflow: hidden;
-  z-index: 30;
+  z-index: var(--z-sidebar);
   will-change: width;
   transition: width 150ms cubic-bezier(0.2, 0, 0, 1);
 }
@@ -112,7 +343,7 @@
   padding: 0 var(--space-3);
 }
 
-/* Brand — full lockup when expanded, mark only when collapsed. Sized down so
+/* Brand: full lockup when expanded, mark only when collapsed. Sized down so
    the wordmark (wide SVG, ~9.6:1) fits inside the rail. */
 .app-chrome__logo {
   display: flex;
@@ -127,8 +358,8 @@
 }
 
 .app-chrome__logo:focus-visible {
-  outline: 0.125rem solid var(--color-accent-500);
-  outline-offset: 0.25rem;
+  outline: none;
+  box-shadow: var(--focus-ring);
   border-radius: var(--radius-xs);
 }
 
@@ -146,7 +377,7 @@
   transition: opacity var(--duration-fast) var(--ease-standard);
 }
 
-/* Collapse control — icon button at the right of the top bar */
+/* Collapse control: icon button at the right of the top bar */
 .app-chrome__collapse {
   display: inline-flex;
   align-items: center;
@@ -171,11 +402,11 @@
 }
 
 .app-chrome__collapse:focus-visible {
-  outline: 0.125rem solid var(--color-accent-500);
-  outline-offset: 0.125rem;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-/* Collapsed: no expand icon at rest. The whole top bar becomes a hover zone —
+/* Collapsed: no expand icon at rest. The whole top bar becomes a hover zone :
    hovering the mark or the empty space swaps the mark for a right-arrow
    expand button; clicking anywhere in the bar expands the sidebar. */
 .app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__top {
@@ -316,12 +547,12 @@
 }
 
 .app-chrome__nav-item:focus-visible {
-  outline: 0.125rem solid var(--color-accent-500);
-  outline-offset: 0.125rem;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
-/* Selection: vertical accent line on the left edge + subtle tint — no filled
-   pill, in both the expanded and collapsed states. */
+/* Selection: vertical accent line on the left edge plus a subtle tint, in both
+   the expanded and collapsed states. */
 .app-chrome__nav-item--active,
 .app-chrome__nav-item--active:hover,
 .app-chrome__nav-item--active:focus-visible {
@@ -353,7 +584,7 @@
 }
 
 /* Collapsed: icon-only, horizontally centered, labels hidden. Labels are
-   collapsed to zero width (not just faded) so the icon is truly centered —
+   collapsed to zero width (not just faded) so the icon is truly centered :
    an invisible label would otherwise keep pushing it off-center. The active
    vertical line stays visible so the selection reads the same as expanded. */
 .app-chrome__sidebar:not(.app-chrome__sidebar--open) .app-chrome__nav-item {
@@ -383,7 +614,6 @@
   gap: var(--space-1);
   flex-shrink: 0;
   padding: var(--space-3);
-  border-top: 0.0625rem solid var(--color-border-subtle);
   margin-top: auto;
 }
 
@@ -456,8 +686,8 @@
 
 .app-chrome__profile:focus-visible,
 .app-chrome__logout:focus-visible {
-  outline: 0.125rem solid var(--color-accent-500);
-  outline-offset: 0.125rem;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .app-chrome__logout:disabled {
@@ -536,7 +766,7 @@
   border-radius: var(--radius-sm);
   box-shadow: 0 0.25rem 0.875rem color-mix(in srgb, var(--ink) 18%, transparent);
   pointer-events: none;
-  z-index: 9999;
+  z-index: var(--z-tooltip);
   animation: appChromeTooltipIn 100ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
@@ -570,7 +800,9 @@
 @media (max-width: 1023px) {
   .app-chrome {
     flex-direction: column;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
+    min-height: 0;
     width: 100%;
     max-width: 100vw;
     overflow-x: clip;
@@ -578,15 +810,15 @@
 
   .app-chrome__mobile-header {
     display: flex;
+    flex: none;
     align-items: center;
     justify-content: space-between;
     height: 3.625rem;
     padding: 0 var(--space-4);
     background-color: var(--pearl-100);
-    border-bottom: 0.0625rem solid var(--paper-line);
     position: sticky;
     top: 0;
-    z-index: 40;
+    z-index: var(--z-topbar);
     width: 100%;
     flex-shrink: 0;
     box-shadow: var(--shadow-xs);
@@ -626,23 +858,27 @@
     width: 2.375rem;
     height: 2.375rem;
     padding: 0;
-    border: 0.0625rem solid var(--paper-line);
-    background-color: var(--pearl-100);
+    border: none;
+    background-color: transparent;
     border-radius: var(--radius-sm);
     cursor: pointer;
     transition:
-      background-color 140ms ease,
-      border-color 140ms ease;
+      background-color var(--duration-micro) var(--ease-standard),
+      transform var(--duration-spring-snappy) var(--spring-snappy);
   }
 
   .app-chrome__mobile-toggle:hover {
-    background-color: var(--paper-dim);
-    border-color: var(--paper-line-strong);
+    background-color: var(--pearl-200);
+  }
+
+  .app-chrome__mobile-toggle:active {
+    transform: scale(var(--press-scale));
+    transition-duration: var(--duration-press);
   }
 
   .app-chrome__mobile-toggle:focus-visible {
-    outline: 0.125rem solid var(--ink);
-    outline-offset: 0.0625rem;
+    outline: none;
+    box-shadow: var(--focus-ring);
   }
 
   .app-chrome__hamburger-bar {
@@ -678,7 +914,7 @@
 .app-chrome__mobile-drawer-root {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: var(--z-overlay);
   display: flex;
 }
 
@@ -688,14 +924,14 @@
   background-color: color-mix(in srgb, var(--ink) 45%, transparent);
   backdrop-filter: blur(0.25rem);
   -webkit-backdrop-filter: blur(0.25rem);
-  z-index: 101;
+  z-index: calc(var(--z-overlay) + 1);
   animation: backdropFadeIn 200ms cubic-bezier(0.16, 1, 0.3, 1);
   overscroll-behavior: contain;
 }
 
 .app-chrome__mobile-drawer {
   position: relative;
-  z-index: 102;
+  z-index: calc(var(--z-overlay) + 2);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -735,7 +971,6 @@
   justify-content: space-between;
   height: 3.625rem;
   padding: 0 var(--space-4);
-  border-bottom: 0.0625rem solid var(--paper-line);
   flex-shrink: 0;
 }
 
@@ -761,8 +996,8 @@
 }
 
 .app-chrome__mobile-close:focus-visible {
-  outline: 0.125rem solid var(--ink);
-  outline-offset: 0.0625rem;
+  outline: none;
+  box-shadow: var(--focus-ring);
 }
 
 .app-chrome__mobile-nav {
@@ -779,18 +1014,21 @@
   align-items: center;
   justify-content: space-between;
   padding: var(--space-3) var(--space-4);
-  border-top: 0.0625rem solid var(--paper-line);
   flex-shrink: 0;
   background-color: var(--paper-dim);
 }
 
 /* ─── Content ─────────────────────────────────────────────────────────────── */
 .app-chrome__main {
-  flex: 1;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
   min-width: 0;
+  min-height: 0;
   max-width: 100%;
   width: 100%;
   overflow-x: hidden;
+  overflow-y: auto;
   padding: var(--space-8) var(--gutter) var(--space-16);
 }
 
@@ -802,19 +1040,4 @@
   }
 }
 
-/* ─── Reduced motion ──────────────────────────────────────────────────────── */
-@media (prefers-reduced-motion: reduce) {
-  .app-chrome__sidebar,
-  .app-chrome__logo,
-  .app-chrome__nav-item,
-  .app-chrome__nav-label,
-  .app-chrome__nav-section,
-  .app-chrome__collapse,
-  .app-chrome__profile,
-  .app-chrome__logout,
-  .app-chrome__profile-name,
-  .app-chrome__logout-label,
-  .app-chrome__logo .logo--full .logo--wordmark {
-    transition: none;
-  }
-}
+/* Reduced motion is handled by the single global override in globals.css. */

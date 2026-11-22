@@ -8,13 +8,17 @@ import {
   DetailFormSkeleton,
   EmptyState,
   ErrorState,
+  Icon,
+  IconButton,
   Input,
   PageHeader,
   Pagination,
-  TabRow,
-  type TabItem,
+  TabPanel,
+  TabSwitcher,
+  type TabSwitcherItem,
   toast,
 } from '@/shared/components';
+import { useUrlState } from '@/shared/hooks';
 import type { OrgAdminDetailDto } from '@/features/org/types';
 import { useAdminOrganizationDetail } from '../hooks';
 import type { UpdateOrgPayload } from '../hooks';
@@ -39,11 +43,21 @@ interface OrgDetailFormProps {
   deletePending: boolean;
 }
 
-const TABS: TabItem[] = [
+const TAB_IDS = ['details', 'leadership', 'cohorts', 'analytics'] as const;
+type OrgDetailTab = (typeof TAB_IDS)[number];
+
+const TABS: ReadonlyArray<TabSwitcherItem<OrgDetailTab>> = [
   { id: 'details', label: 'Organization Details' },
   { id: 'leadership', label: 'Leadership & Admins' },
   { id: 'cohorts', label: 'Workspaces & Classes' },
   { id: 'analytics', label: 'Organization Analytics' },
+];
+
+type AdminMode = 'search' | 'email';
+
+const ADMIN_MODE_TABS: ReadonlyArray<TabSwitcherItem<AdminMode>> = [
+  { id: 'search', label: 'Select Registered User' },
+  { id: 'email', label: 'Invite via Email Directly' },
 ];
 
 /** F3 contract §09 SCR-F3-02: editable org detail + admin assignment (ORG-03/04/05). */
@@ -67,27 +81,14 @@ export function OrgDetailForm({
       }
     | undefined;
 
-  const initialTab = searchParams.get('tab') || locationState?.activeTab || 'details';
+  const fallbackTab = TAB_IDS.find((tab) => tab === locationState?.activeTab) ?? 'details';
   const initialClassId = searchParams.get('classId')
     ? Number(searchParams.get('classId'))
     : (locationState?.selectedClassId ?? null);
 
-  const [activeTab, setActiveTabState] = useState(initialTab);
+  const [activeTab, setActiveTab] = useUrlState<OrgDetailTab>('tab', TAB_IDS, fallbackTab);
   const [selectedClassId, setSelectedClassIdState] = useState<number | null>(initialClassId);
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
-
-  const setActiveTab = (tab: string) => {
-    setActiveTabState(tab);
-    setSearchParams(
-      (prev) => {
-        const next = new URLSearchParams(prev);
-        next.set('tab', tab);
-        if (tab !== 'cohorts') next.delete('classId');
-        return next;
-      },
-      { replace: true },
-    );
-  };
 
   const setSelectedClassId = (clsId: number | null) => {
     setSelectedClassIdState(clsId);
@@ -113,7 +114,7 @@ export function OrgDetailForm({
   const [billingEmail, setBillingEmail] = useState(org.billingEmail ?? '');
 
   // Admin selector state
-  const [adminMode, setAdminMode] = useState<'search' | 'email'>('search');
+  const [adminMode, setAdminMode] = useState<AdminMode>('search');
   const [userSearch, setUserSearch] = useState('');
   const [adminUserPage, setAdminUserPage] = useState(1);
   const ADMIN_USERS_PAGE_SIZE = 8;
@@ -350,10 +351,16 @@ export function OrgDetailForm({
         }
       />
 
-      <TabRow items={TABS} activeId={activeTab} onChange={setActiveTab} />
+      <TabSwitcher
+        items={TABS}
+        value={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="Organization sections"
+        idPrefix="org-detail"
+      />
 
       {/* Tab 1: Organization Details */}
-      {activeTab === 'details' ? (
+      <TabPanel idPrefix="org-detail" id="details" active={activeTab === 'details'}>
         <div className="space-y-6">
           <Card className="space-y-4 p-6">
             <div className="grid gap-4 sm:grid-cols-2">
@@ -363,7 +370,6 @@ export function OrgDetailForm({
                 <div className="input-field bg-surface text-muted cursor-not-allowed select-all">
                   {org.slug}
                 </div>
-                <p className="mt-1 text-xs text-muted">Immutable tenant workspace identifier.</p>
               </div>
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
@@ -392,7 +398,7 @@ export function OrgDetailForm({
                 onChange={(e) => setDescription(e.target.value)}
               />
             </div>
-            <div className="flex justify-end pt-4 border-t border-border">
+            <div className="flex justify-end pt-4">
               <Button onClick={saveDetails} isLoading={savePending}>
                 Save details
               </Button>
@@ -400,31 +406,19 @@ export function OrgDetailForm({
           </Card>
 
           <Card className="space-y-4 border-signal/40 bg-signal/5 p-6">
-            <div>
-              <h3 className="text-base font-semibold text-signal">Danger Zone</h3>
-              <p className="mt-0.5 text-xs text-muted">
-                Irreversible platform administration actions for this organization.
-              </p>
-            </div>
-            <div className="flex flex-col gap-3 border-t border-border pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm font-semibold text-card-foreground">Delete Organization</p>
-                <p className="text-xs text-muted">
-                  Permanently delete this organization, all of its classes, rosters, invitations and
-                  active join codes. Organization role assignments and scopes are cleaned up; this
-                  cannot be undone.
-                </p>
-              </div>
+            <h3 className="text-base font-semibold text-signal">Danger Zone</h3>
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm font-semibold text-card-foreground">Delete Organization</p>
               <Button variant="danger" size="sm" onClick={() => setIsDeleteOpen(true)}>
                 Delete Organization
               </Button>
             </div>
           </Card>
         </div>
-      ) : null}
+      </TabPanel>
 
       {/* Tab 2: Leadership & Admins */}
-      {activeTab === 'leadership' ? (
+      <TabPanel idPrefix="org-detail" id="leadership" active={activeTab === 'leadership'}>
         <div className="space-y-6">
           <Card className="p-6">
             <h3 className="text-base font-semibold text-card-foreground">
@@ -437,9 +431,7 @@ export function OrgDetailForm({
                     <p className="font-medium text-card-foreground">{org.adminEmail}</p>
                     <p className="text-xs text-muted">Platform User #{org.adminUserId}</p>
                   </div>
-                  <span className="border border-border-strong bg-accent/10 px-2.5 py-1 text-xs font-medium text-card-foreground rounded-xs">
-                    Active Org Admin
-                  </span>
+                  <span className="text-xs font-medium text-card-foreground">Active Org Admin</span>
                 </div>
               ) : (
                 <p className="text-sm text-muted">
@@ -450,7 +442,7 @@ export function OrgDetailForm({
             </div>
 
             {pendingInviteSentTo && (
-              <div className="mt-3 border border-blue-200 bg-blue-50/50 p-3 text-xs text-blue-900 rounded-md">
+              <div className="mt-3 border border-border bg-surface p-3 text-xs text-card-foreground rounded-md">
                 <p className="font-semibold">Pending Invitation Sent</p>
                 <p className="mt-0.5">
                   An email invitation link was dispatched to{' '}
@@ -468,39 +460,18 @@ export function OrgDetailForm({
               </h3>
             </div>
 
-            {/* Mode Selector */}
-            <div className="flex items-center gap-2 border-b border-border pb-3">
-              <button
-                type="button"
-                onClick={() => {
-                  setAdminMode('search');
-                  setSelectedUser(null);
-                }}
-                className={`px-3 py-1.5 text-xs font-medium border transition-colors rounded-sm ${
-                  adminMode === 'search'
-                    ? 'border-brand-600 bg-brand-50/20 text-brand-600 font-bold'
-                    : 'border-border text-muted hover:text-card-foreground'
-                }`}
-              >
-                Select Registered User
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setAdminMode('email');
-                  setSelectedUser(null);
-                }}
-                className={`px-3 py-1.5 text-xs font-medium border transition-colors rounded-sm ${
-                  adminMode === 'email'
-                    ? 'border-brand-600 bg-brand-50/20 text-brand-600 font-bold'
-                    : 'border-border text-muted hover:text-card-foreground'
-                }`}
-              >
-                Invite via Email Directly
-              </button>
-            </div>
+            <TabSwitcher
+              items={ADMIN_MODE_TABS}
+              value={adminMode}
+              onChange={(mode) => {
+                setAdminMode(mode);
+                setSelectedUser(null);
+              }}
+              ariaLabel="Organization admin assignment method"
+              idPrefix="org-admin-mode"
+            />
 
-            {adminMode === 'email' ? (
+            <TabPanel idPrefix="org-admin-mode" id="email" active={adminMode === 'email'}>
               <div className="space-y-4 max-w-xl">
                 <Input
                   label="Recipient Email Address"
@@ -508,7 +479,6 @@ export function OrgDetailForm({
                   placeholder="admin@organization.edu"
                   value={inviteEmailInput}
                   onChange={(e) => setInviteEmailInput(e.target.value)}
-                  hint="An email with a secure invitation link will be sent to this address."
                 />
                 <Button
                   variant="primary"
@@ -518,7 +488,9 @@ export function OrgDetailForm({
                   Send Admin Invitation Link
                 </Button>
               </div>
-            ) : (
+            </TabPanel>
+
+            <TabPanel idPrefix="org-admin-mode" id="search" active={adminMode === 'search'}>
               <div className="space-y-4 max-w-xl">
                 {selectedUser && (
                   <div className="border border-border bg-surface p-4 rounded-md space-y-3">
@@ -527,9 +499,10 @@ export function OrgDetailForm({
                         <p className="font-medium text-card-foreground">
                           {selectedUser.fullName ?? selectedUser.username}
                         </p>
-                        <p className="text-xs text-muted">
-                          @{selectedUser.username} · {selectedUser.email} · User #
-                          {selectedUser.userId}
+                        <p className="flex flex-wrap items-center gap-3 text-xs text-muted">
+                          <span>@{selectedUser.username}</span>
+                          <span>{selectedUser.email}</span>
+                          <span>User #{selectedUser.userId}</span>
                         </p>
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
@@ -555,11 +528,6 @@ export function OrgDetailForm({
                         </Button>
                       </div>
                     </div>
-                    <p className="text-xs text-muted">
-                      Clicking "Send Invitation Link" dispatches an email with a secure link. Once
-                      the user clicks the link, they are automatically designated as the
-                      Organization Admin.
-                    </p>
                   </div>
                 )}
 
@@ -579,7 +547,7 @@ export function OrgDetailForm({
                   />
                 </div>
 
-                <div className="max-h-56 overflow-y-auto border border-border divide-y divide-border/60 bg-card rounded-md">
+                <div className="max-h-56 overflow-y-auto border border-border bg-card rounded-md">
                   {usersQuery.isLoading ? (
                     <div className="p-3 text-center text-xs text-muted">
                       Loading registered platform users…
@@ -612,18 +580,21 @@ export function OrgDetailForm({
                             >
                               {u.fullName ?? u.username}
                             </p>
-                            <p className="text-xs font-mono text-muted truncate">
-                              @{u.username} · {u.email}
+                            <p className="flex min-w-0 items-center gap-3 text-xs font-mono text-muted">
+                              <span className="truncate">@{u.username}</span>
+                              <span className="truncate">{u.email}</span>
                             </p>
                           </div>
                           <div className="flex items-center gap-2.5 shrink-0 text-xs font-mono">
                             <span className="text-xs text-muted">#{u.userId}</span>
                             {isSelected ? (
-                              <span className="text-accent font-bold text-xs">✓</span>
+                              <Icon name="check" size={16} className="text-accent" />
                             ) : (
-                              <span className="text-muted/40 group-hover:text-muted transition-colors text-xs">
-                                →
-                              </span>
+                              <Icon
+                                name="arrow-right"
+                                size={16}
+                                className="text-muted/40 transition-colors group-hover:text-muted"
+                              />
                             )}
                           </div>
                         </button>
@@ -644,29 +615,29 @@ export function OrgDetailForm({
                   </div>
                 )}
               </div>
-            )}
+            </TabPanel>
           </Card>
         </div>
-      ) : null}
+      </TabPanel>
 
       {/* Tab 3: Workspaces & Classes */}
-      {activeTab === 'cohorts' ? (
-        selectedClassId !== null ? (
+      <TabPanel idPrefix="org-detail" id="cohorts" active={activeTab === 'cohorts'}>
+        {selectedClassId !== null ? (
           <div className="space-y-6">
             {/* Back to Classes Header */}
-            <div className="flex items-center justify-between border-b border-border pb-4">
+            <div className="flex items-center justify-between">
               <Button
                 variant="secondary"
                 size="sm"
+                iconName="arrow-left"
                 onClick={() => setSelectedClassId(null)}
-                className="flex items-center gap-1.5"
               >
-                <span>←</span> Back to Classes
+                Back to Classes
               </Button>
               {classDetailQuery.data?.detail && (
-                <span className="font-mono text-xs text-muted">
-                  Class #{classDetailQuery.data.detail.classId} ·{' '}
-                  {classDetailQuery.data.detail.studentCount} student(s) enrolled
+                <span className="flex flex-wrap items-center gap-3 font-mono text-xs text-muted">
+                  <span>Class #{classDetailQuery.data.detail.classId}</span>
+                  <span>{classDetailQuery.data.detail.studentCount} student(s) enrolled</span>
                 </span>
               )}
             </div>
@@ -690,7 +661,7 @@ export function OrgDetailForm({
                         {classDetailQuery.data.detail.className}
                       </h4>
                       <div className="flex items-center gap-2 mt-1">
-                        <span className="font-mono text-xs text-brand-600 bg-brand-50/20 px-2 py-0.5 border border-brand-200 rounded-xs">
+                        <span className="font-mono text-xs text-muted">
                           /{classDetailQuery.data.detail.slug}
                         </span>
                         <span className="text-xs text-muted">
@@ -705,9 +676,7 @@ export function OrgDetailForm({
                       )}
                     </div>
                     <div className="text-left sm:text-right shrink-0">
-                      <span className="text-xs text-muted uppercase tracking-wider block">
-                        Roster Capacity
-                      </span>
+                      <span className="text-xs text-muted block">Roster Capacity</span>
                       <span className="text-lg font-mono font-bold text-card-foreground">
                         {classDetailQuery.data.detail.studentCount} /{' '}
                         {classDetailQuery.data.detail.maxStudents}
@@ -718,9 +687,7 @@ export function OrgDetailForm({
 
                 {/* Assigned Professor Card */}
                 <Card className="p-5">
-                  <div className="text-xs uppercase text-muted font-medium mb-2">
-                    Assigned Professor
-                  </div>
+                  <div className="text-xs text-muted font-medium mb-2">Assigned Professor</div>
                   {classDetailQuery.data.professor ? (
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border border-border p-3 bg-surface rounded-md">
                       <div>
@@ -728,14 +695,16 @@ export function OrgDetailForm({
                           {classDetailQuery.data.professor.fullName ??
                             classDetailQuery.data.professor.email}
                         </p>
-                        <p className="text-xs text-muted font-mono">
-                          {classDetailQuery.data.professor.email} · User #
-                          {classDetailQuery.data.professor.userId}
+                        <p className="flex flex-wrap items-center gap-3 text-xs text-muted font-mono">
+                          <span>{classDetailQuery.data.professor.email}</span>
+                          <span>User #{classDetailQuery.data.professor.userId}</span>
                         </p>
                       </div>
                       <Button
                         variant="ghost"
                         size="sm"
+                        iconName="arrow-right"
+                        iconPosition="right"
                         onClick={() =>
                           navigate(
                             ROUTES.ADMIN_USER_DETAIL.replace(
@@ -753,7 +722,7 @@ export function OrgDetailForm({
                         }
                         className="text-xs"
                       >
-                        View Professor Profile →
+                        View Professor Profile
                       </Button>
                     </div>
                   ) : (
@@ -765,12 +734,12 @@ export function OrgDetailForm({
 
                 {/* Class Telemetry & Compute Resources */}
                 <div>
-                  <h5 className="text-xs uppercase font-medium text-muted tracking-wider mb-2">
+                  <h5 className="text-xs font-medium text-muted mb-2">
                     Cohort Telemetry & Compute Resources
                   </h5>
                   <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                     <Card className="p-4">
-                      <span className="text-xs uppercase text-muted">Module Progression</span>
+                      <span className="text-xs text-muted">Module Progression</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.avgProgress}%
                       </p>
@@ -785,41 +754,35 @@ export function OrgDetailForm({
                     </Card>
 
                     <Card className="p-4">
-                      <span className="text-xs uppercase text-muted">Active Compute Pods</span>
+                      <span className="text-xs text-muted">Active Compute Pods</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.activePods}
                       </p>
-                      <p className="text-xs text-muted mt-1">Live sandbox containers</p>
                     </Card>
 
                     <Card className="p-4">
-                      <span className="text-xs uppercase text-muted">RAM Consumption</span>
+                      <span className="text-xs text-muted">RAM Consumption</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.avgRam} GB
                       </p>
-                      <p className="text-xs text-muted mt-1">Allocated memory</p>
                     </Card>
 
                     <Card className="p-4">
-                      <span className="text-xs uppercase text-muted">CPU Compute Load</span>
+                      <span className="text-xs text-muted">CPU Compute Load</span>
                       <p className="mt-1 text-2xl font-bold text-card-foreground">
                         {classDetailQuery.data.analytics.avgCpu} Cores
                       </p>
-                      <p className="text-xs text-muted mt-1">Allocated core usage</p>
                     </Card>
                   </div>
                 </div>
 
                 {/* Top Performing Student Leaderboard */}
                 <Card className="p-5 space-y-3">
-                  <div className="flex items-center justify-between border-b border-border pb-3">
+                  <div className="flex items-center justify-between">
                     <div>
                       <h5 className="text-sm font-semibold text-card-foreground">
                         Top Performing Student Leaderboard
                       </h5>
-                      <p className="text-xs text-muted">
-                        Ranked by module completion, hands-on lab points, and total score.
-                      </p>
                     </div>
                     <span className="text-xs font-mono text-muted">
                       {classDetailQuery.data.leaderboard.length} Ranked
@@ -832,7 +795,7 @@ export function OrgDetailForm({
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-sm">
                         <thead>
-                          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+                          <tr className="text-xs text-muted">
                             <th className="px-3 py-2 font-medium">Rank</th>
                             <th className="px-3 py-2 font-medium">Learner</th>
                             <th className="px-3 py-2 font-medium text-center">Modules</th>
@@ -859,7 +822,7 @@ export function OrgDetailForm({
                                   },
                                 )
                               }
-                              className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
+                              className="hover:bg-surface/80 cursor-pointer transition-colors group"
                             >
                               <td className="px-3 py-3 font-mono text-xs font-bold text-muted-foreground">
                                 #{idx + 1}
@@ -889,15 +852,11 @@ export function OrgDetailForm({
 
                 {/* Enrolled Students Roster */}
                 <Card className="p-5 space-y-3">
-                  <div className="flex items-center justify-between border-b border-border pb-3">
+                  <div className="flex items-center justify-between">
                     <div>
                       <h5 className="text-sm font-semibold text-card-foreground">
                         Enrolled Students Roster
                       </h5>
-                      <p className="text-xs text-muted">
-                        Complete roster for this class. Click any learner to inspect user governance
-                        and progress.
-                      </p>
                     </div>
                     <span className="text-xs font-mono text-muted">
                       {classDetailQuery.data.roster.length} Enrolled
@@ -910,7 +869,7 @@ export function OrgDetailForm({
                     <div className="overflow-x-auto">
                       <table className="w-full text-left text-sm">
                         <thead>
-                          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+                          <tr className="text-xs text-muted">
                             <th className="px-3 py-2 font-medium">Student Name</th>
                             <th className="px-3 py-2 font-medium">Email</th>
                             <th className="px-3 py-2 font-medium text-right">Enrolled Date</th>
@@ -932,7 +891,7 @@ export function OrgDetailForm({
                                   },
                                 )
                               }
-                              className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
+                              className="hover:bg-surface/80 cursor-pointer transition-colors group"
                             >
                               <td className="px-3 py-3">
                                 <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
@@ -955,7 +914,7 @@ export function OrgDetailForm({
           </div>
         ) : (
           <Card className="p-6 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-border pb-4">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div>
                 <h3 className="text-base font-semibold text-card-foreground">
                   Workspaces & Class Rosters
@@ -971,15 +930,12 @@ export function OrgDetailForm({
                 onRetry={() => void classesQuery.refetch()}
               />
             ) : (classesQuery.data?.data.length ?? 0) === 0 ? (
-              <EmptyState
-                title="No classes provisioned yet"
-                description="No classes or cohort workspaces have been created for this organization."
-              />
+              <EmptyState title="No classes provisioned yet" />
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-sm">
                   <thead>
-                    <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+                    <tr className="text-xs text-muted">
                       <th className="px-3 py-2 font-medium">Class Name</th>
                       <th className="px-3 py-2 font-medium">Slug</th>
                       <th className="px-3 py-2 font-medium">Professor</th>
@@ -992,7 +948,7 @@ export function OrgDetailForm({
                       <tr
                         key={cls.classId}
                         onClick={() => setSelectedClassId(cls.classId)}
-                        className="border-b border-border/60 last:border-0 hover:bg-surface/80 cursor-pointer transition-colors group"
+                        className="hover:bg-surface/80 cursor-pointer transition-colors group"
                       >
                         <td className="px-3 py-3">
                           <div className="font-medium text-card-foreground group-hover:text-brand-600 transition-colors">
@@ -1023,11 +979,11 @@ export function OrgDetailForm({
               </div>
             )}
           </Card>
-        )
-      ) : null}
+        )}
+      </TabPanel>
 
       {/* Tab 4: Organization Analytics */}
-      {activeTab === 'analytics' ? (
+      <TabPanel idPrefix="org-detail" id="analytics" active={activeTab === 'analytics'}>
         <div className="space-y-6">
           {analyticsQuery.isLoading ? (
             <p className="py-6 text-sm text-muted">
@@ -1043,47 +999,47 @@ export function OrgDetailForm({
               {/* Top Row KPI Cards */}
               <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="p-4">
-                  <span className="text-xs uppercase text-muted">Revenue & Payments</span>
+                  <span className="text-xs text-muted">Revenue & Payments</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     ${analyticsQuery.data?.revenue.totalRevenue.toLocaleString() ?? 0}
                   </p>
-                  <p className="text-xs text-muted mt-1">
-                    {analyticsQuery.data?.revenue.paidOrdersCount ?? 0} paid order(s) ·{' '}
-                    {analyticsQuery.data?.revenue.subscriptionPlan} Plan
+                  <p className="flex flex-wrap items-center gap-3 text-xs text-muted mt-1">
+                    <span>{analyticsQuery.data?.revenue.paidOrdersCount ?? 0} paid order(s)</span>
+                    <span>{analyticsQuery.data?.revenue.subscriptionPlan} Plan</span>
                   </p>
                 </Card>
 
                 <Card className="p-4">
-                  <span className="text-xs uppercase text-muted">Total Learners & Staff</span>
+                  <span className="text-xs text-muted">Total Learners & Staff</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     {analyticsQuery.data?.members.totalMembers ?? 0}
                   </p>
-                  <p className="text-xs text-muted mt-1">
-                    {analyticsQuery.data?.members.studentsCount ?? 0} Students ·{' '}
-                    {analyticsQuery.data?.members.professorsCount ?? 0} Professors ·{' '}
-                    {analyticsQuery.data?.members.adminsCount ?? 0} Admins
+                  <p className="flex flex-wrap items-center gap-3 text-xs text-muted mt-1">
+                    <span>{analyticsQuery.data?.members.studentsCount ?? 0} Students</span>
+                    <span>{analyticsQuery.data?.members.professorsCount ?? 0} Professors</span>
+                    <span>{analyticsQuery.data?.members.adminsCount ?? 0} Admins</span>
                   </p>
                 </Card>
 
                 <Card className="p-4">
-                  <span className="text-xs uppercase text-muted">Daily Active Learners</span>
+                  <span className="text-xs text-muted">Daily Active Learners</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     {analyticsQuery.data?.dau.avgDau ?? 0}
                   </p>
-                  <p className="text-xs text-muted mt-1">
-                    Range: {analyticsQuery.data?.dau.minDau ?? 0} min ·{' '}
-                    {analyticsQuery.data?.dau.maxDau ?? 0} peak
+                  <p className="flex flex-wrap items-center gap-3 text-xs text-muted mt-1">
+                    <span>Range: {analyticsQuery.data?.dau.minDau ?? 0} min</span>
+                    <span>{analyticsQuery.data?.dau.maxDau ?? 0} peak</span>
                   </p>
                 </Card>
 
                 <Card className="p-4">
-                  <span className="text-xs uppercase text-muted">Active Lab Containers</span>
+                  <span className="text-xs text-muted">Active Lab Containers</span>
                   <p className="mt-1 text-2xl font-bold text-card-foreground">
                     {analyticsQuery.data?.compute.activePods ?? 0}
                   </p>
-                  <p className="text-xs text-muted mt-1">
-                    Avg RAM: {analyticsQuery.data?.compute.avgRam ?? 0} GB · Avg CPU:{' '}
-                    {analyticsQuery.data?.compute.avgCpu ?? 0} cores
+                  <p className="flex flex-wrap items-center gap-3 text-xs text-muted mt-1">
+                    <span>Avg RAM: {analyticsQuery.data?.compute.avgRam ?? 0} GB</span>
+                    <span>Avg CPU: {analyticsQuery.data?.compute.avgCpu ?? 0} cores</span>
                   </p>
                 </Card>
               </div>
@@ -1131,13 +1087,13 @@ export function OrgDetailForm({
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div className="border border-border p-3 bg-surface rounded-md">
-                        <span className="text-xs uppercase text-muted">Completed Modules</span>
+                        <span className="text-xs text-muted">Completed Modules</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalModuleCompletions ?? 0}
                         </p>
                       </div>
                       <div className="border border-border p-3 bg-surface rounded-md">
-                        <span className="text-xs uppercase text-muted">Completed Labs</span>
+                        <span className="text-xs text-muted">Completed Labs</span>
                         <p className="mt-1 text-lg font-bold text-card-foreground">
                           {analyticsQuery.data?.progress.totalLabCompletions ?? 0}
                         </p>
@@ -1157,9 +1113,9 @@ export function OrgDetailForm({
                         {analyticsQuery.data?.compute.avgRam ?? 0} GB{' '}
                         <span className="text-xs font-normal text-muted">avg</span>
                       </p>
-                      <p className="mt-1 text-xs text-muted">
-                        Min: {analyticsQuery.data?.compute.minRam ?? 0} GB · Max:{' '}
-                        {analyticsQuery.data?.compute.maxRam ?? 0} GB
+                      <p className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted">
+                        <span>Min: {analyticsQuery.data?.compute.minRam ?? 0} GB</span>
+                        <span>Max: {analyticsQuery.data?.compute.maxRam ?? 0} GB</span>
                       </p>
                     </div>
 
@@ -1169,9 +1125,9 @@ export function OrgDetailForm({
                         {analyticsQuery.data?.compute.avgCpu ?? 0}{' '}
                         <span className="text-xs font-normal text-muted">cores avg</span>
                       </p>
-                      <p className="mt-1 text-xs text-muted">
-                        Min: {analyticsQuery.data?.compute.minCpu ?? 0} · Max:{' '}
-                        {analyticsQuery.data?.compute.maxCpu ?? 0} cores
+                      <p className="mt-1 flex flex-wrap items-center gap-3 text-xs text-muted">
+                        <span>Min: {analyticsQuery.data?.compute.minCpu ?? 0}</span>
+                        <span>Max: {analyticsQuery.data?.compute.maxCpu ?? 0} cores</span>
                       </p>
                     </div>
                   </div>
@@ -1186,8 +1142,13 @@ export function OrgDetailForm({
                       14-Day Daily Active Learners
                     </h3>
                   </div>
-                  <Button variant="secondary" size="sm" onClick={() => setIsInviteDrawerOpen(true)}>
-                    + Invite More Learners
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    iconName="plus"
+                    onClick={() => setIsInviteDrawerOpen(true)}
+                  >
+                    Invite More Learners
                   </Button>
                 </div>
 
@@ -1214,7 +1175,7 @@ export function OrgDetailForm({
             </>
           )}
         </div>
-      ) : null}
+      </TabPanel>
 
       {/* Right Slide Drawer for Inviting Members to This Organization */}
       {isInviteDrawerOpen && (
@@ -1227,25 +1188,15 @@ export function OrgDetailForm({
           <div className="fixed inset-y-0 right-0 max-w-full flex pl-0 sm:pl-10">
             <div className="w-screen max-w-lg bg-card border-l border-border p-6 shadow-2xl flex flex-col justify-between overflow-y-auto animate-in slide-in-from-right duration-200 rounded-l-lg">
               <div className="space-y-6">
-                <div className="flex items-center justify-between border-b border-border pb-4">
+                <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-lg font-bold text-card-foreground">Invite to {org.name}</h2>
                   </div>
-                  <button
-                    type="button"
+                  <IconButton
+                    icon="x"
+                    label="Close drawer"
                     onClick={() => setIsInviteDrawerOpen(false)}
-                    className="p-1.5 text-muted hover:text-card-foreground transition-colors"
-                    aria-label="Close drawer"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
+                  />
                 </div>
 
                 <div className="space-y-4">
@@ -1270,13 +1221,14 @@ export function OrgDetailForm({
                   <div>
                     <div className="flex items-center justify-between">
                       <label className="input-label mb-0">Import from CSV File</label>
-                      <button
-                        type="button"
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        iconName="download"
                         onClick={handleDownloadSampleCsv}
-                        className="text-xs font-mono text-brand-600 hover:underline cursor-pointer"
                       >
-                        ↓ Download Sample CSV Template
-                      </button>
+                        Download Sample CSV Template
+                      </Button>
                     </div>
                     <div
                       onDragOver={(e) => {
@@ -1310,14 +1262,10 @@ export function OrgDetailForm({
                         Drag & drop a CSV file here, or{' '}
                         <span className="text-brand-600 underline">browse</span>
                       </div>
-                      <div className="text-xs text-muted mt-0.5">
-                        Accepts format:{' '}
-                        <span className="font-mono text-card-foreground">email,role,fullName</span>{' '}
-                        (roles: student, professor, admin) or plain list of emails.
-                      </div>
                       {drawerCsvParsedCount !== null && (
-                        <div className="mt-1.5 text-xs text-card-foreground font-mono font-medium">
-                          ✓ Imported {drawerCsvParsedCount} email(s) from CSV
+                        <div className="mt-1.5 flex items-center justify-center gap-1.5 text-xs text-card-foreground font-mono font-medium">
+                          <Icon name="check" size={14} />
+                          Imported {drawerCsvParsedCount} email(s) from CSV
                         </div>
                       )}
                     </div>
@@ -1339,7 +1287,7 @@ export function OrgDetailForm({
                 </div>
               </div>
 
-              <div className="flex items-center justify-end gap-3 pt-6 border-t border-border mt-6">
+              <div className="flex items-center justify-end gap-3 pt-6 mt-6">
                 <Button variant="secondary" onClick={() => setIsInviteDrawerOpen(false)}>
                   Cancel
                 </Button>

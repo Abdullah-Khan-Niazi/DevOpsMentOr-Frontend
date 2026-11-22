@@ -1,4 +1,5 @@
 import { useId, useState } from 'react';
+import { EmptyState } from '@/shared/components';
 
 export interface HatchedPieItem {
   label: string;
@@ -44,9 +45,7 @@ export function HatchedPieChart({
             {headlineSubtext && <p className="text-xs text-muted mt-0.5">{headlineSubtext}</p>}
           </div>
         )}
-        <div className="flex h-44 items-center justify-center border border-dashed border-border text-xs text-muted font-mono">
-          No segmentation data recorded.
-        </div>
+        <EmptyState title="No segmentation data recorded" />
       </div>
     );
   }

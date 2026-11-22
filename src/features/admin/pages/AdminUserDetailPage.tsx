@@ -7,10 +7,12 @@ import {
   ErrorState,
   PageHeader,
   Pagination,
-  TabRow,
-  type TabItem,
+  TabPanel,
+  TabSwitcher,
+  type TabSwitcherItem,
   toast,
 } from '@/shared/components';
+import { useUrlState } from '@/shared/hooks';
 import {
   ActivityLogTable,
   CourseProgressCard,
@@ -44,7 +46,10 @@ function statusText(
   return 'Active';
 }
 
-const TABS: TabItem[] = [
+const TAB_IDS = ['profile', 'security', 'engagement', 'governance'] as const;
+type UserDetailTab = (typeof TAB_IDS)[number];
+
+const TABS: ReadonlyArray<TabSwitcherItem<UserDetailTab>> = [
   { id: 'profile', label: 'Profile & Identity' },
   { id: 'security', label: 'Security & Logins' },
   { id: 'engagement', label: 'Activity & Progress' },
@@ -86,7 +91,7 @@ export function AdminUserDetailPage() {
   const progressQuery = useAdminUserProgress(String(id));
   const [activityPage, setActivityPage] = useState(1);
   const ACTIVITY_PAGE_SIZE = 10;
-  const [activeTab, setActiveTab] = useState('profile');
+  const [activeTab, setActiveTab] = useUrlState<UserDetailTab>('tab', TAB_IDS, 'profile');
   const [banReason, setBanReason] = useState('');
   const [deleteConfirmStep, setDeleteConfirmStep] = useState(false);
 
@@ -162,11 +167,17 @@ export function AdminUserDetailPage() {
         onBack={handleBack}
       />
 
-      <TabRow items={TABS} activeId={activeTab} onChange={setActiveTab} />
+      <TabSwitcher
+        items={TABS}
+        value={activeTab}
+        onChange={setActiveTab}
+        ariaLabel="User sections"
+        idPrefix="user-detail"
+      />
 
-      {activeTab === 'profile' ? (
+      <TabPanel idPrefix="user-detail" id="profile" active={activeTab === 'profile'}>
         <Card className="space-y-4 p-6">
-          <div className="flex items-center gap-4 border-b border-border pb-4">
+          <div className="flex items-center gap-4">
             <div className="flex h-14 w-14 items-center justify-center rounded-full bg-brand-100 text-lg font-bold text-brand-700">
               {(user.fullName ?? user.username)[0].toUpperCase()}
             </div>
@@ -174,9 +185,10 @@ export function AdminUserDetailPage() {
               <h2 className="text-lg font-semibold text-card-foreground">
                 {user.fullName ?? user.username}
               </h2>
-              <p className="text-sm text-muted">
-                @{user.username} · {user.email}
-              </p>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted">
+                <span>@{user.username}</span>
+                <span>{user.email}</span>
+              </div>
             </div>
           </div>
 
@@ -196,33 +208,31 @@ export function AdminUserDetailPage() {
           </dl>
 
           {user.bio ? (
-            <div className="border-t border-border pt-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted mb-1">Bio</h3>
+            <div>
+              <h3 className="text-xs font-semibold text-muted mb-1">Bio</h3>
               <p className="text-sm text-card-foreground">{user.bio}</p>
             </div>
           ) : null}
 
           {user.skills.length > 0 ? (
-            <div className="border-t border-border pt-4">
-              <h3 className="text-xs font-semibold uppercase tracking-wide text-muted mb-2">
-                Skills
-              </h3>
+            <div>
+              <h3 className="text-xs font-semibold text-muted mb-2">Skills</h3>
               <div className="flex flex-wrap gap-2">
                 {user.skills.map((skill) => (
                   <span
                     key={skill.skillId}
                     className="rounded-xs bg-surface px-2.5 py-1 text-xs text-card-foreground"
                   >
-                    {skill.skillName} · {skill.proficiencyLevel}
+                    {skill.skillName} <span className="text-muted">{skill.proficiencyLevel}</span>
                   </span>
                 ))}
               </div>
             </div>
           ) : null}
         </Card>
-      ) : null}
+      </TabPanel>
 
-      {activeTab === 'security' ? (
+      <TabPanel idPrefix="user-detail" id="security" active={activeTab === 'security'}>
         <div className="space-y-6">
           <Card className="p-6">
             <h2 className="mb-4 text-base font-semibold text-card-foreground">
@@ -286,7 +296,7 @@ export function AdminUserDetailPage() {
             ) : (
               <table className="w-full text-left text-sm">
                 <thead>
-                  <tr className="border-b border-border text-xs uppercase tracking-wide text-muted">
+                  <tr className="text-xs text-muted">
                     <th className="px-3 py-2 font-medium">Date</th>
                     <th className="px-3 py-2 font-medium">Method</th>
                     <th className="px-3 py-2 font-medium">IP Address</th>
@@ -295,7 +305,7 @@ export function AdminUserDetailPage() {
                 </thead>
                 <tbody>
                   {user.loginHistory.map((login) => (
-                    <tr key={login.loginId} className="border-b border-border/60 last:border-0">
+                    <tr key={login.loginId}>
                       <td className="px-3 py-2">{formatDate(login.createdAt)}</td>
                       <td className="px-3 py-2 uppercase text-xs">{login.loginType}</td>
                       <td className="px-3 py-2">{login.ipAddress ?? '-'}</td>
@@ -317,9 +327,9 @@ export function AdminUserDetailPage() {
             )}
           </Card>
         </div>
-      ) : null}
+      </TabPanel>
 
-      {activeTab === 'engagement' ? (
+      <TabPanel idPrefix="user-detail" id="engagement" active={activeTab === 'engagement'}>
         <div className="space-y-6">
           <Card className="p-6">
             <h2 className="mb-4 text-base font-semibold text-card-foreground">
@@ -327,25 +337,25 @@ export function AdminUserDetailPage() {
             </h2>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
               <div className="border border-border p-4 bg-surface rounded-md">
-                <span className="text-xs uppercase text-muted">Followers</span>
+                <span className="text-xs text-muted">Followers</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.followersCount}
                 </p>
               </div>
               <div className="border border-border p-4 bg-surface rounded-md">
-                <span className="text-xs uppercase text-muted">Following</span>
+                <span className="text-xs text-muted">Following</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.followingCount}
                 </p>
               </div>
               <div className="border border-border p-4 bg-surface rounded-md">
-                <span className="text-xs uppercase text-muted">Profile Views</span>
+                <span className="text-xs text-muted">Profile Views</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.profile?.profileViews ?? 0}
                 </p>
               </div>
               <div className="border border-border p-4 bg-surface rounded-md">
-                <span className="text-xs uppercase text-muted">Reputation Score</span>
+                <span className="text-xs text-muted">Reputation Score</span>
                 <p className="mt-1 text-2xl font-bold text-card-foreground">
                   {user.profile?.reputationScore ?? 0}
                 </p>
@@ -377,7 +387,7 @@ export function AdminUserDetailPage() {
                   ) : (progressQuery.data?.quizAttempts.length ?? 0) === 0 ? (
                     <p className="mt-4 text-sm text-muted">No quiz attempts recorded yet.</p>
                   ) : (
-                    <ul className="mt-4 space-y-2 divide-y divide-border/60">
+                    <ul className="mt-4 space-y-2">
                       {(progressQuery.data?.quizAttempts ?? []).map((attempt) => (
                         <li
                           key={attempt.attemptId}
@@ -386,8 +396,8 @@ export function AdminUserDetailPage() {
                           <span className="text-card-foreground font-medium">
                             Attempt #{attempt.attemptNumber}
                           </span>
-                          <span className="tabular-nums text-xs">
-                            <span className="font-bold">{attempt.score}%</span> ·{' '}
+                          <span className="flex items-center gap-3 tabular-nums text-xs">
+                            <span className="font-bold">{attempt.score}%</span>
                             <span
                               className={
                                 attempt.isPassed
@@ -442,9 +452,9 @@ export function AdminUserDetailPage() {
             </>
           )}
         </div>
-      ) : null}
+      </TabPanel>
 
-      {activeTab === 'governance' ? (
+      <TabPanel idPrefix="user-detail" id="governance" active={activeTab === 'governance'}>
         <Card className="border-red-200 p-6">
           <h2 className="mb-4 text-base font-semibold text-card-foreground">Danger Zone</h2>
 
@@ -453,10 +463,6 @@ export function AdminUserDetailPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="font-semibold">User is Soft-Deleted</h3>
-                  <p className="text-xs text-warning mt-0.5">
-                    Deleted on {formatDate(user.deletedAt)}. You can revert this soft delete at any
-                    time.
-                  </p>
                 </div>
                 <Button
                   type="button"
@@ -474,9 +480,6 @@ export function AdminUserDetailPage() {
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
                   <h3 className="font-medium text-red-900">Soft-delete user</h3>
-                  <p className="text-xs text-red-700 mt-0.5">
-                    Deactivates the account and marks it as deleted. This can be reverted.
-                  </p>
                 </div>
                 {deleteConfirmStep ? (
                   <div className="flex items-center gap-2">
@@ -513,14 +516,14 @@ export function AdminUserDetailPage() {
             </div>
           )}
         </Card>
-      ) : null}
+      </TabPanel>
     </div>
   );
 }
 
 function Row({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-border/40 pb-2">
+    <div className="flex justify-between gap-4">
       <dt className="text-muted">{label}</dt>
       <dd className="text-right font-medium text-card-foreground">{children}</dd>
     </div>

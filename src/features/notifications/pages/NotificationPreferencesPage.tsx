@@ -1,6 +1,7 @@
 import '../styles/notifications.css';
 import { useMemo, useState } from 'react';
-import { Button, Card, ErrorState, LoadingState, PageHeader, toast } from '@/shared/components';
+import { Button, Card, ErrorState, PageHeader, toast } from '@/shared/components';
+import { NotificationPreferencesSkeleton } from './NotificationPreferencesSkeleton';
 import {
   useNotificationPreferences,
   useUpdateNotificationPreference,
@@ -8,7 +9,7 @@ import {
 import type { NotificationPreferenceDto, NotificationType } from '../types';
 
 // SCR-F8-02: per-channel preference switches for every notification type.
-// Validation rule: at least one channel must stay enabled per type — the
+// Validation rule: at least one channel must stay enabled per type - the
 // save is blocked client-side and the backend enforces the same rule.
 
 const CHANNELS = ['emailEnabled', 'pushEnabled', 'inAppEnabled'] as const;
@@ -25,7 +26,7 @@ function channelKey(type: NotificationType, channel: Channel): string {
 }
 
 export function NotificationPreferencesPage() {
-  const { data, isLoading, isError } = useNotificationPreferences();
+  const { data, isLoading, isError, refetch, isRefetching } = useNotificationPreferences();
   const updatePreference = useUpdateNotificationPreference();
   const [overrides, setOverrides] = useState<Record<string, boolean>>({});
 
@@ -88,18 +89,22 @@ export function NotificationPreferencesPage() {
   };
 
   if (isError) {
-    return <ErrorState title="Could not load preferences" message="Please try again later." />;
+    return (
+      <ErrorState
+        title="Could not load preferences"
+        message="Please try again later."
+        onRetry={() => void refetch()}
+        retrying={isRefetching}
+      />
+    );
   }
   if (isLoading || !rows) {
-    return <LoadingState />;
+    return <NotificationPreferencesSkeleton />;
   }
 
   return (
     <div className="preferences-page">
-      <PageHeader
-        title="Notification preferences"
-        description="Choose which channels each notification type is delivered on."
-      />
+      <PageHeader title="Notification preferences" />
 
       <div className="preferences-page__list">
         {rows.map(({ preference, dirty, emailEnabled, pushEnabled, inAppEnabled }) => (
@@ -137,8 +142,10 @@ export function NotificationPreferencesPage() {
             <Button
               variant="secondary"
               size="sm"
-              disabled={!dirty}
-              isLoading={updatePreference.isPending}
+              disabled={!dirty || updatePreference.isPending}
+              isLoading={
+                updatePreference.isPending && updatePreference.variables?.type === preference.type
+              }
               onClick={() => saveRow(preference)}
             >
               Save

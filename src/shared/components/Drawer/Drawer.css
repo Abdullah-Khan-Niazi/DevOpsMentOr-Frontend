@@ -1,0 +1,139 @@
+/* Drawer: right-side sheet with backdrop. Slides in with the Apple curve and
+   stays mounted until the exit animation ends. */
+
+.drawer-root {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.drawer-root[data-state='closed'] {
+  pointer-events: none;
+}
+
+.drawer-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: color-mix(in srgb, var(--ink) 40%, transparent);
+  backdrop-filter: blur(0.125rem);
+  -webkit-backdrop-filter: blur(0.125rem);
+  animation: drawer-backdrop-in var(--duration-drawer) var(--ease-apple) both;
+}
+
+.drawer-panel {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100dvh;
+  max-width: 36rem;
+  background-color: var(--pearl-100);
+  box-shadow: var(--shadow-xl);
+  outline: none;
+  animation: drawer-slide-in var(--duration-drawer) var(--ease-apple) both;
+}
+
+.drawer-panel--lg {
+  max-width: 48rem;
+}
+
+.drawer-panel--xl {
+  max-width: min(72rem, 100vw);
+}
+
+.drawer-root[data-state='closed'] .drawer-backdrop {
+  animation: drawer-backdrop-out var(--duration-page) var(--ease-exit) both;
+}
+
+.drawer-root[data-state='closed'] .drawer-panel {
+  animation: drawer-slide-out var(--duration-page) var(--ease-exit) both;
+}
+
+.drawer-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  flex-shrink: 0;
+  padding: var(--space-5) var(--space-6) var(--space-3);
+}
+
+.drawer-panel__title {
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-heading-m);
+  font-weight: 600;
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-tight);
+  color: var(--color-text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.drawer-panel__body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: var(--space-3) var(--space-6) var(--space-6);
+}
+
+.drawer-panel__footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-3);
+  flex-shrink: 0;
+  padding: var(--space-4) var(--space-6);
+  background-color: var(--pearl-100);
+  box-shadow: 0 -0.5rem 1rem -0.75rem color-mix(in srgb, var(--ink) 18%, transparent);
+}
+
+@media (max-width: 640px) {
+  .drawer-panel__header,
+  .drawer-panel__body,
+  .drawer-panel__footer {
+    padding-inline: var(--space-4);
+  }
+}
+
+@keyframes drawer-slide-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes drawer-slide-out {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes drawer-backdrop-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes drawer-backdrop-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}

@@ -3,15 +3,18 @@ import { useState, useMemo } from 'react';
 import {
   Button,
   Card,
+  ConfirmDialog,
+  EmptyState,
   ErrorState,
   PageHeader,
   Pagination,
-  TablePageSkeleton,
   toast,
+  Icon,
 } from '@/shared/components';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAdminLabInstances } from '../hooks';
 import { labsService } from '../services';
+import { AdminLabInstancesSkeleton } from './AdminLabInstancesSkeleton';
 
 const PAGE_SIZE = 20;
 
@@ -23,22 +26,25 @@ function SortIcon({ active, direction }: { active: boolean; direction: SortDirec
     <span
       className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
     >
-      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+      <Icon name={active ? (direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'sort'} size={14} />
     </span>
   );
 }
 
-/** LAB-22: instance fleet — filter by status/search and force-terminate. */
+/** LAB-22: instance fleet - filter by status/search and force-terminate. */
 export function AdminLabInstancesPage() {
   const queryClient = useQueryClient();
   const [page, setPage] = useState(1);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
 
+  const [terminatingId, setTerminatingId] = useState<number | null>(null);
+  const [pendingTerminateId, setPendingTerminateId] = useState<number | null>(null);
+
   const [sortCol, setSortCol] = useState<SortColumn>('instanceId');
   const [sortDir, setSortDir] = useState<SortDirection>('desc');
 
-  const { data, isLoading, isError, error, refetch } = useAdminLabInstances(
+  const { data, isLoading, isError, error, refetch, isRefetching } = useAdminLabInstances(
     page,
     PAGE_SIZE,
     status || undefined,
@@ -59,9 +65,7 @@ export function AdminLabInstancesPage() {
   };
 
   const terminate = (instanceId: number): void => {
-    if (!window.confirm(`Terminate instance ${instanceId}? This cannot be undone.`)) {
-      return;
-    }
+    setTerminatingId(instanceId);
     labsService
       .adminTerminateInstance(instanceId)
       .then(() => {
@@ -70,6 +74,10 @@ export function AdminLabInstancesPage() {
       })
       .catch((err: unknown) => {
         toast.error((err as { message?: string }).message ?? 'Could not terminate instance.');
+      })
+      .finally(() => {
+        setTerminatingId(null);
+        setPendingTerminateId(null);
       });
   };
 
@@ -118,7 +126,7 @@ export function AdminLabInstancesPage() {
   }, [instances, sortCol, sortDir]);
 
   if (isLoading) {
-    return <TablePageSkeleton />;
+    return <AdminLabInstancesSkeleton />;
   }
 
   return (
@@ -126,7 +134,12 @@ export function AdminLabInstancesPage() {
       <PageHeader
         title="Lab Instances"
         actions={
-          <Button variant="secondary" size="sm" onClick={() => void refetch()}>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => void refetch()}
+            isLoading={isRefetching}
+          >
             Refresh Fleet
           </Button>
         }
@@ -184,57 +197,134 @@ export function AdminLabInstancesPage() {
             title="Could not load instances"
             message={error.message}
             onRetry={() => void refetch()}
+            retrying={isRefetching}
           />
+        ) : sortedInstances.length === 0 ? (
+          <EmptyState title="No lab instances found" icon="server" />
         ) : (
           <>
             <div className="w-full max-w-full overflow-x-auto">
               <table className="w-full text-left text-xs font-mono border-collapse">
                 <thead>
-                  <tr className="border-b border-border text-[0.6875rem] uppercase tracking-wide text-muted">
+                  <tr className="text-[0.6875rem] text-muted">
                     <th
-                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-                      onClick={() => handleSort('instanceId')}
+                      className="px-3 py-2 font-medium"
+                      aria-sort={
+                        sortCol === 'instanceId'
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
                     >
-                      Instance ID <SortIcon active={sortCol === 'instanceId'} direction={sortDir} />
+                      <button
+                        type="button"
+                        onClick={() => handleSort('instanceId')}
+                        className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                      >
+                        Instance ID{' '}
+                        <SortIcon active={sortCol === 'instanceId'} direction={sortDir} />
+                      </button>
                     </th>
                     <th
-                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-                      onClick={() => handleSort('username')}
+                      className="px-3 py-2 font-medium"
+                      aria-sort={
+                        sortCol === 'username'
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
                     >
-                      Learner <SortIcon active={sortCol === 'username'} direction={sortDir} />
+                      <button
+                        type="button"
+                        onClick={() => handleSort('username')}
+                        className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                      >
+                        Learner <SortIcon active={sortCol === 'username'} direction={sortDir} />
+                      </button>
                     </th>
                     <th
-                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-                      onClick={() => handleSort('labName')}
+                      className="px-3 py-2 font-medium"
+                      aria-sort={
+                        sortCol === 'labName'
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
                     >
-                      Lab <SortIcon active={sortCol === 'labName'} direction={sortDir} />
+                      <button
+                        type="button"
+                        onClick={() => handleSort('labName')}
+                        className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                      >
+                        Lab <SortIcon active={sortCol === 'labName'} direction={sortDir} />
+                      </button>
                     </th>
                     <th
-                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-                      onClick={() => handleSort('status')}
+                      className="px-3 py-2 font-medium"
+                      aria-sort={
+                        sortCol === 'status'
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
                     >
-                      Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+                      <button
+                        type="button"
+                        onClick={() => handleSort('status')}
+                        className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                      >
+                        Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+                      </button>
                     </th>
                     <th
-                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-                      onClick={() => handleSort('assignedIp')}
+                      className="px-3 py-2 font-medium"
+                      aria-sort={
+                        sortCol === 'assignedIp'
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
                     >
-                      Assigned IP <SortIcon active={sortCol === 'assignedIp'} direction={sortDir} />
+                      <button
+                        type="button"
+                        onClick={() => handleSort('assignedIp')}
+                        className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                      >
+                        Assigned IP{' '}
+                        <SortIcon active={sortCol === 'assignedIp'} direction={sortDir} />
+                      </button>
                     </th>
                     <th
-                      className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-                      onClick={() => handleSort('expiresAt')}
+                      className="px-3 py-2 font-medium"
+                      aria-sort={
+                        sortCol === 'expiresAt'
+                          ? sortDir === 'asc'
+                            ? 'ascending'
+                            : 'descending'
+                          : 'none'
+                      }
                     >
-                      Expires <SortIcon active={sortCol === 'expiresAt'} direction={sortDir} />
+                      <button
+                        type="button"
+                        onClick={() => handleSort('expiresAt')}
+                        className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                      >
+                        Expires <SortIcon active={sortCol === 'expiresAt'} direction={sortDir} />
+                      </button>
                     </th>
                     <th className="px-3 py-2 font-medium text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-border/60">
+                <tbody>
                   {sortedInstances.map((instance) => (
                     <tr
                       key={instance.instanceId}
-                      className="border-b border-border/60 last:border-0 hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
+                      className="hover:bg-surface/50 active:bg-surface-hover/60 transition-colors"
                     >
                       <td className="px-3 py-2.5 whitespace-nowrap text-muted-foreground">
                         #{instance.instanceId}
@@ -249,25 +339,27 @@ export function AdminLabInstancesPage() {
                         <span
                           className={
                             instance.status === 'running'
-                              ? 'font-semibold text-card-foreground uppercase'
-                              : 'text-muted uppercase'
+                              ? 'font-semibold text-success'
+                              : 'text-muted'
                           }
                         >
                           {instance.status}
                         </span>
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap text-muted">
-                        {instance.assignedIp ?? '—'}
+                        {instance.assignedIp ?? '-'}
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap text-muted">
-                        {instance.expiresAt ? new Date(instance.expiresAt).toLocaleString() : '—'}
+                        {instance.expiresAt ? new Date(instance.expiresAt).toLocaleString() : '-'}
                       </td>
                       <td className="px-3 py-2.5 whitespace-nowrap text-right">
                         {instance.status !== 'terminated' && (
                           <Button
                             variant="danger"
                             size="sm"
-                            onClick={() => terminate(instance.instanceId)}
+                            onClick={() => setPendingTerminateId(instance.instanceId)}
+                            isLoading={terminatingId === instance.instanceId}
+                            disabled={terminatingId !== null}
                           >
                             Terminate
                           </Button>
@@ -278,7 +370,7 @@ export function AdminLabInstancesPage() {
                 </tbody>
               </table>
             </div>
-            <div className="mt-4 pt-3 border-t border-border/60 flex justify-end">
+            <div className="mt-4 flex justify-end">
               <Pagination
                 page={page}
                 pageSize={PAGE_SIZE}
@@ -290,6 +382,18 @@ export function AdminLabInstancesPage() {
           </>
         )}
       </Card>
+
+      <ConfirmDialog
+        open={pendingTerminateId !== null}
+        title="Terminate instance?"
+        message={`Instance ${pendingTerminateId ?? ''} will be terminated. This cannot be undone.`}
+        confirmLabel="Terminate"
+        isLoading={terminatingId !== null}
+        onCancel={() => setPendingTerminateId(null)}
+        onConfirm={() => {
+          if (pendingTerminateId !== null) terminate(pendingTerminateId);
+        }}
+      />
     </div>
   );
 }

@@ -13,7 +13,7 @@ interface AdjustDraft {
   description: string;
 }
 
-/** SCR-F7-06: admin gamification dashboard — manual adjustments and oversight. */
+/** SCR-F7-06: admin gamification dashboard - manual adjustments and oversight. */
 export function AdminGamificationPage() {
   const [draft, setDraft] = useState<AdjustDraft>({
     targetUserId: '',
@@ -98,23 +98,15 @@ export function AdminGamificationPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Gamification"
-        description="Manual point adjustments, certificate oversight and leaderboard operations."
-      />
+      <PageHeader title="Gamification" />
 
       <div className="gamification-admin__grid">
         <Card className="gamification-admin__card">
           <h2 className="gamification-admin__title">Adjust points</h2>
-          <p className="gamification-admin__note">
-            Record a manual points change for a learner. Corrections are ledger entries, so every
-            adjustment is permanent.
-          </p>
           <Input
             label="User ID"
             name="targetUserId"
             type="number"
-            placeholder="42"
             value={draft.targetUserId}
             onChange={(e) => setDraft({ ...draft, targetUserId: e.target.value })}
           />
@@ -122,14 +114,12 @@ export function AdminGamificationPage() {
             label="Points change"
             name="pointsChange"
             type="number"
-            placeholder="-25 or +100"
             value={draft.pointsChange}
             onChange={(e) => setDraft({ ...draft, pointsChange: e.target.value })}
           />
           <Input
             label="Description"
             name="description"
-            placeholder="Reason for the adjustment"
             value={draft.description}
             onChange={(e) => setDraft({ ...draft, description: e.target.value })}
           />
@@ -142,15 +132,10 @@ export function AdminGamificationPage() {
 
         <Card className="gamification-admin__card">
           <h2 className="gamification-admin__title">Invalidate certificate</h2>
-          <p className="gamification-admin__note">
-            Mark a certificate as no longer valid. Verification requests will still return the
-            holder details but report the certificate as invalid.
-          </p>
           <Input
             label="Certificate ID"
             name="certId"
             type="number"
-            placeholder="12"
             value={invalidateId}
             onChange={(e) => setInvalidateId(e.target.value)}
           />
@@ -163,10 +148,6 @@ export function AdminGamificationPage() {
 
         <Card className="gamification-admin__card">
           <h2 className="gamification-admin__title">Recompute leaderboard</h2>
-          <p className="gamification-admin__note">
-            Recalculate global standings from the points ledger immediately instead of waiting for
-            the scheduled run. This also writes a leaderboard history snapshot.
-          </p>
           <div className="gamification-admin__actions">
             <Button variant="secondary" onClick={() => setConfirmRecompute(true)}>
               Recompute now

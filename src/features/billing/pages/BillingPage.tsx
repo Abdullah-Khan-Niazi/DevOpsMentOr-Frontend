@@ -1,21 +1,31 @@
 import { Link } from 'react-router-dom';
-import { Button, PageHeader } from '@/shared/components';
+import { Button, EmptyState, ErrorState, PageHeader } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { CurrentPlanCard } from '../components/CurrentPlanCard';
 import { PaymentMethodCard } from '../components/PaymentMethodCard';
-import { usePaymentMethods } from '../hooks/useBilling';
+import { useCurrentSubscription, usePaymentMethods } from '../hooks/useBilling';
+import { BillingSkeleton } from './BillingSkeleton';
 import './billing.css';
 
-/** SCR-F9-02: billing hub — current plan, saved payment methods, history link. */
+/** SCR-F9-02: billing hub - current plan, saved payment methods, history link. */
 export function BillingPage() {
-  const { data: paymentMethods, isLoading, isError } = usePaymentMethods();
+  const {
+    data: paymentMethods,
+    isLoading,
+    isError,
+    error,
+    refetch,
+    isRefetching,
+  } = usePaymentMethods();
+  const subscription = useCurrentSubscription();
   const activeMethods = (paymentMethods ?? []).filter((pm) => pm.isActive);
+
+  if (isLoading || subscription.isLoading) return <BillingSkeleton />;
 
   return (
     <div className="billing-page">
       <PageHeader
         title="Billing"
-        description="Manage your subscription, payment methods and receipts."
         actions={
           <Link to={ROUTES.BILLING_HISTORY}>
             <Button variant="secondary" size="sm">
@@ -38,10 +48,17 @@ export function BillingPage() {
             </Button>
           </Link>
         </div>
-        {isLoading ? <p className="billing-page__hint">Loading payment methods…</p> : null}
-        {isError ? <p className="billing-page__hint">Could not load payment methods.</p> : null}
-        {!isLoading && !isError && activeMethods.length === 0 ? (
-          <p className="billing-page__hint">No payment methods saved yet.</p>
+        {isError ? (
+          <ErrorState
+            title="Could not load payment methods"
+            error={error}
+            onRetry={() => void refetch()}
+            retrying={isRefetching}
+            compact
+          />
+        ) : null}
+        {!isError && activeMethods.length === 0 ? (
+          <EmptyState title="No payment methods saved yet" icon="card" className="py-6" />
         ) : null}
         <div className="billing-page__methods">
           {activeMethods.slice(0, 3).map((method) => (

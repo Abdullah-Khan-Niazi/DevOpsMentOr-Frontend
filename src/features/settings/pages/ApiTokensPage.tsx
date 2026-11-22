@@ -3,12 +3,15 @@ import {
   Button,
   Card,
   ConfirmDialog,
+  EmptyState,
+  ErrorState,
   Input,
-  LoadingState,
   Modal,
+  PageHeader,
   toast,
 } from '@/shared/components';
 import { useApiTokens } from '@/features/auth/hooks';
+import { ApiTokensSkeleton } from './ApiTokensSkeleton';
 import { ApiTokenRevealModal } from '@/features/auth/components/ApiTokenRevealModal';
 import type { ApiToken } from '@/features/auth/types';
 import '@/shared/styles/app.css';
@@ -72,34 +75,24 @@ export default function ApiTokensPage() {
     });
   };
 
+  if (list.isLoading) return <ApiTokensSkeleton />;
+
   return (
     <div>
-      <header className="app-page-header">
-        <h1 className="app-page-header__title">API tokens</h1>
-        <p className="app-page-header__description">
-          Personal tokens for API access. A token is shown only once, at creation.
-        </p>
-      </header>
+      <PageHeader title="API tokens" />
 
       <div className="settings-stack">
         <Card className="settings-card">
           <h2 className="settings-card__title">Your tokens</h2>
           <div className="settings-card__body">
-            {list.isLoading ? <LoadingState label="Loading tokens…" /> : null}
-
             {list.isError ? (
-              <div className="flex flex-col gap-3">
-                <p className="auth-alert auth-alert--error" role="alert">
-                  {list.error.message}
-                </p>
-                <Button type="button" variant="secondary" size="sm" onClick={() => void refetch()}>
-                  Retry
-                </Button>
-              </div>
-            ) : null}
-
-            {list.data && list.data.length === 0 ? (
-              <p>No API tokens created.</p>
+              <ErrorState
+                error={list.error}
+                onRetry={() => void refetch()}
+                retrying={list.isRefetching}
+              />
+            ) : list.data && list.data.length === 0 ? (
+              <EmptyState title="No API tokens created." icon="key" />
             ) : (
               <div className="token-list">
                 {list.data?.map((token) => (
@@ -107,8 +100,9 @@ export default function ApiTokensPage() {
                     <div className="token-list__info">
                       <span className="token-list__name">{token.tokenName}</span>
                       <span className="token-list__meta">
-                        Created {formatDate(token.createdAt)} · Expires{' '}
-                        {formatDate(token.expiresAt)} · Last used {formatDate(token.lastUsedAt)}
+                        <span>Created {formatDate(token.createdAt)}</span>
+                        <span>Expires {formatDate(token.expiresAt)}</span>
+                        <span>Last used {formatDate(token.lastUsedAt)}</span>
                       </span>
                     </div>
                     <Button
@@ -116,7 +110,8 @@ export default function ApiTokensPage() {
                       variant="danger"
                       size="sm"
                       onClick={() => setRevokeTarget(token)}
-                      disabled={revokingId === token.tokenId}
+                      isLoading={revokingId === token.tokenId}
+                      disabled={revokingId !== null}
                     >
                       Revoke
                     </Button>
@@ -143,7 +138,6 @@ export default function ApiTokensPage() {
             value={tokenName}
             onChange={(event) => setTokenName(event.target.value)}
             maxLength={100}
-            hint="1–100 characters"
           />
           <Input
             label="Expires in (days)"

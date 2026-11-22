@@ -76,7 +76,9 @@ export const adminService = {
 
   /** Restore soft-deleted user */
   async restoreUser(userId: number): Promise<ActionMessage> {
-    const { data } = await apiClient.post<{ data: ActionMessage }>(`/admin/users/${userId}/restore`);
+    const { data } = await apiClient.post<{ data: ActionMessage }>(
+      `/admin/users/${userId}/restore`,
+    );
     return unwrap(data);
   },
 

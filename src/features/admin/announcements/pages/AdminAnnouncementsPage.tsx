@@ -3,16 +3,18 @@ import { useState } from 'react';
 import {
   Button,
   Card,
+  EmptyState,
   ErrorState,
+  Icon,
   Input,
   PageHeader,
-  TablePageSkeleton,
   toast,
 } from '@/shared/components';
+import { AdminAnnouncementsSkeleton } from './AdminAnnouncementsSkeleton';
 import { useAdminAnnouncements } from '../hooks/useAdminAnnouncements';
 import type { AdminAnnouncementDto, AnnouncementPriority, AnnouncementType } from '../types';
 
-// SCR-F8-09: admin announcement publishing — draft form plus a list with
+// SCR-F8-09: admin announcement publishing - draft form plus a list with
 // update/publish actions. Every mutation writes an audit row server-side.
 
 const ANNOUNCEMENT_TYPES: AnnouncementType[] = [
@@ -40,7 +42,7 @@ const PRIORITY_LABEL: Record<AnnouncementPriority, string> = {
 };
 
 function formatDate(iso: string | null): string {
-  return iso ? new Date(iso).toLocaleString() : '—';
+  return iso ? new Date(iso).toLocaleString() : '-';
 }
 
 export function AdminAnnouncementsPage() {
@@ -117,10 +119,7 @@ export function AdminAnnouncementsPage() {
 
   return (
     <div className="announcements-admin-page">
-      <PageHeader
-        title="Announcements"
-        description="Draft, update and publish platform-wide announcements."
-      />
+      <PageHeader title="Announcements" />
 
       <Card className="announcements-admin-page__form">
         <h2 className="announcements-admin-page__form-title">
@@ -194,11 +193,19 @@ export function AdminAnnouncementsPage() {
       </Card>
 
       {query.isError ? (
-        <ErrorState title="Could not load announcements" message="Please try again later." />
+        <ErrorState
+          title="Could not load announcements"
+          error={query.error}
+          onRetry={() => void query.refetch()}
+          retrying={query.isRefetching}
+        />
       ) : query.isLoading ? (
-        <TablePageSkeleton />
+        <AdminAnnouncementsSkeleton />
       ) : (
         <div className="announcements-admin-page__list">
+          {query.data?.length === 0 ? (
+            <EmptyState icon="megaphone" title="No announcements yet" />
+          ) : null}
           {query.data?.map((announcement) => (
             <Card key={announcement.announcementId} className="announcements-admin-page__item">
               <div className="announcements-admin-page__item-head">
@@ -207,22 +214,30 @@ export function AdminAnnouncementsPage() {
                   className="announcements-admin-page__item-status"
                   data-published={announcement.isPublished}
                 >
+                  <Icon name={announcement.isPublished ? 'check-circle' : 'edit'} size={16} />
                   {announcement.isPublished ? 'Published' : 'Draft'}
                 </span>
               </div>
               <p className="announcements-admin-page__item-content">{announcement.content}</p>
               <p className="announcements-admin-page__item-meta">
-                {TYPE_LABEL[announcement.announcementType]} ·{' '}
-                {PRIORITY_LABEL[announcement.priority]} · Created{' '}
-                {formatDate(announcement.createdAt)} · Published{' '}
-                {formatDate(announcement.publishedAt)}
+                <span>{TYPE_LABEL[announcement.announcementType]}</span>
+                <span>{PRIORITY_LABEL[announcement.priority]}</span>
+                <span>Created {formatDate(announcement.createdAt)}</span>
+                <span>Published {formatDate(announcement.publishedAt)}</span>
               </p>
               <div className="announcements-admin-page__item-actions">
                 <Button variant="secondary" size="sm" onClick={() => startEdit(announcement)}>
                   Edit
                 </Button>
                 {!announcement.isPublished ? (
-                  <Button size="sm" onClick={() => handlePublish(announcement)}>
+                  <Button
+                    size="sm"
+                    onClick={() => handlePublish(announcement)}
+                    isLoading={
+                      publish.isPending && publish.variables === announcement.announcementId
+                    }
+                    disabled={publish.isPending}
+                  >
                     Publish
                   </Button>
                 ) : null}

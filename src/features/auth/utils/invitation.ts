@@ -12,9 +12,10 @@ export function extractInvitationToken(input: string): string {
   // Check if the input is a URL or has query parameters
   if (trimmed.includes('?') || trimmed.startsWith('http://') || trimmed.startsWith('https://')) {
     try {
-      const url = trimmed.startsWith('http://') || trimmed.startsWith('https://')
-        ? new URL(trimmed)
-        : new URL(trimmed, 'https://gateway.local');
+      const url =
+        trimmed.startsWith('http://') || trimmed.startsWith('https://')
+          ? new URL(trimmed)
+          : new URL(trimmed, 'https://gateway.local');
       const param =
         url.searchParams.get('token') ||
         url.searchParams.get('code') ||

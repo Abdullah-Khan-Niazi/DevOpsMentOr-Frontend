@@ -1,14 +1,17 @@
 import { useState, useMemo } from 'react';
+import { EmptyState, Icon, Skeleton } from '@/shared/components';
 import type { ModuleProgressSummary } from '../types';
-import { ProgressBar } from './ProgressBar';
+import { ProgressBar } from '@/shared/components/ProgressBar';
 
 type SortColumn = 'moduleTitle' | 'completed' | 'progressPercentage' | 'status';
 type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
-      {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
+      <Icon name={active ? (direction === 'asc' ? 'arrow-up' : 'arrow-down') : 'sort'} size={14} />
     </span>
   );
 }
@@ -66,10 +69,14 @@ export function ModuleBreakdownTable({ modules, isLoading }: ModuleBreakdownTabl
 
   if (isLoading) {
     return (
-      <div className="w-full max-w-full overflow-x-auto">
-        <table className="w-full text-left text-sm" aria-label="Module breakdown">
+      <div
+        className="w-full max-w-full overflow-x-auto"
+        role="status"
+        aria-label="Loading module breakdown"
+      >
+        <table className="w-full text-left text-sm" aria-hidden="true">
           <thead>
-            <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+            <tr className="text-xs text-muted">
               <th className="px-3 py-2 font-medium">Module</th>
               <th className="px-3 py-2 font-medium">Completed</th>
               <th className="px-3 py-2 font-medium">Progress</th>
@@ -78,21 +85,21 @@ export function ModuleBreakdownTable({ modules, isLoading }: ModuleBreakdownTabl
           </thead>
           <tbody>
             {Array.from({ length: 3 }, (_, index) => (
-              <tr key={index} className="border-b border-border/60 last:border-0">
+              <tr key={index}>
                 <td className="px-3 py-3">
-                  <div className="h-3 w-1/2 rounded bg-border" />
+                  <Skeleton className="h-3 w-1/2 rounded-xs" />
                 </td>
                 <td className="px-3 py-3">
-                  <div className="h-3 w-10 rounded bg-border" />
+                  <Skeleton className="h-3 w-10 rounded-xs" />
                 </td>
                 <td className="px-3 py-3">
                   <div className="flex items-center gap-2">
-                    <div className="h-2 w-32 rounded-sm bg-border" />
-                    <div className="h-3 w-8 rounded bg-border" />
+                    <Skeleton className="h-2 w-32 rounded-full" />
+                    <Skeleton className="h-3 w-8 rounded-xs" />
                   </div>
                 </td>
                 <td className="px-3 py-3">
-                  <div className="h-3 w-14 rounded bg-border" />
+                  <Skeleton className="h-3 w-14 rounded-xs" />
                 </td>
               </tr>
             ))}
@@ -103,41 +110,81 @@ export function ModuleBreakdownTable({ modules, isLoading }: ModuleBreakdownTabl
   }
 
   if (modules.length === 0) {
-    return <p className="py-6 text-sm text-muted font-mono">No progress recorded.</p>;
+    return <EmptyState title="No progress recorded." icon="module" />;
   }
 
   return (
     <div className="w-full max-w-full overflow-x-auto">
       <table className="w-full text-left text-sm border-collapse">
         <thead>
-          <tr className="border-b border-border text-xs uppercase tracking-wide text-muted font-mono">
+          <tr className="text-xs text-muted">
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('moduleTitle')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'moduleTitle'
+                  ? sortDir === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
             >
-              Module <SortIcon active={sortCol === 'moduleTitle'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('moduleTitle')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Module <SortIcon active={sortCol === 'moduleTitle'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('completed')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'completed' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Completed <SortIcon active={sortCol === 'completed'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('completed')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Completed <SortIcon active={sortCol === 'completed'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('progressPercentage')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'progressPercentage'
+                  ? sortDir === 'asc'
+                    ? 'ascending'
+                    : 'descending'
+                  : 'none'
+              }
             >
-              Progress <SortIcon active={sortCol === 'progressPercentage'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('progressPercentage')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Progress <SortIcon active={sortCol === 'progressPercentage'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="px-3 py-2 font-medium cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('status')}
+              className="px-3 py-2 font-medium"
+              aria-sort={
+                sortCol === 'status' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('status')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Status <SortIcon active={sortCol === 'status'} direction={sortDir} />
+              </button>
             </th>
           </tr>
         </thead>
-        <tbody className="divide-y divide-border/60">
+        <tbody>
           {sortedModules.map((module) => (
             <tr key={module.moduleId} className="hover:bg-surface/60 transition-colors">
               <td className="px-3 py-2.5 font-medium text-card-foreground">{module.moduleTitle}</td>
@@ -148,7 +195,7 @@ export function ModuleBreakdownTable({ modules, isLoading }: ModuleBreakdownTabl
                 <div className="flex items-center gap-2">
                   <div className="w-32">
                     <ProgressBar
-                      percentage={module.progressPercentage}
+                      value={module.progressPercentage}
                       label={`${module.moduleTitle} progress`}
                       size="sm"
                     />
@@ -159,13 +206,7 @@ export function ModuleBreakdownTable({ modules, isLoading }: ModuleBreakdownTabl
                 </div>
               </td>
               <td className="px-3 py-2.5 text-xs font-mono">
-                <span
-                  className={`px-2 py-0.5 rounded-sm ${
-                    module.isCompleted
-                      ? 'border border-border/80 text-card-foreground bg-pearl-200'
-                      : 'border border-border/50 text-muted'
-                  }`}
-                >
+                <span className={module.isCompleted ? 'text-success' : 'text-muted'}>
                   {module.isCompleted ? 'Completed' : 'In progress'}
                 </span>
               </td>

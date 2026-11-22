@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 import { Button, Input, PasswordInput, toast } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
+import { safeRedirectPath } from '@/shared/utils';
 import { useAuthStore } from '../stores/authStore';
 import { useLogin, useOAuthLogin, useVerifyEmail, useResendVerification } from '../hooks';
 import { getDefaultRouteForUser } from '../utils/rbac';
@@ -92,7 +93,7 @@ export function LoginForm() {
   const redirectTo = () => {
     const params = new URLSearchParams(location.search);
     const redirect = params.get('redirect');
-    return redirect && redirect.startsWith('/') ? redirect : ROUTES.DASHBOARD;
+    return safeRedirectPath(redirect) ?? ROUTES.DASHBOARD;
   };
 
   const twoFactorRequired = isError && error.message === TWO_FACTOR_CODE;

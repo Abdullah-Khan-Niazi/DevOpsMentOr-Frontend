@@ -1,10 +1,17 @@
 import { useMemo, useState } from 'react';
-import { Card, ErrorState, LoadingState, PageHeader, Pagination } from '@/shared/components';
+import { useSearchParams } from 'react-router-dom';
+import { Card, ErrorState, PageHeader, Pagination, TablePageSkeleton } from '@/shared/components';
 import { useMyOrg } from '@/features/org/hooks';
 import { StudentProgressTable, type SortKey } from '../components/StudentProgressTable';
 import { useOrgStudents } from '../hooks';
 
 const PAGE_SIZE = 25;
+
+/** Positive integer from `?courseId=`, or null when absent or invalid. */
+function readCourseId(raw: string | null): number | null {
+  const value = Number(raw);
+  return raw !== null && Number.isInteger(value) && value > 0 ? value : null;
+}
 
 function sortStudents<
   T extends {
@@ -41,6 +48,8 @@ function sortStudents<
 export function OrgStudentsProgressPage() {
   const org = useMyOrg();
   const orgId = org.query.data?.organizationId ?? null;
+  const [searchParams] = useSearchParams();
+  const courseId = readCourseId(searchParams.get('courseId'));
 
   const [sort, setSort] = useState<SortKey>({
     column: 'fullName',
@@ -48,7 +57,7 @@ export function OrgStudentsProgressPage() {
   });
   const [page, setPage] = useState(1);
 
-  const studentsQuery = useOrgStudents(orgId);
+  const studentsQuery = useOrgStudents(orgId, orgId !== null, courseId);
   const students = useMemo(() => studentsQuery.data ?? [], [studentsQuery.data]);
 
   const sortedStudents = useMemo(() => sortStudents(students, sort), [students, sort]);
@@ -56,12 +65,7 @@ export function OrgStudentsProgressPage() {
   const totalPages = Math.max(1, Math.ceil(sortedStudents.length / PAGE_SIZE));
 
   if (org.query.isLoading || studentsQuery.isLoading) {
-    return (
-      <div>
-        <PageHeader title="Student progress" />
-        <LoadingState label="Loading student progress…" />
-      </div>
-    );
+    return <TablePageSkeleton />;
   }
 
   if (org.query.isError || studentsQuery.isError) {
@@ -85,10 +89,7 @@ export function OrgStudentsProgressPage() {
 
   return (
     <div>
-      <PageHeader
-        title="Student progress"
-        description={`All students in ${org.query.data?.name ?? 'your organization'}`}
-      />
+      <PageHeader title="Student progress" />
 
       <Card className="p-5">
         <StudentProgressTable
@@ -96,7 +97,7 @@ export function OrgStudentsProgressPage() {
           isLoading={studentsQuery.isLoading}
           sort={sort}
           onSortChange={setSort}
-        />{' '}
+        />
         <Pagination
           page={page}
           pageSize={PAGE_SIZE}

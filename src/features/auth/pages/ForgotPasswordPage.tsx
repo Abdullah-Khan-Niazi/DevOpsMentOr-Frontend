@@ -27,7 +27,7 @@ export default function ForgotPasswordPage() {
 
   if (sent) {
     return (
-      <AuthLayout title="Check your email" subtitle="We sent a 6-digit reset code to your inbox.">
+      <AuthLayout title="Check your email">
         <div className="flex flex-col gap-4">
           <p className="auth-alert" role="status">
             If an account exists for <strong>{email}</strong>, a reset code is on its way. It
@@ -61,10 +61,7 @@ export default function ForgotPasswordPage() {
   }
 
   return (
-    <AuthLayout
-      title="Forgot password"
-      subtitle="Enter your email and we will send a 6-digit reset code."
-    >
+    <AuthLayout title="Forgot password">
       <div className="flex flex-col gap-4">
         <form
           className="flex flex-col gap-4"
