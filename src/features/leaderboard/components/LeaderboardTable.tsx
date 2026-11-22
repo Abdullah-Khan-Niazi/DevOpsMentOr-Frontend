@@ -16,7 +16,9 @@ type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
-    <span className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}>
+    <span
+      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+    >
       {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
     </span>
   );
@@ -117,28 +119,58 @@ export function LeaderboardTable({
         <thead>
           <tr>
             <th
-              className="leaderboard-table__rank cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('rank')}
+              className="leaderboard-table__rank"
+              aria-sort={
+                sortCol === 'rank' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Rank <SortIcon active={sortCol === 'rank'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('rank')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Rank <SortIcon active={sortCol === 'rank'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('name')}
+              aria-sort={
+                sortCol === 'name' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Learner <SortIcon active={sortCol === 'name'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('name')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Learner <SortIcon active={sortCol === 'name'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="leaderboard-table__num cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('points')}
+              className="leaderboard-table__num"
+              aria-sort={
+                sortCol === 'points' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Points <SortIcon active={sortCol === 'points'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('points')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Points <SortIcon active={sortCol === 'points'} direction={sortDir} />
+              </button>
             </th>
             <th
-              className="cursor-pointer select-none hover:text-card-foreground"
-              onClick={() => handleSort('country')}
+              aria-sort={
+                sortCol === 'country' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+              }
             >
-              Country <SortIcon active={sortCol === 'country'} direction={sortDir} />
+              <button
+                type="button"
+                onClick={() => handleSort('country')}
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+              >
+                Country <SortIcon active={sortCol === 'country'} direction={sortDir} />
+              </button>
             </th>
           </tr>
         </thead>

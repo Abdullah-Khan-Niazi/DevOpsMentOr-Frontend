@@ -94,6 +94,14 @@ export interface GamificationProfileDto {
   currentStreakDays: number;
 }
 
+/** Top bar XP chip payload (`GET /gamification/me/summary`). */
+export interface GamificationSummaryDto {
+  balance: number;
+  totalEarned: number;
+  globalRank: number | null;
+  currentStreakDays: number;
+}
+
 /** GAM-13: certificate download URL. */
 export interface CertificateDownloadDto {
   certificateId: number;

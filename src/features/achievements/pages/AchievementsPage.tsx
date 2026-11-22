@@ -1,17 +1,24 @@
 import '../styles/achievements.css';
 import { useMemo, useState } from 'react';
 import {
+  Button,
   Card,
   EmptyState,
   ErrorState,
+  Icon,
+  type IconName,
   PageHeader,
   Pagination,
-  TabRow,
+  TabPanel,
+  TabSwitcher,
+  type TabSwitcherItem,
   toast,
+  XpDelta,
 } from '@/shared/components';
-import { BadgeCard } from '../components/BadgeCard';
+import { useUrlState } from '@/shared/hooks';
+import { safeHttpUrl } from '@/shared/utils';
 import { AchievementRow } from '../components/AchievementRow';
-import { CertificateCard } from '../components/CertificateCard';
+import { BadgeCard } from '../components/BadgeCard';
 import { StatsBar } from '../components/StatsBar';
 import {
   useAchievementCatalog,
@@ -20,32 +27,58 @@ import {
   useGamificationProfile,
   usePointsHistory,
 } from '../hooks/useGamification';
-import type { BadgeType, PointsSourceType } from '../types';
+import type { BadgeType, PointsHistoryDto } from '../types';
+import {
+  AchievementListSkeleton,
+  AchievementsPageSkeleton,
+  BadgeGridSkeleton,
+  XpHistorySkeleton,
+} from './AchievementsPageSkeleton';
 
 const POINTS_PAGE_SIZE = 25;
+const RECENT_ACHIEVEMENT_COUNT = 3;
+const DATE_FORMAT: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'short', day: 'numeric' };
 
-const SOURCE_LABELS: Record<PointsSourceType, string> = {
-  machine_own: 'Machine owned',
-  challenge_solve: 'Challenge solved',
-  course_complete: 'Course completed',
-  achievement: 'Achievement unlocked',
-  daily_bonus: 'Daily bonus',
-  admin_adjustment: 'Admin adjustment',
-  penalty: 'Penalty',
-};
+const ACHIEVEMENT_TABS = ['overview', 'badges', 'achievements', 'history', 'certificates'] as const;
+type AchievementTab = (typeof ACHIEVEMENT_TABS)[number];
 
-type TabId = 'badges' | 'achievements' | 'certificates' | 'points';
-
-const TABS: Array<{ id: TabId; label: string }> = [
+const TABS: ReadonlyArray<TabSwitcherItem<AchievementTab>> = [
+  { id: 'overview', label: 'Overview' },
   { id: 'badges', label: 'Badges' },
   { id: 'achievements', label: 'Achievements' },
+  { id: 'history', label: 'History' },
   { id: 'certificates', label: 'Certificates' },
-  { id: 'points', label: 'Points history' },
 ];
 
-/** SCR-F7-01: learner achievements, certificates and points ledger. */
+/** Award kind of an XP history row (`GET /gamification/points/history`); old rows read as `legacy`. */
+type XpHistoryEntry = PointsHistoryDto & { kind?: string };
+
+const KIND_ICONS: Record<string, IconName> = {
+  lab_step: 'lab',
+  lab_done: 'task',
+  lab_hint: 'hint',
+  lab_wrong: 'x-circle',
+  lab_guess: 'warning',
+  quiz_wrong: 'x-circle',
+  quiz_guess: 'warning',
+  quiz_pass: 'quiz',
+  lesson: 'lesson',
+  module: 'module',
+  course: 'course',
+  achievement: 'medal',
+  badge: 'award',
+  daily: 'streak',
+  admin: 'shield',
+  legacy: 'history',
+};
+
+function formatDate(value: string): string {
+  return new Date(value).toLocaleDateString(undefined, DATE_FORMAT);
+}
+
+/** SCR-F7-01: learner achievements, badges, XP history and certificates (URL-driven tabs). */
 export function AchievementsPage() {
-  const [tab, setTab] = useState<TabId>('badges');
+  const [tab, setTab] = useUrlState<AchievementTab>('tab', ACHIEVEMENT_TABS, 'overview');
   const [pointsPage, setPointsPage] = useState(1);
 
   const profile = useGamificationProfile();
@@ -110,8 +143,9 @@ export function AchievementsPage() {
   const onDownload = (certId: number): void => {
     download.mutate(certId, {
       onSuccess: (result) => {
-        if (result.url) {
-          window.open(result.url, '_blank', 'noopener,noreferrer');
+        const url = safeHttpUrl(result.url);
+        if (url) {
+          window.open(url, '_blank', 'noopener,noreferrer');
         } else {
           toast.error('No download link is available for this certificate.');
         }
@@ -123,16 +157,24 @@ export function AchievementsPage() {
   };
 
   const onCopyLink = (certNumber: string): void => {
+    if (!navigator.clipboard) {
+      toast.error('Could not copy the link.');
+      return;
+    }
     void navigator.clipboard
       .writeText(`${window.location.origin}/verify/${certNumber}`)
       .then(() => toast.success('Verification link copied.'))
       .catch(() => toast.error('Could not copy the link.'));
   };
 
+  if (profile.isLoading) {
+    return <AchievementsPageSkeleton />;
+  }
+
   if (profile.isError) {
     return (
       <div>
-        <PageHeader title="Achievements & certificates" />
+        <PageHeader title="Achievements" />
         <ErrorState
           title="Could not load your gamification profile"
           message={profile.error?.message ?? 'Unable to reach the gamification service.'}
@@ -143,44 +185,68 @@ export function AchievementsPage() {
   }
 
   const data = profile.data;
+  const recentAchievements = achievementItems.slice(0, RECENT_ACHIEVEMENT_COUNT);
+  const pointsItems = (pointsHistory.data?.items ?? []) as XpHistoryEntry[];
+  const pointsTotalPages = Math.max(
+    1,
+    Math.ceil((pointsHistory.data?.total ?? 0) / POINTS_PAGE_SIZE),
+  );
 
   return (
     <div>
-      <PageHeader
-        title="Achievements & certificates"
-        description="Your badges, achievements, points and course certificates."
-      />
-
-      <StatsBar
-        pointsBalance={data?.points.balance ?? null}
-        globalRank={data?.globalRank ?? null}
-        badgeCount={data?.badges.length ?? null}
-        streakDays={data?.currentStreakDays ?? null}
-        isLoading={profile.isLoading}
-      />
+      <PageHeader title="Achievements" />
 
       <div className="mt-6">
-        <TabRow items={TABS} activeId={tab} onChange={(id) => setTab(id as TabId)} />
+        <TabSwitcher
+          items={TABS}
+          value={tab}
+          onChange={setTab}
+          ariaLabel="Achievements sections"
+          idPrefix="achievements"
+        />
       </div>
 
       <div className="mt-6">
-        {tab === 'badges' ? (
-          profile.isLoading || badgeCatalog.isLoading ? (
-            <div className="badge-grid">
-              {Array.from({ length: 6 }, (_, index) => (
-                <div key={index} className="badge-card badge-card--skeleton" aria-hidden="true" />
-              ))}
-            </div>
+        <TabPanel idPrefix="achievements" id="overview" active={tab === 'overview'}>
+          <div className="flex flex-col gap-6">
+            <StatsBar
+              pointsBalance={data?.points.balance ?? null}
+              globalRank={data?.globalRank ?? null}
+              badgeCount={data?.badges.length ?? null}
+              streakDays={data?.currentStreakDays ?? null}
+              isLoading={false}
+            />
+            <section className="flex flex-col gap-3">
+              <h2 className="text-base font-semibold text-card-foreground">Recent achievements</h2>
+              {recentAchievements.length === 0 ? (
+                <EmptyState title="No achievements unlocked yet" />
+              ) : (
+                <div className="achievement-list">
+                  {recentAchievements.map((achievement) => (
+                    <AchievementRow
+                      key={achievement.achievementId}
+                      name={achievement.name}
+                      description={achievement.description}
+                      pointsAwarded={achievement.pointsAwarded}
+                      unlockedAt={achievement.unlockedAt}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          </div>
+        </TabPanel>
+
+        <TabPanel idPrefix="achievements" id="badges" active={tab === 'badges'}>
+          {badgeCatalog.isLoading ? (
+            <BadgeGridSkeleton />
           ) : badgeCatalog.isError ? (
             <ErrorState
               message={badgeCatalog.error?.message ?? 'Could not load the badge catalog.'}
               onRetry={() => void badgeCatalog.refetch()}
             />
           ) : badgeItems.length === 0 ? (
-            <EmptyState
-              title="No badges earned yet"
-              description="Complete your first module to start collecting badges."
-            />
+            <EmptyState title="No badges yet" />
           ) : (
             <div className="badge-grid">
               {badgeItems.map((badge) => (
@@ -194,21 +260,21 @@ export function AchievementsPage() {
                 />
               ))}
             </div>
-          )
-        ) : null}
+          )}
+        </TabPanel>
 
-        {tab === 'achievements' ? (
-          profile.isLoading ? (
-            <div className="achievement-list" aria-hidden="true">
-              {Array.from({ length: 4 }, (_, index) => (
-                <div key={index} className="achievement-row achievement-row--skeleton" />
-              ))}
-            </div>
-          ) : achievementItems.length === 0 ? (
-            <EmptyState
-              title="No achievements unlocked yet"
-              description="Keep learning and completing labs to unlock achievements."
+        <TabPanel idPrefix="achievements" id="achievements" active={tab === 'achievements'}>
+          {achievementCatalog.isLoading ? (
+            <AchievementListSkeleton />
+          ) : achievementCatalog.isError ? (
+            <ErrorState
+              message={
+                achievementCatalog.error?.message ?? 'Could not load the achievement catalog.'
+              }
+              onRetry={() => void achievementCatalog.refetch()}
             />
+          ) : achievementItems.length === 0 ? (
+            <EmptyState title="No achievements unlocked yet" />
           ) : (
             <div className="achievement-list">
               {achievementItems.map((achievement) => (
@@ -221,99 +287,104 @@ export function AchievementsPage() {
                 />
               ))}
             </div>
-          )
-        ) : null}
+          )}
+        </TabPanel>
 
-        {tab === 'certificates' ? (
-          profile.isLoading ? (
-            <div className="certificate-list" aria-hidden="true">
-              {Array.from({ length: 3 }, (_, index) => (
-                <div key={index} className="certificate-card certificate-card--skeleton" />
-              ))}
-            </div>
-          ) : (data?.certificates.length ?? 0) === 0 ? (
-            <EmptyState
-              title="No certificates yet"
-              description="Finish a course to earn your first certificate."
-            />
-          ) : (
-            <div className="certificate-list">
-              {data?.certificates.map((certificate) => (
-                <CertificateCard
-                  key={certificate.certificateId}
-                  certificate={certificate}
-                  onDownload={onDownload}
-                  onCopyLink={onCopyLink}
-                />
-              ))}
-            </div>
-          )
-        ) : null}
-
-        {tab === 'points' ? (
-          pointsHistory.isLoading ? (
-            <div className="points-table-wrap" aria-hidden="true">
-              <div className="points-table points-table--skeleton" />
-            </div>
+        <TabPanel idPrefix="achievements" id="history" active={tab === 'history'}>
+          {pointsHistory.isLoading ? (
+            <XpHistorySkeleton />
           ) : pointsHistory.isError ? (
             <ErrorState
-              message={pointsHistory.error?.message ?? 'Could not load your points history.'}
+              message={pointsHistory.error?.message ?? 'Could not load your XP history.'}
               onRetry={() => void pointsHistory.refetch()}
             />
-          ) : (pointsHistory.data?.items.length ?? 0) === 0 ? (
-            <EmptyState
-              title="No points history yet"
-              description="Points you earn from courses, labs and achievements will appear here."
-            />
+          ) : pointsItems.length === 0 ? (
+            <EmptyState title="No XP history yet" />
           ) : (
             <Card>
-              <table className="points-table">
-                <thead>
-                  <tr>
-                    <th>Date</th>
-                    <th>Source</th>
-                    <th>Description</th>
-                    <th className="points-table__num">Change</th>
-                    <th className="points-table__num">Balance</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {pointsHistory.data?.items.map((entry) => (
-                    <tr key={entry.historyId}>
-                      <td>
-                        {new Date(entry.createdAt).toLocaleDateString(undefined, {
-                          year: 'numeric',
-                          month: 'short',
-                          day: 'numeric',
-                        })}
-                      </td>
-                      <td>{SOURCE_LABELS[entry.sourceType] ?? entry.sourceType}</td>
-                      <td>{entry.description ?? '–'}</td>
-                      <td
-                        className={`points-table__num points-table__change ${
-                          entry.pointsChange < 0 ? 'points-table__change--negative' : ''
-                        }`}
-                      >
-                        {entry.pointsChange > 0 ? `+${entry.pointsChange}` : entry.pointsChange}
-                      </td>
-                      <td className="points-table__num">{entry.pointsBalanceAfter}</td>
+              <div className="overflow-x-auto">
+                <table className="points-table">
+                  <thead>
+                    <tr>
+                      <th>Date</th>
+                      <th>Event</th>
+                      <th className="points-table__num">XP</th>
+                      <th className="points-table__num">Balance</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody>
+                    {pointsItems.map((entry) => (
+                      <tr key={entry.historyId}>
+                        <td>{formatDate(entry.createdAt)}</td>
+                        <td>
+                          <span className="inline-flex items-center gap-2">
+                            <Icon
+                              name={KIND_ICONS[entry.kind ?? 'legacy'] ?? 'history'}
+                              size={16}
+                            />
+                            <span>{entry.description ?? '–'}</span>
+                          </span>
+                        </td>
+                        <td className="points-table__num">
+                          <XpDelta delta={entry.pointsChange} />
+                        </td>
+                        <td className="points-table__num">{entry.pointsBalanceAfter}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
               <Pagination
                 page={pointsPage}
                 pageSize={POINTS_PAGE_SIZE}
                 total={pointsHistory.data?.total ?? 0}
-                totalPages={Math.max(
-                  1,
-                  Math.ceil((pointsHistory.data?.total ?? 0) / POINTS_PAGE_SIZE),
-                )}
+                totalPages={pointsTotalPages}
                 onPageChange={setPointsPage}
               />
             </Card>
-          )
-        ) : null}
+          )}
+        </TabPanel>
+
+        <TabPanel idPrefix="achievements" id="certificates" active={tab === 'certificates'}>
+          {(data?.certificates.length ?? 0) === 0 ? (
+            <EmptyState title="No certificates yet" />
+          ) : (
+            <div className="certificate-list">
+              {data?.certificates.map((certificate) => (
+                <Card key={certificate.certificateId} className="certificate-card">
+                  <div className="certificate-card__header">
+                    <h3 className="certificate-card__title">{certificate.courseTitle}</h3>
+                  </div>
+                  <p className="certificate-card__number">{certificate.certificateNumber}</p>
+                  <p className="certificate-card__meta">
+                    {`Issued ${formatDate(certificate.issuedAt)}`}
+                    {certificate.grade !== null ? ` · Grade ${certificate.grade}%` : ''}
+                    {certificate.isValid ? '' : ' · Invalidated'}
+                  </p>
+                  <div className="certificate-card__actions">
+                    <Button
+                      size="sm"
+                      isLoading={
+                        download.isPending && download.variables === certificate.certificateId
+                      }
+                      loadingLabel="Starting download"
+                      onClick={() => onDownload(certificate.certificateId)}
+                    >
+                      Download
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => onCopyLink(certificate.certificateNumber)}
+                    >
+                      Copy share link
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          )}
+        </TabPanel>
       </div>
     </div>
   );

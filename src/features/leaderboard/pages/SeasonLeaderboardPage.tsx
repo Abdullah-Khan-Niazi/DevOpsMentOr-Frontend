@@ -19,22 +19,6 @@ function toRows(items: SeasonLeaderboardEntryDto[]) {
   }));
 }
 
-function seasonWindowLabel(startDate: string, endDate: string, now: number): string {
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  if (now < start) {
-    return `Starts ${new Date(startDate).toLocaleDateString(undefined, {
-      month: 'short',
-      day: 'numeric',
-    })}`;
-  }
-  const daysLeft = Math.ceil((end - now) / 86_400_000);
-  if (daysLeft > 0) {
-    return `Ends in ${daysLeft} day${daysLeft === 1 ? '' : 's'}`;
-  }
-  return 'Ended';
-}
-
 /** SCR-F7-03: season standings with a season switcher (public). */
 export function SeasonLeaderboardPage() {
   const { seasonId: seasonIdParam } = useParams<{ seasonId: string }>();
@@ -60,9 +44,6 @@ export function SeasonLeaderboardPage() {
   const selected = (seasons.data ?? []).find((season) => season.seasonId === seasonId) ?? null;
   const data = standings.data;
   const viewerRank = data?.viewerRank ?? null;
-  const windowLabel = selected
-    ? seasonWindowLabel(selected.startDate, selected.endDate, now)
-    : null;
 
   const started = selected !== null && now >= new Date(selected.startDate).getTime();
 
@@ -70,7 +51,6 @@ export function SeasonLeaderboardPage() {
     <div>
       <PageHeader
         title="Season leaderboard"
-        description={selected ? `${selected.seasonName} · ${windowLabel ?? ''}`.trim() : undefined}
         actions={
           <select
             className="input-field leaderboard-filter"
