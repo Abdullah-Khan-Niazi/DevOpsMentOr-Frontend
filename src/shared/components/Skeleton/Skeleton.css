@@ -1,14 +1,14 @@
-/* Skeleton Loaders — silky shimmer animation with context-accurate page layouts */
+/* Skeleton loaders: shimmer sweep (keyframes in globals.css) with layout-matching page skeletons. */
 
 .skeleton-bone {
   background: linear-gradient(
     90deg,
-    var(--paper-dim) 0%,
-    var(--pearl-200) 50%,
-    var(--paper-dim) 100%
+    var(--skeleton-base) 0%,
+    var(--skeleton-highlight) 50%,
+    var(--skeleton-base) 100%
   );
   background-size: 200% 100%;
-  animation: skeleton-shimmer 1.6s ease-in-out infinite;
+  animation: shimmer-sweep 1.4s linear infinite;
   border-radius: var(--radius-sm);
 }
 
@@ -25,23 +25,24 @@
   border-radius: var(--radius-md);
 }
 
-@keyframes skeleton-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
-/* Skeleton Full Page Container — scrollable just like modern premium apps */
+/* Full page skeleton container: full width like the pages it stands in for. */
 .skeleton-page {
   display: flex;
   flex-direction: column;
   gap: var(--space-6);
   width: 100%;
-  max-width: var(--container-max);
-  margin: 0 auto;
+  animation: skeletonFadeIn 200ms ease;
+}
+
+/* Page-level skeleton wrapper: fills the page root (full width and height) and stacks its sections. */
+.page-skeleton {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  min-height: 0;
+  height: 100%;
   animation: skeletonFadeIn 200ms ease;
 }
 
@@ -57,9 +58,10 @@
 @media (prefers-reduced-motion: reduce) {
   .skeleton-bone {
     animation: none;
-    background: var(--paper-dim);
+    background: var(--skeleton-base);
   }
-  .skeleton-page {
+  .skeleton-page,
+  .page-skeleton {
     animation: none;
   }
 }
