@@ -2,11 +2,16 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
 import { classService, type CreateClassPayload } from '../services';
 
-export function useOrgClasses(params?: { search?: string; page?: number; pageSize?: number }) {
+export function useOrgClasses(
+  params?: { search?: string; page?: number; pageSize?: number },
+  enabled = true,
+) {
   const queryKey = JSON.stringify(params ?? {});
   return useQuery({
     queryKey: [...QUERY_KEYS.org.classes, queryKey],
     queryFn: () => classService.listClasses(params),
+    enabled,
+    retry: false,
   });
 }
 

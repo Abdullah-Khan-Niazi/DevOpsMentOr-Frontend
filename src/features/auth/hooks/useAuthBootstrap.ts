@@ -1,5 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
-import { clearAccessToken, readCsrfToken } from '@/shared/services';
+import { clearAccessToken, readCsrfToken, wasLastRefreshRejected } from '@/shared/services';
 import { useAuthStore } from '../stores/authStore';
 import { refreshAuthSession } from '../utils/refreshAuthSession';
 
@@ -46,9 +46,11 @@ function runBootstrap(): void {
 
   refreshAuthSession()
     .then((ok) => {
-      if (!ok) resetLocal();
+      if (!ok && wasLastRefreshRejected()) resetLocal();
     })
-    .catch(resetLocal)
+    .catch(() => {
+      if (wasLastRefreshRejected()) resetLocal();
+    })
     .finally(setReady);
 }
 

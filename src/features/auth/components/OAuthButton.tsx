@@ -1,5 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
-import { Button, GoogleIcon, GitHubIcon } from '@/shared/components';
+import { Button } from '@/shared/components/Button';
+import { GoogleIcon, GitHubIcon } from '@/shared/components/Icon/BrandIcons';
 
 type OAuthProvider = 'google' | 'github';
 

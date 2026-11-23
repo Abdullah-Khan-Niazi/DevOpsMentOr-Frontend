@@ -1,6 +1,11 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { clearAccessToken, setAccessToken } from '@/shared/services';
+import {
+  broadcastAuthSync,
+  clearAccessToken,
+  clearCsrfToken,
+  setAccessToken,
+} from '@/shared/services';
 import type { AuthState } from '../types';
 
 /**
@@ -41,15 +46,10 @@ export const useAuthStore = create<AuthState>()(
       },
       clearSession: () => {
         clearAccessToken();
+        clearCsrfToken();
         purgeLegacyKeys();
         set({ user: null, isAuthenticated: false });
-        try {
-          const channel = new BroadcastChannel('auth_sync');
-          channel.postMessage({ type: 'LOGOUT' });
-          channel.close();
-        } catch {
-          // BroadcastChannel unavailable in this environment
-        }
+        broadcastAuthSync({ type: 'LOGOUT' });
       },
     }),
     {

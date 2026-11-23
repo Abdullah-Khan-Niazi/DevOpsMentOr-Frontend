@@ -1,6 +1,15 @@
 import { useState, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Button, Card, EmptyState, ErrorState, PageHeader, Icon } from '@/shared/components';
+import {
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  Icon,
+  PageHeader,
+  TabSwitcher,
+  type TabSwitcherItem,
+} from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useOrgUsers } from '../hooks';
@@ -170,28 +179,20 @@ export function OrgProfessorsPage() {
             />
           </div>
 
-          {/* Role Filter Tabs - universal .tab-switcher */}
-          <div className="tab-switcher shrink-0 text-[0.625rem] sm:text-[0.6875rem]">
-            {(
+          <TabSwitcher<MemberRoleTab>
+            ariaLabel="Filter organization members by role"
+            value={roleTab}
+            onChange={setRoleTab}
+            className="shrink-0"
+            items={
               [
-                { key: 'ALL', label: `All (${roleCounts.all})` },
-                { key: 'PROFESSOR', label: `Professors (${roleCounts.professors})` },
-                { key: 'ORG_STUDENT', label: `Students (${roleCounts.students})` },
-                { key: 'ORG_ADMIN', label: `Admins (${roleCounts.admins})` },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setRoleTab(tab.key)}
-                className={`tab-switcher__tab ${
-                  roleTab === tab.key ? 'tab-switcher__tab--active' : ''
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+                { id: 'ALL', label: `All (${roleCounts.all})`, icon: 'users' },
+                { id: 'PROFESSOR', label: `Professors (${roleCounts.professors})`, icon: 'professors' },
+                { id: 'ORG_STUDENT', label: `Students (${roleCounts.students})`, icon: 'my-class' },
+                { id: 'ORG_ADMIN', label: `Admins (${roleCounts.admins})`, icon: 'shield' },
+              ] satisfies ReadonlyArray<TabSwitcherItem<MemberRoleTab>>
+            }
+          />
         </div>
 
         {orgUsersQuery.isError ? (

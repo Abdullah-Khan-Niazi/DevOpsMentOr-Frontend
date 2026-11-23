@@ -16,10 +16,34 @@ export const DEFAULT_ACCESS_TOKEN_TTL_SECONDS = 900;
 
 const CSRF_COOKIE_NAME = 'dm_csrf';
 
+export const TAB_ID: string =
+  typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `${Date.now()}-${Math.random().toString(36).slice(2)}`;
+
+export type AuthSyncMessage =
+  | { type: 'LOGOUT'; senderId: string }
+  | { type: 'TOKEN_REFRESHED'; senderId: string; accessToken: string; expiresInSeconds: number };
+
 let accessToken: string | null = null;
+let memoryCsrfToken: string | null = null;
 let refreshTimer: ReturnType<typeof setTimeout> | null = null;
 let refresher: TokenRefresher | null = null;
 const listeners = new Set<AccessTokenListener>();
+
+export function broadcastAuthSync(
+  payload:
+    | { type: 'LOGOUT' }
+    | { type: 'TOKEN_REFRESHED'; accessToken: string; expiresInSeconds: number },
+): void {
+  try {
+    const channel = new BroadcastChannel('auth_sync');
+    channel.postMessage({ ...payload, senderId: TAB_ID });
+    channel.close();
+  } catch {
+    // BroadcastChannel unavailable in this environment
+  }
+}
 
 function notify(): void {
   for (const listener of listeners) {
@@ -79,17 +103,28 @@ export function registerTokenRefresher(fn: TokenRefresher): void {
   refresher = fn;
 }
 
-/** Value of the `dm_csrf` cookie (double-submit token), or null when absent. */
+export function setCsrfToken(token: string | null): void {
+  memoryCsrfToken = token && token.trim().length > 0 ? token.trim() : null;
+}
+
+export function clearCsrfToken(): void {
+  memoryCsrfToken = null;
+}
+
+/** Value of the `dm_csrf` cookie or in-memory header mirror, or null when absent. */
 export function readCsrfToken(): string | null {
-  if (typeof document === 'undefined') return null;
-  for (const part of document.cookie.split(';')) {
-    const separator = part.indexOf('=');
-    if (separator === -1) continue;
-    const name = part.slice(0, separator).trim();
-    if (name === CSRF_COOKIE_NAME) {
-      const value = part.slice(separator + 1).trim();
-      return value.length > 0 ? value : null;
+  if (typeof document !== 'undefined') {
+    for (const part of document.cookie.split(';')) {
+      const separator = part.indexOf('=');
+      if (separator === -1) continue;
+      const name = part.slice(0, separator).trim();
+      if (name === CSRF_COOKIE_NAME) {
+        const value = part.slice(separator + 1).trim();
+        if (value.length > 0) {
+          return value;
+        }
+      }
     }
   }
-  return null;
+  return memoryCsrfToken;
 }

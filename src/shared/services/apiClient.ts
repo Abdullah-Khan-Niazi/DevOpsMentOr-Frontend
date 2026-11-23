@@ -3,12 +3,16 @@ import { ENV } from '@/shared/constants';
 import { isErrorCode } from '@/shared/constants/errorCodes';
 import type { ApiError, ApiErrorDetail, ApiErrorKind } from '@/shared/types';
 import {
+  broadcastAuthSync,
   clearAccessToken,
+  clearCsrfToken,
   DEFAULT_ACCESS_TOKEN_TTL_SECONDS,
   getAccessToken,
   readCsrfToken,
   registerTokenRefresher,
   setAccessToken,
+  setCsrfToken,
+  TAB_ID,
 } from './authSession';
 import { serverClock } from './serverClock';
 
@@ -31,8 +35,22 @@ export const AUTH_TOKEN_KEY = 'auth_token';
 /** @deprecated See AUTH_TOKEN_KEY. */
 export const AUTH_REFRESH_TOKEN_KEY = 'auth_refresh_token';
 
-/** Endpoints that use the refresh cookie or are CSRF-protected (C§11.5). */
-const COOKIE_AUTH_PATHS = ['/auth/refresh', '/auth/logout', '/auth/logout-all'];
+/** Endpoints that set or consume the refresh/CSRF cookies (must send withCredentials). */
+const COOKIE_AUTH_PATHS = [
+  '/auth/login',
+  '/auth/admin/login',
+  '/auth/verify-email',
+  '/auth/oauth/login',
+  '/auth/oauth/signup',
+  '/auth/oauth/complete',
+  '/auth/csrf',
+  '/auth/refresh',
+  '/auth/logout',
+  '/auth/logout-all',
+];
+
+/** Cookie-authenticated state-changing endpoints that also require `X-CSRF-Token`. */
+const CSRF_REQUIRED_PATHS = ['/auth/refresh', '/auth/logout', '/auth/logout-all'];
 
 /** Endpoints where a 401 means bad credentials or a spent code, never an expired access token. */
 const NO_REFRESH_PATHS = [
@@ -79,18 +97,72 @@ function isCookieAuthPath(url: string | undefined): boolean {
   return COOKIE_AUTH_PATHS.some((cookiePath) => path.endsWith(cookiePath));
 }
 
+function isCsrfRequiredPath(url: string | undefined): boolean {
+  if (!url) return false;
+  const path = url.split('?')[0];
+  return CSRF_REQUIRED_PATHS.some((csrfPath) => path.endsWith(csrfPath));
+}
+
+function captureCsrfFromHeaders(headers: unknown): void {
+  if (!headers || typeof headers !== 'object') return;
+  const record = headers as Record<string, unknown>;
+  const token = record['x-csrf-token'] ?? record['X-CSRF-Token'];
+  if (typeof token === 'string' && token.trim().length > 0) {
+    setCsrfToken(token);
+  }
+}
+
 function csrfHeader(): Record<string, string> {
   const csrf = readCsrfToken();
   return csrf ? { 'X-CSRF-Token': csrf } : {};
 }
 
-apiClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
+let csrfPromise: Promise<string | null> | null = null;
+
+/**
+ * Ensures a usable double-submit CSRF token is present in cookie or memory
+ * (`GET /auth/csrf` exposes `X-CSRF-Token` even when frontend and backend are cross-site).
+ */
+export async function ensureCsrfToken(force = false): Promise<string | null> {
+  if (!force) {
+    const existing = readCsrfToken();
+    if (existing) return existing;
+  }
+  if (!csrfPromise) {
+    csrfPromise = axios
+      .get<{ data?: { csrfToken?: string } }>(`${ENV.API_BASE_URL}/auth/csrf`, {
+        timeout: 10_000,
+        withCredentials: true,
+      })
+      .then((res) => {
+        captureCsrfFromHeaders(res.headers);
+        const bodyToken = res.data?.data?.csrfToken;
+        if (typeof bodyToken === 'string' && bodyToken.length > 0) {
+          setCsrfToken(bodyToken);
+          return bodyToken;
+        }
+        return readCsrfToken();
+      })
+      .catch(() => readCsrfToken())
+      .finally(() => {
+        csrfPromise = null;
+      });
+  }
+  return csrfPromise;
+}
+
+apiClient.interceptors.request.use(async (config: InternalAxiosRequestConfig) => {
   const token = getAccessToken();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
   if (isCookieAuthPath(config.url)) {
     config.withCredentials = true;
+  }
+  if (isCsrfRequiredPath(config.url)) {
+    if (!readCsrfToken()) {
+      await ensureCsrfToken();
+    }
     Object.assign(config.headers, csrfHeader());
   }
   return config;
@@ -105,36 +177,103 @@ interface RefreshEnvelope {
   };
 }
 
-/** Tells other tabs that this session has ended. */
-function broadcastLogout(): void {
-  try {
-    const channel = new BroadcastChannel('auth_sync');
-    channel.postMessage({ type: 'LOGOUT' });
-    channel.close();
-  } catch {
-    // BroadcastChannel unavailable in this environment
-  }
+let lastRefreshRejected = false;
+
+/** Whether the most recent failed refresh attempt was a definitive 400/401/403 rejection. */
+export function wasLastRefreshRejected(): boolean {
+  return lastRefreshRejected;
+}
+
+async function performRefreshPost(): Promise<AxiosResponse<RefreshEnvelope>> {
+  const response = await axios.post<RefreshEnvelope>(
+    `${ENV.API_BASE_URL}/auth/refresh`,
+    {},
+    { timeout: 15_000, withCredentials: true, headers: csrfHeader() },
+  );
+  captureCsrfFromHeaders(response.headers);
+  return response;
 }
 
 async function requestAccessToken(): Promise<string | null> {
+  if (!readCsrfToken()) {
+    await ensureCsrfToken();
+  }
+
   try {
-    const { data } = await axios.post<RefreshEnvelope>(
-      `${ENV.API_BASE_URL}/auth/refresh`,
-      {},
-      { timeout: 15_000, withCredentials: true, headers: csrfHeader() },
-    );
+    const { data } = await performRefreshPost();
+    lastRefreshRejected = false;
     setAccessToken(data.data.accessToken, data.data.expiresInSeconds);
+    broadcastAuthSync({
+      type: 'TOKEN_REFRESHED',
+      accessToken: data.data.accessToken,
+      expiresInSeconds: data.data.expiresInSeconds,
+    });
     return data.data.accessToken;
   } catch (error) {
+    const firstStatus = axios.isAxiosError(error) ? error.response?.status : undefined;
+    if (firstStatus === 403) {
+      // Cross-site cookie/header sync may have staled; re-bootstrap CSRF once and retry.
+      const refreshedCsrf = await ensureCsrfToken(true);
+      if (refreshedCsrf) {
+        try {
+          const { data } = await performRefreshPost();
+          lastRefreshRejected = false;
+          setAccessToken(data.data.accessToken, data.data.expiresInSeconds);
+          broadcastAuthSync({
+            type: 'TOKEN_REFRESHED',
+            accessToken: data.data.accessToken,
+            expiresInSeconds: data.data.expiresInSeconds,
+          });
+          return data.data.accessToken;
+        } catch (retryError) {
+          const retryStatus = axios.isAxiosError(retryError) ? retryError.response?.status : undefined;
+          if (retryStatus === 400 || retryStatus === 401 || retryStatus === 403) {
+            lastRefreshRejected = true;
+            clearAccessToken();
+            clearCsrfToken();
+            broadcastAuthSync({ type: 'LOGOUT' });
+            return null;
+          }
+          lastRefreshRejected = false;
+          return null;
+        }
+      }
+    }
+
     // Only a definitive rejection ends the session. A network error or a 5xx
     // must not sign the user out of every tab.
-    const status = axios.isAxiosError(error) ? error.response?.status : undefined;
-    if (status === 400 || status === 401 || status === 403) {
+    if (firstStatus === 400 || firstStatus === 401 || firstStatus === 403) {
+      lastRefreshRejected = true;
       clearAccessToken();
-      broadcastLogout();
+      clearCsrfToken();
+      broadcastAuthSync({ type: 'LOGOUT' });
+    } else {
+      lastRefreshRejected = false;
     }
     return null;
   }
+}
+
+try {
+  const syncChannel = new BroadcastChannel('auth_sync');
+  syncChannel.onmessage = (event) => {
+    const msg = event.data as {
+      type?: string;
+      senderId?: string;
+      accessToken?: string;
+      expiresInSeconds?: number;
+    } | null;
+    if (!msg || msg.senderId === TAB_ID) return;
+    if (
+      msg.type === 'TOKEN_REFRESHED' &&
+      typeof msg.accessToken === 'string' &&
+      typeof msg.expiresInSeconds === 'number'
+    ) {
+      setAccessToken(msg.accessToken, msg.expiresInSeconds);
+    }
+  };
+} catch {
+  // BroadcastChannel unavailable in this environment
 }
 
 /**
@@ -290,14 +429,30 @@ export function toApiError(error: unknown): ApiError {
 apiClient.interceptors.response.use(
   (response: AxiosResponse) => {
     serverClock.recordDateHeader(response.headers?.['date']);
+    captureCsrfFromHeaders(response.headers);
     return response;
   },
   async (error: AxiosError) => {
     if (error.response) {
       serverClock.recordDateHeader(error.response.headers?.['date']);
+      captureCsrfFromHeaders(error.response.headers);
     }
     const config = error.config as RetryableConfig | undefined;
     const isRefreshRequest = skipsRefresh(error.config?.url);
+
+    if (
+      error.response?.status === 403 &&
+      config &&
+      !config._retried &&
+      isCsrfRequiredPath(config.url)
+    ) {
+      config._retried = true;
+      const csrf = await ensureCsrfToken(true);
+      if (csrf) {
+        config.headers['X-CSRF-Token'] = csrf;
+        return apiClient(config);
+      }
+    }
 
     if (error.response?.status === 401 && config && !config._retried && !isRefreshRequest) {
       config._retried = true;
@@ -310,7 +465,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    if (error.response?.status === 401 && !isRefreshRequest) {
+    if (error.response?.status === 401 && !isRefreshRequest && lastRefreshRejected) {
       clearAccessToken();
     }
 

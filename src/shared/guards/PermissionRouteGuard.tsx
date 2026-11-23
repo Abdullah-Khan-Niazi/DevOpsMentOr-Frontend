@@ -1,8 +1,14 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Navigate } from 'react-router-dom';
-import { DashboardSkeleton, LoadingState } from '@/shared/components';
+import { ErrorState } from '@/shared/components/ErrorState';
+import { LoadingState } from '@/shared/components/LoadingState';
+import { DashboardSkeleton } from '@/shared/components/Skeleton';
 import { ROUTES } from '@/shared/constants';
 import { useAuthReady } from '@/features/auth/hooks/useAuthBootstrap';
+import {
+  retrySessionValidation,
+  useSessionValidationError,
+} from '@/features/auth/hooks/useSessionValidator';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 
 const NotFoundPage = lazy(() => import('@/pages/site/NotFoundPage'));
@@ -30,6 +36,7 @@ export function PermissionRouteGuard({
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const user = useAuthStore((state) => state.user);
   const ready = useAuthReady();
+  const validationError = useSessionValidationError();
 
   if (!ready) {
     return <DashboardSkeleton />;
@@ -40,6 +47,9 @@ export function PermissionRouteGuard({
   }
 
   if (!user?.permissions) {
+    if (validationError) {
+      return <ErrorState error={validationError} onRetry={retrySessionValidation} />;
+    }
     return <DashboardSkeleton />;
   }
 

@@ -58,12 +58,12 @@ const CLASS_TAB_IDS = [
 type ClassTab = (typeof CLASS_TAB_IDS)[number];
 
 const CLASS_TAB_ITEMS: ReadonlyArray<TabSwitcherItem<ClassTab>> = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'students', label: 'Students' },
-  { id: 'progress', label: 'Progress' },
-  { id: 'assignments', label: 'Assignments' },
-  { id: 'invitations', label: 'Invitations' },
-  { id: 'settings', label: 'Settings' },
+  { id: 'overview', label: 'Overview', icon: 'dashboard' },
+  { id: 'students', label: 'Students', icon: 'users' },
+  { id: 'progress', label: 'Progress', icon: 'chart' },
+  { id: 'assignments', label: 'Assignments', icon: 'checklist' },
+  { id: 'invitations', label: 'Invitations', icon: 'email' },
+  { id: 'settings', label: 'Settings', icon: 'settings' },
 ];
 const ROSTER_PAGE_SIZE = 20;
 const INVITES_PAGE_SIZE = 20;

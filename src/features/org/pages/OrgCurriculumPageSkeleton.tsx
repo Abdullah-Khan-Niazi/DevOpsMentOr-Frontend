@@ -1,4 +1,4 @@
-import { PageSkeleton, Skeleton, TreeSkeleton } from '@/shared/components';
+import { PageSkeleton, Skeleton, TreeSkeleton } from '@/shared/components/Skeleton';
 
 /** Org curriculum: page title, then the course tree with nested module rows. */
 export function OrgCurriculumPageSkeleton() {

@@ -1,3 +1,12 @@
+import { ROUTES } from '@/shared/constants';
+
+export type ParsedJoinInput =
+  | { kind: 'code'; code: string }
+  | { kind: 'invite'; pathname: string; token: string }
+  | { kind: 'invalid'; error: string };
+
+const CLASS_CODE_PATTERN = /^[A-Z0-9]{6,12}$/;
+
 /**
  * Auto-identifies and extracts an invitation token from either:
  * - A raw token string (UUID or custom slug, e.g. 'test-invite-token-cs401')
@@ -38,4 +47,71 @@ export function extractInvitationToken(input: string): string {
   }
 
   return trimmed;
+}
+
+/**
+ * Unified join parser shared by WorkspaceSwitcher and the Enrollment Gateway:
+ * accepts a 6-12 char class join code, a full/relative invite URL, or a raw invite token.
+ */
+export function parseJoinInput(raw: string): ParsedJoinInput {
+  const trimmed = raw.trim();
+  if (!trimmed) {
+    return { kind: 'invalid', error: 'Enter a class code or invitation link.' };
+  }
+
+  const looksLikeUrl =
+    trimmed.startsWith('http://') ||
+    trimmed.startsWith('https://') ||
+    trimmed.startsWith('/') ||
+    trimmed.includes('?');
+
+  if (looksLikeUrl) {
+    let url: URL;
+    const baseOrigin =
+      typeof window !== 'undefined' && window.location?.origin
+        ? window.location.origin
+        : 'https://gateway.local';
+    try {
+      url = new URL(trimmed, baseOrigin);
+    } catch {
+      return { kind: 'invalid', error: 'Enter a valid invitation link or class code.' };
+    }
+
+    if (
+      (trimmed.startsWith('http://') || trimmed.startsWith('https://')) &&
+      typeof window !== 'undefined' &&
+      window.location?.origin &&
+      url.origin !== window.location.origin
+    ) {
+      return { kind: 'invalid', error: 'This link does not belong to this site.' };
+    }
+
+    const queryCode = url.searchParams.get('classCode')?.trim() ?? '';
+    if (queryCode && CLASS_CODE_PATTERN.test(queryCode.toUpperCase())) {
+      return { kind: 'code', code: queryCode.toUpperCase() };
+    }
+
+    const isOrgAdmin = url.pathname.startsWith(ROUTES.ORG_ADMIN_ACCEPT);
+    const isEnroll = url.pathname.startsWith(ROUTES.ENROLL_ACCEPT);
+    if (!isOrgAdmin && !isEnroll) {
+      return { kind: 'invalid', error: 'This is not a valid class or organization invitation link.' };
+    }
+
+    const token = extractInvitationToken(trimmed);
+    if (!token || token === trimmed) {
+      return { kind: 'invalid', error: 'This invitation link is missing its token.' };
+    }
+
+    return {
+      kind: 'invite',
+      pathname: isOrgAdmin ? ROUTES.ORG_ADMIN_ACCEPT : ROUTES.ENROLL_ACCEPT,
+      token,
+    };
+  }
+
+  if (CLASS_CODE_PATTERN.test(trimmed.toUpperCase())) {
+    return { kind: 'code', code: trimmed.toUpperCase() };
+  }
+
+  return { kind: 'invite', pathname: ROUTES.ENROLL_ACCEPT, token: trimmed };
 }

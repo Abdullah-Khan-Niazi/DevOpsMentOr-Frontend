@@ -25,8 +25,8 @@ const TAB_IDS = ['cohorts', 'members'] as const;
 type OrgDashboardTab = (typeof TAB_IDS)[number];
 
 const TABS: ReadonlyArray<TabSwitcherItem<OrgDashboardTab>> = [
-  { id: 'cohorts', label: 'Cohorts' },
-  { id: 'members', label: 'Organization Members' },
+  { id: 'cohorts', label: 'Cohorts', icon: 'classes' },
+  { id: 'members', label: 'Organization Members', icon: 'users' },
 ];
 
 /** F3 contract §09 SCR-F3-03: org workspace dashboard with NothingOS aesthetic. */

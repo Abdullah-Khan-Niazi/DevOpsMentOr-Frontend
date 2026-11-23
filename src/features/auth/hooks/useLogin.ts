@@ -21,7 +21,16 @@ export function useLogin() {
       if (data.data.user.isVerified) {
         const defaultRoute = getDefaultRouteForUser(data.data.user);
         const params = new URLSearchParams(location.search);
-        const redirect = safeRedirectPath(params.get('redirect'));
+        const stateFromRaw = (location.state as {
+          from?: string | { pathname?: string; search?: string };
+        } | null)?.from;
+        const stateFromPath =
+          typeof stateFromRaw === 'string'
+            ? stateFromRaw
+            : stateFromRaw?.pathname
+              ? `${stateFromRaw.pathname}${stateFromRaw.search ?? ''}`
+              : null;
+        const redirect = safeRedirectPath(params.get('redirect') ?? stateFromPath);
 
         if (redirect && redirect !== ROUTES.DASHBOARD) {
           void navigate(redirect, { replace: true });

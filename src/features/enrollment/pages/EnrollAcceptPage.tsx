@@ -1,12 +1,14 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { Button, Card, ErrorState, Input, Skeleton, toast } from '@/shared/components';
 import { AuthLayout } from '@/features/auth/components/AuthLayout';
 import { QUERY_KEYS, ROUTES } from '@/shared/constants';
+import { getErrorMessage } from '@/shared/services';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
-import { extractInvitationToken } from '@/features/auth/utils/invitation';
+import { extractInvitationToken, parseJoinInput } from '@/features/auth/utils/invitation';
+import { enrollmentService } from '../services';
 import { useAcceptInvitation, useValidateInvitation } from '../hooks';
 
 /** Invitation preview while it is checked: mirrors the accept card. */
@@ -42,8 +44,10 @@ export function EnrollAcceptPage() {
     }
   }, [rawParam, setSearchParams]);
 
+  const navigate = useNavigate();
   const [inputCode, setInputCode] = useState('');
   const [inputError, setInputError] = useState<string | null>(null);
+  const [isJoiningCode, setIsJoiningCode] = useState(false);
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
   const accept = useAcceptInvitation();
   const [accepted, setAccepted] = useState(false);
@@ -51,15 +55,48 @@ export function EnrollAcceptPage() {
 
   const preview = useValidateInvitation(token);
 
-  const handleManualSubmit = (e: FormEvent) => {
+  const handleManualSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const extracted = extractInvitationToken(inputCode);
-    if (!extracted) {
-      setInputError('Please enter a valid invitation code or link.');
+    const parsed = parseJoinInput(inputCode);
+    if (parsed.kind === 'invalid') {
+      setInputError(parsed.error);
       return;
     }
+
     setInputError(null);
-    setToken(extracted);
+    if (parsed.kind === 'code') {
+      if (!isAuthenticated) {
+        navigate(
+          `${ROUTES.LOGIN}?redirect=${encodeURIComponent(`${ROUTES.ENROLL_ACCEPT}?code=${encodeURIComponent(parsed.code)}`)}`,
+        );
+        return;
+      }
+      setIsJoiningCode(true);
+      try {
+        const result = await enrollmentService.joinWithCode(parsed.code);
+        await refreshAuthSession();
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClasses });
+        void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.enrollment.myClass() });
+        toast.success(
+          result.alreadyEnrolled
+            ? `Already enrolled in ${result.className}.`
+            : `Joined ${result.className}.`,
+        );
+        navigate(`${ROUTES.STUDENT_MY_CLASS}?classId=${result.classId}`);
+      } catch (err) {
+        setInputError(getErrorMessage(err, 'Unable to join with this class code.'));
+      } finally {
+        setIsJoiningCode(false);
+      }
+      return;
+    }
+
+    if (parsed.pathname === ROUTES.ORG_ADMIN_ACCEPT) {
+      navigate(`${ROUTES.ORG_ADMIN_ACCEPT}?token=${encodeURIComponent(parsed.token)}`);
+      return;
+    }
+    setToken(parsed.token);
   };
 
   const handleResetToken = () => {
@@ -112,8 +149,13 @@ export function EnrollAcceptPage() {
               required
             />
 
-            <Button type="submit" className="w-full">
-              Verify Invitation
+            <Button
+              type="submit"
+              className="w-full"
+              isLoading={isJoiningCode}
+              loadingLabel="Joining class…"
+            >
+              Verify & Join
             </Button>
           </form>
 
@@ -203,7 +245,12 @@ export function EnrollAcceptPage() {
         </p>
 
         {isAuthenticated ? (
-          <Button className="w-full" onClick={handleAccept} isLoading={accept.isPending}>
+          <Button
+            className="w-full"
+            onClick={handleAccept}
+            isLoading={accept.isPending}
+            loadingLabel="Accepting invitation…"
+          >
             Accept invitation
           </Button>
         ) : (

@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from 'react-router-dom';
-import { DashboardSkeleton } from '@/shared/components';
+import { DashboardSkeleton } from '@/shared/components/Skeleton';
 import { ROUTES } from '@/shared/constants';
 import { useAuthReady } from '../hooks/useAuthBootstrap';
 import { useAuthStore } from '../stores/authStore';

@@ -1,6 +1,8 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useSyncExternalStore } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { ROUTES } from '@/shared/constants';
+import { TAB_ID } from '@/shared/services';
+import type { ApiError } from '@/shared/types';
 import { authService } from '../services';
 import { useAuthStore } from '../stores/authStore';
 import { useAuthReady } from './useAuthBootstrap';
@@ -9,6 +11,37 @@ import { useAuthReady } from './useAuthBootstrap';
 // account signs in in the same tab, the previous account's org/class/progress
 // data must never paint while the new session loads.
 let cachedUserId: number | null = null;
+
+let validationError: ApiError | null = null;
+let activeRetry: (() => void) | null = null;
+const errorListeners = new Set<() => void>();
+
+function setValidationError(next: ApiError | null): void {
+  if (validationError === next) return;
+  validationError = next;
+  for (const listener of errorListeners) listener();
+}
+
+function subscribeValidationError(listener: () => void): () => void {
+  errorListeners.add(listener);
+  return () => {
+    errorListeners.delete(listener);
+  };
+}
+
+/** Non-401 error from the most recent `/auth/me` validation attempt, if any. */
+export function useSessionValidationError(): ApiError | null {
+  return useSyncExternalStore(
+    subscribeValidationError,
+    () => validationError,
+    () => null,
+  );
+}
+
+/** Retries `/auth/me` session validation from route guards when permissions failed to load. */
+export function retrySessionValidation(): void {
+  activeRetry?.();
+}
 
 // Runs whenever authentication transitions to true (initial restore or a
 // fresh login) and merges /auth/me identity (roles + permissions — the login
@@ -23,10 +56,12 @@ export function useSessionValidator() {
   const endSession = useCallback(() => {
     queryClient.clear();
     cachedUserId = null;
+    setValidationError(null);
     clearSession();
   }, [clearSession, queryClient]);
 
   const validate = useCallback(async () => {
+    setValidationError(null);
     try {
       const me = await authService.getMe();
 
@@ -50,10 +85,25 @@ export function useSessionValidator() {
         roles: me.roles,
         permissions: me.permissions,
       });
-    } catch {
-      endSession();
+    } catch (error) {
+      const status = (error as ApiError | undefined)?.statusCode;
+      if (status === 401) {
+        endSession();
+      } else {
+        setValidationError(error as ApiError);
+      }
     }
   }, [endSession, queryClient, setUser]);
+
+  useEffect(() => {
+    const retry = () => {
+      void validate();
+    };
+    activeRetry = retry;
+    return () => {
+      if (activeRetry === retry) activeRetry = null;
+    };
+  }, [validate]);
 
   useEffect(() => {
     // Wait for the boot-time refresh so /auth/me never races it.
@@ -74,7 +124,9 @@ export function useSessionValidator() {
     try {
       channel = new BroadcastChannel('auth_sync');
       channel.onmessage = (event) => {
-        if (event.data?.type === 'LOGOUT') {
+        const msg = event.data as { type?: string; senderId?: string } | null;
+        if (!msg || msg.senderId === TAB_ID) return;
+        if (msg.type === 'LOGOUT') {
           handleLogout();
         }
       };

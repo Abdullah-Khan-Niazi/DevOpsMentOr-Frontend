@@ -129,6 +129,7 @@ export const QUERY_KEYS = {
   },
   labs: {
     all: ['labs'] as const,
+    health: ['labs', 'health'] as const,
     detail: (labId: string | number) => ['labs', String(labId)] as const,
     detailBySlug: (slug: string) => ['labs', 'slug', slug] as const,
     activeInstance: ['labs', 'instances', 'active'] as const,

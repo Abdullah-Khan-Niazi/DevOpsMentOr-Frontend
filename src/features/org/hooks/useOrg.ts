@@ -1,14 +1,19 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { QUERY_KEYS } from '@/shared/constants';
+import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
 import { orgService, type CreateOrgPayload, type UpdateMyOrgPayload } from '../services';
 
 export function useCreateOrg() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (payload: CreateOrgPayload) => orgService.createOrg(payload),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
-      void queryClient.invalidateQueries({ queryKey: ['auth', 'me'] });
+    onSuccess: async () => {
+      await refreshAuthSession();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.memberships }),
+        queryClient.invalidateQueries({ queryKey: ['auth', 'me'] }),
+      ]);
     },
   });
 }
@@ -28,11 +33,14 @@ export function useSwitchOrg() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (organizationId: number) => orgService.switchOrg(organizationId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me });
-      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.memberships });
-      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes });
-      void queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users });
+    onSuccess: async () => {
+      await refreshAuthSession();
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.me }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.memberships }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.classes }),
+        queryClient.invalidateQueries({ queryKey: QUERY_KEYS.org.users }),
+      ]);
     },
   });
 }
