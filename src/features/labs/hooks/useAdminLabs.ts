@@ -16,10 +16,11 @@ const CURRICULUM_ADMIN_ROOT = QUERY_KEYS.curriculumAdmin.all;
 /* ── Queries ───────────────────────────────────────────────────────────── */
 
 /** Staff lab library. */
-export function useAdminLabs() {
+export function useAdminLabs(enabled = true) {
   return useQuery({
     queryKey: QUERY_KEYS.adminLabs.list,
     queryFn: () => adminLabsService.list(),
+    enabled,
     retry: false,
   });
 }

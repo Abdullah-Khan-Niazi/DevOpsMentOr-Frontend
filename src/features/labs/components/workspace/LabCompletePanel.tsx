@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LabStepsStateTotals } from '@/features/labs/types';
+import { getNetLabEarnedXp } from '@/features/labs/utils/stepXp';
 import { Button } from '@/shared/components/Button';
 import { Countdown } from '@/shared/components/Countdown';
 import { Icon } from '@/shared/components/Icon';
@@ -11,6 +12,8 @@ export interface LabCompletePanelProps {
   /** Scaled completion bonus of the lab (0 when the lab has none). */
   completionBonus: number;
   totals: LabStepsStateTotals;
+  /** Effective total lab XP after permanent hint deductions. */
+  effectiveTotalXp?: number;
   /** Deadline of the lab environment grace period; null when no environment is running. */
   graceExpiresAt: string | null;
   next: { label: string; to: string } | null;
@@ -41,12 +44,15 @@ export function LabCompletePanel({
   completedAt,
   completionBonus,
   totals,
+  effectiveTotalXp,
   graceExpiresAt,
   next,
   backTo,
 }: LabCompletePanelProps) {
   const navigate = useNavigate();
   const completedDate = new Date(completedAt);
+  const netEarned = getNetLabEarnedXp(totals);
+  const totalAvailable = effectiveTotalXp ?? totals.pointsAvailable;
 
   return (
     <section className="motion-pop-in flex flex-col gap-5 rounded-lg border border-border bg-card p-5">
@@ -74,7 +80,7 @@ export function LabCompletePanel({
       <dl className="m-0 flex flex-col">
         <TotalRow label="Earned">
           <span className="tabular-nums">
-            {totals.pointsEarned} of {totals.pointsAvailable} XP
+            {netEarned} of {totalAvailable} XP
           </span>
         </TotalRow>
         <TotalRow label="Hint penalties">

@@ -17,24 +17,26 @@ function WalkthroughSkeleton() {
       role="status"
       aria-live="polite"
       aria-label="Loading walkthrough"
-      className="prose-measure flex flex-col gap-3 p-1"
+      className="flex min-h-0 flex-1 flex-col overflow-y-auto bg-pearl-100 p-6 text-card-foreground"
     >
-      <Skeleton variant="text" className="h-6" width="45%" />
-      <Skeleton variant="text" className="h-3.5" width="100%" />
-      <Skeleton variant="text" className="h-3.5" width="96%" />
-      <Skeleton variant="text" className="h-3.5" width="88%" />
-      <Skeleton variant="text" className="h-3.5" width="60%" />
-      <Skeleton variant="text" className="mt-4 h-6" width="38%" />
-      <Skeleton variant="text" className="h-3.5" width="100%" />
-      <Skeleton variant="text" className="h-3.5" width="92%" />
-      <Skeleton variant="text" className="h-3.5" width="70%" />
+      <div className="prose-measure flex flex-col gap-3">
+        <Skeleton variant="text" className="h-6" width="45%" />
+        <Skeleton variant="text" className="h-3.5" width="100%" />
+        <Skeleton variant="text" className="h-3.5" width="96%" />
+        <Skeleton variant="text" className="h-3.5" width="88%" />
+        <Skeleton variant="text" className="h-3.5" width="60%" />
+        <Skeleton variant="text" className="mt-4 h-6" width="38%" />
+        <Skeleton variant="text" className="h-3.5" width="100%" />
+        <Skeleton variant="text" className="h-3.5" width="92%" />
+        <Skeleton variant="text" className="h-3.5" width="70%" />
+      </div>
     </div>
   );
 }
 
 function NoWalkthrough() {
   return (
-    <div className="flex flex-1 items-center justify-center">
+    <div className="flex min-h-0 flex-1 items-center justify-center bg-pearl-100 p-6 text-card-foreground">
       <EmptyState icon="walkthrough" title="No walkthrough for this lab" />
     </div>
   );
@@ -48,7 +50,7 @@ export function WalkthroughPanel({ markdown, loading, error, onRetry }: Walkthro
 
   if (error !== null && error !== undefined) {
     return (
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex min-h-0 flex-1 items-center justify-center bg-pearl-100 p-6 text-card-foreground">
         <ErrorState error={error} onRetry={onRetry} />
       </div>
     );
@@ -57,7 +59,7 @@ export function WalkthroughPanel({ markdown, loading, error, onRetry }: Walkthro
   if (!markdown?.trim()) return <NoWalkthrough />;
 
   return (
-    <div className="min-h-0 flex-1 overflow-y-auto p-4">
+    <div className="min-h-0 flex-1 overflow-y-auto bg-pearl-100 p-6 text-card-foreground">
       <div className="prose-measure">
         <Markdown variant="prose">{markdown}</Markdown>
       </div>

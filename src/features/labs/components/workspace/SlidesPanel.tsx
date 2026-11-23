@@ -33,12 +33,19 @@ function SlidesSkeleton() {
  * is frozen while the deck is open so the reader's page is never lost; a different URL is only
  * adopted when the tab is hidden (reopened later) or the PDF failed to load.
  */
-export function SlidesPanel({ url, active, loading, error, onRetry }: SlidesPanelProps) {
+export function SlidesPanel({
+  url,
+  active: _active,
+  loading,
+  error,
+  onRetry,
+}: SlidesPanelProps) {
   const safeUrl = safeHttpUrl(url);
   const [frameUrl, setFrameUrl] = useState<string | null>(null);
   const [frameFailed, setFrameFailed] = useState(false);
 
-  if (safeUrl && safeUrl !== frameUrl && (frameUrl === null || !active || frameFailed)) {
+  // Freeze the iframe URL once loaded so switching away and back never resets the reader's page.
+  if (safeUrl && safeUrl !== frameUrl && (frameUrl === null || frameFailed)) {
     setFrameUrl(safeUrl);
     setFrameFailed(false);
   }

@@ -1,8 +1,9 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react';
-import { Skeleton, TabSwitcher, type TabSwitcherItem } from '@/shared/components';
+import { useState } from 'react';
+import type { LearnerLabStepDto } from '@/features/labs/types';
+import { Button, Icon, Skeleton, TabSwitcher, type TabSwitcherItem } from '@/shared/components';
+import { cn } from '@/shared/utils';
 import { useSlides, useWalkthrough } from '../../hooks/useLabSteps';
-import { useLabEnvironment } from '../../hooks/useLabEnvironment';
-import { EnvironmentConflictDialog } from './EnvironmentConflictDialog';
+import type { useLabEnvironment } from '../../hooks/useLabEnvironment';
 import { EnvironmentPanel, type EnvironmentPanelState } from './EnvironmentPanel';
 import { EnvironmentToolbar } from './EnvironmentToolbar';
 import { SlidesPanel } from './SlidesPanel';
@@ -18,138 +19,103 @@ const TABS: ReadonlyArray<TabSwitcherItem<EnvironmentTab>> = [
 
 export interface EnvironmentPaneProps {
   labId: number;
-  /** Module item id from `?itemId=` (slides are resolved from the lab's course). */
   itemId?: number | null;
+  env: ReturnType<typeof useLabEnvironment>;
+  panelState: EnvironmentPanelState;
+  expired: boolean;
+  steps?: LearnerLabStepDto[];
+  currentStepId?: string | null;
+  shownStepId?: string | null;
+  shownStep?: LearnerLabStepDto | null;
+  completed?: boolean;
+  hasRunCheck?: boolean;
+  checkPending?: boolean;
+  canRunCheck?: boolean;
+  guideCollapsed?: boolean;
+  nextItem?: { label: string; to: string } | null;
+  onExpandGuide?: () => void;
+  onSelectStep?: (stepId: string) => void;
+  onRunCheck?: () => void;
+  onNavigate?: (to: string) => void;
+  onStart: () => void;
+  onRestart: () => void;
+  onRetry: () => void;
+  onOpenConflict: () => void;
+  showInlineToolbar?: boolean;
 }
 
 /**
- * Right pane of the lab workspace: the lab environment terminal, the module slides and the
- * lab walkthrough. The terminal never starts on mount; starting is an explicit action.
+ * Right studio pane: dark DataCamp control bar (Expand Guide, Terminal/Slides/Walkthrough tabs,
+ * segmented objective pills, Run Checks / Next Lesson) above persistent visibility-toggled layers.
+ * Switching tabs preserves terminal buffers, slide reader state, and walkthrough scroll.
  */
-export function EnvironmentPane({ labId }: EnvironmentPaneProps) {
+export function EnvironmentPane({
+  labId,
+  env,
+  panelState,
+  expired,
+  steps = [],
+  currentStepId = null,
+  shownStepId = null,
+  shownStep = null,
+  completed = false,
+  hasRunCheck = false,
+  checkPending = false,
+  canRunCheck = false,
+  guideCollapsed = false,
+  nextItem = null,
+  onExpandGuide,
+  onSelectStep,
+  onRunCheck,
+  onNavigate,
+  onStart,
+  onRestart,
+  onRetry,
+  onOpenConflict,
+  showInlineToolbar = false,
+}: EnvironmentPaneProps) {
   const [tab, setTab] = useState<EnvironmentTab>('terminal');
-  const [conflictOpen, setConflictOpen] = useState(false);
-  // Expiry deadline (ISO) that has passed; the instance then reads as stopped.
-  const [elapsedFor, setElapsedFor] = useState<string | null>(null);
-  // Instance being ended by Restart; a new environment starts once that one is gone.
-  const restartOfRef = useRef<number | null>(null);
 
-  const env = useLabEnvironment(labId);
-  // Slides stay mounted once opened so the reader keeps their page across tab switches.
+  // Keep Slides and Walkthrough mounted once first opened so switching tabs never resets state.
   const [slidesOpened, setSlidesOpened] = useState(false);
   if (tab === 'slides' && !slidesOpened) setSlidesOpened(true);
-  const slides = useSlides(labId, tab === 'slides');
-  const walkthrough = useWalkthrough(labId, tab === 'walkthrough');
+  const [walkthroughOpened, setWalkthroughOpened] = useState(false);
+  if (tab === 'walkthrough' && !walkthroughOpened) setWalkthroughOpened(true);
+
+  const slides = useSlides(labId, slidesOpened);
+  const walkthrough = useWalkthrough(labId, walkthroughOpened);
 
   const instance = env.instance;
-  const expiresAt = instance?.expiresAt ?? null;
-  const expired = expiresAt !== null && elapsedFor === expiresAt;
-  const refetchActive = env.refetch;
-  const endError = env.endError;
-  const isEnding = env.isEnding;
-  const start = env.start;
-
-  // The environment expires at the server deadline; refresh then so the state reads stopped.
-  useEffect(() => {
-    if (expiresAt === null) return undefined;
-    const id = window.setTimeout(
-      () => {
-        setElapsedFor(expiresAt);
-        void refetchActive();
-      },
-      Math.max(0, Date.parse(expiresAt) - Date.now()),
-    );
-    return () => window.clearTimeout(id);
-  }, [expiresAt, refetchActive]);
-
-  // Restart: once the stopped environment is gone, start a new one. A failed end cancels it.
-  useEffect(() => {
-    if (restartOfRef.current === null || isEnding) return;
-    if (instance === null) {
-      restartOfRef.current = null;
-      start();
-    }
-  }, [instance, isEnding, start]);
-
-  useEffect(() => {
-    if (endError) restartOfRef.current = null;
-  }, [endError]);
-
-  // A start refused because another lab is running opens the conflict dialog.
-  const conflictDialogOpen = conflictOpen || env.startResult?.kind === 'conflict';
-
-  function closeConflict() {
-    setConflictOpen(false);
-    env.dismissConflict();
-  }
-
-  function handleStart() {
-    if (env.conflict) {
-      setConflictOpen(true);
-      return;
-    }
-    env.start();
-  }
-
-  function restart() {
-    if (instance === null) return;
-    restartOfRef.current = instance.instanceId;
-    env.end(instance.instanceId);
-  }
-
-  function retryEnvironment() {
-    if (env.timedOut) {
-      env.retryWait();
-      return;
-    }
-    if (instance === null) {
-      env.start();
-      return;
-    }
-    env.reconnect();
-    void env.refetch();
-  }
-
-  let panelState: EnvironmentPanelState;
-  if (instance !== null) {
-    if (expired) panelState = 'stopped';
-    else if (instance.status === 'pending') panelState = env.timedOut ? 'timeout' : 'pending';
-    else if (instance.status === 'running')
-      panelState = instance.terminalWsUrl ? 'running' : 'reconnecting';
-    else if (instance.status === 'error') panelState = 'error';
-    else panelState = 'stopped';
-  } else if (env.error !== null || env.activeError) {
-    panelState = 'error';
-  } else if (env.isStarting) {
-    panelState = 'pending';
-  } else {
-    panelState = 'none';
-  }
-
   const showToolbar =
+    showInlineToolbar &&
     instance !== null &&
     !expired &&
     (instance.status === 'pending' || instance.status === 'running');
 
-  const terminal = env.isLoading ? (
+  const passedCount = steps.filter((step) => step.status === 'passed').length;
+  const allPassed = steps.length > 0 && passedCount === steps.length;
+  const showTaskCheck = !completed && shownStep?.kind === 'task' && onRunCheck !== undefined;
+
+  const terminalLayer = env.isLoading ? (
     <div
       role="status"
       aria-label="Loading lab environment"
-      className="flex min-h-0 flex-1 flex-col p-4"
+      className="flex min-h-0 flex-1 flex-col gap-3 bg-ink-deep p-4 text-pearl-100"
     >
-      <Skeleton className="min-h-0 flex-1 rounded-md" />
+      <Skeleton className="min-h-0 flex-1 rounded-md opacity-20" />
+      <p className="m-0 font-mono text-xs text-pearl-200">Checking lab environment…</p>
     </div>
   ) : (
     <EnvironmentPanel
       state={panelState}
       instance={expired ? null : instance}
       error={env.error ?? env.activeError ?? null}
-      onStart={handleStart}
-      onRestart={restart}
-      onRetry={retryEnvironment}
+      onStart={onStart}
+      onRestart={onRestart}
+      onRetry={onRetry}
       startPending={env.isStarting}
       otherActive={env.otherInstance ? { labName: env.otherInstance.labName } : null}
-      onEndOther={() => setConflictOpen(true)}
+      onEndOther={onOpenConflict}
       reloadKey={env.reconnectKey}
     >
       {showToolbar && instance !== null ? (
@@ -165,29 +131,137 @@ export function EnvironmentPane({ labId }: EnvironmentPaneProps) {
     </EnvironmentPanel>
   );
 
-  let content: ReactNode = null;
-  if (tab === 'terminal') {
-    content = terminal;
-  } else if (tab === 'walkthrough') {
-    content = (
-      <WalkthroughPanel
-        markdown={walkthrough.data?.markdown ?? null}
-        loading={walkthrough.isLoading}
-        error={walkthrough.error}
-        onRetry={() => void walkthrough.refetch()}
-      />
-    );
-  }
-
   return (
-    <div className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="shrink-0 px-4 pt-4 pb-3">
-        <TabSwitcher items={TABS} value={tab} onChange={setTab} ariaLabel="Environment views" />
+    <div className="flex min-h-0 min-w-0 flex-1 flex-col bg-ink-deep">
+      {/* Dark DataCamp Studio Toolbar */}
+      <div className="grid h-11 shrink-0 grid-cols-[1fr_auto_1fr] items-center gap-3 bg-ink-deep px-3">
+        <div className="flex min-w-0 items-center gap-2 justify-self-start">
+          {guideCollapsed && onExpandGuide ? (
+            <button
+              type="button"
+              onClick={onExpandGuide}
+              className="lab-guide-toggle lab-guide-toggle--dark"
+              data-tooltip="Expand Guide"
+              data-tooltip-align="left"
+              aria-label="Expand Guide"
+              aria-pressed={guideCollapsed}
+            >
+              <Icon name="panel-open" size={18} />
+            </button>
+          ) : null}
+
+          <TabSwitcher
+            items={TABS}
+            value={tab}
+            onChange={setTab}
+            ariaLabel="Environment views"
+            className="tab-switcher--dark"
+          />
+        </div>
+
+        {/* Center: Segmented Step Pills */}
+        {steps.length > 0 ? (
+          <div className="hidden items-center justify-center justify-self-center md:flex">
+            <div className="flex items-center gap-1.5" role="group" aria-label="Lab steps">
+              {steps.map((step) => {
+                const locked = step.status === 'locked';
+                const passed = step.status === 'passed';
+                const active = step.stepId === (shownStepId ?? currentStepId);
+                return (
+                  <button
+                    key={step.stepId}
+                    type="button"
+                    disabled={locked}
+                    onClick={() => onSelectStep?.(step.stepId)}
+                    title={`Step ${step.position}: ${step.title} (${step.status})`}
+                    aria-label={`Step ${step.position}: ${step.title}`}
+                    className={cn(
+                      'h-1.5 rounded-full transition-all duration-(--duration-fast)',
+                      locked ? 'cursor-not-allowed' : 'cursor-pointer',
+                      passed
+                        ? 'w-8 bg-check-success'
+                        : active
+                          ? 'w-8 bg-pearl-100'
+                          : 'w-6 bg-pearl-100/20',
+                    )}
+                  />
+                );
+              })}
+            </div>
+          </div>
+        ) : (
+          <div />
+        )}
+
+        {/* Right: Run Checks / Next Lesson Action */}
+        <div className="flex shrink-0 items-center gap-2 justify-self-end">
+          {allPassed || completed ? (
+            nextItem && onNavigate ? (
+              <Button
+                variant="tertiary"
+                size="sm"
+                onClick={() => onNavigate(nextItem.to)}
+                className="lab-run-checks-btn h-7 px-3 font-mono text-xs"
+              >
+                {`${nextItem.label} →`}
+              </Button>
+            ) : (
+              <span className="font-mono text-xs font-semibold text-check-success">
+                Objectives Met
+              </span>
+            )
+          ) : showTaskCheck ? (
+            <Button
+              variant="tertiary"
+              size="sm"
+              onClick={onRunCheck}
+              disabled={!canRunCheck || checkPending}
+              className={cn(
+                'lab-run-checks-btn h-7 px-3 font-mono text-xs',
+                checkPending && 'lab-run-checks-btn--checking',
+              )}
+            >
+              {checkPending ? (
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="lab-run-checks-pulse" aria-hidden="true" />
+                  <span>Checking…</span>
+                </span>
+              ) : shownStep?.status === 'passed' ? (
+                'Check again'
+              ) : hasRunCheck ? (
+                'Re-run Checks'
+              ) : (
+                'Run Checks'
+              )}
+            </Button>
+          ) : null}
+        </div>
       </div>
-      <div className="flex min-h-0 flex-1 flex-col">
-        {content}
+
+      {/* Persistent Layered Panels */}
+      <div className="relative flex min-h-0 flex-1 flex-col">
+        <div
+          aria-hidden={tab !== 'terminal'}
+          className={cn(
+            'absolute inset-0 flex min-h-0 flex-col transition-opacity duration-(--duration-fast) ease-(--ease-apple-out)',
+            tab === 'terminal'
+              ? 'visible z-10 opacity-100 pointer-events-auto'
+              : 'invisible z-0 opacity-0 pointer-events-none',
+          )}
+        >
+          {terminalLayer}
+        </div>
+
         {slidesOpened ? (
-          <div className={tab === 'slides' ? 'flex min-h-0 flex-1 flex-col' : 'hidden'}>
+          <div
+            aria-hidden={tab !== 'slides'}
+            className={cn(
+              'absolute inset-0 flex min-h-0 flex-col transition-opacity duration-(--duration-fast) ease-(--ease-apple-out)',
+              tab === 'slides'
+                ? 'visible z-10 opacity-100 pointer-events-auto'
+                : 'invisible z-0 opacity-0 pointer-events-none',
+            )}
+          >
             <SlidesPanel
               url={slides.data?.url ?? null}
               active={tab === 'slides'}
@@ -197,14 +271,26 @@ export function EnvironmentPane({ labId }: EnvironmentPaneProps) {
             />
           </div>
         ) : null}
-      </div>
 
-      <EnvironmentConflictDialog
-        open={conflictDialogOpen}
-        otherLabName={env.otherInstance?.labName ?? 'Another lab'}
-        onConfirm={() => env.replaceConflict()}
-        onClose={closeConflict}
-      />
+        {walkthroughOpened ? (
+          <div
+            aria-hidden={tab !== 'walkthrough'}
+            className={cn(
+              'absolute inset-0 flex min-h-0 flex-col transition-opacity duration-(--duration-fast) ease-(--ease-apple-out)',
+              tab === 'walkthrough'
+                ? 'visible z-10 opacity-100 pointer-events-auto'
+                : 'invisible z-0 opacity-0 pointer-events-none',
+            )}
+          >
+            <WalkthroughPanel
+              markdown={walkthrough.data?.markdown ?? null}
+              loading={walkthrough.isLoading}
+              error={walkthrough.error}
+              onRetry={() => void walkthrough.refetch()}
+            />
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }

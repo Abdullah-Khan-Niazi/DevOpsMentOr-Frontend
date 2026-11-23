@@ -53,7 +53,7 @@ function invalidateActive(queryClient: QueryClient) {
  * is called by the page's button. Stopped and expired states are reported through
  * `instance.status`; `reconnectKey` changes on reconnect so the terminal frame reloads.
  */
-export function useLabEnvironment(labId: number) {
+export function useLabEnvironment(labId: number, enabled = true) {
   const queryClient = useQueryClient();
   const [timedOut, setTimedOut] = useState(false);
   const [waitEpoch, setWaitEpoch] = useState(0);
@@ -62,6 +62,7 @@ export function useLabEnvironment(labId: number) {
   const active = useQuery({
     queryKey: QUERY_KEYS.labs.activeInstance,
     queryFn: () => labsService.getActiveInstance(),
+    enabled: enabled && Number.isInteger(labId) && labId > 0,
     retry: false,
     refetchInterval: (query) =>
       query.state.data?.labId === labId && query.state.data.status === 'pending' && !timedOut

@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react';
-import { Button, EmptyState, ErrorState, Skeleton } from '@/shared/components';
+import { Button, Icon } from '@/shared/components';
+import { getErrorMessage } from '@/shared/services';
 import { safeHttpUrl } from '@/shared/utils';
 import type { ActiveInstanceDto } from '@/features/labs/types';
 import { TerminalFrame } from './TerminalFrame';
@@ -9,45 +10,49 @@ export type EnvironmentPanelState =
 
 export interface EnvironmentPanelProps {
   state: EnvironmentPanelState;
-  /** Active lab environment of the learner, when there is one. */
   instance: ActiveInstanceDto | null;
-  /** Failure from provisioning or polling; shown by the error state. */
   error: unknown | null;
   onStart: () => void;
   onRestart: () => void;
   onRetry: () => void;
-  /** Disables and marks the start and restart buttons while provisioning is in flight. */
   startPending: boolean;
-  /** Another lab's environment is active; starting this one requires ending it first. */
   otherActive: { labName: string } | null;
   onEndOther: () => void;
-  /** Changing this remounts the terminal frame (toolbar reconnect). */
   reloadKey?: number;
-  /** Toolbar rendered above the environment content. */
   children?: ReactNode;
 }
 
-function Centered({ children }: { children: ReactNode }) {
-  return <div className="flex flex-1 items-center justify-center">{children}</div>;
-}
-
-function EnvironmentSkeleton() {
+function DarkState({
+  icon,
+  title,
+  message,
+  action,
+}: {
+  icon: 'terminal' | 'refresh' | 'stop' | 'error';
+  title: string;
+  message?: string;
+  action?: ReactNode;
+}) {
   return (
-    <div
-      role="status"
-      aria-live="polite"
-      aria-label="Starting lab environment"
-      className="flex min-h-0 flex-1 flex-col gap-3 p-4"
-    >
-      <Skeleton className="min-h-0 flex-1 rounded-md" />
-      <p className="text-sm text-muted-foreground">Starting lab environment</p>
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 bg-ink-deep p-8 text-center text-pearl-100">
+      <div className="flex size-12 items-center justify-center rounded-full bg-pearl-100/10 text-pearl-100">
+        <Icon name={icon} size={22} />
+      </div>
+      <div className="flex max-w-md flex-col gap-1">
+        <h3 className="m-0 font-mono text-sm font-bold tracking-tight text-pearl-100">{title}</h3>
+        {message ? (
+          <p className="m-0 font-mono text-xs leading-relaxed text-pearl-200">{message}</p>
+        ) : null}
+      </div>
+      {action}
     </div>
   );
 }
 
 /**
- * Right pane terminal states for the learner's lab environment. Fills its parent
- * (flex 1, min-height 0) and stays presentational: the page owns the hooks.
+ * Right-pane terminal viewport for the learner's lab environment. Renders on the deep-ink
+ * terminal canvas across all states so bootstrapping, live ttyd stream, and restart transitions
+ * match the DataCamp-style dark studio frame cleanly without flash or nested scrollbars.
  */
 export function EnvironmentPanel({
   state,
@@ -68,82 +73,121 @@ export function EnvironmentPanel({
 
   if (state === 'none') {
     content = otherActive ? (
-      <Centered>
-        <EmptyState
-          icon="terminal"
-          title={`End ${otherActive.labName} to start this lab`}
-          action={
-            <Button variant="secondary" iconName="stop" onClick={onEndOther}>
-              End other lab environment
-            </Button>
-          }
-        />
-      </Centered>
+      <DarkState
+        icon="terminal"
+        title={`End ${otherActive.labName} to start this lab`}
+        message="Only one active sandbox session can run at a time."
+        action={
+          <Button variant="secondary" size="sm" iconName="stop" onClick={onEndOther}>
+            End other lab environment
+          </Button>
+        }
+      />
     ) : (
-      <Centered>
-        <EmptyState
-          icon="terminal"
-          title="No lab environment running"
-          action={
-            <Button iconName="play" isLoading={startPending} onClick={onStart}>
-              Start lab environment
-            </Button>
-          }
-        />
-      </Centered>
+      <DarkState
+        icon="terminal"
+        title="No lab environment running"
+        action={
+          <Button
+            variant="secondary"
+            size="sm"
+            iconName="play"
+            isLoading={startPending}
+            loadingLabel="Starting sandbox…"
+            onClick={onStart}
+          >
+            Start Sandbox
+          </Button>
+        }
+      />
     );
   } else if (state === 'pending') {
-    content = <EnvironmentSkeleton />;
+    content = (
+      <div
+        role="status"
+        aria-live="polite"
+        aria-label="Bootstrapping lab environment"
+        className="flex flex-1 flex-col items-center justify-center gap-4 bg-ink-deep p-8 text-center text-pearl-100"
+      >
+        <span className="spin-ring size-11 text-pearl-100" aria-hidden="true" />
+        <div className="flex max-w-md flex-col gap-1.5">
+          <h3 className="m-0 font-mono text-base font-bold tracking-tight text-pearl-100">
+            Bootstrapping Lab Environment…
+          </h3>
+          <p className="m-0 font-mono text-xs leading-relaxed text-pearl-200">
+            Allocating dedicated container namespace and connecting terminal stream.
+          </p>
+        </div>
+        <div className="h-1 w-48 overflow-hidden rounded-full bg-pearl-100/15" aria-hidden="true">
+          <div className="lab-bootstrap-bar__fill h-full rounded-full bg-signal" />
+        </div>
+      </div>
+    );
   } else if (state === 'running' && terminalUrl) {
     content = <TerminalFrame url={terminalUrl} reloadKey={reloadKey} />;
   } else if (state === 'running' || state === 'reconnecting') {
     content = (
-      <Centered>
-        <EmptyState
-          icon="refresh"
-          title="Reconnecting"
-          action={
-            <Button variant="secondary" iconName="refresh" onClick={onRetry}>
-              Retry
-            </Button>
-          }
-        />
-      </Centered>
+      <DarkState
+        icon="refresh"
+        title="Reconnecting terminal…"
+        action={
+          <Button variant="secondary" size="sm" iconName="refresh" onClick={onRetry}>
+            Retry
+          </Button>
+        }
+      />
     );
   } else if (state === 'stopped') {
     content = (
-      <Centered>
-        <EmptyState
-          icon="stop"
-          title="Lab environment stopped"
-          action={
-            <Button iconName="restart" isLoading={startPending} onClick={onRestart}>
-              Restart lab environment
-            </Button>
-          }
-        />
-      </Centered>
+      <DarkState
+        icon="stop"
+        title="Sandbox session stopped"
+        message="Relaunch the sandbox whenever you are ready to continue."
+        action={
+          <Button
+            variant="secondary"
+            size="sm"
+            iconName="restart"
+            isLoading={startPending}
+            loadingLabel="Restarting sandbox…"
+            onClick={onRestart}
+          >
+            Start Sandbox
+          </Button>
+        }
+      />
     );
   } else if (state === 'timeout') {
     content = (
-      <Centered>
-        <ErrorState title="Lab environment timed out" onRetry={onRetry} />
-      </Centered>
+      <DarkState
+        icon="error"
+        title="Lab environment timed out"
+        action={
+          <Button variant="secondary" size="sm" iconName="refresh" onClick={onRetry}>
+            Retry
+          </Button>
+        }
+      />
     );
   } else {
     content = (
-      <Centered>
-        <ErrorState
-          title="Lab environment unavailable"
-          error={error ?? undefined}
-          onRetry={onRetry}
-        />
-      </Centered>
+      <DarkState
+        icon="error"
+        title="Sandbox Allocation Failed"
+        message={
+          error ? getErrorMessage(error, 'Could not allocate container namespace.') : undefined
+        }
+        action={
+          <Button variant="secondary" size="sm" iconName="refresh" onClick={onRetry}>
+            Retry Launch
+          </Button>
+        }
+      />
     );
   }
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col">
+    <div className="flex min-h-0 flex-1 flex-col bg-ink-deep">
       {children}
       <div className="flex min-h-0 flex-1 flex-col">{content}</div>
     </div>

@@ -37,15 +37,19 @@ export const TerminalFrame = memo(function TerminalFrame({ url, reloadKey }: Ter
   if (!src || !terminalOrigin) return null;
 
   return (
-    <div ref={wrapRef} className="relative flex min-h-0 flex-1 overflow-hidden bg-ink-deep">
+    <div
+      ref={wrapRef}
+      className="terminal-iframe-wrap relative flex min-h-0 flex-1 overflow-hidden bg-ink-deep"
+    >
       <iframe
         key={reloadKey}
         ref={frameRef}
         title="Lab terminal"
         src={src}
+        scrolling="no"
         allow="clipboard-read; clipboard-write"
         sandbox="allow-scripts allow-same-origin allow-forms"
-        className="absolute inset-0 h-full w-full border-0 bg-ink-deep"
+        className="terminal-iframe absolute inset-y-0 left-0 h-full border-0 bg-ink-deep"
         onLoad={(event) => {
           event.currentTarget.contentWindow?.postMessage({ type: 'resize' }, terminalOrigin);
         }}

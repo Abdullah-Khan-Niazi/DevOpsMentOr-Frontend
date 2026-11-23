@@ -1,4 +1,6 @@
+import { ENV } from '@/shared/constants';
 import { apiClient, LONG_REQUEST_TIMEOUT_MS } from '@/shared/services';
+import { getAccessToken } from '@/shared/services/authSession';
 import type {
   ActiveInstanceDto,
   AdminInstancesResponseDto,
@@ -32,6 +34,14 @@ function unwrap<T>(envelope: { data: T }): T {
 
 /** F6 §07 lab/execution-engine endpoints (LAB-01..LAB-22). */
 export const labsService = {
+  /** Runtime orchestrator health check (`GET /labs/health`). */
+  async getHealth(): Promise<{ available: boolean; reason?: string }> {
+    const { data } = await apiClient.get<{ data: { available: boolean; reason?: string } }>(
+      '/labs/health',
+    );
+    return unwrap(data);
+  },
+
   /** LAB-01 */
   async listLabs(): Promise<LabDto[]> {
     const { data } = await apiClient.get<{ data: { labs: LabDto[] } }>('/labs');
@@ -134,6 +144,25 @@ export const labsService = {
       `/labs/instances/${instanceId}`,
     );
     return unwrap(data);
+  },
+
+  /** Best-effort DELETE with `keepalive: true` for pagehide / beforeunload / route exit. */
+  terminateInstanceKeepalive(instanceId: number): void {
+    if (!Number.isInteger(instanceId) || instanceId <= 0) return;
+    const token = getAccessToken();
+    if (!token) return;
+    try {
+      void window.fetch(`${ENV.API_BASE_URL}/labs/instances/${instanceId}`, {
+        method: 'DELETE',
+        keepalive: true,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+    } catch {
+      // Unload / keepalive failures cannot surface to UI.
+    }
   },
 
   /** LAB-07 */

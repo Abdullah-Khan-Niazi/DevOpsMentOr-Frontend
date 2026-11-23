@@ -3,6 +3,17 @@ import { QUERY_KEYS } from '@/shared/constants';
 import { labsService } from '../services';
 import type { VpnRegion } from '../types';
 
+/** Runtime health check (`GET /labs/health`) for gating lab workspaces cleanly. */
+export function useLabHealth(enabled = true) {
+  return useQuery({
+    queryKey: QUERY_KEYS.labs.health,
+    queryFn: () => labsService.getHealth(),
+    enabled,
+    retry: false,
+    staleTime: 15_000,
+  });
+}
+
 /** LAB-01 */
 export function useLabCatalog(enabled = true) {
   return useQuery({

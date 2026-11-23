@@ -146,12 +146,116 @@
 }
 
 .terminal-iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
   width: calc(100% + 1.125rem);
   height: 100%;
   margin-right: -1.125rem;
   border: 0;
   display: block;
+  overflow: hidden;
   background-color: var(--ink-deep);
+}
+
+/* DataCamp studio header navigation pill & bootstrap telemetry bar */
+.lab-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: var(--radius-xs);
+  border: 0.0625rem solid var(--color-border);
+  background-color: var(--paper);
+  box-shadow: var(--shadow-xs);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.lab-nav-pill__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.375rem;
+  height: 1.875rem;
+  padding: 0 0.625rem;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard),
+    transform var(--duration-press) var(--ease-standard);
+}
+
+.lab-nav-pill__btn + .lab-nav-pill__btn {
+  border-left: 0.0625rem solid var(--color-border);
+}
+
+.lab-nav-pill__btn--outline {
+  padding-inline: 0.75rem;
+  color: var(--color-card-foreground);
+}
+
+.lab-nav-pill__btn:hover:not(:disabled) {
+  background-color: var(--pearl-200);
+  color: var(--ink);
+}
+
+.lab-nav-pill__btn:active:not(:disabled) {
+  transform: scale(var(--press-scale));
+}
+
+.lab-nav-pill__btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.lab-signal-ping {
+  position: relative;
+  display: inline-block;
+  width: 0.4375rem;
+  height: 0.4375rem;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-signal);
+  flex-shrink: 0;
+}
+
+.lab-signal-ping::after {
+  content: '';
+  position: absolute;
+  inset: -0.25rem;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-signal);
+  opacity: 0.6;
+  animation: labSignalPing 1.1s var(--ease-standard) infinite;
+}
+
+.lab-bootstrap-bar__fill {
+  width: 55%;
+  animation: labBootstrapSlide 1.1s var(--ease-apple-out) infinite alternate;
+}
+
+@keyframes labSignalPing {
+  0% {
+    transform: scale(0.75);
+    opacity: 0.7;
+  }
+  100% {
+    transform: scale(2.1);
+    opacity: 0;
+  }
+}
+
+@keyframes labBootstrapSlide {
+  from {
+    transform: translateX(-25%);
+  }
+  to {
+    transform: translateX(95%);
+  }
 }
 
 /* Lab Guide Toggle (icon-only, transparent bg, no borders, 6 interactive states + context tooltip) */
@@ -367,12 +471,27 @@
   overflow: visible;
 }
 
-.mentor-orb--listening {
+.mentor-orb--rest,
+.mentor-orb--doodling {
+  color: var(--ink);
+}
+
+.lab-mentor-fab .mentor-orb--rest,
+.lab-mentor-fab .mentor-orb--doodling,
+.lab-mentor-fab .mentor-orb--listening {
   color: var(--pearl-100);
 }
 
-.mentor-orb--thinking {
+.lab-mentor-fab .mentor-orb--thinking {
   color: var(--pearl-200);
+}
+
+.mentor-orb--listening {
+  color: var(--ink);
+}
+
+.mentor-orb--thinking {
+  color: var(--text-secondary);
 }
 
 .mentor-orb--working {
@@ -396,13 +515,55 @@
   .lab-guide-toggle::after,
   .lab-mentor-fab,
   .lab-mentor-fab::after,
+  .ai-mentor-glass,
   .ai-mentor-modal,
   .lab-run-checks-btn,
   .lab-run-checks-btn--checking::after,
-  .lab-run-checks-pulse {
+  .lab-run-checks-pulse,
+  .lab-signal-ping::after,
+  .lab-bootstrap-bar__fill {
     transition: none;
     animation: none;
   }
+}
+
+/* Inline underlined ghost hint button in left Steps panel */
+.lab-hint-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: var(--text-micro);
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  text-decoration: none;
+  text-underline-offset: 0.1875rem;
+  transition:
+    color var(--duration-fast) var(--ease-standard),
+    opacity var(--duration-fast) var(--ease-standard);
+}
+
+.lab-hint-trigger:hover:not(:disabled),
+.lab-hint-trigger[data-active='true'] {
+  color: var(--ink);
+  text-decoration: underline;
+}
+
+.lab-hint-trigger:focus-visible {
+  outline: 0.125rem solid var(--ink);
+  outline-offset: 0.125rem;
+  border-radius: var(--radius-xs);
+  text-decoration: underline;
+}
+
+.lab-hint-trigger:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
 }
 
 /* Dark-surface tertiary Run Checks button: no white hover/pressed bg, bright/bold text + checking animation */
@@ -714,98 +875,217 @@
   cursor: pointer;
 }
 
-/* Floating AI Mentor chat modal originating from bottom-right isometric FAB */
-.ai-mentor-modal {
+/* Dark smoked frosted-glass AI Mentor panel originating from and closing into the orb */
+.ai-mentor-glass {
   position: fixed;
   right: var(--space-5);
-  bottom: calc(var(--space-5) + 3.75rem);
+  bottom: calc(var(--space-5) + 4.25rem);
   width: min(24rem, calc(100vw - 2 * var(--space-4)));
-  height: min(33rem, calc(100dvh - 7rem));
+  height: min(33rem, calc(100dvh - 7.5rem));
   z-index: var(--z-workspace-drawer);
   display: flex;
   flex-direction: column;
-  background-color: var(--pearl-100);
-  border: 0.0625rem solid var(--paper-line);
-  border-radius: var(--radius-lg);
-  color: var(--ink);
-  box-shadow: var(--shadow-xl);
+  background-color: color-mix(in srgb, var(--ink) 82%, transparent);
+  backdrop-filter: blur(1.5rem) saturate(180%);
+  -webkit-backdrop-filter: blur(1.5rem) saturate(180%);
+  border: 0.0625rem solid color-mix(in srgb, var(--pearl-100) 16%, transparent);
+  border-radius: var(--radius-xl);
+  color: var(--pearl-100);
+  box-shadow:
+    var(--shadow-xl),
+    inset 0 0.0625rem 0 color-mix(in srgb, var(--pearl-100) 14%, transparent);
   overflow: hidden;
   transform-origin: bottom right;
-  animation: ai-mentor-modal-pop var(--duration-base) var(--ease-out) forwards;
 }
 
-@keyframes ai-mentor-modal-pop {
+.ai-mentor-glass[data-state='open'] {
+  animation: ai-mentor-glass-in var(--duration-spring-snappy) var(--spring-snappy) both;
+}
+
+.ai-mentor-glass[data-state='closed'] {
+  pointer-events: none;
+  animation: ai-mentor-glass-out 220ms var(--ease-exit) both;
+}
+
+@keyframes ai-mentor-glass-in {
   from {
     opacity: 0;
-    transform: scale(0.72) translateY(0.75rem);
+    transform: translate(1.25rem, 1.75rem) scale(0.18);
+    filter: blur(0.375rem);
   }
   to {
     opacity: 1;
-    transform: scale(1) translateY(0);
+    transform: translate(0, 0) scale(1);
+    filter: blur(0);
   }
 }
 
-.ai-mentor-modal__header {
+@keyframes ai-mentor-glass-out {
+  from {
+    opacity: 1;
+    transform: translate(0, 0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(1.25rem, 1.75rem) scale(0.18);
+    filter: blur(0.25rem);
+  }
+}
+
+.ai-mentor-glass__header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-4);
-  background-color: var(--paper);
+  background-color: color-mix(in srgb, var(--ink-deep) 54%, transparent);
+  border-bottom: 0.0625rem solid color-mix(in srgb, var(--pearl-100) 10%, transparent);
 }
 
-.ai-mentor-modal__identity {
+.ai-mentor-glass__identity {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--ink);
+  color: var(--pearl-100);
 }
 
-.ai-mentor-modal__title {
+.ai-mentor-glass .mentor-orb--rest,
+.ai-mentor-glass .mentor-orb--doodling,
+.ai-mentor-glass .mentor-orb--listening {
+  color: var(--pearl-100);
+}
+
+.ai-mentor-glass .mentor-orb--thinking {
+  color: var(--pearl-200);
+}
+
+.ai-mentor-glass__title {
   margin: 0;
   font-size: var(--text-body-m);
   font-weight: 600;
+  color: var(--pearl-100);
 }
 
-.ai-mentor-modal__header-actions {
+.ai-mentor-glass__actions {
   display: flex;
+  align-items: center;
   gap: var(--space-1);
 }
 
-.ai-mentor-modal__history {
+.ai-mentor-glass__action-btn {
+  color: color-mix(in srgb, var(--pearl-100) 78%, transparent);
+  background-color: transparent;
+}
+
+.ai-mentor-glass__action-btn:hover:not(:disabled) {
+  color: var(--pearl-100);
+  background-color: color-mix(in srgb, var(--pearl-100) 12%, transparent);
+}
+
+.ai-mentor-glass__action-btn.icon-btn:hover:not(:disabled) {
+  background-color: transparent;
+}
+
+.ai-mentor-glass__action-btn.icon-btn:hover:not(:disabled)::before {
+  background-color: color-mix(in srgb, var(--pearl-100) 14%, transparent);
+}
+
+.ai-mentor-glass__action-btn.icon-btn:active:not(:disabled)::before {
+  background-color: color-mix(in srgb, var(--pearl-100) 22%, transparent);
+}
+
+.ai-mentor-glass__action-btn.icon-btn:focus-visible::before {
+  box-shadow: 0 0 0 0.125rem var(--ink), 0 0 0 0.25rem var(--pearl-100);
+}
+
+.ai-mentor-glass__history {
   flex: 1 1 auto;
   overflow-y: auto;
   padding: var(--space-4);
   display: flex;
   flex-direction: column;
   gap: var(--space-3);
+  scrollbar-color: color-mix(in srgb, var(--pearl-100) 22%, transparent) transparent;
 }
 
-.ai-mentor-modal__empty {
-  color: var(--color-text-tertiary);
-  font-size: var(--text-body-s);
-}
-
-.ai-mentor-message {
+.ai-mentor-glass__msg {
   max-width: 90%;
   padding: var(--space-2) var(--space-3);
   border-radius: var(--radius-md);
   font-size: var(--text-body-s);
   line-height: 1.5;
-  white-space: pre-wrap;
+  word-break: break-word;
 }
 
-.ai-mentor-message--user {
+.ai-mentor-glass__msg--user {
   align-self: flex-end;
-  background-color: var(--ink);
+  white-space: pre-wrap;
+  background-color: color-mix(in srgb, var(--pearl-100) 14%, transparent);
+  border: 0.0625rem solid color-mix(in srgb, var(--pearl-100) 18%, transparent);
   color: var(--pearl-100);
 }
 
-.ai-mentor-message--assistant {
+.ai-mentor-glass__msg--assistant {
   align-self: flex-start;
-  background-color: var(--paper);
-  border: 0.0625rem solid var(--paper-line);
-  color: var(--ink);
+  max-width: 100%;
+  background-color: color-mix(in srgb, var(--ink-soft) 72%, transparent);
+  border: 0.0625rem solid color-mix(in srgb, var(--pearl-100) 10%, transparent);
+  color: var(--pearl-100);
+}
+
+.ai-mentor-glass .ai-mentor-glass__error {
+  color: var(--pearl-100);
+}
+
+.ai-mentor-glass .ai-mentor-glass__error .icon {
+  color: var(--accent-signal);
+}
+
+.ai-mentor-glass .ai-mentor-glass__error .btn--ghost {
+  color: var(--pearl-100);
+}
+
+.ai-mentor-glass .ai-mentor-glass__error .btn--ghost:hover:not(:disabled) {
+  background-color: color-mix(in srgb, var(--pearl-100) 14%, transparent);
+  color: var(--pearl-100);
+}
+
+.ai-mentor-glass__footer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  background-color: color-mix(in srgb, var(--ink-deep) 54%, transparent);
+  border-top: 0.0625rem solid color-mix(in srgb, var(--pearl-100) 10%, transparent);
+}
+
+.ai-mentor-glass__input {
+  background-color: color-mix(in srgb, var(--ink-deep) 74%, transparent) !important;
+  border-color: color-mix(in srgb, var(--pearl-100) 16%, transparent) !important;
+  color: var(--pearl-100) !important;
+}
+
+.ai-mentor-glass__input::placeholder {
+  color: color-mix(in srgb, var(--pearl-100) 48%, transparent);
+}
+
+.ai-mentor-glass__input:focus {
+  border-color: color-mix(in srgb, var(--pearl-100) 42%, transparent) !important;
+}
+
+.ai-mentor-glass__send {
+  background-color: var(--pearl-100) !important;
+  color: var(--ink) !important;
+  border-color: transparent !important;
+}
+
+.ai-mentor-glass__send:hover:not(:disabled) {
+  background-color: var(--pearl-200) !important;
+}
+
+.ai-mentor-glass__send:focus-visible {
+  box-shadow: 0 0 0 0.125rem var(--ink), 0 0 0 0.25rem var(--pearl-100) !important;
 }
 
 .ai-mentor-modal__typing::after {
@@ -822,31 +1102,6 @@
   to {
     visibility: hidden;
   }
-}
-
-.ai-mentor-modal__input-row {
-  display: flex;
-  gap: var(--space-2);
-  padding: var(--space-3) var(--space-4);
-  background-color: var(--paper);
-  align-items: flex-end;
-}
-
-.ai-mentor-modal__input {
-  flex: 1 1 auto;
-  resize: none;
-  background-color: var(--pearl-100);
-  color: var(--ink);
-  border: 0.0625rem solid var(--paper-line);
-  border-radius: var(--radius-md);
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-body-s);
-  font-family: var(--font-sans);
-}
-
-.ai-mentor-modal__input:focus-visible {
-  outline: 0.125rem solid var(--ink);
-  outline-offset: 0.0625rem;
 }
 
 /* Sherlock diagnostic (SCR-F6-03) */

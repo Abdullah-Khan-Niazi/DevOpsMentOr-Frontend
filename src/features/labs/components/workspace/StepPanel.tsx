@@ -27,6 +27,10 @@ export interface StepPanelProps {
   /** Review of a passed step: no new XP can be earned here. */
   readOnly: boolean;
   practiceResult?: StepPracticeResult | null;
+  /** Hide the Check action on task steps when the workspace terminal bar owns Run Checks. */
+  hideTaskCheckButton?: boolean;
+  /** Hide the step title heading when the parent checklist row already displays it. */
+  hideTitle?: boolean;
 }
 
 const ENVIRONMENT_NOTICE: Record<Exclude<StepEnvironment, 'running'>, string> = {
@@ -76,7 +80,13 @@ function QuestionForm({ penalties, ready, checkPending, onCheck }: QuestionFormP
         className="font-mono"
       />
       <div className="flex flex-wrap items-center gap-3">
-        <Button type="submit" variant="primary" disabled={!canSubmit} isLoading={checkPending}>
+        <Button
+          type="submit"
+          variant="primary"
+          disabled={!canSubmit}
+          isLoading={checkPending}
+          loadingLabel="Submitting answer…"
+        >
           Submit answer
         </Button>
       </div>
@@ -117,6 +127,8 @@ export function StepPanel({
   retryAfterSeconds,
   readOnly,
   practiceResult = null,
+  hideTaskCheckButton = false,
+  hideTitle = false,
 }: StepPanelProps) {
   const titleId = useId();
 
@@ -133,10 +145,16 @@ export function StepPanel({
   const showStagingError = needsStage && !staging.pending && staging.error !== null;
 
   return (
-    <section aria-labelledby={titleId} className="flex flex-col gap-5">
-      <h2 id={titleId} className="m-0 text-xl font-semibold tracking-tight text-card-foreground">
-        {step.title}
-      </h2>
+    <section
+      aria-labelledby={hideTitle ? undefined : titleId}
+      aria-label={hideTitle ? step.title : undefined}
+      className="flex flex-col gap-4"
+    >
+      {!hideTitle ? (
+        <h2 id={titleId} className="m-0 text-xl font-semibold tracking-tight text-card-foreground">
+          {step.title}
+        </h2>
+      ) : null}
 
       {step.instructions ? <Markdown variant="prose">{step.instructions}</Markdown> : null}
 
@@ -166,41 +184,48 @@ export function StepPanel({
 
       {readOnly ? (
         step.kind === 'task' ? (
+          !hideTaskCheckButton || practiceResult ? (
+            <div className="flex flex-wrap items-center gap-3">
+              {!hideTaskCheckButton ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => onCheck()}
+                  disabled={!ready}
+                  isLoading={checkPending}
+                  loadingLabel="Checking step…"
+                >
+                  Check again
+                </Button>
+              ) : null}
+              {practiceResult ? (
+                <span
+                  role="status"
+                  className={
+                    practiceResult === 'passing'
+                      ? 'text-sm font-medium text-check-success'
+                      : 'text-sm font-medium text-warning'
+                  }
+                >
+                  {PRACTICE_LABEL[practiceResult]}
+                </span>
+              ) : null}
+            </div>
+          ) : null
+        ) : null
+      ) : step.kind === 'task' ? (
+        hideTaskCheckButton ? null : (
           <div className="flex flex-wrap items-center gap-3">
             <Button
-              variant="ghost"
+              variant="primary"
               onClick={() => onCheck()}
               disabled={!ready}
               isLoading={checkPending}
+              loadingLabel="Checking step…"
             >
-              Check again
+              Check
             </Button>
-            {practiceResult ? (
-              <span
-                role="status"
-                className={
-                  practiceResult === 'passing'
-                    ? 'text-sm font-medium text-check-success'
-                    : 'text-sm font-medium text-warning'
-                }
-              >
-                {PRACTICE_LABEL[practiceResult]}
-              </span>
-            ) : null}
           </div>
-        ) : null
-      ) : step.kind === 'task' ? (
-        <div className="flex flex-wrap items-center gap-3">
-          <Button
-            variant="primary"
-            onClick={() => onCheck()}
-            disabled={!ready}
-            isLoading={checkPending}
-            loadingLabel="Checking step"
-          >
-            Check
-          </Button>
-        </div>
+        )
       ) : (
         <QuestionForm
           key={step.stepId}
