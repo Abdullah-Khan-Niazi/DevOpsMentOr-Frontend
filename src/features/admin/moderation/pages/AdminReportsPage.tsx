@@ -24,10 +24,10 @@ const REPORT_TAB_IDS = ['pending', 'reviewing', 'resolved', 'dismissed'] as cons
 type ReportTab = (typeof REPORT_TAB_IDS)[number];
 
 const REPORT_TABS: ReadonlyArray<TabSwitcherItem<ReportTab>> = [
-  { id: 'pending', label: 'Pending' },
-  { id: 'reviewing', label: 'Reviewing' },
-  { id: 'resolved', label: 'Resolved' },
-  { id: 'dismissed', label: 'Dismissed' },
+  { id: 'pending', label: 'Pending', icon: 'pending' },
+  { id: 'reviewing', label: 'Reviewing', icon: 'visibility' },
+  { id: 'resolved', label: 'Resolved', icon: 'check-circle' },
+  { id: 'dismissed', label: 'Dismissed', icon: 'x-circle' },
 ];
 
 const REPORT_STATUS_ICON: Record<ReportStatus, IconName> = {

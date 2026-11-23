@@ -1,11 +1,20 @@
 import { useMemo, useState } from 'react';
-import { Link, Navigate, useNavigate } from 'react-router-dom';
-import { Button, EmptyState, ErrorState, PageHeader, ProgressBar } from '@/shared/components';
+import { generatePath, Link, Navigate, useNavigate } from 'react-router-dom';
+import {
+  Button,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  ProgressBar,
+  TabSwitcher,
+  type TabSwitcherItem,
+} from '@/shared/components';
 import { Icon, type IconName } from '@/shared/components/Icon';
 import { ROUTES } from '@/shared/constants';
-import { formatNumber, formatRelativeTime, pluralize } from '@/shared/utils';
+import { formatDuration, formatNumber, formatRelativeTime, pluralize } from '@/shared/utils';
 import { useAuthStore } from '@/features/auth/stores/authStore';
 import { useGamificationSummary } from '@/features/achievements/hooks/useGamificationSummary';
+import { useLearnCourses } from '@/features/curriculum/hooks/useCurriculum';
 import { useMyClass } from '@/features/enrollment/hooks';
 import { useLabCatalog } from '@/features/labs/hooks';
 import { AiMentorDrawer } from '@/features/labs/components/AiMentorDrawer';
@@ -21,7 +30,6 @@ import {
   DashboardCoursesSkeleton,
   DashboardLabsSkeleton,
   DashboardMetricsSkeleton,
-  DashboardPageSkeleton,
   DashboardStatsSkeleton,
   DashboardStreakSkeleton,
 } from './DashboardPageSkeleton';
@@ -34,6 +42,21 @@ const WEEKDAY_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S'];
 const ACTIVITY_LIMIT = 30;
 const ACTIVITY_ROWS = 6;
 const LAB_CARDS = 4;
+const COURSE_CARDS = 4;
+
+type CourseFilterTab = 'all' | 'in-progress' | 'completed';
+
+const COURSE_FILTER_TABS: ReadonlyArray<TabSwitcherItem<CourseFilterTab>> = [
+  { id: 'all', label: 'All', icon: 'course' },
+  { id: 'in-progress', label: 'In progress', icon: 'play' },
+  { id: 'completed', label: 'Completed', icon: 'check-circle' },
+];
+
+function continueKindIcon(kind: ContinueLearningPointerDto['kind']): IconName {
+  if (kind === 'lab') return 'lab';
+  if (kind === 'quiz') return 'quiz';
+  return 'lesson';
+}
 
 const ACTIVITY_META: Partial<Record<LearningActivityType, { label: string; icon: IconName }>> = {
   LESSON_STARTED: { label: 'Started a lesson', icon: 'lesson' },
@@ -175,25 +198,91 @@ function ClassCard({
   );
 }
 
-/** Continue learning: the server pointer routed by item kind, or an empty state for new learners. */
+/** Continue learning: server pointer routed by item kind, or first published course for new learners. */
 function ContinueSection() {
   const navigate = useNavigate();
   const pointerQuery = useContinueLearningPointer();
+  const catalogQuery = useLearnCourses(pointerQuery.data === null);
 
   if (pointerQuery.isPending) return <DashboardContinueSkeleton />;
 
   const pointer = pointerQuery.data ?? null;
+  const starterCourse = pointer === null ? (catalogQuery.data?.[0] ?? null) : null;
 
   return (
     <section className="space-y-3">
       <h2 className={SECTION_TITLE_CLASS}>Continue learning</h2>
       {pointerQuery.isError ? (
         <ErrorState error={pointerQuery.error} onRetry={() => void pointerQuery.refetch()} />
-      ) : pointer === null ? (
+      ) : pointer !== null ? (
+        <div className="motion-lift flex flex-col justify-between gap-6 rounded-lg border border-border bg-card p-6 shadow-2xs sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-start gap-4 sm:items-center">
+            <Icon
+              name={continueKindIcon(pointer.kind)}
+              size={34}
+              className="shrink-0 text-card-foreground"
+            />
+            <div className="min-w-0 flex-1 space-y-2">
+              <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
+                <Icon name="module" size={14} className="shrink-0" />
+                <span className="truncate">{pointer.moduleTitle}</span>
+              </p>
+              <h3 className="truncate text-xl font-bold tracking-tight text-card-foreground">
+                {pointer.lessonTitle}
+              </h3>
+              <div className="max-w-md space-y-1.5 pt-1">
+                <p className="font-mono text-xs tabular-nums text-muted">
+                  {pointer.progressPct}% complete
+                </p>
+                <ProgressBar value={pointer.progressPct} label="Continue learning progress" />
+              </div>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="md"
+            iconName="arrow-right"
+            iconPosition="right"
+            onClick={() => navigate(continuePath(pointer))}
+            className="shrink-0 whitespace-nowrap"
+          >
+            {pointer.progressPct >= 100 ? 'Review' : 'Resume learning'}
+          </Button>
+        </div>
+      ) : starterCourse !== null ? (
+        <div className="motion-lift flex flex-col justify-between gap-6 rounded-lg border border-border bg-card p-6 shadow-2xs sm:flex-row sm:items-center">
+          <div className="flex min-w-0 flex-1 items-start gap-4 sm:items-center">
+            <Icon name="course" size={34} className="shrink-0 text-card-foreground" />
+            <div className="min-w-0 flex-1 space-y-1.5">
+              <h3 className="truncate text-xl font-bold tracking-tight text-card-foreground">
+                {starterCourse.title}
+              </h3>
+              <p className="flex flex-wrap items-center gap-3 font-mono text-xs text-muted">
+                {starterCourse.difficultyName ? <span>{starterCourse.difficultyName}</span> : null}
+                {starterCourse.moduleCount > 0 ? (
+                  <span>{pluralize(starterCourse.moduleCount, 'module', 'modules')}</span>
+                ) : null}
+              </p>
+            </div>
+          </div>
+          <Button
+            variant="primary"
+            size="md"
+            iconName="arrow-right"
+            iconPosition="right"
+            onClick={() =>
+              navigate(generatePath(ROUTES.LEARN_COURSE, { courseId: String(starterCourse.courseId) }))
+            }
+            className="shrink-0 whitespace-nowrap"
+          >
+            Start course
+          </Button>
+        </div>
+      ) : (
         <div className={CARD_CLASS}>
           <EmptyState
             icon="lesson"
-            title="No lesson started yet"
+            title="No courses available yet"
             action={
               <Button variant="secondary" size="sm" onClick={() => navigate(ROUTES.LEARN)}>
                 Browse courses
@@ -201,88 +290,150 @@ function ContinueSection() {
             }
           />
         </div>
-      ) : (
-        <div className="flex flex-col justify-between gap-6 rounded-lg border border-border bg-card p-6 shadow-2xs sm:flex-row sm:items-center">
-          <div className="min-w-0 flex-1 space-y-2">
-            <p className="flex items-center gap-1.5 text-xs font-medium text-muted">
-              <Icon name="module" size={13} className="shrink-0" />
-              <span className="truncate">{pointer.moduleTitle}</span>
-            </p>
-            <h3 className="truncate text-xl font-bold tracking-tight text-card-foreground">
-              {pointer.lessonTitle}
-            </h3>
-            <div className="max-w-md space-y-1.5 pt-1">
-              <p className="font-mono text-xs text-muted">{pointer.progressPct}% complete</p>
-              <ProgressBar value={pointer.progressPct} label="Continue learning progress" />
-            </div>
-          </div>
-          <Button
-            variant="primary"
-            size="md"
-            onClick={() => navigate(continuePath(pointer))}
-            className="shrink-0 whitespace-nowrap"
-          >
-            {pointer.progressPct >= 100 ? 'Review' : 'Resume'}
-          </Button>
-        </div>
       )}
     </section>
   );
 }
 
-/** Started courses with their server progress. */
+/** Courses showcase (classic 2x2 grid with filter switcher): active progress + published courses. */
 function CoursesSection() {
-  const coursesQuery = useCoursesProgress();
+  const navigate = useNavigate();
+  const [filter, setFilter] = useState<CourseFilterTab>('all');
+  const progressQuery = useCoursesProgress();
+  const catalogQuery = useLearnCourses();
 
-  if (coursesQuery.isPending) return <DashboardCoursesSkeleton />;
+  if (progressQuery.isPending && catalogQuery.isPending) return <DashboardCoursesSkeleton />;
 
-  const courses = coursesQuery.data ?? [];
+  const progressMap = new Map((progressQuery.data ?? []).map((item) => [item.courseId, item]));
+  const catalog = catalogQuery.data ?? [];
+
+  const merged =
+    catalog.length > 0
+      ? catalog.map((course) => {
+          const prog = progressMap.get(course.courseId);
+          return {
+            courseId: course.courseId,
+            title: course.title,
+            difficultyName: course.difficultyName,
+            estimatedHours: course.estimatedHours,
+            totalItems: prog?.totalLessons ?? course.itemCount,
+            completedItems: prog?.completedLessonCount ?? 0,
+            progressPercentage: prog?.progressPercentage ?? 0,
+            isCompleted: prog?.isCompleted ?? false,
+            started: Boolean(prog && (prog.completedLessonCount > 0 || prog.progressPercentage > 0)),
+          };
+        })
+      : (progressQuery.data ?? []).map((prog) => ({
+          courseId: prog.courseId,
+          title: prog.courseTitle,
+          difficultyName: null as string | null,
+          estimatedHours: 0,
+          totalItems: prog.totalLessons,
+          completedItems: prog.completedLessonCount,
+          progressPercentage: prog.progressPercentage,
+          isCompleted: prog.isCompleted,
+          started: true,
+        }));
+
+  const visible = merged
+    .filter((item) => {
+      if (filter === 'in-progress') return item.started && !item.isCompleted;
+      if (filter === 'completed') return item.isCompleted;
+      return true;
+    })
+    .slice(0, COURSE_CARDS);
 
   return (
-    <section className="space-y-3">
-      <h2 className={SECTION_TITLE_CLASS}>Courses</h2>
-      {coursesQuery.isError ? (
-        <ErrorState error={coursesQuery.error} onRetry={() => void coursesQuery.refetch()} />
-      ) : courses.length === 0 ? (
+    <section className="space-y-4">
+      <div className="flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
+        <h2 className={SECTION_TITLE_CLASS}>Courses</h2>
+        <TabSwitcher
+          items={COURSE_FILTER_TABS}
+          value={filter}
+          onChange={setFilter}
+          ariaLabel="Filter dashboard courses"
+          size="sm"
+        />
+      </div>
+
+      {progressQuery.isError && catalogQuery.isError ? (
+        <ErrorState
+          error={progressQuery.error ?? catalogQuery.error}
+          onRetry={() => {
+            void progressQuery.refetch();
+            void catalogQuery.refetch();
+          }}
+        />
+      ) : visible.length === 0 ? (
         <div className={CARD_CLASS}>
-          <EmptyState icon="course" title="No courses started yet" />
+          <EmptyState
+            icon="course"
+            title={
+              filter === 'completed'
+                ? 'No completed courses yet'
+                : filter === 'in-progress'
+                  ? 'No courses in progress yet'
+                  : 'No courses available yet'
+            }
+          />
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
-          {courses.map((course) => (
-            <Link
-              key={course.courseId}
-              to={ROUTES.LEARN_COURSE.replace(':courseId', String(course.courseId))}
-              className="flex flex-col gap-3 rounded-md border border-border bg-card p-5 shadow-2xs transition-colors hover:border-ink/50"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <h4 className="line-clamp-2 min-w-0 text-base font-bold tracking-tight text-card-foreground">
-                  {course.courseTitle}
-                </h4>
-                {course.isCompleted ? (
-                  <Icon
-                    name="check-circle"
-                    size={16}
-                    title="Course completed"
-                    className="shrink-0 text-card-foreground"
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {visible.map((course) => {
+            const hours = formatDuration({ hours: course.estimatedHours });
+            return (
+              <Link
+                key={course.courseId}
+                to={generatePath(ROUTES.LEARN_COURSE, { courseId: String(course.courseId) })}
+                className="motion-lift flex flex-col justify-between gap-4 rounded-md border border-border bg-card p-5 shadow-2xs transition-colors hover:border-ink/50"
+              >
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex min-w-0 items-start gap-2.5">
+                    <Icon name="course" size={18} className="mt-0.5 shrink-0 text-muted" />
+                    <h4 className="line-clamp-2 min-w-0 text-base font-bold tracking-tight text-card-foreground">
+                      {course.title}
+                    </h4>
+                  </div>
+                  {course.isCompleted ? (
+                    <Icon
+                      name="check-circle"
+                      filled
+                      size={18}
+                      title="Course completed"
+                      className="shrink-0 text-success"
+                    />
+                  ) : null}
+                </div>
+
+                <div className="space-y-2.5">
+                  <ProgressBar
+                    value={course.progressPercentage}
+                    label={`${course.title} progress`}
                   />
-                ) : null}
-              </div>
-              <ProgressBar
-                value={course.progressPercentage}
-                label={`${course.courseTitle} progress`}
-              />
-              <div className="flex items-center justify-between gap-2 font-mono text-xs text-muted">
-                <span>
-                  {formatNumber(course.completedLessonCount)} of {formatNumber(course.totalLessons)}{' '}
-                  items
-                </span>
-                <span>{course.progressPercentage}%</span>
-              </div>
-            </Link>
-          ))}
+                  <div className="flex flex-wrap items-center justify-between gap-2 font-mono text-xs text-muted">
+                    <span>
+                      {course.difficultyName ? `${course.difficultyName} · ` : ''}
+                      {hours || `${formatNumber(course.completedItems)} / ${formatNumber(course.totalItems)} items`}
+                    </span>
+                    <span className="tabular-nums">{course.progressPercentage}%</span>
+                  </div>
+                </div>
+              </Link>
+            );
+          })}
         </div>
       )}
+
+      <Button
+        variant="secondary"
+        size="md"
+        iconName="external-link"
+        iconPosition="right"
+        onClick={() => navigate(ROUTES.LEARN)}
+        className="w-full justify-center"
+      >
+        See all courses
+      </Button>
     </section>
   );
 }
@@ -351,8 +502,8 @@ function LabsSection() {
           {labs.map((lab) => (
             <Link
               key={lab.labId}
-              to={ROUTES.LAB_DETAIL.replace(':labSlug', lab.slug)}
-              className="flex flex-col gap-3 rounded-md border border-border bg-card p-5 shadow-2xs transition-colors hover:border-ink/50"
+              to={generatePath(ROUTES.LEARN_LAB, { labId: String(lab.labId) })}
+              className="motion-lift flex flex-col gap-3 rounded-md border border-border bg-card p-5 shadow-2xs transition-colors hover:border-ink/50"
             >
               <div className="flex items-start gap-2">
                 <Icon name="lab" size={16} className="mt-0.5 shrink-0 text-muted" />
@@ -372,10 +523,11 @@ function LabsSection() {
   );
 }
 
-/** Streak count from the summary and the seven-day tracker from the activity history. */
+/** Streak count, 7-day tracker, and active course progress summary from the server. */
 function StreakCard() {
   const summary = useGamificationSummary();
   const activity = useActivityHistory(ACTIVITY_LIMIT);
+  const coursesQuery = useCoursesProgress();
   const weekDates = useMemo(() => getCurrentWeekDates(), []);
   const todayKey = new Date().toISOString().slice(0, 10);
 
@@ -390,6 +542,7 @@ function StreakCard() {
   if (activity.isPending) return <DashboardStreakSkeleton />;
 
   const streakDays = summary.data?.currentStreakDays ?? null;
+  const activeCourses = (coursesQuery.data ?? []).slice(0, 3);
 
   return (
     <div className={`${CARD_CLASS} space-y-6`}>
@@ -399,22 +552,22 @@ function StreakCard() {
         <>
           <div className="flex items-center justify-between gap-3">
             <div>
-              <h3 className={SECTION_TITLE_CLASS}>Day streak</h3>
+              <h3 className={SECTION_TITLE_CLASS}>You&apos;re on a</h3>
               {streakDays !== null ? (
                 <div className="text-xl font-bold tracking-tight text-card-foreground">
-                  {pluralize(streakDays, 'day', 'days')}
+                  {pluralize(streakDays, 'day', 'days')} streak
                 </div>
               ) : null}
             </div>
             {streakDays !== null ? (
-              <div className="flex items-center gap-1 rounded-xs border border-border bg-paper px-3 py-1.5 text-lg font-bold text-card-foreground">
+              <div className="flex items-center gap-1.5 rounded-md bg-paper-dim px-3 py-1.5 text-lg font-bold tabular-nums text-card-foreground">
                 <Icon name="zap" size={18} />
                 <span>{formatNumber(streakDays)}</span>
               </div>
             ) : null}
           </div>
 
-          <div className="grid grid-cols-7 gap-1.5 pt-1">
+          <div className="grid grid-cols-7 gap-1.5">
             {weekDates.map((dateStr, idx) => {
               const isActive = activeDates.has(dateStr);
               const isToday = dateStr === todayKey;
@@ -426,9 +579,9 @@ function StreakCard() {
                   title={`${dateStr}${isActive ? ' Active' : ''}`}
                 >
                   <div
-                    className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-all ${
+                    className={`flex h-9 w-9 items-center justify-center rounded-full text-xs font-bold transition-transform duration-(--duration-spring-snappy) ease-(--spring-snappy) ${
                       isActive
-                        ? 'bg-ink text-paper shadow-2xs'
+                        ? 'scale-105 bg-ink text-pearl-100 shadow-2xs'
                         : isToday
                           ? 'border-2 border-dashed border-card-foreground text-card-foreground'
                           : 'border border-border bg-paper text-muted'
@@ -440,6 +593,38 @@ function StreakCard() {
               );
             })}
           </div>
+
+          {activeCourses.length > 0 ? (
+            <div className="space-y-3">
+              {activeCourses.map((course) => (
+                <div key={course.courseId} className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2 text-xs">
+                    <span className="truncate font-semibold text-card-foreground">
+                      {course.courseTitle}
+                    </span>
+                    <span className="shrink-0 font-mono tabular-nums text-muted">
+                      {course.progressPercentage}%
+                    </span>
+                  </div>
+                  <ProgressBar
+                    value={course.progressPercentage}
+                    label={`${course.courseTitle} progress`}
+                    size="sm"
+                  />
+                </div>
+              ))}
+            </div>
+          ) : null}
+
+          <div>
+            <Link
+              to={ROUTES.ACHIEVEMENTS}
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-card-foreground hover:underline"
+            >
+              <span>View achievements</span>
+              <Icon name="arrow-right" size={14} />
+            </Link>
+          </div>
         </>
       )}
     </div>
@@ -449,14 +634,10 @@ function StreakCard() {
 /** AI mentor entry point: opens the drawer in general mode (no lesson or lab context). */
 function MentorCard({ onOpen }: { onOpen: () => void }) {
   return (
-    <div className={`${CARD_CLASS} space-y-4`}>
-      <Icon name="sparkles" size={20} className="text-card-foreground" />
-      <div className="space-y-1">
+    <div className={`${CARD_CLASS} motion-lift space-y-4`}>
+      <div className="flex items-center gap-2.5">
+        <Icon name="sparkles" size={20} className="shrink-0 text-card-foreground" />
         <h3 className={SECTION_TITLE_CLASS}>DevOps AI Mentor</h3>
-        <p className="text-xs leading-relaxed text-muted">
-          Stuck on a failing container or terminal task? Get debugging hints, architecture
-          explanations, and command walkthroughs.
-        </p>
       </div>
       <Button
         variant="secondary"
@@ -478,16 +659,7 @@ function LearnerDashboard() {
   const myClassQuery = useMyClass(roles.has('org_student'));
   const enrolledClass = myClassQuery.data ?? null;
 
-  const pointerQuery = useContinueLearningPointer();
-  const coursesQuery = useCoursesProgress();
-
   const [isAiMentorOpen, setIsAiMentorOpen] = useState(false);
-
-  // The whole-page skeleton shows only while the first core reads are in flight;
-  // afterwards each section settles on its own skeleton, empty or error state.
-  if (pointerQuery.isPending && coursesQuery.isPending) {
-    return <DashboardPageSkeleton />;
-  }
 
   const greeting = getGreeting();
   const userName = user?.fullName || user?.username || 'Learner';

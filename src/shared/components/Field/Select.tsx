@@ -19,16 +19,21 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   /** Leading empty option (for example "Select a course"). */
   placeholder?: string;
   size?: 'sm' | 'md';
+  /** Shrink-wraps the select control for horizontal filter bars instead of stretching 100% width. */
+  inline?: boolean;
 }
 
 /** Native `<select>` (keyboard and mobile behavior kept) with a Material chevron. */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
-  ({ label, error, options, placeholder, size = 'md', className, id, children, ...props }, ref) => {
+  (
+    { label, error, options, placeholder, size = 'md', inline = false, className, id, children, ...props },
+    ref,
+  ) => {
     const fieldId = id ?? props.name;
     const { errorId } = fieldIds(fieldId);
 
     return (
-      <div className="input-root">
+      <div className={cn('input-root', inline && 'input-root--inline')}>
         <FieldLabel htmlFor={fieldId} label={label} required={props.required} />
         <div className={cn('field-select', size === 'sm' && 'field-select--sm')}>
           <select

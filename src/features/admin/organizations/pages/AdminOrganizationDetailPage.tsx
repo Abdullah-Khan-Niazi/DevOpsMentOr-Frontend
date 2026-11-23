@@ -47,17 +47,17 @@ const TAB_IDS = ['details', 'leadership', 'cohorts', 'analytics'] as const;
 type OrgDetailTab = (typeof TAB_IDS)[number];
 
 const TABS: ReadonlyArray<TabSwitcherItem<OrgDetailTab>> = [
-  { id: 'details', label: 'Organization Details' },
-  { id: 'leadership', label: 'Leadership & Admins' },
-  { id: 'cohorts', label: 'Workspaces & Classes' },
-  { id: 'analytics', label: 'Organization Analytics' },
+  { id: 'details', label: 'Organization Details', icon: 'organization' },
+  { id: 'leadership', label: 'Leadership & Admins', icon: 'shield' },
+  { id: 'cohorts', label: 'Workspaces & Classes', icon: 'classes' },
+  { id: 'analytics', label: 'Organization Analytics', icon: 'chart' },
 ];
 
 type AdminMode = 'search' | 'email';
 
 const ADMIN_MODE_TABS: ReadonlyArray<TabSwitcherItem<AdminMode>> = [
-  { id: 'search', label: 'Select Registered User' },
-  { id: 'email', label: 'Invite via Email Directly' },
+  { id: 'search', label: 'Select Registered User', icon: 'search' },
+  { id: 'email', label: 'Invite via Email Directly', icon: 'email' },
 ];
 
 /** F3 contract §09 SCR-F3-02: editable org detail + admin assignment (ORG-03/04/05). */

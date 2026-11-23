@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { TabSwitcher } from '@/shared/components';
 import type { CountryDistributionDto } from '../types';
 import { WORLD_COUNTRIES, WORLD_MAP_VIEWBOX } from './worldMapData';
 
@@ -62,20 +63,19 @@ export function RegionalMap({ countries, className = '' }: RegionalMapProps) {
     <div className={`flex flex-col gap-3 w-full ${className}`}>
       {/* Region Viewport Filters */}
       <div className="flex items-center justify-end w-full">
-        <div className="tab-switcher shrink-0">
-          {(['ALL', 'ASIA', 'EUROPE', 'AMERICAS', 'OCEANIA'] as const).map((reg) => (
-            <button
-              key={reg}
-              type="button"
-              onClick={() => setSelectedRegion(reg)}
-              className={`tab-switcher__tab ${
-                selectedRegion === reg ? 'tab-switcher__tab--active' : ''
-              }`}
-            >
-              {reg}
-            </button>
-          ))}
-        </div>
+        <TabSwitcher<MapRegion>
+          ariaLabel="Map region filter"
+          value={selectedRegion}
+          onChange={setSelectedRegion}
+          className="shrink-0"
+          items={[
+            { id: 'ALL', label: 'ALL', icon: 'globe' },
+            { id: 'ASIA', label: 'ASIA', icon: 'globe' },
+            { id: 'EUROPE', label: 'EUROPE', icon: 'globe' },
+            { id: 'AMERICAS', label: 'AMERICAS', icon: 'globe' },
+            { id: 'OCEANIA', label: 'OCEANIA', icon: 'globe' },
+          ]}
+        />
       </div>
 
       {/* Actual Vector World Map SVG Canvas */}

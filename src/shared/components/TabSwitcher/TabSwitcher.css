@@ -68,11 +68,17 @@
 }
 
 .tab-switcher__tab--active {
+  --accent-icon: var(--pearl-100);
   background-color: var(--ink);
   color: var(--pearl-100);
   font-weight: 600;
   border-color: var(--ink);
   box-shadow: 0 0.0625rem 0.125rem color-mix(in srgb, var(--ink) 8%, transparent);
+}
+
+.tab-switcher__tab--active .icon,
+.tab-switcher__tab[aria-selected='true'] .icon {
+  color: var(--pearl-100);
 }
 
 /* Component-rendered switcher: the thumb carries the active fill and slides. */
@@ -109,4 +115,30 @@
   padding: 0.375rem 0.875rem;
   font-family: var(--font-body);
   font-size: var(--text-body-s);
+}
+
+/* Dark studio surface variant (lab workspace right pane bar) */
+.tab-switcher--dark {
+  background-color: color-mix(in srgb, var(--ink-deep) 55%, transparent);
+  border-color: color-mix(in srgb, var(--pearl-100) 14%, transparent);
+  box-shadow: none;
+}
+
+.tab-switcher--dark .tab-switcher__tab {
+  color: color-mix(in srgb, var(--pearl-100) 64%, transparent);
+}
+
+.tab-switcher--dark .tab-switcher__tab:hover:not(.tab-switcher__tab--active):not(:disabled) {
+  color: var(--pearl-100);
+  background-color: color-mix(in srgb, var(--pearl-100) 10%, transparent);
+}
+
+.tab-switcher--dark .tab-switcher__thumb {
+  background-color: color-mix(in srgb, var(--pearl-100) 20%, transparent);
+  box-shadow: none;
+}
+
+.tab-switcher--dark .tab-switcher__tab--active {
+  --accent-icon: var(--pearl-100);
+  color: var(--pearl-100);
 }

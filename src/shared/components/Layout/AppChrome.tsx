@@ -18,7 +18,6 @@ import { cn } from '@/shared/utils';
 import { AnnouncementBanner } from '@/features/notifications/components/AnnouncementBanner';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { usePublishedAnnouncements } from '@/features/notifications/hooks/useNotifications';
-import { XpChip } from '@/features/achievements/components/XpChip';
 import { gamificationService } from '@/features/achievements/services/gamificationService';
 import { buildNavItems, type AppNavItem } from './navigation';
 import {
@@ -209,9 +208,8 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
               />
             </div>
 
-            {/* Right: XP, notifications & profile menu */}
+            {/* Right: notifications & profile menu */}
             <div className="flex items-center gap-3">
-              {canSeeGamification && <XpChip />}
               {canSeeNotifications && <NotificationBell />}
 
               <DropdownMenu.Root>
@@ -287,7 +285,6 @@ export function AppChrome({ navItems, logoTo, children }: AppChromeProps) {
           <SiteLogo />
         </Link>
         <div className="flex items-center gap-2">
-          {canSeeGamification && <XpChip />}
           {canSeeNotifications && <NotificationBell />}
           <Link to={profileTo} className="app-chrome__mobile-avatar" title={profileName}>
             {userInitials(profileName)}

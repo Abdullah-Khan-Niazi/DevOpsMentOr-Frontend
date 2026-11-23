@@ -9,10 +9,10 @@ const TAB_IDS = ['overview', 'badges', 'achievements', 'seasons'] as const;
 type GamificationTab = (typeof TAB_IDS)[number];
 
 const TAB_ITEMS: ReadonlyArray<TabSwitcherItem<GamificationTab>> = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'badges', label: 'Badges' },
-  { id: 'achievements', label: 'Achievements' },
-  { id: 'seasons', label: 'Seasons' },
+  { id: 'overview', label: 'Overview', icon: 'dashboard' },
+  { id: 'badges', label: 'Badges', icon: 'medal' },
+  { id: 'achievements', label: 'Achievements', icon: 'trophy' },
+  { id: 'seasons', label: 'Seasons', icon: 'calendar' },
 ];
 
 /**

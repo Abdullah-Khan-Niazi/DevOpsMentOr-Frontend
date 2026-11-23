@@ -1,9 +1,7 @@
 import { lazy, Suspense, type ReactNode } from 'react';
 import { Route, Routes, Navigate, useParams } from 'react-router-dom';
-import { ProtectedRoute } from '@/features/auth';
+import { ProtectedRoute } from '@/features/auth/components/ProtectedRoute';
 import {
-  AdminShell,
-  AppShell,
   AdminDashboardSkeleton,
   AnalyticsPageSkeleton,
   OrgDashboardSkeleton,
@@ -12,7 +10,7 @@ import {
   DashboardSkeleton,
   PublicPageSkeleton,
   AuthPageSkeleton,
-} from '@/shared/components';
+} from '@/shared/components/Skeleton';
 import { LearnPageSkeleton } from '@/features/curriculum/pages/LearnPageSkeleton';
 import { LearnCoursePageSkeleton } from '@/features/curriculum/pages/LearnCoursePageSkeleton';
 import { LearnModulePageSkeleton } from '@/features/curriculum/pages/LearnModulePageSkeleton';
@@ -23,6 +21,25 @@ import { OrgCurriculumPageSkeleton } from '@/features/org/pages/OrgCurriculumPag
 import { PermissionRouteGuard } from '@/shared/guards';
 import { ROUTES } from '@/shared/constants';
 import HomePage from '@/pages/site/HomePage';
+
+const LazyAppShell = lazy(() => import('@/shared/components/Layout/AppShell'));
+const LazyAdminShell = lazy(() => import('@/shared/components/Layout/AdminShell'));
+
+function AppShell() {
+  return (
+    <Suspense fallback={<DashboardSkeleton />}>
+      <LazyAppShell />
+    </Suspense>
+  );
+}
+
+function AdminShell({ children }: { children: ReactNode }) {
+  return (
+    <Suspense fallback={<AdminDashboardSkeleton />}>
+      <LazyAdminShell>{children}</LazyAdminShell>
+    </Suspense>
+  );
+}
 
 const LoginPage = lazy(() => import('@/features/auth/pages/LoginPage'));
 const SignupPage = lazy(() => import('@/features/auth/pages/SignupPage'));

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { TabSwitcher } from '@/shared/components';
 import type { ActivityHeatmapDayDto, MultiMetricHeatmapsDto } from '../types';
 
 export type HeatmapMetricKey = 'activity' | 'logins' | 'labs' | 'signups' | 'orgs';
@@ -159,20 +160,25 @@ export function ContributionHeatmap({
     <div className={`flex flex-col gap-4 w-full min-w-0 max-w-full overflow-hidden ${className}`}>
       {/* Metric Selector Tabs */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="tab-switcher">
-          {METRIC_TABS.map((tab) => (
-            <button
-              key={tab.key}
-              type="button"
-              onClick={() => setActiveMetric(tab.key)}
-              className={`tab-switcher__tab ${
-                activeMetric === tab.key ? 'tab-switcher__tab--active' : ''
-              }`}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
+        <TabSwitcher<HeatmapMetricKey>
+          ariaLabel="Heatmap metric"
+          value={activeMetric}
+          onChange={setActiveMetric}
+          items={METRIC_TABS.map((tab) => ({
+            id: tab.key,
+            label: tab.label,
+            icon:
+              tab.key === 'activity'
+                ? 'trending'
+                : tab.key === 'logins'
+                  ? 'login'
+                  : tab.key === 'labs'
+                    ? 'lab'
+                    : tab.key === 'signups'
+                      ? 'person-add'
+                      : 'organization',
+          }))}
+        />
 
         <div className="flex items-center gap-3 text-[0.6875rem] font-mono text-muted">
           <span>

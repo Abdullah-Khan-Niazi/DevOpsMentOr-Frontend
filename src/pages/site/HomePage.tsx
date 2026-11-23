@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLayout } from './components/SiteLayout';
-import { Button } from '@/shared/components';
-import { useAuthStore, useOAuthLogin, OAuthButton } from '@/features/auth';
+import { Button } from '@/shared/components/Button';
+import { useAuthStore } from '@/features/auth/stores/authStore';
+import { useOAuthLogin } from '@/features/auth/hooks/useOAuth';
+import { OAuthButton } from '@/features/auth/components/OAuthButton';
 import {
   useInView,
   useReducedMotion,
@@ -455,7 +457,7 @@ function LearningDashboardSection() {
               </aside>
 
               {/* Center Column: Frosted Glass Terminal + OB-1 Systems Mentor */}
-              <main className="hp-ld__col hp-ld__col--center">
+              <div className="hp-ld__col hp-ld__col--center">
                 {/* Frosted Glass Terminal Pane */}
                 <div className="hp-ld__terminal">
                   <div className="hp-ld__term-header">
@@ -546,7 +548,7 @@ function LearningDashboardSection() {
                     </div>
                   )}
                 </div>
-              </main>
+              </div>
 
               {/* Right Column: Slide (Upper) & Walkthrough (Lower) */}
               <aside

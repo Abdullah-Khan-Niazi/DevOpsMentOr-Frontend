@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { Card } from '@/shared/components';
+import { Card, TabSwitcher } from '@/shared/components';
 import { TELEMETRY_TOKENS } from '@/shared/constants';
 import type {
   AiTelemetry,
@@ -427,51 +427,30 @@ export function SystemTelemetryMonitor({
 
         {/* Multilevel Tab Switcher (Placed from the right, on same level) */}
         <div className="flex flex-wrap items-center gap-2 ml-auto">
-          {/* Level 1: Subsystem Selector */}
-          <div className="tab-switcher max-w-full overflow-x-auto">
-            {(
-              [
-                { key: 'overview', label: 'Telemetry Overview' },
-                { key: 'compute', label: 'Compute & Containers' },
-                { key: 'hardware', label: 'Host Hardware' },
-                { key: 'infrastructure', label: 'Cache / DB / AI' },
-                { key: 'traffic', label: 'Web Traffic' },
-              ] as const
-            ).map((tab) => (
-              <button
-                key={tab.key}
-                type="button"
-                onClick={() => setActiveTab(tab.key)}
-                className={`tab-switcher__tab ${
-                  activeTab === tab.key ? 'tab-switcher__tab--active' : ''
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
+          <TabSwitcher
+            ariaLabel="Telemetry subsystem"
+            value={activeTab}
+            onChange={setActiveTab}
+            items={[
+              { id: 'overview', label: 'Telemetry Overview', icon: 'chart' },
+              { id: 'compute', label: 'Compute & Containers', icon: 'container' },
+              { id: 'hardware', label: 'Host Hardware', icon: 'server' },
+              { id: 'infrastructure', label: 'Cache / DB / AI', icon: 'sparkles' },
+              { id: 'traffic', label: 'Web Traffic', icon: 'trending' },
+            ]}
+          />
 
-          {/* Level 2: Time Horizon Selector (Placed from the right) */}
-          <div className="tab-switcher shrink-0">
-            {(
-              [
-                { key: '1h', label: '1H LIVE' },
-                { key: '24h', label: '24 HOURS' },
-                { key: '7d', label: '7 DAYS' },
-              ] as const
-            ).map((t) => (
-              <button
-                key={t.key}
-                type="button"
-                onClick={() => setTimeRange(t.key)}
-                className={`tab-switcher__tab ${
-                  timeRange === t.key ? 'tab-switcher__tab--active' : ''
-                }`}
-              >
-                {t.label}
-              </button>
-            ))}
-          </div>
+          <TabSwitcher
+            ariaLabel="Telemetry time horizon"
+            value={timeRange}
+            onChange={setTimeRange}
+            className="shrink-0"
+            items={[
+              { id: '1h', label: '1H LIVE', icon: 'timer' },
+              { id: '24h', label: '24 HOURS', icon: 'clock' },
+              { id: '7d', label: '7 DAYS', icon: 'calendar' },
+            ]}
+          />
         </div>
       </div>
 

@@ -50,10 +50,10 @@ const TAB_IDS = ['profile', 'security', 'engagement', 'governance'] as const;
 type UserDetailTab = (typeof TAB_IDS)[number];
 
 const TABS: ReadonlyArray<TabSwitcherItem<UserDetailTab>> = [
-  { id: 'profile', label: 'Profile & Identity' },
-  { id: 'security', label: 'Security & Logins' },
-  { id: 'engagement', label: 'Activity & Progress' },
-  { id: 'governance', label: 'Danger Zone' },
+  { id: 'profile', label: 'Profile & Identity', icon: 'person' },
+  { id: 'security', label: 'Security & Logins', icon: 'shield' },
+  { id: 'engagement', label: 'Activity & Progress', icon: 'chart' },
+  { id: 'governance', label: 'Danger Zone', icon: 'warning' },
 ];
 
 export function AdminUserDetailPage() {

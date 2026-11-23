@@ -10,6 +10,7 @@ import { Icon, type IconName } from '@/shared/components/Icon';
 import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { getErrorMessage } from '@/shared/services';
 import { useAuthStore } from '@/features/auth/stores/authStore';
+import { parseJoinInput } from '@/features/auth/utils/invitation';
 import { refreshAuthSession } from '@/features/auth/utils/refreshAuthSession';
 import { useMyMemberships, useSwitchOrg, useCreateOrg } from '@/features/org/hooks/useOrg';
 import { useMyClasses } from '@/features/enrollment/hooks';
@@ -45,8 +46,6 @@ const createOrgSchema = z.object({
   description: z.string().trim().max(2000).optional(),
 });
 type CreateOrgValues = z.infer<typeof createOrgSchema>;
-
-const CLASS_CODE_PATTERN = /^[A-Z0-9]{6,12}$/;
 
 function slugify(val: string): string {
   return val
@@ -154,13 +153,10 @@ export function WorkspaceSwitcher({
 
   const [isCreateOrgOpen, setIsCreateOrgOpen] = useState(false);
   const [slugTouched, setSlugTouched] = useState(false);
-  const [isJoinClassOpen, setIsJoinClassOpen] = useState(false);
+  const [isJoinGateOpen, setIsJoinGateOpen] = useState(false);
   const [isJoining, setIsJoining] = useState(false);
-  const [classCode, setClassCode] = useState('');
-  const [classCodeError, setClassCodeError] = useState<string | null>(null);
-  const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [inviteLink, setInviteLink] = useState('');
-  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [joinInput, setJoinInput] = useState('');
+  const [joinError, setJoinError] = useState<string | null>(null);
   const [switchingOrgId, setSwitchingOrgId] = useState<number | null>(null);
 
   const createOrgForm = useForm<CreateOrgValues>({
@@ -187,28 +183,21 @@ export function WorkspaceSwitcher({
     myClasses.find((entry) => entry.classId === requestedClassId) ?? myClasses[0] ?? null;
   const activeKind = resolveWorkspaceKind(location.pathname, user);
 
-  // Learners and individual accounts may always join another class. Staff and
-  // platform admins cannot redeem a student code.
-  const canJoinClass = !platformAdmin && !staff;
-  // Multi-org: anyone may found another organization unless they already
-  // administer one (the server enforces the same rule in createMyOrg).
-  const hasOrgAdminMembership = memberships.some((membership) => membership.role === 'org_admin');
-  const canCreateOrg = !platformAdmin && !hasOrgAdminMembership;
+  // Multi-org learners and staff can join another cohort or accept an invite
+  // using the unified join gateway; backend enforces target-org eligibility.
+  const canJoin = !platformAdmin;
+  // Multi-org: any authenticated non-platform-admin user may found organizations.
+  const canCreateOrg = !platformAdmin;
 
   const closeCreateOrg = () => {
     createOrgForm.reset();
     setSlugTouched(false);
     setIsCreateOrgOpen(false);
   };
-  const closeJoinClass = useCallback(() => {
-    setClassCode('');
-    setClassCodeError(null);
-    setIsJoinClassOpen(false);
-  }, []);
-  const closeInvite = useCallback(() => {
-    setInviteLink('');
-    setInviteError(null);
-    setIsInviteOpen(false);
+  const closeJoinGate = useCallback(() => {
+    setJoinInput('');
+    setJoinError(null);
+    setIsJoinGateOpen(false);
   }, []);
 
   // Platform administrators have one platform surface: no switcher at all.
@@ -229,7 +218,7 @@ export function WorkspaceSwitcher({
       hasOrg: orgMemberships.length > 0,
       hasClass: myClasses.length > 0,
       canCreateOrg,
-      canJoinClass,
+      canJoinClass: canJoin,
     })
   ) {
     return null;
@@ -326,22 +315,27 @@ export function WorkspaceSwitcher({
     navigate(identityReady ? ROUTES.ORG_DASHBOARD : ROUTES.DASHBOARD);
   };
 
-  const handleJoinClass = async (event: FormEvent) => {
+  const handleJoinSubmit = async (event: FormEvent) => {
     event.preventDefault();
-    const code = classCode.trim().toUpperCase();
-    if (!CLASS_CODE_PATTERN.test(code)) {
-      setClassCodeError('Class codes are 6 to 12 letters and digits.');
+    const parsed = parseJoinInput(joinInput);
+    if (parsed.kind === 'invalid') {
+      setJoinError(parsed.error);
       return;
     }
-    setClassCodeError(null);
 
+    if (parsed.kind === 'invite') {
+      closeJoinGate();
+      onAfterSwitch?.();
+      navigate(`${parsed.pathname}?token=${encodeURIComponent(parsed.token)}`);
+      return;
+    }
+
+    setJoinError(null);
     setIsJoining(true);
     try {
-      const result = await enrollmentService.joinWithCode(code);
+      const result = await enrollmentService.joinWithCode(parsed.code);
       const identityReady = await refreshIdentity();
-      setClassCode('');
-      setClassCodeError(null);
-      setIsJoinClassOpen(false);
+      closeJoinGate();
       toast.success(
         result.alreadyEnrolled
           ? `You are already enrolled in ${result.className}.`
@@ -352,43 +346,10 @@ export function WorkspaceSwitcher({
         identityReady ? `${ROUTES.STUDENT_MY_CLASS}?classId=${result.classId}` : ROUTES.DASHBOARD,
       );
     } catch (error) {
-      setClassCodeError(getErrorMessage(error, 'Unable to join this class.'));
+      setJoinError(getErrorMessage(error, 'Unable to join with this code.'));
     } finally {
       setIsJoining(false);
     }
-  };
-
-  /**
-   * Accepts a pasted invitation link. The link must be same-origin and point
-   * at one of the two accept pages; the token travels in the query string of
-   * that page, which strips it from the address bar on arrival.
-   */
-  const handleJoinWithLink = (event: FormEvent) => {
-    event.preventDefault();
-    let url: URL;
-    try {
-      url = new URL(inviteLink.trim(), window.location.origin);
-    } catch {
-      setInviteError('Paste the full invitation link.');
-      return;
-    }
-    if (url.origin !== window.location.origin) {
-      setInviteError('This link does not belong to this site.');
-      return;
-    }
-    if (url.pathname !== ROUTES.ENROLL_ACCEPT && url.pathname !== ROUTES.ORG_ADMIN_ACCEPT) {
-      setInviteError('This is not an organization invitation link.');
-      return;
-    }
-    const token = url.searchParams.get('token')?.trim() ?? '';
-    if (!token) {
-      setInviteError('This invitation link is missing its token.');
-      return;
-    }
-
-    closeInvite();
-    onAfterSwitch?.();
-    navigate(`${url.pathname}?token=${encodeURIComponent(token)}`);
   };
 
   let activeLabel = 'Personal';
@@ -410,10 +371,10 @@ export function WorkspaceSwitcher({
 
   const triggerClassName =
     variant === 'topbar'
-      ? 'flex max-w-48 cursor-pointer items-center gap-2 rounded-lg bg-transparent px-3 py-1.5 text-xs text-card-foreground transition-colors hover:bg-surface-hover'
+      ? 'flex max-w-48 cursor-pointer items-center gap-2 rounded-lg border border-border bg-transparent px-3 py-1.5 text-xs text-card-foreground transition-colors hover:border-paper-line-strong hover:bg-surface-hover'
       : isCollapsed
         ? 'mx-auto flex size-10 cursor-pointer items-center justify-center rounded-lg bg-transparent text-card-foreground transition-colors hover:bg-surface-hover'
-        : 'flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg bg-transparent px-3 py-2 text-xs text-card-foreground transition-colors hover:bg-surface-hover';
+        : 'flex w-full cursor-pointer items-center justify-between gap-2 rounded-lg border border-border bg-transparent px-3 py-2 text-xs text-card-foreground transition-colors hover:border-paper-line-strong hover:bg-surface-hover';
 
   const createOrgErrors = createOrgForm.formState.errors;
 
@@ -483,19 +444,13 @@ export function WorkspaceSwitcher({
               />
             ))}
 
-            {canJoinClass ? (
+            {canJoin ? (
               <WorkspaceAction
-                icon="my-class"
-                label="Join class with code"
-                onSelect={() => setIsJoinClassOpen(true)}
+                icon="link"
+                label="Join with code or link"
+                onSelect={() => setIsJoinGateOpen(true)}
               />
             ) : null}
-
-            <WorkspaceAction
-              icon="link"
-              label="Join with invite link"
-              onSelect={() => setIsInviteOpen(true)}
-            />
 
             {canCreateOrg ? (
               <WorkspaceAction
@@ -510,17 +465,16 @@ export function WorkspaceSwitcher({
         </DropdownMenu.Portal>
       </DropdownMenu.Root>
 
-      <Modal open={isJoinClassOpen} onClose={closeJoinClass} title="Join a class">
-        <form onSubmit={handleJoinClass} className="space-y-4">
+      <Modal open={isJoinGateOpen} onClose={closeJoinGate} title="Join class or organization">
+        <form onSubmit={handleJoinSubmit} className="space-y-4">
           <Input
-            label="Class code"
-            placeholder="e.g. A7K2M9QX"
-            maxLength={12}
-            value={classCode}
-            error={classCodeError ?? undefined}
+            label="Class code or invitation link"
+            placeholder="e.g. A7K2M9QX or https://.../enroll/accept?token=..."
+            value={joinInput}
+            error={joinError ?? undefined}
             onChange={(event) => {
-              setClassCodeError(null);
-              setClassCode(event.target.value.toUpperCase());
+              setJoinError(null);
+              setJoinInput(event.target.value);
             }}
             autoFocus
             required
@@ -531,39 +485,19 @@ export function WorkspaceSwitcher({
               type="button"
               variant="secondary"
               size="sm"
-              onClick={closeJoinClass}
+              onClick={closeJoinGate}
               disabled={isJoining}
             >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" size="sm" isLoading={isJoining}>
-              Join class
-            </Button>
-          </div>
-        </form>
-      </Modal>
-
-      <Modal open={isInviteOpen} onClose={closeInvite} title="Join with invite link">
-        <form onSubmit={handleJoinWithLink} className="space-y-4">
-          <Input
-            label="Invitation link"
-            placeholder="Paste the link from your invitation email"
-            value={inviteLink}
-            error={inviteError ?? undefined}
-            onChange={(event) => {
-              setInviteError(null);
-              setInviteLink(event.target.value);
-            }}
-            autoFocus
-            required
-          />
-
-          <div className="modal-panel__actions">
-            <Button type="button" variant="secondary" size="sm" onClick={closeInvite}>
-              Cancel
-            </Button>
-            <Button type="submit" variant="primary" size="sm">
-              Continue
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              isLoading={isJoining}
+              loadingLabel="Joining…"
+            >
+              Join
             </Button>
           </div>
         </form>
@@ -631,6 +565,7 @@ export function WorkspaceSwitcher({
               variant="primary"
               size="sm"
               isLoading={createOrgForm.formState.isSubmitting}
+              loadingLabel="Creating organization…"
             >
               Create organization
             </Button>

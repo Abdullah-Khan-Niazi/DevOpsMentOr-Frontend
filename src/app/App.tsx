@@ -1,5 +1,5 @@
-import { useSessionValidator } from '@/features/auth';
-import { ToastViewport } from '@/shared/components';
+import { useSessionValidator } from '@/features/auth/hooks/useSessionValidator';
+import { ToastViewport } from '@/shared/components/Toast';
 import { AppRoutes } from './routes';
 import { ScrollToTop } from './ScrollToTop';
 

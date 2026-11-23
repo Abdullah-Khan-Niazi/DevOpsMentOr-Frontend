@@ -13,7 +13,7 @@ import './TabSwitcher.css';
 export interface TabSwitcherItem<T extends string> {
   id: T;
   label: string;
-  icon?: IconName;
+  icon: IconName;
   disabled?: boolean;
 }
 
@@ -159,7 +159,9 @@ export function TabSwitcher<T extends string>({
               if (!active) onChange(item.id);
             }}
           >
-            {item.icon ? <Icon name={item.icon} size={size === 'md' ? 18 : 16} /> : null}
+            {item.icon ? (
+              <Icon name={item.icon} size={size === 'md' ? 18 : 16} selected={active} />
+            ) : null}
             <span>{item.label}</span>
           </button>
         );

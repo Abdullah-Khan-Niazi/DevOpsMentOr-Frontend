@@ -272,11 +272,13 @@
 }
 
 /* Search */
-.field-search {
-  position: relative;
-  display: flex;
-  align-items: center;
-  width: 100%;
+@layer components {
+  .field-search {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+  }
 }
 
 .field-search__icon {

@@ -12,3 +12,5 @@ export function AppShell() {
     </AppChrome>
   );
 }
+
+export default AppShell;

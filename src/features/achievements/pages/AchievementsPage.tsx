@@ -43,11 +43,11 @@ const ACHIEVEMENT_TABS = ['overview', 'badges', 'achievements', 'history', 'cert
 type AchievementTab = (typeof ACHIEVEMENT_TABS)[number];
 
 const TABS: ReadonlyArray<TabSwitcherItem<AchievementTab>> = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'badges', label: 'Badges' },
-  { id: 'achievements', label: 'Achievements' },
-  { id: 'history', label: 'History' },
-  { id: 'certificates', label: 'Certificates' },
+  { id: 'overview', label: 'Overview', icon: 'dashboard' },
+  { id: 'badges', label: 'Badges', icon: 'medal' },
+  { id: 'achievements', label: 'Achievements', icon: 'trophy' },
+  { id: 'history', label: 'History', icon: 'history' },
+  { id: 'certificates', label: 'Certificates', icon: 'award' },
 ];
 
 /** Award kind of an XP history row (`GET /gamification/points/history`); old rows read as `legacy`. */

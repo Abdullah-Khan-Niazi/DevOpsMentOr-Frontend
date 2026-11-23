@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ROUTES } from '@/shared/constants';
 import { SiteLogo } from '@/shared/components/Logo';
-import { GitHubIcon } from '@/shared/components';
+import { GitHubIcon } from '@/shared/components/Icon/BrandIcons';
 import './SiteFooter.css';
 
 // §3.2 — Grounded Footer

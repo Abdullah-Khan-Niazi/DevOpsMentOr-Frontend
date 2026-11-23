@@ -1,6 +1,6 @@
 import { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Button, Card, EmptyState, ErrorState, PageHeader } from '@/shared/components';
+import { Button, Card, EmptyState, ErrorState, PageHeader, TabSwitcher } from '@/shared/components';
 import { ROUTES } from '@/shared/constants';
 import {
   ActivityLineChart,
@@ -298,27 +298,16 @@ export function AdminDashboardPage() {
                   </h2>
 
                   <div className="flex flex-wrap items-center gap-1.5">
-                    {/* Time Horizon Selector (Day / Last 7D / Month) */}
-                    <div className="tab-switcher">
-                      {(
-                        [
-                          { key: 'day', label: 'Day' },
-                          { key: '7d', label: 'Last 7D' },
-                          { key: 'month', label: 'Month' },
-                        ] as const
-                      ).map((w) => (
-                        <button
-                          key={w.key}
-                          type="button"
-                          onClick={() => setTrafficWindow(w.key)}
-                          className={`tab-switcher__tab ${
-                            trafficWindow === w.key ? 'tab-switcher__tab--active' : ''
-                          }`}
-                        >
-                          {w.label}
-                        </button>
-                      ))}
-                    </div>
+                    <TabSwitcher
+                      ariaLabel="Traffic horizon"
+                      value={trafficWindow}
+                      onChange={setTrafficWindow}
+                      items={[
+                        { id: 'day', label: 'Day', icon: 'clock' },
+                        { id: '7d', label: 'Last 7D', icon: 'calendar' },
+                        { id: 'month', label: 'Month', icon: 'chart' },
+                      ]}
+                    />
 
                     {data.kpis.peakActivity?.peakHour && (
                       <div className="flex items-center gap-1 text-muted text-[0.625rem] font-mono shrink-0 whitespace-nowrap">
@@ -372,26 +361,21 @@ export function AdminDashboardPage() {
                     className="w-full border border-border bg-surface px-3 py-1.5 text-xs font-mono text-card-foreground placeholder:text-muted focus:outline-none focus:border-accent rounded-md"
                   />
 
-                  {/* Filter Tabs */}
-                  <div className="tab-switcher">
-                    {(['ALL', 'USER', 'ORG', 'AUTH', 'SETTING'] as AuditFilterCategory[]).map(
-                      (cat) => (
-                        <button
-                          key={cat}
-                          type="button"
-                          onClick={() => {
-                            setAuditFilter(cat);
-                            setAuditPage(1);
-                          }}
-                          className={`tab-switcher__tab ${
-                            auditFilter === cat ? 'tab-switcher__tab--active' : ''
-                          }`}
-                        >
-                          {cat}
-                        </button>
-                      ),
-                    )}
-                  </div>
+                  <TabSwitcher<AuditFilterCategory>
+                    ariaLabel="Audit category filter"
+                    value={auditFilter}
+                    onChange={(cat) => {
+                      setAuditFilter(cat);
+                      setAuditPage(1);
+                    }}
+                    items={[
+                      { id: 'ALL', label: 'ALL', icon: 'list' },
+                      { id: 'USER', label: 'USER', icon: 'users' },
+                      { id: 'ORG', label: 'ORG', icon: 'organization' },
+                      { id: 'AUTH', label: 'AUTH', icon: 'key' },
+                      { id: 'SETTING', label: 'SETTING', icon: 'settings' },
+                    ]}
+                  />
                 </div>
 
                 {/* Single Column Feed List */}

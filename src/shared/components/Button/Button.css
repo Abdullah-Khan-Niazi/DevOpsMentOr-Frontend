@@ -216,9 +216,13 @@
   gap: inherit;
 }
 
-/* Loading keeps the width: the content is hidden, the spinner sits on top. */
+/* Loading keeps the width when no loadingLabel is set; with loadingLabel, show spinner + message cleanly. */
 .btn--loading .btn__content {
   visibility: hidden;
+}
+
+.btn--has-loading-label .btn__content {
+  display: none;
 }
 
 .btn__spinner-wrap {
@@ -227,8 +231,20 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: var(--space-2);
   line-height: 1;
   pointer-events: none;
+}
+
+.btn--has-loading-label .btn__spinner-wrap {
+  position: static;
+  inset: auto;
+}
+
+.btn__loading-label {
+  display: inline-flex;
+  align-items: center;
+  line-height: 1.2;
 }
 
 .btn__spinner {

@@ -15,7 +15,6 @@ import symGroups from '@material-symbols/svg-400/rounded/groups.svg?raw';
 import symCoPresent from '@material-symbols/svg-400/rounded/co_present.svg?raw';
 import symReceiptLong from '@material-symbols/svg-400/rounded/receipt_long.svg?raw';
 import symAdminPanelSettings from '@material-symbols/svg-400/rounded/admin_panel_settings.svg?raw';
-import symScience from '@material-symbols/svg-400/rounded/science.svg?raw';
 import symRoute from '@material-symbols/svg-400/rounded/route.svg?raw';
 import symWorkspacePremium from '@material-symbols/svg-400/rounded/workspace_premium.svg?raw';
 import symLeaderboard from '@material-symbols/svg-400/rounded/leaderboard.svg?raw';
@@ -157,7 +156,6 @@ import symGroupsFill from '@material-symbols/svg-400/rounded/groups-fill.svg?raw
 import symCoPresentFill from '@material-symbols/svg-400/rounded/co_present-fill.svg?raw';
 import symReceiptLongFill from '@material-symbols/svg-400/rounded/receipt_long-fill.svg?raw';
 import symAdminPanelSettingsFill from '@material-symbols/svg-400/rounded/admin_panel_settings-fill.svg?raw';
-import symScienceFill from '@material-symbols/svg-400/rounded/science-fill.svg?raw';
 import symRouteFill from '@material-symbols/svg-400/rounded/route-fill.svg?raw';
 import symWorkspacePremiumFill from '@material-symbols/svg-400/rounded/workspace_premium-fill.svg?raw';
 import symLeaderboardFill from '@material-symbols/svg-400/rounded/leaderboard-fill.svg?raw';
@@ -335,7 +333,7 @@ const ICON_SOURCES: Record<IconName, IconSource> = {
   professors: { outlined: symCoPresent, filled: symCoPresentFill },
   'audit-logs': { outlined: symReceiptLong, filled: symReceiptLongFill },
   'platform-admins': { outlined: symAdminPanelSettings, filled: symAdminPanelSettingsFill },
-  lab: { outlined: symScience, filled: symScienceFill },
+  lab: { outlined: symTerminal, filled: symTerminalFill },
   track: { outlined: symRoute, filled: symRouteFill },
   award: { outlined: symWorkspacePremium, filled: symWorkspacePremiumFill },
   leaderboard: { outlined: symLeaderboard, filled: symLeaderboardFill },

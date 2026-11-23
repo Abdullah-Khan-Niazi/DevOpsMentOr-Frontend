@@ -1,3 +1,4 @@
+import fs from 'node:fs';
 import path from 'node:path';
 import { defineConfig, loadEnv, type Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
@@ -82,19 +83,90 @@ function contentSecurityPolicy(env: Record<string, string>): Plugin {
   };
 }
 
+/**
+ * Dev-only transform: inlines the ~180 `?raw` Material Symbols SVG imports inside
+ * `icons.tsx` so `npm run dev` serves one module instead of ~180 individual HTTP requests.
+ */
+function inlineMaterialSymbolsDev(): Plugin {
+  const nodeModulesRoot = path.resolve(__dirname, 'node_modules');
+  const rawImportRe =
+    /^\s*import\s+(\w+)\s+from\s+['"](@material-symbols\/svg-400\/[^'"]+\.svg)\?raw['"];?\s*$/gm;
+
+  return {
+    name: 'devopsmentor-inline-icons-dev',
+    apply: 'serve',
+    transform(code, id) {
+      if (!id.replace(/\\/g, '/').endsWith('/src/shared/components/Icon/icons.tsx')) {
+        return null;
+      }
+      let replaced = false;
+      const next = code.replace(rawImportRe, (fullMatch, ident: string, pkgPath: string) => {
+        if (pkgPath.includes('..') || path.isAbsolute(pkgPath)) {
+          return fullMatch;
+        }
+        const resolved = path.resolve(nodeModulesRoot, pkgPath);
+        if (!resolved.startsWith(`${nodeModulesRoot}${path.sep}`)) {
+          return fullMatch;
+        }
+        try {
+          const svg = fs.readFileSync(resolved, 'utf8');
+          replaced = true;
+          return `const ${ident} = ${JSON.stringify(svg)};`;
+        } catch {
+          return fullMatch;
+        }
+      });
+      return replaced ? { code: next, map: null } : null;
+    },
+  };
+}
+
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), 'VITE_');
 
   return {
-    plugins: [react(), tailwindcss(), contentSecurityPolicy(env)],
+    plugins: [react(), tailwindcss(), inlineMaterialSymbolsDev(), contentSecurityPolicy(env)],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
       },
     },
+    optimizeDeps: {
+      include: [
+        'react',
+        'react-dom',
+        'react-dom/client',
+        'react/jsx-runtime',
+        'react/jsx-dev-runtime',
+        'react-router-dom',
+        'axios',
+        'zustand',
+        'zustand/middleware',
+        '@tanstack/react-query',
+        'zod',
+        'react-hook-form',
+        '@hookform/resolvers/zod',
+        '@radix-ui/react-dropdown-menu',
+        'react-markdown',
+        'remark-gfm',
+        'recharts',
+        'qrcode',
+        '@stripe/stripe-js',
+        '@stripe/react-stripe-js',
+      ],
+    },
     server: {
       port: 5173,
-      open: true,
+      host: true,
+      open: process.env.VITE_OPEN === 'true',
+      warmup: {
+        clientFiles: [
+          './src/main.tsx',
+          './src/app/App.tsx',
+          './src/app/routes.tsx',
+          './src/pages/site/HomePage.tsx',
+        ],
+      },
     },
   };
 });

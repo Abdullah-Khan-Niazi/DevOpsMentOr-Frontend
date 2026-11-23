@@ -8,7 +8,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from 'recharts';
-import { EmptyState } from '@/shared/components';
+import { EmptyState, TabSwitcher } from '@/shared/components';
 import { TELEMETRY_TOKENS, SURFACE_TOKENS } from '@/shared/constants';
 
 export interface ActivityTrendPoint {
@@ -71,18 +71,17 @@ export function ActivityLineChart({
 
         <div className="flex items-center gap-2">
           {onDaysChange && (
-            <div className="tab-switcher shrink-0">
-              {ranges.map((d) => (
-                <button
-                  key={d}
-                  type="button"
-                  onClick={() => onDaysChange(d)}
-                  className={`tab-switcher__tab ${days === d ? 'tab-switcher__tab--active' : ''}`}
-                >
-                  {d}D
-                </button>
-              ))}
-            </div>
+            <TabSwitcher
+              ariaLabel="Activity window"
+              value={String(days)}
+              onChange={(val) => onDaysChange(Number(val))}
+              className="shrink-0"
+              items={ranges.map((d) => ({
+                id: String(d),
+                label: `${d}D`,
+                icon: 'calendar' as const,
+              }))}
+            />
           )}
         </div>
       </div>

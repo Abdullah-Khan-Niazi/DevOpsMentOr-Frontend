@@ -2,11 +2,16 @@
 export interface LeaderboardEntryDto {
   leaderboardId: number;
   userId: number;
+  username?: string;
   fullName: string | null;
   displayName: string | null;
+  avatarUrl?: string | null;
   totalPoints: number;
+  courseCompletionsCount?: number;
   globalRank: number | null;
   countryRank: number | null;
+  cohortRank?: number | null;
+  rankDelta?: number | null;
   countryCode: string | null;
 }
 
@@ -14,10 +19,13 @@ export interface LeaderboardEntryDto {
 export interface SeasonLeaderboardEntryDto {
   leaderboardId: number;
   userId: number;
+  username?: string;
   pointsEarned: number;
   rank: number | null;
   fullName: string | null;
   displayName: string | null;
+  avatarUrl?: string | null;
+  countryCode?: string | null;
 }
 
 /** Paginated leaderboard envelope returned by GAM-06/07/08. */
@@ -27,6 +35,8 @@ export interface PaginatedLeaderboard<T> {
   page: number;
   limit: number;
   viewerRank: number | null;
+  viewerPoints?: number | null;
+  pointsToNextRank?: number | null;
 }
 
 /** Season catalog row (GAM-11). */
@@ -70,10 +80,16 @@ export interface ClassLeaderboardDto {
   className: string;
   items: LeaderboardEntryDto[];
   total: number;
+  viewerRank?: number | null;
+  viewerPoints?: number | null;
+  pointsToNextRank?: number | null;
 }
 
 /** Org-scoped leaderboard (GAM-10). */
 export interface OrgLeaderboardDto {
   items: LeaderboardEntryDto[];
   total: number;
+  viewerRank?: number | null;
+  viewerPoints?: number | null;
+  pointsToNextRank?: number | null;
 }

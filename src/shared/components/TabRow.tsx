@@ -73,8 +73,8 @@ export interface TabRowNavItem {
   to: string;
   label: string;
   end?: boolean;
-  /** Optional leading icon; rendered filled (`selected`) on the active route. */
-  icon?: IconName;
+  /** Leading icon; rendered filled (`selected`) on the active route. */
+  icon: IconName;
 }
 
 interface TabRowNavProps {

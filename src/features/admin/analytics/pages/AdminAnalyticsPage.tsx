@@ -1,6 +1,6 @@
 import '../styles/analytics-admin.css';
 import { useState, useMemo } from 'react';
-import { Card, ErrorState, PageHeader } from '@/shared/components';
+import { Card, ErrorState, PageHeader, TabSwitcher } from '@/shared/components';
 import {
   ActivityLineChart,
   ContributionHeatmap,
@@ -160,18 +160,16 @@ export function AdminAnalyticsPage() {
 
         {/* Global Live Sync Indicator & Range Switcher */}
         <div className="flex items-center gap-3">
-          <div className="tab-switcher">
-            {TREND_RANGES.map((val) => (
-              <button
-                key={val}
-                type="button"
-                onClick={() => setDays(val)}
-                className={`tab-switcher__tab ${days === val ? 'tab-switcher__tab--active' : ''}`}
-              >
-                {val}D
-              </button>
-            ))}
-          </div>
+          <TabSwitcher
+            ariaLabel="Analytics time range"
+            value={String(days) as `${(typeof TREND_RANGES)[number]}`}
+            onChange={(val) => setDays(Number(val))}
+            items={TREND_RANGES.map((val) => ({
+              id: String(val) as `${(typeof TREND_RANGES)[number]}`,
+              label: `${val}D`,
+              icon: 'calendar' as const,
+            }))}
+          />
         </div>
       </div>
 
@@ -348,27 +346,16 @@ export function AdminAnalyticsPage() {
               </h2>
 
               <div className="flex flex-wrap items-center gap-1.5">
-                {/* Time Horizon Selector (Day / Last 7D / Month) */}
-                <div className="tab-switcher">
-                  {(
-                    [
-                      { key: 'day', label: 'Day' },
-                      { key: '7d', label: 'Last 7D' },
-                      { key: 'month', label: 'Month' },
-                    ] as const
-                  ).map((w) => (
-                    <button
-                      key={w.key}
-                      type="button"
-                      onClick={() => setTrafficWindow(w.key)}
-                      className={`tab-switcher__tab ${
-                        trafficWindow === w.key ? 'tab-switcher__tab--active' : ''
-                      }`}
-                    >
-                      {w.label}
-                    </button>
-                  ))}
-                </div>
+                <TabSwitcher
+                  ariaLabel="Traffic horizon"
+                  value={trafficWindow}
+                  onChange={setTrafficWindow}
+                  items={[
+                    { id: 'day', label: 'Day', icon: 'clock' },
+                    { id: '7d', label: 'Last 7D', icon: 'calendar' },
+                    { id: 'month', label: 'Month', icon: 'chart' },
+                  ]}
+                />
 
                 {dashboardData?.kpis.peakActivity?.peakHour && (
                   <div className="flex items-center gap-1 text-muted text-[0.625rem] font-mono shrink-0 whitespace-nowrap">

@@ -111,6 +111,8 @@ export function Button({
       } as unknown as ButtonHTMLAttributes<HTMLButtonElement>)
     : { type, disabled: disabled || href !== undefined || isLoading, ...props };
 
+  const hasLoadingLabel = isLoading && Boolean(loadingLabel);
+
   return (
     <Root
       {...rootProps}
@@ -119,6 +121,7 @@ export function Button({
         `btn--${variant}`,
         `btn--${size}`,
         isLoading && 'btn--loading',
+        hasLoadingLabel && 'btn--has-loading-label',
         showSuccess && 'btn--success',
         className,
       )}
@@ -148,11 +151,11 @@ export function Button({
       </span>
 
       {isLoading ? (
-        <span className="btn__spinner-wrap" aria-hidden="true">
-          <span className="spin-ring btn__spinner" />
+        <span className="btn__spinner-wrap" role={loadingLabel ? 'status' : undefined} aria-live={loadingLabel ? 'polite' : undefined}>
+          <span className="spin-ring btn__spinner" aria-hidden="true" />
+          {loadingLabel ? <span className="btn__loading-label">{loadingLabel}</span> : null}
         </span>
       ) : null}
-      {isLoading && loadingLabel ? <span className="sr-only">{loadingLabel}</span> : null}
       <span className="sr-only" aria-live="polite">
         {showSuccess ? successLabel : ''}
       </span>

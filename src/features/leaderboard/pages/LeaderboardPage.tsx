@@ -1,22 +1,32 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { generatePath, Link } from 'react-router-dom';
 import {
   EmptyState,
   ErrorState,
+  Icon,
   PageHeader,
   Pagination,
+  Select,
   TabPanel,
   TabSwitcher,
   type TabSwitcherItem,
 } from '@/shared/components';
-import { QUERY_KEYS } from '@/shared/constants';
+import { QUERY_KEYS, ROUTES } from '@/shared/constants';
 import { useUrlState } from '@/shared/hooks';
+import { formatNumber } from '@/shared/utils';
 import { useAuthStore } from '@/features/auth';
 import { useGamificationSummary } from '@/features/achievements/hooks/useGamificationSummary';
 import { adminOrgService } from '@/features/admin/organizations/services';
+import { useMyClasses } from '@/features/enrollment/hooks/useEnrollment';
 import { useMyOrg, useOrgClasses } from '@/features/org/hooks';
 import { useCountries } from '@/features/profile/hooks';
-import { LeaderboardTable, type LeaderboardRow } from '../components/LeaderboardTable';
+import {
+  LeaderboardAvatar,
+  LeaderboardTable,
+  RankDeltaBadge,
+  type LeaderboardRow,
+} from '../components/LeaderboardTable';
 import {
   useClassLeaderboard,
   useCountryLeaderboard,
@@ -27,6 +37,7 @@ import {
 } from '../hooks/useLeaderboard';
 import type { LeaderboardEntryDto, SeasonLeaderboardEntryDto } from '../types';
 import { LeaderboardPageSkeleton, LeaderboardTableSkeleton } from './LeaderboardPageSkeleton';
+import '../styles/leaderboard.css';
 
 const PAGE_SIZE = 25;
 
@@ -38,25 +49,21 @@ export interface LeaderboardPageProps {
   defaultTab?: 'global' | 'class' | 'organization';
 }
 
-interface PinnedStanding {
+interface ViewerStanding {
   rank: number;
-  name: string;
-  points: number;
+  points: number | null;
+  pointsToNextRank: number | null;
 }
 
-function displayName(entry: { displayName: string | null; fullName: string | null }): string {
-  return entry.displayName ?? entry.fullName ?? 'Anonymous';
+function displayName(entry: {
+  displayName: string | null;
+  fullName: string | null;
+  username?: string;
+}): string {
+  return entry.displayName ?? entry.fullName ?? entry.username ?? 'Anonymous';
 }
 
-function initials(name: string): string {
-  const parts = name.trim().split(/\s+/).filter(Boolean);
-  if (parts.length === 0) return '?';
-  const first = parts[0].charAt(0);
-  const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
-  return (first + last).toUpperCase();
-}
-
-/** Rank comes from the server as returned (ties share a rank); the table sorts nothing server-side. */
+/** Rank comes from the server as returned (ties share a rank). */
 function toRows(
   items: LeaderboardEntryDto[],
   rankOf: (entry: LeaderboardEntryDto) => number | null,
@@ -65,7 +72,11 @@ function toRows(
     userId: entry.userId,
     rank: rankOf(entry),
     name: displayName(entry),
+    username: entry.username ?? null,
+    avatarUrl: entry.avatarUrl ?? null,
     points: entry.totalPoints,
+    courseCompletionsCount: entry.courseCompletionsCount ?? null,
+    rankDelta: entry.rankDelta ?? null,
     countryCode: entry.countryCode,
   }));
 }
@@ -75,32 +86,93 @@ function toSeasonRows(items: SeasonLeaderboardEntryDto[]): LeaderboardRow[] {
     userId: entry.userId,
     rank: entry.rank,
     name: displayName(entry),
+    username: entry.username ?? null,
+    avatarUrl: entry.avatarUrl ?? null,
     points: entry.pointsEarned,
+    countryCode: entry.countryCode ?? null,
   }));
 }
 
-/** The viewer's own row, kept below the table when the viewer is not on the current page. */
-function PinnedStandingRow({ standing }: { standing: PinnedStanding }) {
+function LeaderboardPodium({
+  entries,
+  countryFlags,
+  showCourses,
+}: {
+  entries: LeaderboardRow[];
+  countryFlags?: Map<string, string>;
+  showCourses: boolean;
+}) {
+  const topThree = entries.slice(0, 3);
+  if (topThree.length < 3) return null;
+
+  const placeClasses = [
+    'leaderboard-podium__card--first',
+    'leaderboard-podium__card--second',
+    'leaderboard-podium__card--third',
+  ];
+
   return (
-    <div className="leaderboard-table-wrap mt-3" role="region" aria-label="Your standing">
-      <table className="leaderboard-table">
-        <tbody>
-          <tr className="leaderboard-table__row--self">
-            <td className="leaderboard-table__rank">{standing.rank}</td>
-            <td>
-              <span className="leaderboard-table__learner">
-                <span className="leaderboard-table__avatar" aria-hidden="true">
-                  {initials(standing.name)}
-                </span>
-                <span>{standing.name}</span>
-                <span className="leaderboard-table__self-label">You</span>
+    <section aria-label="Top 3 leaders" className="leaderboard-podium">
+      {topThree.map((entry, index) => {
+        const flag = entry.countryCode ? countryFlags?.get(entry.countryCode) : undefined;
+        const profileTo = generatePath(ROUTES.PROFILE_VIEW, { userId: String(entry.userId) });
+        return (
+          <article key={entry.userId} className={`leaderboard-podium__card ${placeClasses[index]}`}>
+            <span className="leaderboard-podium__place">
+              {index === 0 ? <Icon name="trophy" size={14} /> : <Icon name="medal" size={14} />}
+              <span>#{entry.rank ?? index + 1}</span>
+            </span>
+
+            <LeaderboardAvatar
+              avatarUrl={entry.avatarUrl}
+              name={entry.name}
+              className="leaderboard-podium__avatar"
+            />
+
+            <Link to={profileTo} className="leaderboard-podium__name">
+              {entry.name}
+              {flag ? ` ${flag}` : ''}
+            </Link>
+
+            <div className="flex items-center gap-1.5">
+              <span className="leaderboard-podium__points">{formatNumber(entry.points)} XP</span>
+              <RankDeltaBadge delta={entry.rankDelta} />
+            </div>
+
+            {showCourses &&
+            entry.courseCompletionsCount !== undefined &&
+            entry.courseCompletionsCount !== null ? (
+              <span className="font-mono text-xs text-muted-foreground">
+                {formatNumber(entry.courseCompletionsCount)} courses
               </span>
-            </td>
-            <td className="leaderboard-table__num">{standing.points}</td>
-            <td className="leaderboard-table__flag">–</td>
-          </tr>
-        </tbody>
-      </table>
+            ) : null}
+          </article>
+        );
+      })}
+    </section>
+  );
+}
+
+/** Persistent standing banner summarizing the viewer's rank, points, and distance to next rank. */
+function ViewerStandingBar({ standing }: { standing: ViewerStanding }) {
+  return (
+    <div className="leaderboard-standing" role="region" aria-label="Your standing">
+      <div className="leaderboard-standing__meta">
+        <span>Your standing</span>
+        <span className="leaderboard-standing__rank">#{formatNumber(standing.rank)}</span>
+        {standing.points !== null ? (
+          <span className="font-mono font-semibold tabular-nums">
+            {formatNumber(standing.points)} XP
+          </span>
+        ) : null}
+      </div>
+      <span className="leaderboard-standing__delta">
+        {standing.rank === 1
+          ? 'Leading the board'
+          : standing.pointsToNextRank !== null && standing.pointsToNextRank > 0
+            ? `${formatNumber(standing.pointsToNextRank)} XP to next rank`
+            : 'Active ranking'}
+      </span>
     </div>
   );
 }
@@ -114,11 +186,14 @@ interface StandingsBoardProps {
   emptyTitle: string;
   viewerUserId?: number | null;
   countryFlags?: Map<string, string>;
-  pinned?: PinnedStanding | null;
+  standing?: ViewerStanding | null;
+  showPodium?: boolean;
+  showCourses?: boolean;
+  showCountry?: boolean;
   pagination?: { page: number; total: number; onPageChange: (page: number) => void };
 }
 
-/** One ranked board: loading, error, empty, the table, the pinned viewer row and pagination. */
+/** One ranked board: loading, error, empty, viewer standing bar, top-3 podium, table and pagination. */
 function StandingsBoard({
   isLoading,
   isError,
@@ -128,7 +203,10 @@ function StandingsBoard({
   emptyTitle,
   viewerUserId,
   countryFlags,
-  pinned,
+  standing,
+  showPodium = false,
+  showCourses = true,
+  showCountry = true,
   pagination,
 }: StandingsBoardProps) {
   if (isLoading) {
@@ -139,6 +217,14 @@ function StandingsBoard({
   }
   return (
     <div>
+      {standing ? <ViewerStandingBar standing={standing} /> : null}
+      {showPodium ? (
+        <LeaderboardPodium
+          entries={rows}
+          countryFlags={countryFlags}
+          showCourses={showCourses}
+        />
+      ) : null}
       {rows.length > 0 ? (
         <LeaderboardTable
           rows={rows}
@@ -146,12 +232,13 @@ function StandingsBoard({
           viewerUserId={viewerUserId}
           countryFlags={countryFlags}
           emptyTitle={emptyTitle}
+          showCourses={showCourses}
+          showCountry={showCountry}
         />
       ) : (
-        <EmptyState title={emptyTitle} />
+        <EmptyState icon="leaderboard" title={emptyTitle} />
       )}
-      {pinned ? <PinnedStandingRow standing={pinned} /> : null}
-      {pagination ? (
+      {pagination && pagination.total > PAGE_SIZE ? (
         <Pagination
           page={pagination.page}
           pageSize={PAGE_SIZE}
@@ -165,8 +252,8 @@ function StandingsBoard({
 }
 
 /**
- * SCR-F7-02/03/04: leaderboards as URL-driven tabs. Global, country and season are paginated
- * public boards; class and organization boards exist for members with the matching access.
+ * SCR-F7-02/03/04: Consumer-ready leaderboards with Top-3 Podium, Viewer Standing strip,
+ * single-row scope switcher + inline filter, and role-gated cohort boards.
  */
 export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps) {
   const user = useAuthStore((state) => state.user);
@@ -174,18 +261,25 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
   const permissions = useMemo(() => new Set(user?.permissions ?? []), [user?.permissions]);
   const isPlatformAdmin = user?.roles.includes('platform_admin') ?? false;
   const isOrgAdmin = user?.roles.includes('org_admin') ?? false;
-  const showClassTab = !isPlatformAdmin && permissions.has('gamification:class:read');
+  const isProfessor = user?.roles.includes('professor') ?? false;
+  const isStudent = user?.roles.includes('org_student') ?? false;
+  const canManageClasses = isOrgAdmin || isProfessor;
+
+  const showClassTab =
+    !isPlatformAdmin && (permissions.has('gamification:class:read') || isStudent);
   const showOrgTab =
     (permissions.has('gamification:org:read') || isPlatformAdmin) &&
     (isOrgAdmin || isPlatformAdmin);
 
   const tabs = useMemo<Array<TabSwitcherItem<LeaderboardTab>>>(
     () => [
-      { id: 'global', label: 'Global' },
-      { id: 'country', label: 'Country' },
-      { id: 'season', label: 'Season' },
-      ...(showClassTab ? [{ id: 'class' as const, label: 'Class' }] : []),
-      ...(showOrgTab ? [{ id: 'organization' as const, label: 'Organization' }] : []),
+      { id: 'global', label: 'Global', icon: 'globe' },
+      { id: 'country', label: 'Country', icon: 'flag' },
+      { id: 'season', label: 'Season', icon: 'calendar' },
+      ...(showClassTab ? [{ id: 'class' as const, label: 'Class', icon: 'my-class' as const }] : []),
+      ...(showOrgTab
+        ? [{ id: 'organization' as const, label: 'Organization', icon: 'organization' as const }]
+        : []),
     ],
     [showClassTab, showOrgTab],
   );
@@ -206,28 +300,55 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
   const [platformOrgId, setPlatformOrgId] = useState<number | null>(null);
 
   const countries = useCountries();
+  const effectiveCountryCode = countryCode || (countries.data?.[0]?.countryCode ?? '');
+
   const global = useGlobalLeaderboard(page, PAGE_SIZE);
   const country = useCountryLeaderboard(
-    activeTab === 'country' && countryCode ? countryCode : null,
+    activeTab === 'country' && effectiveCountryCode ? effectiveCountryCode : null,
     page,
     PAGE_SIZE,
   );
+
   const seasons = useSeasons();
   const defaultSeason =
     seasons.data?.find((season) => season.isActive) ?? seasons.data?.[0] ?? null;
   const seasonId = selectedSeasonId ?? defaultSeason?.seasonId ?? null;
   const season = useSeasonLeaderboard(activeTab === 'season' ? seasonId : null, page, PAGE_SIZE);
-  const classes = useOrgClasses({ page: 1, pageSize: 100 });
-  const classBoard = useClassLeaderboard(activeTab === 'class' ? classId : null);
-  const myOrg = useMyOrg();
-  const orgId = isPlatformAdmin ? platformOrgId : (myOrg.query.data?.organizationId ?? null);
-  const orgBoard = useOrgLeaderboard(activeTab === 'organization' ? orgId : null);
+
+  const orgClasses = useOrgClasses(
+    { page: 1, pageSize: 100 },
+    showClassTab && canManageClasses && activeTab === 'class',
+  );
+  const studentClasses = useMyClasses(
+    showClassTab && !canManageClasses && isStudent && activeTab === 'class',
+  );
+  const classOptions = useMemo(() => {
+    if (canManageClasses) {
+      return (orgClasses.data?.data ?? []).map((cls) => ({
+        classId: cls.classId,
+        className: cls.className,
+      }));
+    }
+    return (studentClasses.data ?? []).map((cls) => ({
+      classId: cls.classId,
+      className: cls.className,
+    }));
+  }, [canManageClasses, orgClasses.data?.data, studentClasses.data]);
+
+  const effectiveClassId = classId ?? classOptions[0]?.classId ?? null;
+  const classBoard = useClassLeaderboard(activeTab === 'class' ? effectiveClassId : null);
+
+  const myOrg = useMyOrg(showOrgTab && !isPlatformAdmin && activeTab === 'organization');
   const adminOrgs = useQuery({
     queryKey: QUERY_KEYS.admin.organizations('picker'),
     queryFn: () => adminOrgService.listOrgs({ page: 1, pageSize: 100 }),
-    enabled: isPlatformAdmin && showOrgTab,
+    enabled: isPlatformAdmin && showOrgTab && activeTab === 'organization',
     retry: false,
   });
+
+  const effectivePlatformOrgId = platformOrgId ?? adminOrgs.data?.data?.[0]?.organizationId ?? null;
+  const orgId = isPlatformAdmin ? effectivePlatformOrgId : (myOrg.query.data?.organizationId ?? null);
+  const orgBoard = useOrgLeaderboard(activeTab === 'organization' ? orgId : null);
   const summary = useGamificationSummary();
 
   const countryFlags = useMemo(() => {
@@ -238,16 +359,48 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
     return map;
   }, [countries.data]);
 
-  const globalItems = global.data?.items ?? [];
-  const viewerRank = global.data?.viewerRank ?? null;
-  const viewerOnPage = globalItems.some((entry) => entry.userId === userId);
-  // The viewer's points are the ledger balance (the leaderboard total is the same ledger sum).
-  const pinned: PinnedStanding | null =
-    viewerRank !== null && !viewerOnPage && summary.data
+  const globalStanding: ViewerStanding | null =
+    global.data?.viewerRank !== null && global.data?.viewerRank !== undefined
       ? {
-          rank: viewerRank,
-          name: user?.fullName ?? user?.username ?? 'You',
-          points: summary.data.balance,
+          rank: global.data.viewerRank,
+          points: global.data.viewerPoints ?? summary.data?.balance ?? null,
+          pointsToNextRank: global.data.pointsToNextRank ?? null,
+        }
+      : null;
+
+  const countryStanding: ViewerStanding | null =
+    country.data?.viewerRank !== null && country.data?.viewerRank !== undefined
+      ? {
+          rank: country.data.viewerRank,
+          points: country.data.viewerPoints ?? summary.data?.balance ?? null,
+          pointsToNextRank: country.data.pointsToNextRank ?? null,
+        }
+      : null;
+
+  const seasonStanding: ViewerStanding | null =
+    season.data?.viewerRank !== null && season.data?.viewerRank !== undefined
+      ? {
+          rank: season.data.viewerRank,
+          points: season.data.viewerPoints ?? null,
+          pointsToNextRank: season.data.pointsToNextRank ?? null,
+        }
+      : null;
+
+  const classStanding: ViewerStanding | null =
+    classBoard.data?.viewerRank !== null && classBoard.data?.viewerRank !== undefined
+      ? {
+          rank: classBoard.data.viewerRank,
+          points: classBoard.data.viewerPoints ?? null,
+          pointsToNextRank: classBoard.data.pointsToNextRank ?? null,
+        }
+      : null;
+
+  const orgStanding: ViewerStanding | null =
+    orgBoard.data?.viewerRank !== null && orgBoard.data?.viewerRank !== undefined
+      ? {
+          rank: orgBoard.data.viewerRank,
+          points: orgBoard.data.viewerPoints ?? null,
+          pointsToNextRank: orgBoard.data.pointsToNextRank ?? null,
         }
       : null;
 
@@ -258,81 +411,83 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
 
   const renderFilter = (): ReactNode => {
     switch (activeTab) {
-      case 'country':
+      case 'country': {
+        const list = countries.data ?? [];
+        if (list.length === 0) return null;
         return (
-          <select
-            className="input-field leaderboard-filter"
-            value={countryCode}
+          <Select
+            inline
+            size="sm"
+            aria-label="Select country"
+            value={effectiveCountryCode}
+            options={list.map((entry) => ({
+              value: entry.countryCode,
+              label: `${entry.flagEmoji ? `${entry.flagEmoji} ` : ''}${entry.countryName}`,
+            }))}
             onChange={(event) => {
               setCountryCode(event.target.value);
               setPage(1);
             }}
-            aria-label="Select country"
-          >
-            <option value="">Select a country</option>
-            {(countries.data ?? []).map((entry) => (
-              <option key={entry.countryId} value={entry.countryCode}>
-                {entry.flagEmoji ? `${entry.flagEmoji} ` : ''}
-                {entry.countryName}
-              </option>
-            ))}
-          </select>
+          />
         );
-      case 'season':
+      }
+      case 'season': {
+        const list = seasons.data ?? [];
+        if (list.length === 0) return null;
         return (
-          <select
-            className="input-field leaderboard-filter"
-            value={seasonId ?? ''}
+          <Select
+            inline
+            size="sm"
+            aria-label="Select season"
+            value={seasonId !== null ? String(seasonId) : ''}
+            options={list.map((item) => ({
+              value: String(item.seasonId),
+              label: `Season ${item.seasonNumber} · ${item.seasonName}`,
+            }))}
             onChange={(event) => {
               setSelectedSeasonId(Number(event.target.value));
               setPage(1);
             }}
-            aria-label="Select season"
-          >
-            {(seasons.data ?? []).map((item) => (
-              <option key={item.seasonId} value={item.seasonId}>
-                Season {item.seasonNumber} · {item.seasonName}
-              </option>
-            ))}
-          </select>
+          />
         );
+      }
       case 'class':
+        if (classOptions.length === 0) return null;
         return (
-          <select
-            className="input-field leaderboard-filter"
-            value={classId ?? ''}
+          <Select
+            inline
+            size="sm"
+            aria-label="Select class"
+            value={effectiveClassId !== null ? String(effectiveClassId) : ''}
+            options={classOptions.map((cls) => ({
+              value: String(cls.classId),
+              label: cls.className,
+            }))}
             onChange={(event) => {
               setClassId(event.target.value ? Number(event.target.value) : null);
             }}
-            aria-label="Select class"
-          >
-            <option value="">Select a class</option>
-            {(classes.data?.data ?? []).map((cls) => (
-              <option key={cls.classId} value={cls.classId}>
-                {cls.className}
-              </option>
-            ))}
-          </select>
+          />
         );
-      case 'organization':
+      case 'organization': {
         if (!isPlatformAdmin) return null;
+        const list = adminOrgs.data?.data ?? [];
+        if (list.length === 0) return null;
         return (
-          <select
-            className="input-field leaderboard-filter"
-            value={platformOrgId ?? ''}
+          <Select
+            inline
+            size="sm"
+            aria-label="Select organization"
+            value={effectivePlatformOrgId !== null ? String(effectivePlatformOrgId) : ''}
+            options={list.map((org) => ({
+              value: String(org.organizationId),
+              label: org.name,
+            }))}
             onChange={(event) => {
               setPlatformOrgId(event.target.value ? Number(event.target.value) : null);
             }}
-            aria-label="Select organization"
-          >
-            <option value="">Select an organization</option>
-            {(adminOrgs.data?.data ?? []).map((org) => (
-              <option key={org.organizationId} value={org.organizationId}>
-                {org.name}
-              </option>
-            ))}
-          </select>
+          />
         );
+      }
       default:
         return null;
     }
@@ -347,18 +502,23 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
             isError={global.isError}
             errorMessage={global.error?.message ?? 'Could not load the leaderboard.'}
             onRetry={() => void global.refetch()}
-            rows={toRows(globalItems, (entry) => entry.globalRank)}
+            rows={toRows(global.data?.items ?? [], (entry) => entry.globalRank)}
             emptyTitle="No rankings yet"
             viewerUserId={userId}
             countryFlags={countryFlags}
-            pinned={pinned}
+            standing={globalStanding}
+            showPodium={page === 1}
             pagination={{ page, total: global.data?.total ?? 0, onPageChange: setPage }}
           />
         );
 
       case 'country':
-        if (!countryCode) {
-          return <EmptyState title="Select a country" />;
+        if (!effectiveCountryCode) {
+          return countries.isLoading ? (
+            <LeaderboardTableSkeleton />
+          ) : (
+            <EmptyState icon="flag" title="No countries configured yet" />
+          );
         }
         return (
           <StandingsBoard
@@ -370,6 +530,8 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
             emptyTitle="No rankings in this country yet"
             viewerUserId={userId}
             countryFlags={countryFlags}
+            standing={countryStanding}
+            showPodium={page === 1}
             pagination={{
               page,
               total: country.data?.total ?? 0,
@@ -391,7 +553,7 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
           return seasons.isLoading ? (
             <LeaderboardTableSkeleton />
           ) : (
-            <EmptyState title="No seasons yet" />
+            <EmptyState icon="calendar" title="No seasons yet" />
           );
         }
         return (
@@ -403,6 +565,10 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
             rows={toSeasonRows(season.data?.items ?? [])}
             emptyTitle="No season standings yet"
             viewerUserId={userId}
+            countryFlags={countryFlags}
+            standing={seasonStanding}
+            showPodium={page === 1}
+            showCourses={false}
             pagination={{
               page,
               total: season.data?.total ?? 0,
@@ -411,23 +577,23 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
           />
         );
 
-      case 'class':
-        if (classes.isError) {
+      case 'class': {
+        const classesLoading = canManageClasses ? orgClasses.isLoading : studentClasses.isLoading;
+        const classesError = canManageClasses ? orgClasses.error : studentClasses.error;
+        const retryClasses = canManageClasses ? orgClasses.refetch : studentClasses.refetch;
+        if (classesError) {
           return (
             <ErrorState
-              message={classes.error?.message ?? 'Could not load your classes.'}
-              onRetry={() => void classes.refetch()}
+              message={classesError.message ?? 'Could not load your classes.'}
+              onRetry={() => void retryClasses()}
             />
           );
         }
-        if (classId === null) {
-          if (classes.isLoading) {
-            return <LeaderboardTableSkeleton />;
-          }
-          return (
-            <EmptyState
-              title={(classes.data?.data.length ?? 0) === 0 ? 'No classes yet' : 'Select a class'}
-            />
+        if (effectiveClassId === null) {
+          return classesLoading ? (
+            <LeaderboardTableSkeleton />
+          ) : (
+            <EmptyState icon="my-class" title="No classes yet" />
           );
         }
         return (
@@ -436,12 +602,18 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
             isError={classBoard.isError}
             errorMessage={classBoard.error?.message ?? 'Could not load the class leaderboard.'}
             onRetry={() => void classBoard.refetch()}
-            rows={toRows(classBoard.data?.items ?? [], (entry) => entry.globalRank)}
+            rows={toRows(
+              classBoard.data?.items ?? [],
+              (entry) => entry.cohortRank ?? entry.globalRank,
+            )}
             emptyTitle="No student rankings yet"
             viewerUserId={userId}
             countryFlags={countryFlags}
+            standing={classStanding}
+            showPodium
           />
         );
+      }
 
       case 'organization':
         if (isPlatformAdmin) {
@@ -453,11 +625,11 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
               />
             );
           }
-          if (platformOrgId === null) {
+          if (effectivePlatformOrgId === null) {
             return adminOrgs.isLoading ? (
               <LeaderboardTableSkeleton />
             ) : (
-              <EmptyState title="Select an organization" />
+              <EmptyState icon="organization" title="No organizations found" />
             );
           }
         } else {
@@ -473,7 +645,7 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
             return myOrg.query.isLoading ? (
               <LeaderboardTableSkeleton />
             ) : (
-              <EmptyState title="No organization yet" />
+              <EmptyState icon="organization" title="No organization yet" />
             );
           }
         }
@@ -483,10 +655,15 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
             isError={orgBoard.isError}
             errorMessage={orgBoard.error?.message ?? 'Could not load the organization leaderboard.'}
             onRetry={() => void orgBoard.refetch()}
-            rows={toRows(orgBoard.data?.items ?? [], (entry) => entry.globalRank)}
+            rows={toRows(
+              orgBoard.data?.items ?? [],
+              (entry) => entry.cohortRank ?? entry.globalRank,
+            )}
             emptyTitle="No member rankings yet"
             viewerUserId={userId}
             countryFlags={countryFlags}
+            standing={orgStanding}
+            showPodium
           />
         );
 
@@ -500,7 +677,7 @@ export function LeaderboardPage({ defaultTab = 'global' }: LeaderboardPageProps)
   }
 
   return (
-    <div>
+    <div className="pb-12">
       <PageHeader title="Leaderboard" />
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">

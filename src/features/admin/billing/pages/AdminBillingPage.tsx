@@ -31,9 +31,9 @@ const TAB_IDS = ['subscriptions', 'orders', 'coupons'] as const;
 type AdminTab = (typeof TAB_IDS)[number];
 
 const TAB_ITEMS: ReadonlyArray<TabSwitcherItem<AdminTab>> = [
-  { id: 'subscriptions', label: 'Subscriptions' },
-  { id: 'orders', label: 'Orders' },
-  { id: 'coupons', label: 'Coupons' },
+  { id: 'subscriptions', label: 'Subscriptions', icon: 'card' },
+  { id: 'orders', label: 'Orders', icon: 'payments' },
+  { id: 'coupons', label: 'Coupons', icon: 'sparkles' },
 ];
 
 const PLAN_LABELS: Record<PlanType, string> = {

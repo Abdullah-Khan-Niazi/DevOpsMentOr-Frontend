@@ -1,10 +1,25 @@
 /* ═══ Shared Input — token-driven with refined elevation and states ═══ */
 
-.input-root {
-  display: flex;
-  width: 100%;
-  flex-direction: column;
-  gap: var(--space-1);
+@layer components {
+  .input-root {
+    display: flex;
+    width: 100%;
+    flex-direction: column;
+    gap: var(--space-1);
+  }
+
+  .input-root--inline {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .input-root--inline .field-select {
+    width: auto;
+  }
+
+  .input-root--inline .input-field {
+    width: auto;
+  }
 }
 
 .input-label {

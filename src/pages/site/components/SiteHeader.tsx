@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Button } from '@/shared/components';
+import { Button } from '@/shared/components/Button';
 import { ROUTES } from '@/shared/constants';
 import { SiteLogo } from '@/shared/components/Logo';
 import './SiteHeader.css';

@@ -18,28 +18,39 @@
   font-family: var(--font-body);
 }
 
-/* ─── Learner Top Navigation Bar: light Paper & Ink, matches SiteHeader ───── */
+/* ─── Learner Top Navigation Bar: frosted glass over scrolling content ────── */
 .app-chrome--topbar {
+  position: relative;
   flex-direction: column;
 }
 
 .app-chrome__topbar {
   display: flex;
   flex: none;
-  position: sticky;
+  position: absolute;
   top: 0;
+  left: 0;
+  right: 0;
   z-index: var(--z-topbar);
   width: 100%;
-  background: color-mix(in srgb, var(--paper) 92%, transparent);
-  backdrop-filter: blur(0.75rem);
-  -webkit-backdrop-filter: blur(0.75rem);
+  background: var(--surface-glass);
+  backdrop-filter: var(--blur-glass);
+  -webkit-backdrop-filter: var(--blur-glass);
+  border-bottom: 0.0625rem solid transparent;
   color: var(--text-primary);
-  transition: box-shadow var(--duration-base) var(--ease-standard);
+  transition:
+    box-shadow var(--duration-base) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard);
 }
 
-/* Elevation only once the page scrolls under the bar (set by the shell). */
+/* Elevation + hairline edge once page scrolls underneath the frosted bar. */
 .app-chrome__topbar[data-scrolled='true'] {
+  border-bottom-color: var(--surface-glass-border);
   box-shadow: var(--shadow-xs);
+}
+
+.app-chrome--topbar .app-chrome__main {
+  padding-top: calc(var(--space-16) + var(--space-4));
 }
 
 /* Full width: the gutter is the only horizontal spacing. */
@@ -815,13 +826,22 @@
     justify-content: space-between;
     height: 3.625rem;
     padding: 0 var(--space-4);
-    background-color: var(--pearl-100);
-    position: sticky;
+    background: var(--surface-glass);
+    backdrop-filter: var(--blur-glass);
+    -webkit-backdrop-filter: var(--blur-glass);
+    border-bottom: 0.0625rem solid var(--surface-glass-border);
+    position: absolute;
     top: 0;
+    left: 0;
+    right: 0;
     z-index: var(--z-topbar);
     width: 100%;
-    flex-shrink: 0;
     box-shadow: var(--shadow-xs);
+  }
+
+  .app-chrome--topbar .app-chrome__main,
+  .app-chrome__main {
+    padding-top: calc(3.625rem + var(--space-4));
   }
 
   .app-chrome__mobile-logo {

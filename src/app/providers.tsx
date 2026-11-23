@@ -8,12 +8,13 @@ interface AppProvidersProps {
   children: ReactNode;
 }
 
-const MAX_QUERY_RETRIES = 2;
+const MAX_QUERY_RETRIES = 1;
 
-/** Retry only failures that can succeed on a second try: offline/timeout and 5xx. */
+/** Retry only failures that are genuinely transient: offline/timeout or gateway 502/504. */
 function shouldRetryQuery(failureCount: number, error: unknown): boolean {
   if (failureCount >= MAX_QUERY_RETRIES) return false;
-  return isNetworkError(error) || (getStatusCode(error) ?? 0) >= 500;
+  const status = getStatusCode(error);
+  return isNetworkError(error) || status === 502 || status === 504;
 }
 
 function createQueryClient() {
@@ -30,7 +31,7 @@ function createQueryClient() {
         refetchOnWindowFocus: false,
         refetchOnReconnect: true,
         retry: shouldRetryQuery,
-        retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 8000),
+        retryDelay: (attempt) => Math.min(800 * 2 ** attempt, 4000),
       },
       mutations: {
         retry: 0,

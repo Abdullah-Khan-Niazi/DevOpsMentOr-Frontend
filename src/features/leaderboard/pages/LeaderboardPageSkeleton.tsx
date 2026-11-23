@@ -25,8 +25,8 @@ export function LeaderboardTableSkeleton() {
 }
 
 /**
- * Full leaderboard layout while the global standings load: title, the tab switcher with a
- * filter on the right, then the ranked table. Mirrors LeaderboardPage at full width.
+ * Full leaderboard layout while standings load: title, tab switcher + filter,
+ * viewer standing strip, top-3 podium and ranked table.
  */
 export function LeaderboardPageSkeleton() {
   return (
@@ -38,7 +38,13 @@ export function LeaderboardPageSkeleton() {
             <Skeleton key={index} className="h-8 rounded-sm" width={width} />
           ))}
         </div>
-        <Skeleton className="h-9 w-56 rounded-md" />
+        <Skeleton className="h-9 w-48 rounded-md" />
+      </div>
+      <Skeleton className="h-12 w-full rounded-md" />
+      <div className="grid grid-cols-1 gap-3 md:grid-cols-3 md:items-end">
+        {['8rem', '9.5rem', '8rem'].map((height, index) => (
+          <Skeleton key={index} className="w-full rounded-lg" height={height} />
+        ))}
       </div>
       <LeaderboardTableSkeleton />
     </PageSkeleton>

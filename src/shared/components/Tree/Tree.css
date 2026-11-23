@@ -5,9 +5,17 @@
   margin: 0;
   padding: 0;
   list-style: none;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
 }
 
 .tree-item {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: clip;
   outline: none;
 }
 
@@ -27,6 +35,10 @@
   display: flex;
   align-items: center;
   gap: var(--space-2);
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
   min-height: 2.5rem;
   padding-block: 0.25rem;
   padding-inline-end: var(--space-2);
@@ -89,7 +101,7 @@
 
 .tree-row__label {
   min-width: 0;
-  flex: 0 1 auto;
+  flex: 1 1 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

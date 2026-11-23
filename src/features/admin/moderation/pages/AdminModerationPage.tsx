@@ -23,17 +23,17 @@ const MODERATION_TAB_IDS = ['reviews', 'comments'] as const;
 type ModerationTab = (typeof MODERATION_TAB_IDS)[number];
 
 const MODERATION_TABS: ReadonlyArray<TabSwitcherItem<ModerationTab>> = [
-  { id: 'reviews', label: 'Reviews' },
-  { id: 'comments', label: 'Comments' },
+  { id: 'reviews', label: 'Reviews', icon: 'star' },
+  { id: 'comments', label: 'Comments', icon: 'chat' },
 ];
 
 const REVIEW_TAB_IDS = ['pending', 'approved', 'all'] as const;
 type ReviewTab = (typeof REVIEW_TAB_IDS)[number];
 
 const REVIEW_TABS: ReadonlyArray<TabSwitcherItem<ReviewTab>> = [
-  { id: 'pending', label: 'Pending' },
-  { id: 'approved', label: 'Approved' },
-  { id: 'all', label: 'All' },
+  { id: 'pending', label: 'Pending', icon: 'pending' },
+  { id: 'approved', label: 'Approved', icon: 'check-circle' },
+  { id: 'all', label: 'All', icon: 'list' },
 ];
 
 /** Muted status glyph; the label is the tooltip and the accessible name. */

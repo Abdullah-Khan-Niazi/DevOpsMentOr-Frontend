@@ -1,23 +1,30 @@
-import { useState, useMemo } from 'react';
+import { useMemo, useState } from 'react';
+import { generatePath, Link } from 'react-router-dom';
+import { ROUTES } from '@/shared/constants';
+import { formatNumber, safeHttpUrl } from '@/shared/utils';
 
-// SCR-F7-02/03/04 shared ranked table with column sorting.
-// The session user's own row gets an accent-glow highlight (no status pills).
+// SCR-F7-02/03/04 shared ranked table with column sorting, safe avatars, rank deltas and profile links.
 
 export interface LeaderboardRow {
   userId: number;
   rank: number | null;
   name: string;
+  username?: string | null;
+  avatarUrl?: string | null;
   points: number;
+  courseCompletionsCount?: number | null;
+  rankDelta?: number | null;
   countryCode?: string | null;
 }
 
-type SortColumn = 'rank' | 'name' | 'points' | 'country';
+type SortColumn = 'rank' | 'name' | 'courses' | 'points' | 'country';
 type SortDirection = 'asc' | 'desc';
 
 function SortIcon({ active, direction }: { active: boolean; direction: SortDirection }) {
   return (
     <span
-      className={`inline-block ml-1 transition-opacity ${active ? 'opacity-100 font-bold' : 'opacity-30'}`}
+      aria-hidden="true"
+      className={`ml-1 inline-block transition-opacity ${active ? 'font-bold opacity-100' : 'opacity-35'}`}
     >
       {active ? (direction === 'asc' ? '↑' : '↓') : '↕'}
     </span>
@@ -32,14 +39,59 @@ interface LeaderboardTableProps {
   countryFlags?: Map<string, string>;
   emptyTitle: string;
   emptyDescription?: string;
+  showCourses?: boolean;
+  showCountry?: boolean;
 }
 
-function initials(name: string): string {
+export function leaderboardInitials(name: string): string {
   const parts = name.trim().split(/\s+/).filter(Boolean);
   if (parts.length === 0) return '?';
   const first = parts[0].charAt(0);
   const last = parts.length > 1 ? parts[parts.length - 1].charAt(0) : '';
   return (first + last).toUpperCase();
+}
+
+export function LeaderboardAvatar({
+  avatarUrl,
+  name,
+  className = 'leaderboard-table__avatar',
+}: {
+  avatarUrl?: string | null;
+  name: string;
+  className?: string;
+}) {
+  const [failed, setFailed] = useState(false);
+  const safeAvatar = !failed ? safeHttpUrl(avatarUrl) : null;
+
+  return (
+    <span className={className} aria-hidden="true">
+      {safeAvatar ? (
+        <img
+          src={safeAvatar}
+          alt=""
+          loading="lazy"
+          referrerPolicy="no-referrer"
+          className="leaderboard-table__avatar-img"
+          onError={() => setFailed(true)}
+        />
+      ) : (
+        leaderboardInitials(name)
+      )}
+    </span>
+  );
+}
+
+export function RankDeltaBadge({ delta }: { delta?: number | null }) {
+  if (!delta) return null;
+  const up = delta > 0;
+  return (
+    <span
+      className={`leaderboard-delta ${up ? 'leaderboard-delta--up' : 'leaderboard-delta--down'}`}
+      title={up ? `Up ${delta} ranks` : `Down ${Math.abs(delta)} ranks`}
+    >
+      {up ? `▲${delta}` : `▼${Math.abs(delta)}`}
+    </span>
+  );
 }
 
 export function LeaderboardTable({
@@ -49,6 +101,8 @@ export function LeaderboardTable({
   countryFlags,
   emptyTitle,
   emptyDescription,
+  showCourses = true,
+  showCountry = true,
 }: LeaderboardTableProps) {
   const [sortCol, setSortCol] = useState<SortColumn>('rank');
   const [sortDir, setSortDir] = useState<SortDirection>('asc');
@@ -58,7 +112,7 @@ export function LeaderboardTable({
       setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
     } else {
       setSortCol(col);
-      setSortDir(col === 'points' ? 'desc' : 'asc');
+      setSortDir(col === 'points' || col === 'courses' ? 'desc' : 'asc');
     }
   };
 
@@ -76,6 +130,10 @@ export function LeaderboardTable({
         case 'name':
           valA = a.name.toLowerCase();
           valB = b.name.toLowerCase();
+          break;
+        case 'courses':
+          valA = a.courseCompletionsCount ?? 0;
+          valB = b.courseCompletionsCount ?? 0;
           break;
         case 'points':
           valA = a.points;
@@ -127,7 +185,7 @@ export function LeaderboardTable({
               <button
                 type="button"
                 onClick={() => handleSort('rank')}
-                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none"
               >
                 Rank <SortIcon active={sortCol === 'rank'} direction={sortDir} />
               </button>
@@ -140,11 +198,27 @@ export function LeaderboardTable({
               <button
                 type="button"
                 onClick={() => handleSort('name')}
-                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none"
               >
                 Learner <SortIcon active={sortCol === 'name'} direction={sortDir} />
               </button>
             </th>
+            {showCourses ? (
+              <th
+                className="leaderboard-table__courses"
+                aria-sort={
+                  sortCol === 'courses' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+                }
+              >
+                <button
+                  type="button"
+                  onClick={() => handleSort('courses')}
+                  className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none"
+                >
+                  Courses <SortIcon active={sortCol === 'courses'} direction={sortDir} />
+                </button>
+              </th>
+            ) : null}
             <th
               className="leaderboard-table__num"
               aria-sort={
@@ -154,44 +228,67 @@ export function LeaderboardTable({
               <button
                 type="button"
                 onClick={() => handleSort('points')}
-                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none"
               >
                 Points <SortIcon active={sortCol === 'points'} direction={sortDir} />
               </button>
             </th>
-            <th
-              aria-sort={
-                sortCol === 'country' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
-              }
-            >
-              <button
-                type="button"
-                onClick={() => handleSort('country')}
-                className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ink"
+            {showCountry ? (
+              <th
+                className="leaderboard-table__flag"
+                aria-sort={
+                  sortCol === 'country' ? (sortDir === 'asc' ? 'ascending' : 'descending') : 'none'
+                }
               >
-                Country <SortIcon active={sortCol === 'country'} direction={sortDir} />
-              </button>
-            </th>
+                <button
+                  type="button"
+                  onClick={() => handleSort('country')}
+                  className="inline-flex cursor-pointer select-none items-center rounded-sm hover:text-card-foreground focus-visible:outline-none"
+                >
+                  Country <SortIcon active={sortCol === 'country'} direction={sortDir} />
+                </button>
+              </th>
+            ) : null}
           </tr>
         </thead>
         <tbody>
           {sortedRows.map((row) => {
             const isViewer = row.userId === viewerUserId;
             const flag = row.countryCode ? countryFlags?.get(row.countryCode) : undefined;
+            const profileTo = generatePath(ROUTES.PROFILE_VIEW, { userId: String(row.userId) });
             return (
               <tr key={row.userId} className={isViewer ? 'leaderboard-table__row--self' : ''}>
-                <td className="leaderboard-table__rank">{row.rank ?? '–'}</td>
+                <td className="leaderboard-table__rank">
+                  <span>{row.rank !== null ? `#${row.rank}` : '–'}</span>
+                  <RankDeltaBadge delta={row.rankDelta} />
+                </td>
                 <td>
                   <span className="leaderboard-table__learner">
-                    <span className="leaderboard-table__avatar" aria-hidden="true">
-                      {initials(row.name)}
+                    <LeaderboardAvatar avatarUrl={row.avatarUrl} name={row.name} />
+                    <span className="min-w-0 truncate">
+                      <Link to={profileTo} className="leaderboard-table__name-link">
+                        {row.name}
+                      </Link>
+                      {row.username ? (
+                        <span className="leaderboard-table__username">@{row.username}</span>
+                      ) : null}
+                      {isViewer ? <span className="leaderboard-table__self-label">You</span> : null}
                     </span>
-                    <span>{row.name}</span>
-                    {isViewer ? <span className="leaderboard-table__self-label">You</span> : null}
                   </span>
                 </td>
-                <td className="leaderboard-table__num">{row.points}</td>
-                <td className="leaderboard-table__flag">{flag ?? '–'}</td>
+                {showCourses ? (
+                  <td className="leaderboard-table__courses">
+                    {row.courseCompletionsCount !== undefined && row.courseCompletionsCount !== null
+                      ? formatNumber(row.courseCompletionsCount)
+                      : '–'}
+                  </td>
+                ) : null}
+                <td className="leaderboard-table__num">{formatNumber(row.points)} XP</td>
+                {showCountry ? (
+                  <td className="leaderboard-table__flag">
+                    {flag ?? row.countryCode ?? '–'}
+                  </td>
+                ) : null}
               </tr>
             );
           })}
