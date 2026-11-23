@@ -1,4 +1,4 @@
-import { Skeleton } from '@/shared/components';
+import { Skeleton } from '@/shared/components/Skeleton';
 
 /** Module page placeholder: header with outline action, progress bar, description and item rows. */
 export function LearnModulePageSkeleton() {

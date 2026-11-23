@@ -136,7 +136,10 @@ function toFormValues(detail: AdminCourseDetailDto): CourseFormValues {
     estimatedHours: course.estimatedHours,
     isPremium: course.isPremium ?? false,
     coverImageUrl: course.coverImageUrl ?? '',
-    videoTrailerUrl: course.videoTrailerUrl ?? '',
+    videoTrailerUrl:
+      course.videoTrailerUrl && isOptionalHttpUrl(course.videoTrailerUrl)
+        ? course.videoTrailerUrl
+        : '',
     prerequisites: course.prerequisites ?? [],
     learningObjectives: course.learningObjectives ?? [],
   };
@@ -214,7 +217,7 @@ export function CourseDrawer({ open, mode, id, onClose, onCreated }: CourseDrawe
     handleSubmit,
     reset,
     setError,
-    formState: { errors, isDirty },
+    formState: { errors, isDirty, dirtyFields },
   } = useForm<CourseFormValues>({
     resolver: zodResolver(courseSchema),
     defaultValues: EMPTY_VALUES,
@@ -276,7 +279,7 @@ export function CourseDrawer({ open, mode, id, onClose, onCreated }: CourseDrawe
           difficultyId,
           categoryId,
           coverImageUrl,
-          videoTrailerUrl,
+          ...(dirtyFields.videoTrailerUrl ? { videoTrailerUrl } : {}),
           estimatedHours: values.estimatedHours,
           isPremium: values.isPremium,
           prerequisites: toList(values.prerequisites),

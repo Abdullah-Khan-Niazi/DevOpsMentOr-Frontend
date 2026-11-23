@@ -1,4 +1,11 @@
 export {
+  getModuleItemRoute,
+  useCourseSequence,
+  type CourseSequenceTarget,
+  type UseCourseSequenceParams,
+  type UseCourseSequenceResult,
+} from './useCourseSequence';
+export {
   useAllLearnModules,
   useLearnCourse,
   useLearnCourseModules,

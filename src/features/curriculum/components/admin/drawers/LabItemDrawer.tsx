@@ -50,8 +50,8 @@ const FORM_ID = 'lab-item-drawer-form';
 type LabFilter = 'ready' | 'all';
 
 const FILTER_ITEMS: ReadonlyArray<TabSwitcherItem<LabFilter>> = [
-  { id: 'ready', label: 'Ready' },
-  { id: 'all', label: 'All' },
+  { id: 'ready', label: 'Ready', icon: 'check-circle' },
+  { id: 'all', label: 'All', icon: 'lab' },
 ];
 
 const titleRule = z
@@ -134,7 +134,7 @@ function CreateLabItemDrawer({ open, parentId, onClose, onCreated }: LabItemDraw
   const canManage = usePermission(MANAGE_PERMISSION);
   const canManageLabs = usePermission(LABS_PERMISSION);
 
-  const labsQuery = useAdminLabs();
+  const labsQuery = useAdminLabs(open && canManageLabs);
   const catalogQuery = useAdminLabCatalog(true, open && canManageLabs);
   const importLab = useImportCatalogLab();
   const createItem = useCreateItem(moduleId);
@@ -226,6 +226,8 @@ function CreateLabItemDrawer({ open, parentId, onClose, onCreated }: LabItemDraw
   let formReady = false;
   if (moduleId === 0) {
     body = <ErrorState message="Open the lab from its module." />;
+  } else if (!canManageLabs) {
+    body = <ErrorState message="You do not have access to the labs library." />;
   } else if (labsQuery.isPending) {
     body = <DrawerFormSkeleton fields={4} />;
   } else if (labsQuery.isError) {
@@ -245,7 +247,7 @@ function CreateLabItemDrawer({ open, parentId, onClose, onCreated }: LabItemDraw
       labList = <EmptyState title={query ? 'No labs match' : 'No ready labs'} icon="lab" />;
     } else {
       labList = (
-        <ul aria-label="Labs" className="flex max-h-80 flex-col gap-1 overflow-y-auto">
+        <ul aria-label="Labs" className="flex flex-col gap-1">
           {visibleLabs.map((lab) => {
             const selected = lab.labId === selectedLabId;
             return (
@@ -478,7 +480,7 @@ function EditLabItemDrawer({
 
   let body: ReactNode;
   let formReady = false;
-  if (lessonMissing || moduleMissing || (moduleQuery.isSuccess && (!item || !lab))) {
+  if (lessonMissing || moduleMissing || (moduleQuery.isSuccess && !item)) {
     body = (
       <EmptyState
         title="This item no longer exists"
@@ -498,7 +500,7 @@ function EditLabItemDrawer({
         retrying={loadError.isFetching}
       />
     );
-  } else if (!item || !lab) {
+  } else if (!item) {
     body = <DrawerFormSkeleton fields={3} />;
   } else {
     formReady = true;
@@ -509,41 +511,47 @@ function EditLabItemDrawer({
           <FieldError id="lab-item-drawer-error" message={formError} />
         </form>
 
-        <dl className="grid gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1">
-            <dt className="input-label">Lab</dt>
-            <dd className="flex min-w-0 items-center gap-2 text-sm">
-              <span className="font-mono text-muted">{lab.slug}</span>
-              <span className="min-w-0 truncate">{lab.labName}</span>
-              <LabReadiness lab={lab} />
-            </dd>
-          </div>
-          <div className="flex flex-col gap-1">
-            <dt className="input-label">Item</dt>
-            <dd className="font-mono text-sm text-muted">{item.slug ?? 'Not assigned'}</dd>
-          </div>
-          <div className="flex flex-col gap-1">
-            <dt className="input-label">Difficulty</dt>
-            <dd className="text-sm">{lab.difficultyName ?? 'None'}</dd>
-          </div>
-          <div className="flex flex-col gap-1">
-            <dt className="input-label">Steps</dt>
-            <dd className="text-sm">{lab.stepCount}</dd>
-          </div>
-        </dl>
+        {lab ? (
+          <>
+            <dl className="grid gap-4 sm:grid-cols-2">
+              <div className="flex flex-col gap-1">
+                <dt className="input-label">Lab</dt>
+                <dd className="flex min-w-0 items-center gap-2 text-sm">
+                  <span className="font-mono text-muted">{lab.slug}</span>
+                  <span className="min-w-0 truncate">{lab.labName}</span>
+                  <LabReadiness lab={lab} />
+                </dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="input-label">Item</dt>
+                <dd className="font-mono text-sm text-muted">{item.slug ?? 'Not assigned'}</dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="input-label">Difficulty</dt>
+                <dd className="text-sm">{lab.difficultyName ?? 'None'}</dd>
+              </div>
+              <div className="flex flex-col gap-1">
+                <dt className="input-label">Steps</dt>
+                <dd className="text-sm">{lab.stepCount}</dd>
+              </div>
+            </dl>
 
-        {canManageLabs && onOpenLabSpec ? (
-          <div>
-            <Button
-              type="button"
-              variant="secondary"
-              iconName="checklist"
-              onClick={() => onOpenLabSpec(lab.labId)}
-            >
-              Edit steps
-            </Button>
-          </div>
-        ) : null}
+            {canManageLabs && onOpenLabSpec ? (
+              <div>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  iconName="checklist"
+                  onClick={() => onOpenLabSpec(lab.labId)}
+                >
+                  Edit steps
+                </Button>
+              </div>
+            ) : null}
+          </>
+        ) : (
+          <FieldError id="lab-item-unlinked" message="No lab is linked to this item." />
+        )}
       </fieldset>
     );
   }

@@ -1,4 +1,4 @@
-import { PageSkeleton, Skeleton, SkeletonCircle, SkeletonText } from '@/shared/components';
+import { PageSkeleton, Skeleton, SkeletonCircle, SkeletonText } from '@/shared/components/Skeleton';
 
 export interface QuizPageSkeletonProps {
   /** `intro` mirrors the quiz landing view; `runner` mirrors the question view with its rail. */

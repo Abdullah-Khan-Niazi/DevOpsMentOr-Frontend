@@ -1,0 +1,54 @@
+/* ─── Curriculum Control Panel ────────────────────────────────────────────────
+   Dotted-border interactive action buttons (icon-only buttons stay borderless),
+   Apple easing + Framer-like spring hover/press physics, and zero inner scrollbars.
+   Token-driven only — zero hardcoded hex values. */
+
+.curriculum-page .btn:not(.tab-switcher__tab) {
+  border: 0.09375rem dotted var(--paper-line-strong);
+  background-color: var(--pearl-100);
+  color: var(--ink);
+  font-weight: 500;
+  box-shadow: none;
+  transition:
+    transform var(--duration-spring-bouncy) var(--spring-bouncy),
+    border-color var(--duration-fast) var(--ease-apple-out),
+    border-width var(--duration-instant) var(--ease-apple-out),
+    background-color var(--duration-fast) var(--ease-apple-out),
+    box-shadow var(--duration-fast) var(--ease-apple-out);
+}
+
+.curriculum-page .btn--primary {
+  border: 0.09375rem dotted var(--ink);
+  background-color: var(--pearl-200);
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.curriculum-page .btn:not(.tab-switcher__tab):hover:not(:disabled) {
+  border: 0.125rem dotted var(--ink);
+  background-color: var(--pearl-200);
+  color: var(--ink);
+  font-weight: 700;
+  transform: translateY(-0.125rem) scale(1.03);
+  box-shadow: var(--shadow-sm);
+}
+
+.curriculum-page .btn--danger:hover:not(:disabled) {
+  border-color: var(--signal-600);
+  background-color: color-mix(in srgb, var(--accent-signal) 10%, var(--pearl-100));
+  color: var(--signal-900);
+}
+
+.curriculum-page .btn:not(.tab-switcher__tab):active:not(:disabled) {
+  transform: scale(var(--press-scale));
+  transition-duration: var(--duration-press);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .curriculum-page .btn:not(.tab-switcher__tab),
+  .curriculum-page .btn:not(.tab-switcher__tab):hover:not(:disabled),
+  .curriculum-page .btn:not(.tab-switcher__tab):active:not(:disabled) {
+    transform: none;
+    transition: none;
+  }
+}

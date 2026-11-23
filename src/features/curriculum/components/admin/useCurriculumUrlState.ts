@@ -130,7 +130,7 @@ export function useCurriculumUrlState() {
   const routeParams = useParams();
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const [tab, setTab] = useUrlState<CurriculumTab>('tab', CURRICULUM_TABS, 'courses');
+  const [tab, setTab] = useUrlState<CurriculumTab>('tab', CURRICULUM_TABS, 'tracks');
   const [status, setStatus] = useUrlState<PublishFilter>('status', STATUS_VALUES, 'all');
   const search = useUrlSearch('q');
 

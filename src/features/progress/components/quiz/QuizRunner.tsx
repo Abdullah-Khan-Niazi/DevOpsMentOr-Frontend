@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
-import { generatePath, useSearchParams } from 'react-router-dom';
+import { generatePath, useNavigate, useSearchParams } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
+import { CourseCompleteOverlay } from '@/features/curriculum/components/learn/CourseCompleteOverlay';
+import { useCourseSequence } from '@/features/curriculum/hooks';
 import {
   useAttempt,
   useCompleteAttempt,
@@ -32,6 +34,7 @@ import { TerminalQuestion } from './TerminalQuestion';
 
 /** FE§4.5: an answer refused with STEP_STAGE_IN_PROGRESS waits before the attempt is refetched. */
 const STAGE_IN_PROGRESS_WAIT_MS = 2_000;
+const QUIZ_AUTO_PROCEED_MS = 1_800;
 
 export interface QuizRunnerProps {
   attemptId: number;
@@ -110,10 +113,17 @@ function AttemptLoadError({ error, onRetry }: { error: unknown; onRetry: () => v
  */
 export function QuizRunner({ attemptId }: QuizRunnerProps) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const attemptQuery = useAttempt(attemptId);
   const attempt = attemptQuery.data?.attempt ?? null;
   const status = useQuizStatus(attempt?.quizId ?? null);
+  const sequence = useCourseSequence({
+    courseId: status.data?.courseId ?? null,
+    moduleId: status.data?.moduleId ?? null,
+    currentQuizId: attempt?.quizId ?? null,
+    enabled: Boolean(status.data),
+  });
   const submit = useSubmitAnswer(attemptId);
   const complete = useCompleteAttempt(attemptId);
   const restart = useStartAttempt(attempt?.quizId ?? 0);
@@ -123,6 +133,8 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
   const [expired, setExpired] = useState(false);
   const [restageToken, setRestageToken] = useState(0);
   const [confirmFinish, setConfirmFinish] = useState(false);
+  const [justPassed, setJustPassed] = useState(false);
+  const [stayToReview, setStayToReview] = useState(false);
   const shapeErrorLogged = useRef(false);
 
   const questions = attempt?.questions ?? [];
@@ -137,13 +149,30 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
   const timeUp = expired || (attempt !== null && result !== null && endedByTime(attempt, result));
   const hasAttempt = attempt !== null;
   const resultMissing = result === null;
+  const resultPassed = result?.isPassed === true;
+  const nextTargetUrl = sequence.nextItem?.to ?? null;
 
   // The time ran out but the server has no result yet: completing an expired attempt finalizes it.
   useEffect(() => {
     if (!expired || !hasAttempt || !resultMissing) return;
     if (complete.isPending || complete.isError) return;
-    completeMutate();
+    completeMutate(undefined, {
+      onSuccess: (outcome) => {
+        if (outcome.isPassed) setJustPassed(true);
+      },
+    });
   }, [expired, hasAttempt, resultMissing, complete.isPending, complete.isError, completeMutate]);
+
+  // Passing a quiz auto-proceeds to the next course item unless the learner chooses to stay/review.
+  useEffect(() => {
+    if (!resultPassed || !justPassed || stayToReview || !sequence.ready || nextTargetUrl === null) {
+      return undefined;
+    }
+    const timer = window.setTimeout(() => {
+      navigate(nextTargetUrl);
+    }, QUIZ_AUTO_PROCEED_MS);
+    return () => window.clearTimeout(timer);
+  }, [resultPassed, justPassed, stayToReview, sequence.ready, nextTargetUrl, navigate]);
 
   if (attemptQuery.isPending) return <QuizPageSkeleton variant="runner" />;
   if (attemptQuery.isError || attempt === null) {
@@ -198,12 +227,20 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
     submit.mutate({ questionId: question.questionId, response }, { onError: handleAnswerError });
   };
 
+  const finishQuiz = () => {
+    completeMutate(undefined, {
+      onSuccess: (outcome) => {
+        if (outcome.isPassed) setJustPassed(true);
+      },
+    });
+  };
+
   const requestFinish = () => {
     if (unansweredCount > 0) {
       setConfirmFinish(true);
       return;
     }
-    completeMutate();
+    finishQuiz();
   };
 
   const startNext = () => {
@@ -229,17 +266,48 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
   }
 
   if (result) {
+    const courseId = status.data?.courseId ?? null;
     const moduleId = status.data?.moduleId;
-    const next =
-      result.completedLessonIds.length > 0 && moduleId !== undefined
+    const next = sequence.nextItem
+      ? { label: 'Next item', to: sequence.nextItem.to }
+      : result.completedLessonIds.length > 0 && moduleId !== undefined
         ? {
             label: 'Next item',
             to: generatePath(ROUTES.LEARN_MODULE, { moduleId: String(moduleId) }),
           }
         : null;
     const restartNotice = noticeFor(restart.error);
+    const autoProceeding =
+      result.isPassed &&
+      justPassed &&
+      !stayToReview &&
+      sequence.ready &&
+      sequence.nextItem !== null;
+    const showCourseComplete =
+      result.isPassed &&
+      justPassed &&
+      !stayToReview &&
+      sequence.ready &&
+      sequence.nextItem === null &&
+      sequence.isLastItemInCourse;
+
     return (
       <div className="flex flex-col gap-6">
+        {autoProceeding ? (
+          <div
+            role="status"
+            className="motion-fade-in flex flex-wrap items-center justify-between gap-3 rounded-lg border border-check-success/30 bg-check-success/10 px-4 py-3 text-sm text-card-foreground"
+          >
+            <span className="font-medium">
+              {sequence.nextItem?.crossesModule
+                ? 'Module complete — opening next module…'
+                : 'Quiz passed — continuing to next item…'}
+            </span>
+            <Button variant="ghost" size="sm" onClick={() => setStayToReview(true)}>
+              Stay to review
+            </Button>
+          </div>
+        ) : null}
         {restartNotice ? (
           <ErrorState
             compact
@@ -251,7 +319,10 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
         <QuizResult
           result={result}
           timeUp={timeUp}
-          onReview={() => setSearchParams({ attempt: String(attemptId), view: 'review' })}
+          onReview={() => {
+            setStayToReview(true);
+            setSearchParams({ attempt: String(attemptId), view: 'review' });
+          }}
           onRetry={startNext}
           retryAt={status.data?.nextAttemptAt ?? null}
           onRetryAvailable={() => {
@@ -260,6 +331,24 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
             });
           }}
           next={next}
+        />
+        <CourseCompleteOverlay
+          open={showCourseComplete}
+          courseTitle={sequence.courseTitle}
+          onContinue={() =>
+            navigate(courseId ? `${ROUTES.LEARN}?completedCourse=${courseId}` : ROUTES.LEARN)
+          }
+          secondaryAction={
+            result.reviewAvailable
+              ? {
+                  label: 'Review answers',
+                  onClick: () => {
+                    setStayToReview(true);
+                    setSearchParams({ attempt: String(attemptId), view: 'review' });
+                  },
+                }
+              : undefined
+          }
         />
       </div>
     );
@@ -372,7 +461,7 @@ export function QuizRunner({ attemptId }: QuizRunnerProps) {
         onCancel={() => setConfirmFinish(false)}
         onConfirm={() => {
           setConfirmFinish(false);
-          completeMutate();
+          finishQuiz();
         }}
       />
     </section>

@@ -1,0 +1,117 @@
+/* Celebratory course completion overlay: frosted scrim, spring card, linear auto-advance bar. */
+
+.course-complete-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: var(--z-overlay);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(var(--space-4), 3vw, var(--space-6));
+  background-color: color-mix(in srgb, var(--ink) 48%, transparent);
+  backdrop-filter: blur(0.375rem);
+  -webkit-backdrop-filter: blur(0.375rem);
+  overscroll-behavior: contain;
+  animation: course-complete-fade-in var(--duration-fast) var(--ease-standard) both;
+}
+
+.course-complete-root[data-state='closed'] {
+  pointer-events: none;
+}
+
+.course-complete-root[data-state='closed'] .course-complete-backdrop {
+  animation: course-complete-fade-out var(--duration-fast) var(--ease-exit) both;
+}
+
+.course-complete-root[data-state='closed'] .course-complete-card {
+  animation: course-complete-pop-out var(--duration-fast) var(--ease-exit) both;
+}
+
+.course-complete-card {
+  width: 100%;
+  max-width: 26rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: var(--space-4);
+  padding: var(--space-6);
+  border-radius: var(--radius-xl);
+  border: 0.0625rem solid var(--paper-line);
+  background-color: var(--pearl-100);
+  color: var(--ink);
+  box-shadow: var(--shadow-xl);
+  outline: none;
+  animation: course-complete-pop-in var(--duration-spring-bouncy) var(--spring-bouncy) both;
+}
+
+.course-complete-bar {
+  width: 100%;
+  height: 0.25rem;
+  border-radius: var(--radius-full);
+  background-color: var(--paper-dim);
+  overflow: hidden;
+}
+
+.course-complete-bar__fill {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  background-color: var(--accent-success);
+  animation: courseCompleteBar var(--course-complete-duration, 2500ms) linear forwards;
+}
+
+@keyframes courseCompleteBar {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes course-complete-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes course-complete-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes course-complete-pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.94) translateY(0.375rem);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+@keyframes course-complete-pop-out {
+  from {
+    opacity: 1;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(0.97);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .course-complete-bar__fill {
+    animation: none;
+  }
+}

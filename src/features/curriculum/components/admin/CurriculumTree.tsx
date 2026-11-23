@@ -117,9 +117,9 @@ function matchesStatus(status: PublishFilter, isPublished: boolean): boolean {
 }
 
 /** A node's expanded state, following the toolbar's expand/collapse all signal. */
-function useNodeOpen(ctx: TreeContext): [boolean, () => void] {
+function useNodeOpen(ctx: TreeContext, defaultOpen = false): [boolean, () => void] {
   const signal = ctx.expand;
-  const [open, setOpen] = useState(signal?.open ?? false);
+  const [open, setOpen] = useState(signal?.open ?? defaultOpen);
   const [seenVersion, setSeenVersion] = useState(signal?.version ?? 0);
   if (signal && signal.version !== seenVersion) {
     setSeenVersion(signal.version);
@@ -274,7 +274,7 @@ function RowMenu({ label, actions }: { label: string; actions: MenuAction[] }) {
           aria-label={label}
           onKeyDown={handleMenuKeyDown}
           style={{ top: position.top, right: position.right }}
-          className="fixed z-[var(--z-floating)] flex min-w-40 flex-col gap-0.5 rounded-md bg-card p-1 shadow-md"
+          className="fixed z-(--z-dropdown) flex min-w-40 flex-col gap-0.5 rounded-md bg-card p-1 shadow-md"
         >
           {actions.map((action) => (
             <button
@@ -305,18 +305,22 @@ function RowMenu({ label, actions }: { label: string; actions: MenuAction[] }) {
 interface TrackNodeProps {
   track: AdminTrackDto;
   ctx: TreeContext;
+  defaultOpen?: boolean;
 }
 
-function TrackNode({ track, ctx }: TrackNodeProps) {
+function TrackNode({ track, ctx, defaultOpen = false }: TrackNodeProps) {
   const { trackId } = track;
-  const [open, toggleOpen] = useNodeOpen(ctx);
+  const [open, toggleOpen] = useNodeOpen(ctx, defaultOpen);
   const detail = useAdminTrack(trackId, open);
   const setActive = useSetTrackActive(trackId);
   const selected = isDrawerOpen(ctx.selectedDrawer, 'track', trackId);
   const flashClass = useFlashRow(ctx, 'track', trackId, `track-${trackId}`);
 
+  const trackMatchesSearch = matchesSearch(ctx.search, track.trackName, track.slug);
   const content = (detail.data?.content ?? []).filter(
-    (row) => matchesSearch(ctx.search, row.title) && matchesStatus(ctx.status, row.isPublished),
+    (row) =>
+      (trackMatchesSearch || matchesSearch(ctx.search, row.title)) &&
+      matchesStatus(ctx.status, row.isPublished),
   );
 
   const editButton = (
@@ -881,25 +885,34 @@ function RootEmpty({ noun, filtered, icon }: { noun: string; filtered: boolean; 
 
 function TracksRoot({ ctx }: { ctx: TreeContext }) {
   const tracks = useAdminTracks();
+  const courses = useAdminCourses();
 
   if (tracks.isPending) return <RootLoading />;
   if (tracks.isError)
     return <RootError error={tracks.error} onRetry={() => void tracks.refetch()} />;
 
+  const courseList = courses.data ?? [];
   const visible = (tracks.data ?? []).filter(
     (track) =>
-      matchesSearch(ctx.search, track.trackName, track.slug) &&
-      matchesStatus(ctx.status, track.isActive),
+      matchesStatus(ctx.status, track.isActive) &&
+      (matchesSearch(ctx.search, track.trackName, track.slug) ||
+        courseList.some(
+          (course) =>
+            course.trackIds.includes(track.trackId) &&
+            matchesStatus(ctx.status, course.isPublished) &&
+            matchesSearch(ctx.search, course.title, course.slug),
+        )),
   );
   if (visible.length === 0) {
     return (
       <RootEmpty noun="tracks" filtered={ctx.search !== '' || ctx.status !== 'all'} icon="track" />
     );
   }
+  const autoOpen = visible.length === 1 || ctx.search !== '';
   return (
     <>
       {visible.map((track) => (
-        <TrackNode key={track.trackId} track={track} ctx={ctx} />
+        <TrackNode key={track.trackId} track={track} ctx={ctx} defaultOpen={autoOpen} />
       ))}
     </>
   );

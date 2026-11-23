@@ -63,8 +63,8 @@ const NO_WARNINGS: string[] = [];
 type EditorMode = 'form' | 'json';
 
 const VIEW_ITEMS: ReadonlyArray<TabSwitcherItem<EditorMode>> = [
-  { id: 'form', label: 'Form' },
-  { id: 'json', label: 'JSON' },
+  { id: 'form', label: 'Form', icon: 'list' },
+  { id: 'json', label: 'JSON', icon: 'code' },
 ];
 
 /** Editor state for one opening of the drawer. Edits live here until saved or closed. */
@@ -436,6 +436,9 @@ export function LabSpecDrawer({ open, labId, onClose }: LabSpecDrawerProps) {
     if (!canManage) {
       return <ErrorState title="You do not have access to lab step specs." />;
     }
+    if (labId <= 0) {
+      return <ErrorState title="No lab selected." />;
+    }
     if (!lab || !session || !draft || !scenarioValue) {
       if (labQuery.isError) {
         if (getStatusCode(labQuery.error) === 404) {
@@ -456,6 +459,9 @@ export function LabSpecDrawer({ open, labId, onClose }: LabSpecDrawerProps) {
             onRetry={() => void labQuery.refetch()}
           />
         );
+      }
+      if (!lab && !labQuery.isPending) {
+        return <ErrorState title="The lab could not be loaded." />;
       }
       return <DrawerFormSkeleton fields={4} />;
     }

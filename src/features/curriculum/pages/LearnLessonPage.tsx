@@ -20,9 +20,10 @@ import {
   useModuleItemsProgress,
   useStartLesson,
 } from '@/features/progress/hooks';
-import type { CourseAccessReason, ModuleItemDto } from '@/features/curriculum/types';
-import { useLearnLesson, useLearnModuleItems } from '../hooks';
+import type { CourseAccessReason } from '@/features/curriculum/types';
+import { useCourseSequence, useLearnLesson } from '../hooks';
 import { AccessDeniedState } from '../components/learn/AccessDeniedState';
+import { CourseCompleteOverlay } from '../components/learn/CourseCompleteOverlay';
 import { LessonPager } from '../components/learn/LessonPager';
 import { SlideDeck } from '../components/learn/SlideDeck';
 import { LessonPageSkeleton } from './LessonPageSkeleton';
@@ -35,6 +36,7 @@ const CourseOutlineDrawer = lazy(() =>
 
 /** Upper bound of the client-measured reading time sent with `complete`. */
 const MAX_TIME_SPENT_SECONDS = 3600;
+const AUTO_PROCEED_DELAY_MS = 1_200;
 
 const ACCESS_REASONS: ReadonlyArray<CourseAccessReason> = [
   'platform_admin',
@@ -49,24 +51,6 @@ function toAccessReason(value: string | undefined): CourseAccessReason | null {
   return ACCESS_REASONS.find((reason) => reason === value) ?? null;
 }
 
-/** Route for a module item, or null when the item has no page to open. */
-function itemPath(item: ModuleItemDto): string | null {
-  if (item.kind === 'lab') {
-    return item.lab
-      ? `${ROUTES.LEARN_LAB.replace(':labId', String(item.lab.labId))}?itemId=${item.itemId}`
-      : null;
-  }
-  if (item.kind === 'quiz') {
-    return item.quiz ? ROUTES.LEARN_QUIZ.replace(':quizId', String(item.quiz.quizId)) : null;
-  }
-  return ROUTES.LEARN_LESSON.replace(':lessonId', String(item.itemId));
-}
-
-function toPagerTarget(item: ModuleItemDto | null): { title: string; to: string } | null {
-  const to = item ? itemPath(item) : null;
-  return item && to ? { title: item.title, to } : null;
-}
-
 interface LessonViewProps {
   lessonId: string;
 }
@@ -78,7 +62,12 @@ function LessonView({ lessonId }: LessonViewProps) {
   const lessonQuery = useLearnLesson(lessonId);
   const lesson = lessonQuery.data;
   const moduleId = lesson?.moduleId ?? null;
-  const itemsQuery = useLearnModuleItems(moduleId, Boolean(lesson));
+  const sequence = useCourseSequence({
+    courseId: lesson?.courseId ?? null,
+    moduleId,
+    currentItemId: lesson?.lessonId ?? null,
+    enabled: Boolean(lesson && lesson.kind === 'lesson'),
+  });
   const progressQuery = useModuleItemsProgress(moduleId, Boolean(lesson));
 
   const canWriteProgress = useAuthStore((state) =>
@@ -90,6 +79,7 @@ function LessonView({ lessonId }: LessonViewProps) {
   const [startedLessonId, setStartedLessonId] = useState<number | null>(null);
   const [startedAt] = useState(() => Date.now());
   const [outlineOpen, setOutlineOpen] = useState(false);
+  const [justCompleted, setJustCompleted] = useState(false);
 
   useEffect(() => {
     if (!canWriteProgress || !lesson || lesson.kind !== 'lesson') return;
@@ -99,6 +89,22 @@ function LessonView({ lessonId }: LessonViewProps) {
       onSuccess: () => setStartedLessonId(lesson.lessonId),
     });
   }, [canWriteProgress, lesson, startLesson]);
+
+  const nextTargetUrl = sequence.nextItem?.to ?? null;
+  const crossesModule = sequence.nextItem?.crossesModule ?? false;
+
+  useEffect(() => {
+    if (!justCompleted || !sequence.ready || nextTargetUrl === null) return undefined;
+    toast.success(
+      crossesModule
+        ? 'Module complete — opening next module…'
+        : 'Lesson complete — opening next item…',
+    );
+    const timer = window.setTimeout(() => {
+      navigate(nextTargetUrl);
+    }, AUTO_PROCEED_DELAY_MS);
+    return () => window.clearTimeout(timer);
+  }, [justCompleted, sequence.ready, nextTargetUrl, crossesModule, navigate]);
 
   if (lessonQuery.isPending) return <LessonPageSkeleton />;
 
@@ -150,12 +156,12 @@ function LessonView({ lessonId }: LessonViewProps) {
     return <Navigate replace to={ROUTES.LEARN_QUIZ.replace(':quizId', String(lesson.quizId))} />;
   }
 
-  const items = itemsQuery.data ?? [];
-  const index = items.findIndex((item) => item.itemId === lesson.lessonId);
-  const prevItem = index > 0 ? items[index - 1] : null;
-  const nextItem = index >= 0 && index < items.length - 1 ? items[index + 1] : null;
-  const prevTarget = toPagerTarget(prevItem);
-  const nextTarget = toPagerTarget(nextItem);
+  const prevTarget = sequence.prevItem
+    ? { title: sequence.prevItem.title, to: sequence.prevItem.to }
+    : null;
+  const nextTarget = sequence.nextItem
+    ? { title: sequence.nextItem.title, to: sequence.nextItem.to }
+    : null;
 
   const isCompleted =
     progressQuery.data?.some((item) => item.itemId === lesson.lessonId && item.isCompleted) ??
@@ -177,9 +183,8 @@ function LessonView({ lessonId }: LessonViewProps) {
     completeLesson.mutate(
       { lessonId: lesson.lessonId, payload: { timeSpentSeconds } },
       {
-        onSuccess: (result) => {
-          if (result.courseNewlyCompleted) toast.success('Course complete.');
-          else if (result.moduleNewlyCompleted) toast.success('Module complete.');
+        onSuccess: () => {
+          setJustCompleted(true);
         },
       },
     );
@@ -299,6 +304,17 @@ function LessonView({ lessonId }: LessonViewProps) {
           />
         </Suspense>
       ) : null}
+
+      <CourseCompleteOverlay
+        open={
+          justCompleted &&
+          sequence.ready &&
+          nextTargetUrl === null &&
+          (sequence.isLastItemInCourse || Boolean(completion?.courseNewlyCompleted))
+        }
+        courseTitle={sequence.courseTitle}
+        onContinue={() => navigate(`${ROUTES.LEARN}?completedCourse=${lesson.courseId}`)}
+      />
     </div>
   );
 }

@@ -46,13 +46,13 @@ import { getCheckIssues } from '../labSpec/checkDraft';
 //   check:  the learner's shell state is checked by a LabStepCheck (no answers)
 
 const MODE_ITEMS: ReadonlyArray<TabSwitcherItem<TerminalMode>> = [
-  { id: 'answer', label: 'Answer' },
-  { id: 'check', label: 'Check' },
+  { id: 'answer', label: 'Answer', icon: 'edit' },
+  { id: 'check', label: 'Check', icon: 'terminal' },
 ];
 
 const FORMAT_ITEMS: ReadonlyArray<TabSwitcherItem<TerminalAnswerFormat>> = [
-  { id: 'choice', label: 'Choice' },
-  { id: 'text', label: 'Text' },
+  { id: 'choice', label: 'Choice', icon: 'checklist' },
+  { id: 'text', label: 'Text', icon: 'lesson' },
 ];
 
 const SETUP_MAX = 10;

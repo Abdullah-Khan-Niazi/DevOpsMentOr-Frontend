@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonText } from '@/shared/components';
+import { Skeleton, SkeletonText } from '@/shared/components/Skeleton';
 
 /** Lesson page while the item loads: header, prose lines, completion row and pager. */
 export function LessonPageSkeleton() {

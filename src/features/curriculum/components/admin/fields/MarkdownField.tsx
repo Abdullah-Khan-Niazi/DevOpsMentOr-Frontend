@@ -14,8 +14,8 @@ import {
 type MarkdownMode = 'write' | 'preview';
 
 const MODE_ITEMS: ReadonlyArray<TabSwitcherItem<MarkdownMode>> = [
-  { id: 'write', label: 'Write' },
-  { id: 'preview', label: 'Preview' },
+  { id: 'write', label: 'Write', icon: 'edit' },
+  { id: 'preview', label: 'Preview', icon: 'visibility' },
 ];
 
 // The counter appears only once the text is close to the limit (last 10%).

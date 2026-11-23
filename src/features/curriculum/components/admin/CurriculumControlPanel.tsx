@@ -23,9 +23,10 @@ import {
 } from './CurriculumTree';
 import { TrackDrawer } from './drawers/TrackDrawer';
 import { useCurriculumUrlState, type CurriculumTab } from './useCurriculumUrlState';
+import '../../styles/curriculum.css';
 
 // Staff curriculum control panel (FE§3.1): one toolbar, one shared tree, the drawer host.
-// The tree pane fills the remaining height and scrolls internally.
+// The outer page container owns vertical scrolling so nested course/module lists never show inner scrollbars.
 
 const MANAGE_PERMISSION = 'platform.curriculum.manage';
 
@@ -81,10 +82,10 @@ export function CurriculumControlPanel() {
 
   const trackCount = tracks.data?.length ?? 0;
   const courseList = courses.data ?? [];
-  // Modules are course scoped: the first course is the default; an unknown id falls back to it.
+  // Modules are course scoped: prefer a course that already has modules, falling back to the first course.
   const activeCourseId =
     courseList.find((course) => course.courseId === url.courseId)?.courseId ??
-    courseList[0]?.courseId ??
+    (courseList.find((course) => course.moduleCount > 0) ?? courseList[0])?.courseId ??
     null;
 
   const setExpandAll = (open: boolean) =>
@@ -132,11 +133,11 @@ export function CurriculumControlPanel() {
   }
 
   return (
-    <div className="flex min-h-0 w-full flex-1 flex-col gap-4">
+    <div className="curriculum-page flex min-w-0 w-full flex-1 flex-col gap-4 pb-12">
       <PageHeader title="Curriculum" actions={createAction} />
 
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0 flex-1 basis-56">
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="w-full shrink-0 sm:w-56 md:w-64">
           <SearchInput
             label="Search curriculum"
             shortcut
@@ -146,6 +147,7 @@ export function CurriculumControlPanel() {
           />
         </div>
         <Select
+          inline
           aria-label="Publish status"
           size="sm"
           value={url.status}
@@ -154,12 +156,13 @@ export function CurriculumControlPanel() {
         />
         {url.tab === 'modules' && courseList.length > 1 && activeCourseId !== null ? (
           <Select
+            inline
             aria-label="Course"
             size="sm"
             value={String(activeCourseId)}
             options={courseList.map((course) => ({
               value: String(course.courseId),
-              label: course.title,
+              label: `${course.slug}: ${course.title} (${course.moduleCount})`,
             }))}
             onChange={(event) => url.setCourseId(Number(event.target.value))}
           />
@@ -181,7 +184,7 @@ export function CurriculumControlPanel() {
         </div>
       </div>
 
-      <div className="flex min-h-0 flex-1 flex-col overflow-y-auto">
+      <div className="flex min-w-0 max-w-full flex-1 flex-col">
         <CurriculumTree
           rootLevel={ROOT_LEVEL[url.tab]}
           search={url.debouncedSearch}

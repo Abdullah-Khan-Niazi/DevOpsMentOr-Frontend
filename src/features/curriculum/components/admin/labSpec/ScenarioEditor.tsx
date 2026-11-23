@@ -27,8 +27,8 @@ export interface ScenarioEditorProps {
 }
 
 const MODE_ITEMS: ReadonlyArray<TabSwitcherItem<LabMode>> = [
-  { id: 'guided', label: 'Guided' },
-  { id: 'break_fix', label: 'Break-fix' },
+  { id: 'guided', label: 'Guided', icon: 'walkthrough' },
+  { id: 'break_fix', label: 'Break-fix', icon: 'bug' },
 ];
 
 export function ScenarioEditor({ value, onChange, issues, disabled = false }: ScenarioEditorProps) {

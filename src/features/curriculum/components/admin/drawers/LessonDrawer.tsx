@@ -58,9 +58,9 @@ const TAG_LIMIT = 20;
 const SLIDE_SEPARATOR = '<!-- slide -->';
 
 const FORMAT_ITEMS: ReadonlyArray<TabSwitcherItem<LessonContentType>> = [
-  { id: 'text', label: 'Text' },
-  { id: 'video', label: 'Video' },
-  { id: 'interactive', label: 'Slides' },
+  { id: 'text', label: 'Text', icon: 'lesson' },
+  { id: 'video', label: 'Video', icon: 'video' },
+  { id: 'interactive', label: 'Slides', icon: 'slides' },
 ];
 
 const lessonSchema = z

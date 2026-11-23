@@ -38,8 +38,8 @@ export interface StepEditorProps {
 }
 
 const KIND_ITEMS: ReadonlyArray<TabSwitcherItem<LabStepKind>> = [
-  { id: 'task', label: 'Task' },
-  { id: 'question', label: 'Question' },
+  { id: 'task', label: 'Task', icon: 'terminal' },
+  { id: 'question', label: 'Question', icon: 'quiz' },
 ];
 
 export function StepEditor({

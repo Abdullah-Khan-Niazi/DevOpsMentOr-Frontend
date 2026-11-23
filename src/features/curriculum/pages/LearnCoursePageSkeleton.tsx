@@ -1,4 +1,4 @@
-import { Skeleton, SkeletonText } from '@/shared/components';
+import { Skeleton, SkeletonText } from '@/shared/components/Skeleton';
 
 /** Course page placeholder: header with action, meta line, description, objectives and module rows. */
 export function LearnCoursePageSkeleton() {
